@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: karbon-dash-app
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python Web_deployment.py
+    envVars:
+      - key: DB_NAME
+        value: postgres
+      - key: DB_USER
+        value: postgres.vdpptixwogcrbcipselj
+      - key: DB_PASSWORD
+        value: J@ja0602ian0827
+      - key: DB_HOST
+        value: aws-0-ap-southeast-1.pooler.supabase.com
