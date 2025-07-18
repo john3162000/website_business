@@ -459,4 +459,5 @@ if __name__ == "__main__":
                 print(" Connected to:", cur.fetchone())
     except Exception as e:
         print(" Connection failed:", e)
-    app.run_server(host="0.0.0.0", port=10000, debug=False)
+    app.run(host="0.0.0.0", port=10000, debug=False)
+
