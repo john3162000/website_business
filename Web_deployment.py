@@ -431,6 +431,13 @@ def download_csv(_, rows, data):
     State("table", "data"),
     prevent_initial_call=True,
 )
+@app.callback(
+    Output("table", "selected_rows"),
+    Input("del", "n_clicks"),
+    State("table", "selected_rows"),
+    State("table", "data"),
+    prevent_initial_call=True,
+)
 def delete_batch(_, rows, data):
     if not rows:
         raise dash.exceptions.PreventUpdate
@@ -442,11 +449,15 @@ def delete_batch(_, rows, data):
             cur.execute("DELETE FROM temperature_log WHERE batch_id = %s", (bid,))
             cur.execute("DELETE FROM carbonization_batch WHERE id = %s", (bid,))
             con.commit()
+        global current_batch_id
+        if current_batch_id == bid:
+            current_batch_id = None
         print(f"[INFO] Deleted batch {bid}")
-        return []  # clear selection
+        return []
     except Exception as e:
         print(f"[ERROR] Failed to delete batch: {e}")
         raise dash.exceptions.PreventUpdate
+
 
 server = app.server  # Reference to the Flask instance behind Dash
 
