@@ -471,7 +471,7 @@ def receive_temp():
         if temp is None or bid is None:
             return jsonify({"error": "Missing temperature or batch_id"}), 400
         # Verify batch ID exists
-        
+
         with get_conn() as con, con.cursor() as cur:
             cur.execute("SELECT 1 FROM carbonization_batch WHERE id = %s", (bid,))
             if not cur.fetchone():
@@ -502,6 +502,7 @@ def receive_temp():
         return jsonify({"error": str(e)}), 500
 
 # ── Run server ───────────────────────────────────────
+# ── Run server ───────────────────────────────────────
 if __name__ == "__main__":
     try:
         with get_conn() as con:
@@ -510,5 +511,8 @@ if __name__ == "__main__":
                 print(" Connected to:", cur.fetchone())
     except Exception as e:
         print(" Connection failed:", e)
-    app.run(host="0.0.0.0", port=10000, debug=False)
+
+    # Don’t use app.run() in Render
+    # Instead, expose the server for Gunicorn
+    # app.run(host="0.0.0.0", port=10000, debug=False)
 
