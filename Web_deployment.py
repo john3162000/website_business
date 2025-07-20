@@ -452,18 +452,6 @@ def delete_batch(_, rows, data):
         print(f"[ERROR] Failed to delete batch: {e}")
         raise dash.exceptions.PreventUpdate
 
-# ── Run server ───────────────────────────────────────
-if __name__ == "__main__":
-    try:
-        with get_conn() as con:
-            with con.cursor() as cur:
-                cur.execute("SELECT current_database(), current_user, NOW();")
-                print(" Connected to:", cur.fetchone())
-    except Exception as e:
-        print(" Connection failed:", e)
-    app.run(host="0.0.0.0", port=10000, debug=False)
-
-
 server = app.server  # Reference to the Flask instance behind Dash
 
 @server.route("/api/temp", methods=["POST"])
@@ -487,3 +475,15 @@ def receive_temp():
     except Exception as e:
         print(f"[ERROR] /api/temp failed: {e}")
         return jsonify({"error": str(e)}), 500
+
+# ── Run server ───────────────────────────────────────
+if __name__ == "__main__":
+    try:
+        with get_conn() as con:
+            with con.cursor() as cur:
+                cur.execute("SELECT current_database(), current_user, NOW();")
+                print(" Connected to:", cur.fetchone())
+    except Exception as e:
+        print(" Connection failed:", e)
+    app.run(host="0.0.0.0", port=10000, debug=False)
+
