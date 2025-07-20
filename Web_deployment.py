@@ -468,8 +468,21 @@ def receive_temp():
         temp = float(data.get("temperature"))
         bid = int(data.get("batch_id"))
 
-        if not temp or not bid:
+        if temp is None or bid is None:
             return jsonify({"error": "Missing temperature or batch_id"}), 400
+        # Verify batch ID exists
+        
+        with get_conn() as con, con.cursor() as cur:
+            cur.execute("SELECT 1 FROM carbonization_batch WHERE id = %s", (bid,))
+            if not cur.fetchone():
+                return jsonify({"error": f"Batch ID {bid} does not exist"}), 404
+
+            cur.execute(
+                "INSERT INTO temperature_log (temperature_c, batch_id) VALUES (%s, %s)",
+                (temp, bid)
+            )
+            con.commit()
+
 
         # 🔒 Verify batch ID exists
         with get_conn() as con, con.cursor() as cur:
