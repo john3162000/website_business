@@ -9,6 +9,8 @@ import dash_bootstrap_components as dbc
 import threading, time, psycopg2, pandas as pd, requests
 import re
 import psycopg2
+from flask import request, jsonify
+
 
 ESP32_URL = "http://192.168.101.84"  # Update this if IP changes
 
@@ -461,3 +463,27 @@ if __name__ == "__main__":
         print(" Connection failed:", e)
     app.run(host="0.0.0.0", port=10000, debug=False)
 
+
+server = app.server  # Reference to the Flask instance behind Dash
+
+@server.route("/api/temp", methods=["POST"])
+def receive_temp():
+    try:
+        data = request.get_json()
+        temp = float(data.get("temperature"))
+        bid = int(data.get("batch_id"))
+
+        if not temp or not bid:
+            return jsonify({"error": "Missing temperature or batch_id"}), 400
+
+        with get_conn() as con, con.cursor() as cur:
+            cur.execute(
+                "INSERT INTO temperature_log (temperature_c, batch_id) VALUES (%s, %s)",
+                (temp, bid)
+            )
+            con.commit()
+        return jsonify({"status": "success"}), 200
+
+    except Exception as e:
+        print(f"[ERROR] /api/temp failed: {e}")
+        return jsonify({"error": str(e)}), 500
