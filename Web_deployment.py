@@ -287,10 +287,6 @@ def control_batch(start, stop, mat, size, moist, desc, bid):
 # ── Live graph update ─────────────────────────────────
 @app.callback(Output("live-graph", "figure"), Input("live-int", "n_intervals"), State("batch", "data"))
 def live_graph(_, bid):
-    temp_c = read_temperature()
-    
-    if temp_c is None:
-        return go.Figure().update_layout(title="Failed to read temperature")
 
     # Log to DB if a batch is running
     if bid:
