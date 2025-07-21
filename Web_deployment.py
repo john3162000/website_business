@@ -14,6 +14,19 @@ from flask import request, jsonify
 
 ESP32_URL = "http://192.168.101.84"  # Update this if IP changes
 
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+@app.route("/api/temp", methods=["POST"])
+def receive_temperature():
+    data = request.get_json()
+    print("Received temperature data:", data)
+
+    # Optional: Save to database, validate batch_id, etc.
+
+    return jsonify({"status": "success"}), 200
+
 # ── Shared state ──────────────────────────────────────────
 current_batch_id = None
 serial_lock = threading.Lock()
