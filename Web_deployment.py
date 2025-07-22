@@ -1,51 +1,26 @@
-
-import threading, time, psycopg2, pandas as pd, serial
+import threading, time, psycopg2, pandas as pd
 from datetime import datetime
 import dash
 from dash import Dash, dcc, html, dash_table, callback_context, no_update
 from dash import Input, Output, State
 import plotly.graph_objs as go
 import dash_bootstrap_components as dbc
-import threading, time, psycopg2, pandas as pd, requests
+import requests
 import re
-import psycopg2
 from flask import request, jsonify
 
-
+# ── Configuration ──────────────────────────────────────
 ESP32_URL = "http://192.168.101.84"  # Update this if IP changes
 
-from flask import Flask, request, jsonify
-
-app = Flask(__name__)
-
-@app.route("/api/temp", methods=["POST"])
-def receive_temperature():
-    data = request.get_json()
-    print("Received temperature data:", data)
-
-    # Optional: Save to database, validate batch_id, etc.
-
-    return jsonify({"status": "success"}), 200
-
-# ── Shared state ──────────────────────────────────────────
+# ── Shared state ──────────────────────────────────────
 current_batch_id = None
 serial_lock = threading.Lock()
-serial_instance = None
 
-# ── Demo credentials ─────────────────────────────────────
+# ── Demo credentials ─────────────────────────────────
 VALID_USER = "admin"
 VALID_PASS = "password"
 
-# ── Database config ──────────────────────────────────────
-DB = dict(
-    dbname="postgres",
-    user="postgres",
-    password="J@ja0602ian0827",
-    host="db.vdpptixwogcrbcipselj.supabase.co",  # Replace with exact if different
-    port="5432"
-)
-
-
+# ── Database config ──────────────────────────────────
 def get_conn():
     return psycopg2.connect(
         dbname="postgres",
@@ -56,35 +31,39 @@ def get_conn():
         sslmode="require"
     )
 
+# ── Initialize Database Tables ─────────────────────────
+def init_database():
+    try:
+        with get_conn() as con, con.cursor() as cur:
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS carbonization_batch (
+                    id SERIAL PRIMARY KEY,
+                    material_name TEXT NOT NULL,
+                    size_cut TEXT,
+                    moisture_condition INTEGER,
+                    description TEXT,
+                    start_time TIMESTAMP NOT NULL,
+                    end_time   TIMESTAMP
+                );
+                """
+            )
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS temperature_log (
+                    id SERIAL PRIMARY KEY,
+                    timestamp TIMESTAMP DEFAULT NOW(),
+                    temperature_c FLOAT,
+                    batch_id INTEGER REFERENCES carbonization_batch(id)
+                );
+                """
+            )
+            con.commit()
+            print("[INFO] Database tables initialized successfully")
+    except Exception as e:
+        print(f"[ERROR] Failed to initialize database: {e}")
 
-# Ensure tables exist once
-with get_conn() as con, con.cursor() as cur:
-    cur.execute(
-        """
-        CREATE TABLE IF NOT EXISTS carbonization_batch (
-            id SERIAL PRIMARY KEY,
-            material_name TEXT NOT NULL,
-            size_cut TEXT,
-            moisture_condition INTEGER,
-            description TEXT,
-            start_time TIMESTAMP NOT NULL,
-            end_time   TIMESTAMP
-        );
-        """
-    )
-    cur.execute(
-        """
-        CREATE TABLE IF NOT EXISTS temperature_log (
-            id SERIAL PRIMARY KEY,
-            timestamp TIMESTAMP DEFAULT NOW(),
-            temperature_c FLOAT,
-            batch_id INTEGER REFERENCES carbonization_batch(id)
-        );
-        """
-    )
-    con.commit()
-import re
-
+# ── Temperature Reading Function ─────────────────────────
 def read_temperature():
     try:
         response = requests.get(ESP32_URL, timeout=2)
@@ -108,9 +87,6 @@ def read_temperature():
         print(f"[WARNING] Failed to read from ESP32: {e}")
         return None
 
-# ── Serial configuration ────────────────────────────────
-RECONNECT_DELAY = 3  # seconds
-MAX_RETRIES = 5
 # ── Dash app init ────────────────────────────────────────
 app = Dash(
     __name__,
@@ -131,7 +107,7 @@ app.layout = html.Div(
 def login_layout():
     return html.Div(
         style={
-            "background": "url('/assets/eco_friendly.jpg') center/cover no-repeat",
+            "background": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
             "height": "100vh",
             "display": "flex",
             "justifyContent": "center",
@@ -140,17 +116,17 @@ def login_layout():
         children=[
             dbc.Card(
                 [
-                    dbc.CardHeader(html.H4("Login to Karbon Corp")),
+                    dbc.CardHeader(html.H4("Login to Karbon Corp", className="text-center")),
                     dbc.CardBody(
                         [
-                            dbc.Input(id="username", placeholder="Username", className="mb-2"),
-                            dbc.Input(id="password", placeholder="Password", type="password", className="mb-2"),
+                            dbc.Input(id="username", placeholder="Username", className="mb-3"),
+                            dbc.Input(id="password", placeholder="Password", type="password", className="mb-3"),
                             dbc.Button("Login", id="login-btn", color="primary", className="w-100"),
                             html.Div(id="login-msg", className="text-danger mt-2"),
                         ]
                     ),
                 ],
-                style={"width": "300px"},
+                style={"width": "350px", "boxShadow": "0 4px 6px rgba(0, 0, 0, 0.1)"},
             )
         ],
     )
@@ -159,8 +135,7 @@ def main_layout():
     header = dbc.Navbar(
         dbc.Container(
             [
-                html.Img(src="/assets/karbon_logo.png", height="40px"),
-                html.H2("KARBON CORP", className="ms-3 mb-0 text-white"),
+                html.H2("KARBON CORP - Carbonization Monitor", className="mb-0 text-white"),
             ],
             fluid=True,
         ),
@@ -270,39 +245,44 @@ def control_batch(start, stop, mat, size, moist, desc, bid):
         raise dash.exceptions.PreventUpdate
     btn = ctx.triggered[0]["prop_id"].split(".")[0]
 
-    with get_conn() as con, con.cursor() as cur:
-        if btn == "start":
-            if not all([mat, size, moist, desc]):
-                raise dash.exceptions.PreventUpdate
-            cur.execute(
-                """
-                INSERT INTO carbonization_batch
-                (material_name, size_cut, moisture_condition, description, start_time)
-                VALUES (%s, %s, %s, %s, NOW())
-                RETURNING id;
-                """,
-                (mat, size, moist, desc),
-            )
-            new_id = cur.fetchone()[0]
-            con.commit()
-            with serial_lock:
-                current_batch_id = new_id
-            print(f"[INFO] Started batch {new_id}")
-            return new_id, False, True
-        else:  # stop
-            cur.execute("UPDATE carbonization_batch SET end_time = NOW() WHERE id = %s", (bid,))
-            con.commit()
-            with serial_lock:
-                current_batch_id = None
-            print(f"[INFO] Stopped batch {bid}")
-            return no_update, True, False
+    try:
+        with get_conn() as con, con.cursor() as cur:
+            if btn == "start":
+                if not all([mat, size, moist, desc]):
+                    raise dash.exceptions.PreventUpdate
+                cur.execute(
+                    """
+                    INSERT INTO carbonization_batch
+                    (material_name, size_cut, moisture_condition, description, start_time)
+                    VALUES (%s, %s, %s, %s, NOW())
+                    RETURNING id;
+                    """,
+                    (mat, size, moist, desc),
+                )
+                new_id = cur.fetchone()[0]
+                con.commit()
+                with serial_lock:
+                    current_batch_id = new_id
+                print(f"[INFO] Started batch {new_id}")
+                return new_id, False, True
+            else:  # stop
+                cur.execute("UPDATE carbonization_batch SET end_time = NOW() WHERE id = %s", (bid,))
+                con.commit()
+                with serial_lock:
+                    current_batch_id = None
+                print(f"[INFO] Stopped batch {bid}")
+                return no_update, True, False
+    except Exception as e:
+        print(f"[ERROR] Batch control failed: {e}")
+        raise dash.exceptions.PreventUpdate
 
 # ── Live graph update ─────────────────────────────────
 @app.callback(Output("live-graph", "figure"), Input("live-int", "n_intervals"), State("batch", "data"))
 def live_graph(_, bid):
     temp_c = read_temperature()
-    # Log to DB if a batch is running
-    if bid:
+    
+    # Log to DB if a batch is running and temperature is valid
+    if bid and temp_c is not None:
         try:
             with get_conn() as con, con.cursor() as cur:
                 cur.execute(
@@ -316,19 +296,29 @@ def live_graph(_, bid):
 
     # Retrieve last 100 entries for the graph
     try:
-        query = """
-            SELECT timestamp, temperature_c FROM temperature_log
-            WHERE batch_id = %s
-            ORDER BY timestamp DESC LIMIT 100
-        """ if bid else """
-            SELECT timestamp, temperature_c FROM temperature_log
-            ORDER BY timestamp DESC LIMIT 100
-        """
+        if bid:
+            query = """
+                SELECT timestamp, temperature_c FROM temperature_log
+                WHERE batch_id = %s
+                ORDER BY timestamp DESC LIMIT 100
+            """
+            params = (bid,)
+        else:
+            query = """
+                SELECT timestamp, temperature_c FROM temperature_log
+                ORDER BY timestamp DESC LIMIT 100
+            """
+            params = None
+
         with get_conn() as con:
-            df = pd.read_sql(query, con, params=(bid,) if bid else None)
+            df = pd.read_sql(query, con, params=params)
 
         if df.empty:
-            return go.Figure().update_layout(title="No data available")
+            return go.Figure().update_layout(
+                title="No data available",
+                xaxis_title="Timestamp",
+                yaxis_title="Temperature (°C)"
+            )
 
         df = df.sort_values("timestamp")
         fig = go.Figure(go.Scatter(
@@ -345,7 +335,11 @@ def live_graph(_, bid):
         return fig
     except Exception as e:
         print(f"[ERROR] Graph query failed: {e}")
-        return go.Figure().update_layout(title="Database Error")
+        return go.Figure().update_layout(
+            title="Database Error",
+            xaxis_title="Timestamp",
+            yaxis_title="Temperature (°C)"
+        )
 
 # ── Refresh history table ─────────────────────────────
 @app.callback(Output("table", "data"), Input("hist-int", "n_intervals"))
@@ -444,13 +438,6 @@ def download_csv(_, rows, data):
     State("table", "data"),
     prevent_initial_call=True,
 )
-@app.callback(
-    Output("table", "selected_rows"),
-    Input("del", "n_clicks"),
-    State("table", "selected_rows"),
-    State("table", "data"),
-    prevent_initial_call=True,
-)
 def delete_batch(_, rows, data):
     if not rows:
         raise dash.exceptions.PreventUpdate
@@ -471,20 +458,26 @@ def delete_batch(_, rows, data):
         print(f"[ERROR] Failed to delete batch: {e}")
         raise dash.exceptions.PreventUpdate
 
-
+# ── Flask server reference and API endpoint ──────────
 server = app.server  # Reference to the Flask instance behind Dash
 
 @server.route("/api/temp", methods=["POST"])
 def receive_temp():
     try:
         data = request.get_json()
-        temp = float(data.get("temperature"))
-        bid = int(data.get("batch_id"))
+        if not data:
+            return jsonify({"error": "No JSON data provided"}), 400
+            
+        temp = data.get("temperature")
+        bid = data.get("batch_id")
 
         if temp is None or bid is None:
             return jsonify({"error": "Missing temperature or batch_id"}), 400
+            
+        temp = float(temp)
+        bid = int(bid)
+
         # Verify batch ID exists
-
         with get_conn() as con, con.cursor() as cur:
             cur.execute("SELECT 1 FROM carbonization_batch WHERE id = %s", (bid,))
             if not cur.fetchone():
@@ -496,36 +489,25 @@ def receive_temp():
             )
             con.commit()
 
-
-        # 🔒 Verify batch ID exists
-        with get_conn() as con, con.cursor() as cur:
-            cur.execute("SELECT 1 FROM carbonization_batch WHERE id = %s", (bid,))
-            if not cur.fetchone():
-                return jsonify({"error": f"Batch ID {bid} does not exist"}), 404
-
-            cur.execute(
-                "INSERT INTO temperature_log (temperature_c, batch_id) VALUES (%s, %s)",
-                (temp, bid)
-            )
-            con.commit()
         return jsonify({"status": "success"}), 200
 
     except Exception as e:
         print(f"[ERROR] /api/temp failed: {e}")
         return jsonify({"error": str(e)}), 500
 
-# ── Run server ───────────────────────────────────────
-# ── Run server ───────────────────────────────────────
+# ── Main execution ───────────────────────────────────
 if __name__ == "__main__":
+    # Initialize database
+    init_database()
+    
+    # Test database connection
     try:
         with get_conn() as con:
             with con.cursor() as cur:
                 cur.execute("SELECT current_database(), current_user, NOW();")
-                print(" Connected to:", cur.fetchone())
+                print("[INFO] Connected to:", cur.fetchone())
     except Exception as e:
-        print(" Connection failed:", e)
+        print(f"[ERROR] Connection failed: {e}")
 
-    # Don’t use app.run() in Render
-    # Instead, expose the server for Gunicorn
-    # app.run(host="0.0.0.0", port=10000, debug=False)
-
+    # For local development
+    app.run(host="0.0.0.0", port=8050, debug=True)
