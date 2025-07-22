@@ -14,6 +14,7 @@ ESP32_URL = "http://192.168.101.84"  # Update this if IP changes
 
 # ── Shared state ──────────────────────────────────────
 current_batch_id = None
+batch_recording = False  # Flag to control recording
 serial_lock = threading.Lock()
 
 # ── Demo credentials ─────────────────────────────────
@@ -87,6 +88,34 @@ def read_temperature():
         print(f"[WARNING] Failed to read from ESP32: {e}")
         return None
 
+# ── Background Temperature Monitoring Thread ─────────────
+def temperature_monitor():
+    """Background thread that continuously monitors temperature when batch is active"""
+    global current_batch_id, batch_recording
+    
+    while True:
+        try:
+            if batch_recording and current_batch_id:
+                temp_c = read_temperature()
+                
+                if temp_c is not None:
+                    with get_conn() as con, con.cursor() as cur:
+                        cur.execute(
+                            "INSERT INTO temperature_log (temperature_c, batch_id) VALUES (%s, %s)",
+                            (temp_c, current_batch_id),
+                        )
+                        con.commit()
+                        print(f"[MONITOR] Logged: {temp_c:.2f}°C for batch {current_batch_id}")
+                
+            time.sleep(5)  # Read temperature every 5 seconds when recording
+        except Exception as e:
+            print(f"[ERROR] Temperature monitor error: {e}")
+            time.sleep(10)  # Wait longer on error
+
+# Start the background monitoring thread
+monitoring_thread = threading.Thread(target=temperature_monitor, daemon=True)
+monitoring_thread.start()
+
 # ── Dash app init ────────────────────────────────────────
 app = Dash(
     __name__,
@@ -107,7 +136,7 @@ app.layout = html.Div(
 def login_layout():
     return html.Div(
         style={
-            "background": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            "background": "url('/assets/eco_friendly.jpg') center/cover no-repeat",
             "height": "100vh",
             "display": "flex",
             "justifyContent": "center",
@@ -126,7 +155,7 @@ def login_layout():
                         ]
                     ),
                 ],
-                style={"width": "350px", "boxShadow": "0 4px 6px rgba(0, 0, 0, 0.1)"},
+                style={"width": "350px", "boxShadow": "0 4px 6px rgba(0, 0, 0, 0.1)", "backgroundColor": "rgba(255,255,255,0.95)"},
             )
         ],
     )
@@ -135,6 +164,7 @@ def main_layout():
     header = dbc.Navbar(
         dbc.Container(
             [
+                html.Img(src="/assets/karbon_logo.png", height="40px", className="me-3"),
                 html.H2("KARBON CORP - Carbonization Monitor", className="mb-0 text-white"),
             ],
             fluid=True,
@@ -149,6 +179,12 @@ def main_layout():
         value="live",
         children=[
             html.Br(),
+            dbc.Alert(
+                id="batch-status",
+                children="No active batch",
+                color="secondary",
+                className="mb-3"
+            ),
             dbc.Row(
                 [
                     dbc.Col(dbc.Input(id="material", placeholder="Material name"), width=3),
@@ -162,7 +198,7 @@ def main_layout():
             ),
             html.Hr(),
             dcc.Graph(id="live-graph"),
-            dcc.Interval(id="live-int", interval=7_000, n_intervals=0),
+            dcc.Interval(id="live-int", interval=3_000, n_intervals=0),  # Update graph every 3 seconds
         ],
     )
 
@@ -182,18 +218,29 @@ def main_layout():
                     {"name": "Material", "id": "material_name"},
                     {"name": "Size", "id": "size_cut"},
                     {"name": "Moisture", "id": "moisture_condition"},
+                    {"name": "Description", "id": "description"},
                     {"name": "Start", "id": "start_time"},
                     {"name": "End", "id": "end_time"},
                 ],
             ),
-            dcc.Interval(id="hist-int", interval=7_000, n_intervals=0),
+            dcc.Interval(id="hist-int", interval=10_000, n_intervals=0),
             html.Br(),
             dbc.Button("Download CSV", id="dl", color="primary", className="me-2", disabled=True),
             dbc.Button("Delete Batch", id="del", color="danger", disabled=True),
             dcc.Download(id="csv"),
             html.Hr(),
             dcc.Graph(id="hist-graph"),
-            dash_table.DataTable(id="temps", page_size=15, style_table={"overflowX": "auto"}, style_cell={"textAlign": "left"}),
+            dash_table.DataTable(
+                id="temps", 
+                page_size=15, 
+                style_table={"overflowX": "auto"}, 
+                style_cell={"textAlign": "left"},
+                columns=[
+                    {"name": "ID", "id": "id"},
+                    {"name": "Timestamp", "id": "timestamp"},
+                    {"name": "Temperature (°C)", "id": "temperature_c"},
+                ]
+            ),
         ],
     )
 
@@ -226,20 +273,26 @@ def display_page(auth):
 
 # ── Batch control (Start / Stop) ───────────────────────
 @app.callback(
-    Output("batch", "data"),
-    Output("stop", "disabled"),
-    Output("start", "disabled"),
-    Input("start", "n_clicks"),
-    Input("stop", "n_clicks"),
-    State("material", "value"),
-    State("size", "value"),
-    State("moisture", "value"),
-    State("desc", "value"),
-    State("batch", "data"),
+    [Output("batch", "data"),
+     Output("stop", "disabled"),
+     Output("start", "disabled"),
+     Output("batch-status", "children"),
+     Output("batch-status", "color"),
+     Output("material", "value"),
+     Output("size", "value"),
+     Output("moisture", "value"),
+     Output("desc", "value")],
+    [Input("start", "n_clicks"),
+     Input("stop", "n_clicks")],
+    [State("material", "value"),
+     State("size", "value"),
+     State("moisture", "value"),
+     State("desc", "value"),
+     State("batch", "data")],
     prevent_initial_call=True,
 )
 def control_batch(start, stop, mat, size, moist, desc, bid):
-    global current_batch_id
+    global current_batch_id, batch_recording
     ctx = callback_context
     if not ctx.triggered:
         raise dash.exceptions.PreventUpdate
@@ -250,6 +303,7 @@ def control_batch(start, stop, mat, size, moist, desc, bid):
             if btn == "start":
                 if not all([mat, size, moist, desc]):
                     raise dash.exceptions.PreventUpdate
+                    
                 cur.execute(
                     """
                     INSERT INTO carbonization_batch
@@ -261,17 +315,30 @@ def control_batch(start, stop, mat, size, moist, desc, bid):
                 )
                 new_id = cur.fetchone()[0]
                 con.commit()
+                
                 with serial_lock:
                     current_batch_id = new_id
-                print(f"[INFO] Started batch {new_id}")
-                return new_id, False, True
+                    batch_recording = True
+                    
+                print(f"[INFO] Started batch {new_id} - Recording temperature data")
+                return (new_id, False, True, 
+                        f"🟢 Recording Batch #{new_id} - {mat}", "success",
+                        "", "", None, "")  # Clear input fields
+                        
             else:  # stop
-                cur.execute("UPDATE carbonization_batch SET end_time = NOW() WHERE id = %s", (bid,))
-                con.commit()
-                with serial_lock:
-                    current_batch_id = None
-                print(f"[INFO] Stopped batch {bid}")
-                return no_update, True, False
+                if bid:
+                    cur.execute("UPDATE carbonization_batch SET end_time = NOW() WHERE id = %s", (bid,))
+                    con.commit()
+                    
+                    with serial_lock:
+                        current_batch_id = None
+                        batch_recording = False
+                        
+                    print(f"[INFO] Stopped batch {bid} - Temperature recording stopped")
+                    return (no_update, True, False, 
+                            f"🔴 Stopped Batch #{bid}", "warning",
+                            no_update, no_update, no_update, no_update)
+                            
     except Exception as e:
         print(f"[ERROR] Batch control failed: {e}")
         raise dash.exceptions.PreventUpdate
@@ -279,22 +346,6 @@ def control_batch(start, stop, mat, size, moist, desc, bid):
 # ── Live graph update ─────────────────────────────────
 @app.callback(Output("live-graph", "figure"), Input("live-int", "n_intervals"), State("batch", "data"))
 def live_graph(_, bid):
-    temp_c = read_temperature()
-    
-    # Log to DB if a batch is running and temperature is valid
-    if bid and temp_c is not None:
-        try:
-            with get_conn() as con, con.cursor() as cur:
-                cur.execute(
-                    "INSERT INTO temperature_log (temperature_c, batch_id) VALUES (%s, %s)",
-                    (temp_c, bid),
-                )
-                con.commit()
-                print(f"[DEBUG] Logged: {temp_c:.2f} for batch {bid}")
-        except Exception as db_error:
-            print(f"[ERROR] Database error: {db_error}")
-
-    # Retrieve last 100 entries for the graph
     try:
         if bid:
             query = """
@@ -303,42 +354,57 @@ def live_graph(_, bid):
                 ORDER BY timestamp DESC LIMIT 100
             """
             params = (bid,)
+            title = f"Live Temperature Monitoring - Batch #{bid}"
         else:
             query = """
                 SELECT timestamp, temperature_c FROM temperature_log
                 ORDER BY timestamp DESC LIMIT 100
             """
             params = None
+            title = "Live Temperature Monitoring - No Active Batch"
 
         with get_conn() as con:
             df = pd.read_sql(query, con, params=params)
 
         if df.empty:
             return go.Figure().update_layout(
-                title="No data available",
+                title=title,
                 xaxis_title="Timestamp",
-                yaxis_title="Temperature (°C)"
+                yaxis_title="Temperature (°C)",
+                template="plotly_white"
             )
 
         df = df.sort_values("timestamp")
-        fig = go.Figure(go.Scatter(
+        
+        # Create the line chart
+        fig = go.Figure()
+        
+        fig.add_trace(go.Scatter(
             x=df["timestamp"],
             y=df["temperature_c"],
             mode="lines+markers",
-            name="Temperature"
+            name="Temperature",
+            line=dict(color="#1f77b4", width=2),
+            marker=dict(size=4)
         ))
+        
         fig.update_layout(
-            title=f"Live Temperature Monitoring - {'Batch ' + str(bid) if bid else 'No Active Batch'}",
+            title=title,
             xaxis_title="Timestamp",
             yaxis_title="Temperature (°C)",
+            template="plotly_white",
+            hovermode="x unified"
         )
+        
         return fig
+        
     except Exception as e:
         print(f"[ERROR] Graph query failed: {e}")
         return go.Figure().update_layout(
             title="Database Error",
             xaxis_title="Timestamp",
-            yaxis_title="Temperature (°C)"
+            yaxis_title="Temperature (°C)",
+            template="plotly_white"
         )
 
 # ── Refresh history table ─────────────────────────────
@@ -348,7 +414,9 @@ def refresh_table(_):
         with get_conn() as con:
             df = pd.read_sql(
                 """
-                SELECT id, material_name, size_cut, moisture_condition, start_time, end_time
+                SELECT id, material_name, size_cut, moisture_condition, description, 
+                       TO_CHAR(start_time, 'YYYY-MM-DD HH24:MI:SS') as start_time,
+                       TO_CHAR(end_time, 'YYYY-MM-DD HH24:MI:SS') as end_time
                 FROM carbonization_batch
                 ORDER BY id DESC
                 LIMIT 100
@@ -362,9 +430,9 @@ def refresh_table(_):
 
 # ── Toggle action buttons ─────────────────────────────
 @app.callback(
-    Output("dl", "disabled"),
-    Output("del", "disabled"),
-    Input("table", "selected_rows"),
+    [Output("dl", "disabled"),
+     Output("del", "disabled")],
+    [Input("table", "selected_rows")],
 )
 def toggle_buttons(rows):
     disabled = not bool(rows)
@@ -372,22 +440,23 @@ def toggle_buttons(rows):
 
 # ── Display batch details ─────────────────────────────
 @app.callback(
-    Output("hist-graph", "figure"),
-    Output("temps", "data"),
-    Input("table", "selected_rows"),
-    State("table", "data"),
+    [Output("hist-graph", "figure"),
+     Output("temps", "data")],
+    [Input("table", "selected_rows")],
+    [State("table", "data")],
 )
 def batch_details(rows, data):
     if not rows:
-        return go.Figure(), []
+        return go.Figure().update_layout(title="Select a batch to view details"), []
     
     bid = data[rows[0]]["id"]
     
     try:
         with get_conn() as con:
             df = pd.read_sql(
-                "SELECT timestamp, temperature_c FROM temperature_log "
-                "WHERE batch_id = %s ORDER BY timestamp",
+                """SELECT id, TO_CHAR(timestamp, 'YYYY-MM-DD HH24:MI:SS') as timestamp, 
+                   temperature_c FROM temperature_log 
+                   WHERE batch_id = %s ORDER BY timestamp""",
                 con,
                 params=(bid,),
             )
@@ -395,14 +464,28 @@ def batch_details(rows, data):
         print(f"[ERROR] Failed to load batch details: {e}")
         return go.Figure().update_layout(title="Database Error"), []
     
+    if df.empty:
+        return go.Figure().update_layout(title=f"No temperature data for Batch {bid}"), []
+    
+    # Convert timestamp back to datetime for plotting
+    df['timestamp_dt'] = pd.to_datetime(df['timestamp'])
+    
     fig = go.Figure(go.Scatter(
-        x=df.timestamp, 
-        y=df.temperature_c, 
+        x=df['timestamp_dt'], 
+        y=df['temperature_c'], 
         mode="lines+markers",
-        name="Temperature"
+        name="Temperature",
+        line=dict(color="#1f77b4", width=2),
+        marker=dict(size=4)
     ))
-    fig.update_layout(title=f"Batch {bid} Temperature History")
-    return fig, df.to_dict("records")
+    fig.update_layout(
+        title=f"Batch {bid} Temperature History",
+        xaxis_title="Timestamp",
+        yaxis_title="Temperature (°C)",
+        template="plotly_white"
+    )
+    
+    return fig, df[['id', 'timestamp', 'temperature_c']].to_dict("records")
 
 # ── Download CSV ─────────────────────────────────────
 @app.callback(
@@ -421,7 +504,9 @@ def download_csv(_, rows, data):
     try:
         with get_conn() as con:
             df = pd.read_sql(
-                "SELECT * FROM temperature_log WHERE batch_id = %s ORDER BY timestamp",
+                """SELECT id, timestamp, temperature_c, batch_id 
+                   FROM temperature_log 
+                   WHERE batch_id = %s ORDER BY timestamp""",
                 con,
                 params=(bid,),
             )
@@ -446,12 +531,18 @@ def delete_batch(_, rows, data):
     
     try:
         with get_conn() as con, con.cursor() as cur:
+            # Delete temperature logs first (due to foreign key constraint)
             cur.execute("DELETE FROM temperature_log WHERE batch_id = %s", (bid,))
+            # Then delete the batch
             cur.execute("DELETE FROM carbonization_batch WHERE id = %s", (bid,))
             con.commit()
-        global current_batch_id
+            
+        global current_batch_id, batch_recording
         if current_batch_id == bid:
-            current_batch_id = None
+            with serial_lock:
+                current_batch_id = None
+                batch_recording = False
+                
         print(f"[INFO] Deleted batch {bid}")
         return []
     except Exception as e:
@@ -463,33 +554,43 @@ server = app.server  # Reference to the Flask instance behind Dash
 
 @server.route("/api/temp", methods=["POST"])
 def receive_temp():
+    """API endpoint for ESP32 to send temperature data"""
     try:
         data = request.get_json()
         if not data:
             return jsonify({"error": "No JSON data provided"}), 400
             
         temp = data.get("temperature")
-        bid = data.get("batch_id")
+        
+        # If batch_id is not provided, use current active batch
+        bid = data.get("batch_id") or current_batch_id
 
-        if temp is None or bid is None:
-            return jsonify({"error": "Missing temperature or batch_id"}), 400
+        if temp is None:
+            return jsonify({"error": "Missing temperature"}), 400
+            
+        if not bid:
+            return jsonify({"error": "No active batch"}), 400
             
         temp = float(temp)
         bid = int(bid)
 
-        # Verify batch ID exists
-        with get_conn() as con, con.cursor() as cur:
-            cur.execute("SELECT 1 FROM carbonization_batch WHERE id = %s", (bid,))
-            if not cur.fetchone():
-                return jsonify({"error": f"Batch ID {bid} does not exist"}), 404
+        # Only record if we're actively recording for this batch
+        if batch_recording and bid == current_batch_id:
+            with get_conn() as con, con.cursor() as cur:
+                # Verify batch ID exists
+                cur.execute("SELECT 1 FROM carbonization_batch WHERE id = %s", (bid,))
+                if not cur.fetchone():
+                    return jsonify({"error": f"Batch ID {bid} does not exist"}), 404
 
-            cur.execute(
-                "INSERT INTO temperature_log (temperature_c, batch_id) VALUES (%s, %s)",
-                (temp, bid)
-            )
-            con.commit()
+                cur.execute(
+                    "INSERT INTO temperature_log (temperature_c, batch_id) VALUES (%s, %s)",
+                    (temp, bid)
+                )
+                con.commit()
 
-        return jsonify({"status": "success"}), 200
+            return jsonify({"status": "success", "recorded": True}), 200
+        else:
+            return jsonify({"status": "success", "recorded": False, "message": "Not recording"}), 200
 
     except Exception as e:
         print(f"[ERROR] /api/temp failed: {e}")
