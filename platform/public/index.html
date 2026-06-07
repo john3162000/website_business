@@ -269,219 +269,300 @@ const DA_PRICES = [
   { name:"Mantika (Niyog)", local:"Coconut Oil", unit:"liter", low:80, high:120, avg:100, cat:"condiments", trend:"down" },
   { name:"Asukal (Washed)", local:"Sugar (Washed)", unit:"kg", low:60, high:80, avg:70, cat:"condiments", trend:"stable" },
   { name:"Asin", local:"Salt", unit:"kg", low:10, high:20, avg:15, cat:"condiments", trend:"stable" },
+  // Added for recipe nutrition cross-check
+  { name:"Tokwa", local:"Tofu", unit:"kg", low:70, high:90, avg:80, cat:"meat", trend:"stable" },
+  { name:"Monggo", local:"Mung Beans (Dried)", unit:"kg", low:70, high:90, avg:80, cat:"staple", trend:"stable" },
+  { name:"Atay ng Baboy", local:"Pork Liver", unit:"kg", low:160, high:200, avg:180, cat:"meat", trend:"stable" },
+  { name:"Buntot ng Baka", local:"Oxtail", unit:"kg", low:300, high:340, avg:320, cat:"meat", trend:"up" },
+  { name:"Malunggay", local:"Moringa Leaves", unit:"bundle", low:8, high:12, avg:10, cat:"vegetables", trend:"stable" },
+  { name:"Dahon ng Gabi", local:"Taro Leaves", unit:"bundle", low:25, high:35, avg:30, cat:"vegetables", trend:"stable" },
+  { name:"Kalamansi", local:"Calamansi", unit:"kg", low:60, high:100, avg:80, cat:"condiments", trend:"stable" },
+  { name:"Bagoong Alamang", local:"Shrimp Paste", unit:"kg", low:130, high:170, avg:150, cat:"condiments", trend:"stable" },
+  { name:"Gata", local:"Coconut Milk", unit:"can (400ml)", low:50, high:70, avg:60, cat:"condiments", trend:"stable" },
+  { name:"Mani (Giniling)", local:"Ground Peanuts", unit:"kg", low:200, high:240, avg:220, cat:"condiments", trend:"stable" },
 ];
 
-const RECIPES = [
-  {
-    id:1, title:"Sinigang na Bangus",
-    img:"https://panlasangpinoy.com/wp-content/uploads/2020/07/sinigang-na-bangus.jpg",
-    category:"Soup", servings:4, prepTime:15, cookTime:30,
-    valueScore:9.2, nutritionScore:87, costPerServing:52, calories:210, protein:24, carbs:8, fat:9, fiber:3,
-    vitaminC:42, iron:2.8, calcium:180,
-    ingredients:[
-      {name:"Bangus (Milkfish)", qty:"1 kg", price:200, unit:"kg"},
-      {name:"Kamatis (Tomato)", qty:"3 pcs (200g)", price:80, unit:"kg"},
-      {name:"Kangkong", qty:"1 bundle", price:15, unit:"bundle"},
-      {name:"Sibuyas (Onion)", qty:"1 pc (80g)", price:100, unit:"kg"},
-      {name:"Labanos", qty:"1 pc (200g)", price:55, unit:"kg"},
-      {name:"Sitaw", qty:"100g", price:65, unit:"kg"},
-    ],
-    instructions:[
-      "Clean and cut bangus into serving pieces. Season lightly with salt.",
-      "In a pot, bring 6 cups of water to a boil. Add kamatis and sibuyas, simmer for 5 minutes.",
-      "Add bangus and cook for 8 minutes until fish is tender.",
-      "Add labanos and sitaw, cook for 3 more minutes.",
-      "Season with patis and add sinigang mix or sampaloc. Taste and adjust.",
-      "Add kangkong leaves last. Turn off heat and cover for 2 minutes.",
-      "Serve hot with steamed rice."
-    ],
-    nutrition: { calories:210, protein:24, carbs:8, fat:9, fiber:3, vitaminA:320, vitaminC:42, iron:2.8, calcium:180 },
-    cost: { total:208, perServing:52 }
-  },
-  {
-    id:2, title:"Ginisang Monggo",
-    img:"https://panlasangpinoy.com/wp-content/uploads/2018/05/ginisang-munggo.jpg",
-    category:"Main Dish", servings:5, prepTime:10, cookTime:40,
-    valueScore:11.4, nutritionScore:92, costPerServing:28, calories:180, protein:11, carbs:22, fat:4, fiber:8,
-    vitaminC:18, iron:3.2, calcium:90,
-    ingredients:[
-      {name:"Monggo (Mung Beans)", qty:"250g", price:80, unit:"kg"},
-      {name:"Kangkong", qty:"1 bundle", price:15, unit:"bundle"},
-      {name:"Baboy (Kasim)", qty:"150g", price:260, unit:"kg"},
-      {name:"Bawang (Garlic)", qty:"4 cloves (20g)", price:220, unit:"kg"},
-      {name:"Sibuyas (Onion)", qty:"1 pc (80g)", price:100, unit:"kg"},
-      {name:"Kamatis (Tomato)", qty:"2 pcs (150g)", price:80, unit:"kg"},
-    ],
-    instructions:[
-      "Wash monggo beans and soak in water for 30 minutes (optional, speeds cooking).",
-      "Boil monggo in 4 cups water until soft and skin starts to split, about 30-40 minutes.",
-      "In a separate pan, sauté garlic, onion, and kamatis in a little oil until softened.",
-      "Add pork and cook until lightly browned. Season with patis.",
-      "Pour in the cooked monggo with its liquid. Stir and simmer for 5 minutes.",
-      "Add kangkong leaves. Cook for 2 more minutes. Adjust seasoning.",
-      "Serve with steamed rice and fried fish on the side."
-    ],
-    nutrition: { calories:180, protein:11, carbs:22, fat:4, fiber:8, vitaminA:280, vitaminC:18, iron:3.2, calcium:90 },
-    cost: { total:140, perServing:28 }
-  },
-  {
-    id:3, title:"Tinolang Manok",
-    img:"https://panlasangpinoy.com/wp-content/uploads/2016/07/tinolang-manok.jpg",
-    category:"Soup", servings:5, prepTime:15, cookTime:35,
-    valueScore:8.7, nutritionScore:81, costPerServing:48, calories:195, protein:22, carbs:10, fat:7, fiber:2,
-    vitaminC:35, iron:2.1, calcium:95,
-    ingredients:[
-      {name:"Manok (Whole)", qty:"1 kg", price:175, unit:"kg"},
-      {name:"Sayote", qty:"1 pc (300g)", price:45, unit:"kg"},
-      {name:"Luya (Ginger)", qty:"50g", price:120, unit:"kg"},
-      {name:"Bawang (Garlic)", qty:"4 cloves", price:220, unit:"kg"},
-      {name:"Sibuyas (Onion)", qty:"1 pc", price:100, unit:"kg"},
-      {name:"Dahon ng Sili", qty:"1 cup", price:10, unit:"bundle"},
-    ],
-    instructions:[
-      "Cut chicken into serving pieces. Wash and set aside.",
-      "In a pot, sauté ginger until slightly brown. Add garlic and onion, cook until translucent.",
-      "Add chicken pieces and cook until slightly browned on all sides.",
-      "Pour in 6 cups of water. Bring to a boil, then lower heat and simmer for 20 minutes.",
-      "Add sayote wedges and cook for 5-7 minutes until tender.",
-      "Season with patis. Add dahon ng sili and turn off heat.",
-      "Cover pot for 2 minutes before serving."
-    ],
-    nutrition: { calories:195, protein:22, carbs:10, fat:7, fiber:2, vitaminA:180, vitaminC:35, iron:2.1, calcium:95 },
-    cost: { total:240, perServing:48 }
-  },
-  {
-    id:4, title:"Adobong Manok",
-    img:"https://panlasangpinoy.com/wp-content/uploads/2016/06/chicken-adobo.jpg",
-    category:"Main Dish", servings:4, prepTime:10, cookTime:45,
-    valueScore:7.5, nutritionScore:76, costPerServing:58, calories:320, protein:28, carbs:5, fat:20, fiber:0.5,
-    vitaminC:2, iron:1.8, calcium:40,
-    ingredients:[
-      {name:"Manok (Whole)", qty:"1 kg", price:175, unit:"kg"},
-      {name:"Toyo (Soy Sauce)", qty:"½ cup (120ml)", price:50, unit:"liter"},
-      {name:"Suka (Vinegar)", qty:"¼ cup (60ml)", price:40, unit:"liter"},
-      {name:"Bawang (Garlic)", qty:"1 head (40g)", price:220, unit:"kg"},
-      {name:"Dahon ng Laurel", qty:"3 pcs", price:5, unit:"pack"},
-    ],
-    instructions:[
-      "Combine chicken pieces with soy sauce, vinegar, garlic, and bay leaves. Marinate 30 minutes.",
-      "Transfer everything to a pot. Bring to a boil over high heat.",
-      "Lower heat and simmer uncovered for 20-25 minutes until chicken is cooked through.",
-      "Remove chicken pieces and set aside. Continue reducing the sauce.",
-      "Optional: pan-fry chicken in oil for 5 minutes until golden.",
-      "Return chicken to pot with the reduced sauce. Toss to coat well.",
-      "Serve with steamed rice."
-    ],
-    nutrition: { calories:320, protein:28, carbs:5, fat:20, fiber:0.5, vitaminA:60, vitaminC:2, iron:1.8, calcium:40 },
-    cost: { total:232, perServing:58 }
-  },
-  {
-    id:5, title:"Pakbet Ilocano",
-    img:"https://panlasangpinoy.com/wp-content/uploads/2016/07/pakbet.jpg",
-    category:"Vegetable Dish", servings:4, prepTime:20, cookTime:25,
-    valueScore:12.8, nutritionScore:95, costPerServing:22, calories:140, protein:7, carbs:16, fat:5, fiber:6,
-    vitaminC:55, iron:3.5, calcium:110,
-    ingredients:[
-      {name:"Ampalaya", qty:"1 pc (200g)", price:80, unit:"kg"},
-      {name:"Talong", qty:"2 pcs (200g)", price:65, unit:"kg"},
-      {name:"Okra", qty:"100g", price:80, unit:"kg"},
-      {name:"Sitaw", qty:"100g", price:65, unit:"kg"},
-      {name:"Kalabasa", qty:"200g", price:45, unit:"kg"},
-      {name:"Kamatis (Tomato)", qty:"2 pcs", price:80, unit:"kg"},
-      {name:"Baboy (Kasim)", qty:"100g", price:260, unit:"kg"},
-    ],
-    instructions:[
-      "Cut all vegetables into bite-sized pieces.",
-      "In a pot, sauté garlic and onion in oil. Add pork and cook until lightly browned.",
-      "Add kamatis and cook until softened.",
-      "Add kalabasa first (takes longest to cook). Cover and cook 5 minutes.",
-      "Add talong, sitaw, and okra. Season with bagoong or patis.",
-      "Add ampalaya last. Cover and steam-cook 5-8 minutes — do not overcook.",
-      "Adjust seasoning and serve immediately with steamed rice."
-    ],
-    nutrition: { calories:140, protein:7, carbs:16, fat:5, fiber:6, vitaminA:580, vitaminC:55, iron:3.5, calcium:110 },
-    cost: { total:88, perServing:22 }
-  },
-  {
-    id:6, title:"Sinigang na Hipon",
-    img:"https://panlasangpinoy.com/wp-content/uploads/2013/01/sinigang-na-hipon-2.jpg",
-    category:"Soup", servings:4, prepTime:15, cookTime:20,
-    valueScore:8.1, nutritionScore:85, costPerServing:115, calories:155, protein:20, carbs:7, fat:3, fiber:3,
-    vitaminC:38, iron:3.1, calcium:200,
-    ingredients:[
-      {name:"Hipon (Medium)", qty:"500g", price:360, unit:"kg"},
-      {name:"Kangkong", qty:"1 bundle", price:15, unit:"bundle"},
-      {name:"Kamatis (Tomato)", qty:"3 pcs", price:80, unit:"kg"},
-      {name:"Labanos", qty:"1 pc (200g)", price:55, unit:"kg"},
-      {name:"Sibuyas (Onion)", qty:"1 pc", price:100, unit:"kg"},
-    ],
-    instructions:[
-      "Clean and devein shrimp. Keep shells on for more flavor.",
-      "Boil water with kamatis and sibuyas for 5 minutes.",
-      "Add labanos and cook 3 minutes.",
-      "Add shrimp and sinigang mix. Cook just 3-4 minutes until shrimp turn pink.",
-      "Add kangkong last. Season with patis. Turn off heat immediately.",
-      "Serve hot with steamed rice."
-    ],
-    nutrition: { calories:155, protein:20, carbs:7, fat:3, fiber:3, vitaminA:150, vitaminC:38, iron:3.1, calcium:200 },
-    cost: { total:460, perServing:115 }
-  },
-  {
-    id:7, title:"Nilagang Baka",
-    img:"https://panlasangpinoy.com/wp-content/uploads/2016/06/nilaga.jpg",
-    category:"Soup", servings:5, prepTime:10, cookTime:90,
-    valueScore:6.2, nutritionScore:78, costPerServing:96, calories:280, protein:26, carbs:12, fat:14, fiber:3,
-    vitaminC:28, iron:3.8, calcium:60,
-    ingredients:[
-      {name:"Karne ng Baka", qty:"500g", price:410, unit:"kg"},
-      {name:"Repolyo", qty:"¼ head (200g)", price:55, unit:"kg"},
-      {name:"Pechay (Native)", qty:"2 bundles", price:15, unit:"bundle"},
-      {name:"Kamote", qty:"2 pcs (200g)", price:55, unit:"kg"},
-      {name:"Sibuyas (Onion)", qty:"1 pc", price:100, unit:"kg"},
-    ],
-    instructions:[
-      "Boil beef with onion and peppercorns. Skim off foam.",
-      "Lower heat. Simmer 1.5 hours until beef is very tender.",
-      "Add kamote wedges. Cook 10 minutes.",
-      "Add repolyo. Cook 5 minutes more.",
-      "Add pechay last. Season generously with salt and fish sauce.",
-      "Serve immediately while piping hot."
-    ],
-    nutrition: { calories:280, protein:26, carbs:12, fat:14, fiber:3, vitaminA:120, vitaminC:28, iron:3.8, calcium:60 },
-    cost: { total:480, perServing:96 }
-  },
-  {
-    id:8, title:"Ginisang Kangkong",
-    img:"https://panlasangpinoy.com/wp-content/uploads/2019/05/sauteed-water-spinach.jpg",
-    category:"Vegetable Dish", servings:3, prepTime:5, cookTime:10,
-    valueScore:14.6, nutritionScore:88, costPerServing:15, calories:95, protein:6, carbs:8, fat:4, fiber:5,
-    vitaminC:48, iron:4.2, calcium:195,
-    ingredients:[
-      {name:"Kangkong", qty:"2 bundles", price:15, unit:"bundle"},
-      {name:"Bawang (Garlic)", qty:"5 cloves", price:220, unit:"kg"},
-      {name:"Baboy (Kasim)", qty:"50g", price:260, unit:"kg"},
-      {name:"Toyo (Soy Sauce)", qty:"2 tbsp", price:50, unit:"liter"},
-    ],
-    instructions:[
-      "Separate kangkong leaves from stems. Cut stems into 2-inch pieces.",
-      "Heat oil in a wok or pan. Sauté garlic until golden.",
-      "Add pork pieces and cook until done.",
-      "Add kangkong stems first, stir-fry 1 minute.",
-      "Add leaves. Splash with soy sauce. Toss quickly over high heat.",
-      "Season with salt. Serve immediately — kangkong wilts fast!"
-    ],
-    nutrition: { calories:95, protein:6, carbs:8, fat:4, fiber:5, vitaminA:960, vitaminC:48, iron:4.2, calcium:195 },
-    cost: { total:45, perServing:15 }
-  },
+// ═══════════════ INGREDIENT REFERENCE (per 100g/100ml, FNRI-style) ═══════════════
+// nutr = [calories, protein(g), carbs(g), fat(g), fiber(g), vitaminA(mcg), vitaminC(mg), iron(mg), calcium(mg)]
+// pricePer100 = derived from DA_PRICES avg ÷ (grams or ml per purchase unit) × 100 — keeps cost cross-checkable.
+const PP = (slug) => `https://panlasangpinoy.com/wp-content/uploads/2021/04/${slug}.jpg`;
+
+const INGREDIENTS = {
+  bangus:        { label:"Bangus (Milkfish)",      unit:"g",  nutr:[148,20.5,0,6.7,0,30,0,1.0,30],   pricePer100:20,   da:["Bangus","kg",200] },
+  tilapia:       { label:"Tilapia",                 unit:"g",  nutr:[96,20.1,0,1.7,0,17,0,0.6,14],    pricePer100:14.5, da:["Tilapia","kg",145] },
+  galunggong:    { label:"Galunggong (Round Scad)", unit:"g",  nutr:[109,22,0,1.8,0,30,0,1.3,27],     pricePer100:19,   da:["Galunggong","kg",190] },
+  hipon:         { label:"Hipon (Shrimp)",          unit:"g",  nutr:[99,24,0.2,0.3,0,33,1.7,0.5,70],  pricePer100:36,   da:["Hipon (Medium)","kg",360] },
+  pusit:         { label:"Pusit (Squid)",           unit:"g",  nutr:[92,15.6,3.1,1.4,0,10,1.8,0.7,32],pricePer100:33,   da:["Pusit","kg",330] },
+  manok:         { label:"Manok (Whole Chicken)",   unit:"g",  nutr:[215,18.6,0,15,0,41,1.2,1.0,11],  pricePer100:17.5, da:["Manok (Whole)","kg",175] },
+  manok_breast:  { label:"Manok (Chicken Breast)",  unit:"g",  nutr:[165,31,0,3.6,0,16,0,0.7,15],     pricePer100:22.5, da:["Manok (Breast)","kg",225] },
+  baboy_kasim:   { label:"Baboy (Pork Shoulder)",   unit:"g",  nutr:[242,17,0,19,0,2,0.6,0.9,19],     pricePer100:26,   da:["Baboy (Kasim)","kg",260] },
+  baboy_liempo:  { label:"Baboy (Pork Belly)",      unit:"g",  nutr:[518,9.3,0,53,0,2,0,0.8,15],      pricePer100:29,   da:["Baboy (Liempo)","kg",290] },
+  baka:          { label:"Karne ng Baka (Beef)",    unit:"g",  nutr:[205,26,0,11,0,0,0,2.6,18],       pricePer100:41,   da:["Karne ng Baka","kg",410] },
+  itlog:         { label:"Itlog (Egg)",             unit:"g",  nutr:[155,13,1.1,11,0,160,0,1.8,56],   pricePer100:16,   da:["Itlog (Manok)","pc (50g)",8] },
+  tokwa:         { label:"Tokwa (Tofu)",            unit:"g",  nutr:[76,8,1.9,4.8,0.3,0,0.1,5.4,350], pricePer100:8,    da:["Tokwa","kg",80] },
+  monggo:        { label:"Monggo (Mung Beans, dried)", unit:"g", nutr:[347,24,63,1.2,16.3,6,4.8,6.7,132], pricePer100:8, da:["Monggo","kg",80] },
+  liver_pork:    { label:"Atay ng Baboy (Pork Liver)", unit:"g", nutr:[134,21,2.5,3.7,0,9442,23,18,8],  pricePer100:18,  da:["Atay ng Baboy","kg",180] },
+  kangkong:      { label:"Kangkong (Water Spinach)", unit:"g", nutr:[19,2.6,3.1,0.2,2.1,315,55,2.5,99], pricePer100:6,   da:["Kangkong","bundle (250g)",15] },
+  ampalaya:      { label:"Ampalaya (Bitter Gourd)", unit:"g",  nutr:[25,1.0,5.7,0.2,2.8,24,84,0.4,19], pricePer100:8,    da:["Ampalaya","kg",80] },
+  talong:        { label:"Talong (Eggplant)",       unit:"g",  nutr:[25,1.0,5.9,0.2,3.0,1,2.2,0.2,9],  pricePer100:6.5,  da:["Talong","kg",65] },
+  sitaw:         { label:"Sitaw (String Beans)",    unit:"g",  nutr:[47,2.8,8.4,0.3,3.4,35,16.3,1.0,50], pricePer100:6.5, da:["Sitaw","kg",65] },
+  kamatis:       { label:"Kamatis (Tomato)",        unit:"g",  nutr:[18,0.9,3.9,0.2,1.2,42,14,0.3,10], pricePer100:8,    da:["Kamatis","kg",80] },
+  sibuyas:       { label:"Sibuyas (Onion)",         unit:"g",  nutr:[40,1.1,9.3,0.1,1.7,0,7.4,0.2,23], pricePer100:10,   da:["Sibuyas (Local)","kg",120] },
+  bawang:        { label:"Bawang (Garlic)",         unit:"g",  nutr:[149,6.4,33,0.5,2.1,0,31,1.7,181], pricePer100:22,   da:["Bawang (Local)","kg",220] },
+  luya:          { label:"Luya (Ginger)",           unit:"g",  nutr:[80,1.8,18,0.8,2.0,0,5,0.6,16],   pricePer100:12,   da:["Luya","kg",120] },
+  sayote:        { label:"Sayote (Chayote)",        unit:"g",  nutr:[19,0.8,4.5,0.1,1.7,1,7.7,0.3,17], pricePer100:4.5,  da:["Sayote","kg",45] },
+  kalabasa:      { label:"Kalabasa (Squash)",       unit:"g",  nutr:[26,1.0,6.5,0.1,0.5,369,9,0.8,21], pricePer100:4.5,  da:["Kalabasa","kg",45] },
+  okra:          { label:"Okra",                    unit:"g",  nutr:[33,1.9,7.5,0.2,3.2,36,23,0.6,82], pricePer100:8,    da:["Okra","kg",80] },
+  repolyo:       { label:"Repolyo (Cabbage)",       unit:"g",  nutr:[25,1.3,5.8,0.1,2.5,5,36.6,0.5,40], pricePer100:5.5, da:["Repolyo","kg",55] },
+  pechay:        { label:"Pechay (Bok Choy)",       unit:"g",  nutr:[13,1.5,2.2,0.2,1.0,243,45,0.8,105], pricePer100:7.5, da:["Pechay (Native)","bundle (200g)",15] },
+  labanos:       { label:"Labanos (Radish)",        unit:"g",  nutr:[16,0.7,3.4,0.1,1.6,0,14.8,0.3,25], pricePer100:5.5, da:["Labanos","kg",55] },
+  kamote:        { label:"Kamote (Sweet Potato)",   unit:"g",  nutr:[86,1.6,20,0.1,3.0,709,2.4,0.6,30], pricePer100:5.5, da:["Kamote","kg",55] },
+  gabi:          { label:"Gabi (Taro)",             unit:"g",  nutr:[112,1.5,26,0.2,4.1,0,4.5,0.6,43], pricePer100:6.5,  da:["Gabi","kg",65] },
+  taro_leaves:   { label:"Dahon ng Gabi (Taro Leaves)", unit:"g", nutr:[42,4.7,6.4,0.6,3.7,281,52,1.5,91], pricePer100:7.5, da:["Dahon ng Gabi","bundle (200g)",30] },
+  malunggay:     { label:"Malunggay (Moringa Leaves)", unit:"g", nutr:[64,9.4,8.3,1.4,2.0,378,51.7,4.0,185], pricePer100:10, da:["Malunggay","bundle (100g)",10] },
+  baguio_beans:  { label:"Baguio Beans",            unit:"g",  nutr:[31,1.8,7.0,0.2,3.4,35,16,1.0,37], pricePer100:11,   da:["Baguio Beans","kg",110] },
+  carrot:        { label:"Carrot",                  unit:"g",  nutr:[41,0.9,9.6,0.2,2.8,835,5.9,0.3,33], pricePer100:10.5, da:["Carrot","kg",105] },
+  bigas:         { label:"Bigas (Rice, raw)",       unit:"g",  nutr:[365,7.1,80,0.7,1.3,0,0,0.8,28],  pricePer100:5.2,  da:["Bigas (Well-milled)","kg",52] },
+  toyo:          { label:"Toyo (Soy Sauce)",        unit:"ml", nutr:[60,8,6,0,0,0,0,2,20],            pricePer100:5,    da:["Toyo","liter",50] },
+  suka:          { label:"Suka (Vinegar)",          unit:"ml", nutr:[18,0,0.4,0,0,0,0,0.2,6],         pricePer100:4,    da:["Suka","liter",40] },
+  patis:         { label:"Patis (Fish Sauce)",      unit:"ml", nutr:[35,5,3,0,0,0,0,1,30],            pricePer100:6.5,  da:["Patis","liter",65] },
+  mantika:       { label:"Mantika (Cooking Oil)",   unit:"ml", nutr:[884,0,0,100,0,0,0,0,0],          pricePer100:10,   da:["Mantika (Niyog)","liter",100] },
+  gata:          { label:"Gata (Coconut Milk)",     unit:"ml", nutr:[230,2.3,5.5,24,2.2,0,1.0,1.6,16],pricePer100:15,   da:["Gata","can (400ml)",60] },
+  kalamansi:     { label:"Kalamansi",               unit:"g",  nutr:[30,0.7,10,0.2,1.0,20,30,0.3,19], pricePer100:8,    da:["Kalamansi","kg",80] },
+  bagoong:       { label:"Bagoong Alamang (Shrimp Paste)", unit:"g", nutr:[90,12,4,2,0,30,0,2,130],   pricePer100:15,   da:["Bagoong Alamang","kg",150] },
+  mani:          { label:"Mani (Ground Peanuts)",   unit:"g",  nutr:[588,25,20,50,6,0,0,1.9,49],      pricePer100:22,   da:["Mani (Giniling)","kg",220] },
+};
+
+// ═══════════════ RECIPES — composed from ingredient quantities ═══════════════
+// Each recipe lists [ingredientKey, grams_or_ml]. Nutrition, cost, and scores are
+// COMPUTED from these quantities × the reference table above (see computeRecipe),
+// so every figure shown is mathematically traceable to the amounts actually used.
+const RAW_RECIPES = [
+  { id:1, title:"Sinigang na Bangus", category:"Soup", servings:4, prepTime:15, cookTime:30,
+    composition:[["bangus",600],["kamatis",150],["kangkong",150],["sibuyas",80],["labanos",150],["sitaw",80]],
+    instructions:["Clean and cut bangus into serving pieces; season lightly with salt.","Boil water with kamatis and sibuyas for 5 minutes, then add bangus and simmer 8 minutes.","Add labanos and sitaw, cook 3 minutes, then stir in sinigang mix or sampaloc to taste.","Add kangkong last, season with patis, and simmer 2 minutes before serving with rice."] },
+  { id:2, title:"Sinigang na Hipon", category:"Soup", servings:4, prepTime:15, cookTime:20,
+    composition:[["hipon",400],["kamatis",150],["kangkong",150],["labanos",150],["sibuyas",80]],
+    instructions:["Clean and devein shrimp, keeping shells on for flavor.","Boil water with kamatis and sibuyas for 5 minutes, then add labanos and cook 3 minutes.","Add shrimp and souring agent; cook just 3-4 minutes until shrimp turn pink.","Add kangkong, season with patis, and serve immediately with rice."] },
+  { id:3, title:"Sinigang na Baboy", category:"Soup", servings:5, prepTime:15, cookTime:60,
+    composition:[["baboy_liempo",600],["kamatis",150],["kangkong",150],["labanos",150],["sitaw",100],["gabi",150]],
+    instructions:["Boil pork belly in water until tender, about 40 minutes, skimming the scum.","Add kamatis and sibuyas, simmer 5 minutes, then add gabi and cook until soft.","Add labanos and sitaw; stir in souring agent (tamarind or mix) to taste.","Add kangkong last, season with patis, and serve hot with rice."] },
+  { id:4, title:"Ginisang Monggo", category:"Main Dish", servings:5, prepTime:10, cookTime:40,
+    composition:[["monggo",200],["kangkong",150],["baboy_kasim",150],["bawang",20],["sibuyas",80],["kamatis",100]],
+    instructions:["Boil monggo beans in water until soft, about 30-40 minutes.","Sauté garlic, onion, and tomato; add pork and cook until lightly browned.","Pour in the cooked monggo with its broth, season with patis, and simmer 10 minutes.","Add kangkong leaves, simmer 2 minutes more, and serve with rice."] },
+  { id:5, title:"Ginisang Kangkong", category:"Vegetable Dish", servings:3, prepTime:5, cookTime:10,
+    composition:[["kangkong",400],["bawang",20],["baboy_kasim",50],["toyo",30]],
+    instructions:["Separate kangkong leaves from stems; cut stems into short lengths.","Sauté garlic until golden, then add pork and cook through.","Add kangkong stems, stir-fry briefly, then add leaves and splash with soy sauce.","Toss quickly over high heat and serve immediately."] },
+  { id:6, title:"Ginisang Ampalaya with Egg", category:"Vegetable Dish", servings:3, prepTime:10, cookTime:15,
+    composition:[["ampalaya",300],["itlog",100],["kamatis",80],["sibuyas",60],["bawang",15]],
+    instructions:["Slice ampalaya thinly, salt briefly, then rinse to reduce bitterness.","Sauté garlic, onion, and tomato until softened.","Add ampalaya and cook until just tender, about 5 minutes.","Push to the side, scramble in the eggs, then mix everything together and serve."] },
+  { id:7, title:"Ginisang Sitaw with Pork", category:"Vegetable Dish", servings:4, prepTime:10, cookTime:20,
+    composition:[["sitaw",300],["baboy_kasim",150],["kamatis",100],["bawang",15],["sibuyas",60]],
+    instructions:["Cut sitaw into two-inch lengths.","Sauté garlic, onion, and tomato; add pork and cook until browned.","Add sitaw and a splash of water; cover and simmer until tender-crisp.","Season with patis and serve hot with rice."] },
+  { id:8, title:"Pakbet Ilocano", category:"Vegetable Dish", servings:4, prepTime:20, cookTime:25,
+    composition:[["ampalaya",150],["talong",150],["okra",100],["sitaw",100],["kalabasa",150],["kamatis",100],["baboy_liempo",150],["bagoong",20]],
+    instructions:["Cut all vegetables into bite-sized pieces.","Sauté garlic, onion, and tomato; add pork and cook until lightly browned.","Add kalabasa first (longest to cook), cover and simmer 5 minutes, then add the rest except ampalaya.","Stir in bagoong, add ampalaya last, and steam-cook briefly without overcooking."] },
+  { id:9, title:"Pinakbet Tagalog", category:"Vegetable Dish", servings:4, prepTime:20, cookTime:25,
+    composition:[["talong",150],["kalabasa",200],["sitaw",100],["okra",100],["kamatis",100],["hipon",100],["bagoong",15]],
+    instructions:["Cut vegetables into bite-sized pieces.","Sauté garlic, onion, and tomato; add shrimp and cook briefly.","Add kalabasa, cover, and simmer until almost tender, then add remaining vegetables.","Season with bagoong, simmer until just cooked, and serve with rice."] },
+  { id:10, title:"Tinolang Manok", category:"Soup", servings:5, prepTime:15, cookTime:35,
+    composition:[["manok",700],["sayote",250],["luya",30],["bawang",15],["sibuyas",60],["malunggay",50]],
+    instructions:["Sauté ginger, garlic, and onion until fragrant.","Add chicken pieces and cook until lightly browned.","Pour in water, bring to a boil, then simmer 20 minutes until chicken is tender.","Add sayote, cook until tender, then stir in malunggay leaves and season with patis."] },
+  { id:11, title:"Adobong Manok", category:"Main Dish", servings:4, prepTime:10, cookTime:45,
+    composition:[["manok",700],["toyo",90],["suka",60],["bawang",30],["mantika",15]],
+    instructions:["Marinate chicken in soy sauce, vinegar, garlic, and bay leaves for 30 minutes.","Bring everything to a boil in a pot, then lower heat and simmer 25 minutes.","Remove chicken, sear in oil until golden, then return to the reduced sauce.","Toss to coat well and serve with steamed rice."] },
+  { id:12, title:"Adobong Baboy", category:"Main Dish", servings:4, prepTime:10, cookTime:45,
+    composition:[["baboy_liempo",700],["toyo",90],["suka",60],["bawang",30],["mantika",15]],
+    instructions:["Marinate pork in soy sauce, vinegar, garlic, and bay leaves for 30 minutes.","Simmer in a pot until the pork is tender and the sauce reduces.","Sear the pork pieces in a little oil until lightly crisped.","Return to the sauce, toss to coat, and serve with rice."] },
+  { id:13, title:"Adobong Pusit", category:"Main Dish", servings:3, prepTime:15, cookTime:20,
+    composition:[["pusit",500],["toyo",60],["suka",40],["bawang",25],["sibuyas",60]],
+    instructions:["Clean squid and slice into rings, keeping the ink sac if available.","Sauté garlic and onion until fragrant.","Add squid, soy sauce, and vinegar; simmer briefly — do not overcook the squid.","Season to taste and serve hot with rice."] },
+  { id:14, title:"Nilagang Baka", category:"Soup", servings:5, prepTime:10, cookTime:90,
+    composition:[["baka",600],["repolyo",200],["pechay",150],["kamote",200],["sibuyas",80]],
+    instructions:["Boil beef with onion, skimming off the foam, until very tender (about 1.5 hours).","Add kamote wedges and cook 10 minutes.","Add cabbage and cook 5 minutes more.","Add pechay last, season with salt and fish sauce, and serve hot."] },
+  { id:15, title:"Bulalo", category:"Soup", servings:5, prepTime:15, cookTime:120,
+    composition:[["baka",700],["repolyo",150],["kamote",200],["sibuyas",80],["sitaw",80],["baguio_beans",80]],
+    instructions:["Simmer beef shank and bone marrow in water for about two hours until very tender.","Add kamote and simmer until soft.","Add cabbage, sitaw, and baguio beans; cook until just tender.","Season with salt and pepper, and serve piping hot."] },
+  { id:16, title:"Kare-Kare", category:"Main Dish", servings:5, prepTime:25, cookTime:120,
+    composition:[["baka",600],["talong",150],["sitaw",100],["kalabasa",150],["mani",80],["bagoong",30]],
+    instructions:["Simmer beef (oxtail or shank cuts) until tender, reserving the broth.","Make the sauce by toasting rice flour and blending with ground peanuts and broth.","Add the beef and vegetables to the peanut sauce and simmer until vegetables are tender.","Serve with sautéed shrimp paste (bagoong) on the side."] },
+  { id:17, title:"Bicol Express", category:"Main Dish", servings:4, prepTime:15, cookTime:35,
+    composition:[["baboy_liempo",500],["gata",400],["sibuyas",60],["bawang",20],["bagoong",30]],
+    instructions:["Sauté garlic, onion, and chilies in oil until fragrant.","Add sliced pork belly and cook until lightly browned.","Pour in coconut milk and shrimp paste, and simmer until the sauce thickens.","Adjust seasoning with chilies and serve with rice."] },
+  { id:18, title:"Laing", category:"Vegetable Dish", servings:4, prepTime:20, cookTime:45,
+    composition:[["taro_leaves",250],["gata",400],["baboy_liempo",150],["bagoong",20],["luya",15],["sibuyas",60]],
+    instructions:["Layer dried taro leaves in a pot with sliced pork, ginger, onion, and chilies.","Pour in coconut milk without stirring (to prevent the leaves from itching).","Simmer slowly over low heat until the leaves are tender and the sauce thickens.","Stir in shrimp paste at the end and simmer briefly before serving."] },
+  { id:19, title:"Ginataang Gulay", category:"Vegetable Dish", servings:4, prepTime:15, cookTime:25,
+    composition:[["kalabasa",250],["sitaw",150],["gata",300],["hipon",150],["bawang",15]],
+    instructions:["Sauté garlic and shrimp briefly until shrimp turn pink; set shrimp aside.","Add kalabasa and coconut milk, and simmer until squash softens.","Add sitaw and cook until tender-crisp.","Return shrimp to the pot, season with patis, and simmer briefly before serving."] },
+  { id:20, title:"Chopsuey", category:"Vegetable Dish", servings:4, prepTime:20, cookTime:15,
+    composition:[["kalabasa",100],["baguio_beans",100],["repolyo",150],["carrot",80],["sitaw",80],["hipon",100],["manok_breast",100]],
+    instructions:["Sauté garlic and onion; add chicken and shrimp and cook until done.","Add the harder vegetables (carrot, baguio beans, kalabasa) first and stir-fry briefly.","Add cabbage and sitaw, and stir-fry until just tender-crisp.","Season with a little soy sauce and oyster sauce, and serve hot."] },
+  { id:21, title:"Lumpiang Gulay", category:"Vegetable Dish", servings:5, prepTime:30, cookTime:25,
+    composition:[["kalabasa",150],["baguio_beans",100],["carrot",100],["sitaw",80],["baboy_kasim",100],["bawang",15]],
+    instructions:["Julienne all the vegetables finely.","Sauté garlic and pork until cooked, then add the vegetables and stir-fry until just wilted.","Season with patis and let the mixture cool slightly.","Wrap in spring roll wrappers and serve fresh or lightly fried."] },
+  { id:22, title:"Tortang Talong", category:"Vegetable Dish", servings:3, prepTime:15, cookTime:15,
+    composition:[["talong",300],["itlog",150],["sibuyas",40],["mantika",30]],
+    instructions:["Grill the eggplants until the skin chars, then peel and flatten.","Beat eggs with chopped onion and a pinch of salt.","Dip the flattened eggplant in the egg mixture.","Pan-fry until golden on both sides and serve with rice and ketchup or vinegar dip."] },
+  { id:23, title:"Tortang Giniling", category:"Main Dish", servings:4, prepTime:15, cookTime:20,
+    composition:[["baka",300],["itlog",150],["sibuyas",60],["kamatis",80],["mantika",20]],
+    instructions:["Sauté garlic, onion, and tomato; add ground beef and cook until browned.","Let the mixture cool slightly, then mix in the beaten eggs.","Pour spoonfuls onto a hot, oiled pan and fry until set on both sides.","Serve hot with rice and ketchup."] },
+  { id:24, title:"Sinigang na Baboy sa Miso", category:"Soup", servings:5, prepTime:15, cookTime:60,
+    composition:[["baboy_liempo",600],["kamatis",100],["kangkong",150],["labanos",100],["sitaw",100],["toyo",40]],
+    instructions:["Boil pork until tender, skimming off the scum.","Add kamatis and a souring agent, and simmer to develop the broth.","Stir in miso (soybean paste) and simmer 10 minutes for depth of flavor.","Add labanos, sitaw, and kangkong; season with soy sauce and serve hot."] },
+  { id:25, title:"Paksiw na Bangus", category:"Main Dish", servings:4, prepTime:10, cookTime:30,
+    composition:[["bangus",700],["suka",100],["luya",30],["sibuyas",60],["talong",100]],
+    instructions:["Arrange bangus, ginger, onion, and talong in a pot.","Pour in vinegar and a little water; do not stir.","Bring to a boil uncovered, then cover and simmer until the fish is cooked through.","Season with salt and pepper and serve with rice."] },
+  { id:26, title:"Paksiw na Galunggong", category:"Main Dish", servings:4, prepTime:10, cookTime:25,
+    composition:[["galunggong",600],["suka",80],["luya",25],["sibuyas",60],["ampalaya",100]],
+    instructions:["Arrange fish, ginger, onion, and ampalaya in a shallow pan.","Add vinegar and a splash of water; bring to a boil without stirring.","Cover and simmer until the fish is cooked and the sauce reduces slightly.","Serve with steamed rice."] },
+  { id:27, title:"Escabecheng Isda", category:"Main Dish", servings:4, prepTime:20, cookTime:25,
+    composition:[["tilapia",700],["suka",80],["sibuyas",80],["carrot",80],["kamatis",60],["mantika",40]],
+    instructions:["Fry the fish until golden and crisp; set aside.","Sauté garlic, onion, carrot, and tomato in a little oil.","Add vinegar, sugar, and a splash of water; simmer to make a sweet-sour sauce.","Pour the sauce over the fried fish and serve immediately."] },
+  { id:28, title:"Inihaw na Bangus", category:"Main Dish", servings:4, prepTime:20, cookTime:20,
+    composition:[["bangus",800],["kalamansi",40],["toyo",30],["luya",20],["sibuyas",60]],
+    instructions:["Butterfly the bangus and marinate in soy sauce, calamansi, and ginger for 20 minutes.","Stuff the cavity with chopped tomato and onion.","Grill over charcoal until cooked through and lightly charred.","Serve with a soy-calamansi dipping sauce and rice."] },
+  { id:29, title:"Daing na Bangus", category:"Main Dish", servings:4, prepTime:20, cookTime:15,
+    composition:[["bangus",800],["suka",60],["bawang",30],["mantika",30]],
+    instructions:["Marinate butterflied bangus in vinegar, crushed garlic, salt, and pepper overnight.","Drain well before frying.","Fry in hot oil until golden and crisp on both sides.","Serve with garlic rice, fried egg, and a vinegar-soy dip."] },
+  { id:30, title:"Sarciadong Isda", category:"Main Dish", servings:4, prepTime:15, cookTime:20,
+    composition:[["tilapia",600],["itlog",100],["kamatis",150],["sibuyas",60],["bawang",15]],
+    instructions:["Fry the fish lightly until just cooked; set aside.","Sauté garlic, onion, and tomato until saucy.","Add a little water and simmer, then return the fish to the sauce.","Drizzle in beaten egg, swirl gently to set, and serve hot with rice."] },
+  { id:31, title:"Ginisang Munggo with Hipon", category:"Main Dish", servings:5, prepTime:10, cookTime:35,
+    composition:[["monggo",200],["hipon",200],["malunggay",60],["bawang",15],["sibuyas",60],["kamatis",80]],
+    instructions:["Boil monggo beans until soft.","Sauté garlic, onion, and tomato; add shrimp and cook briefly.","Combine with the cooked monggo and simmer until well blended.","Stir in malunggay leaves, season with patis, and serve with rice."] },
+  { id:32, title:"Chicken Lugaw", category:"Rice & Noodles", servings:5, prepTime:10, cookTime:40,
+    composition:[["manok",400],["bigas",250],["luya",30],["bawang",15],["sibuyas",60]],
+    instructions:["Sauté ginger, garlic, and onion until fragrant.","Add chicken and rice, and toast briefly in the aromatics.","Pour in water and simmer, stirring occasionally, until the rice breaks down into porridge.","Season with patis and top with toasted garlic and spring onions."] },
+  { id:33, title:"Arroz Caldo", category:"Rice & Noodles", servings:5, prepTime:15, cookTime:45,
+    composition:[["manok",500],["bigas",250],["luya",40],["bawang",20],["sibuyas",60],["itlog",50]],
+    instructions:["Sauté a generous amount of ginger, garlic, and onion until aromatic.","Add chicken pieces and rice; cook briefly to coat in the aromatics.","Pour in broth and simmer, stirring often, until thick and porridge-like.","Top each bowl with a soft-boiled egg, toasted garlic, and scallions."] },
+  { id:34, title:"Plain Lugaw", category:"Rice & Noodles", servings:4, prepTime:5, cookTime:35,
+    composition:[["bigas",250],["luya",25],["bawang",10],["sibuyas",40],["patis",20]],
+    instructions:["Sauté ginger, garlic, and onion in a little oil.","Add rice and water, and bring to a boil.","Simmer over low heat, stirring occasionally, until the rice is fully broken down.","Season with fish sauce and serve with toppings of choice."] },
+  { id:35, title:"Goto", category:"Rice & Noodles", servings:5, prepTime:15, cookTime:90,
+    composition:[["baka",200],["bigas",250],["luya",30],["bawang",20],["sibuyas",60],["itlog",50]],
+    instructions:["Simmer beef tripe (or lean beef) until very tender, reserving the broth.","Sauté ginger, garlic, and onion; add rice and toast briefly.","Pour in the broth and simmer, stirring often, until porridge-like.","Add the cooked meat, top with a soft-boiled egg, and serve hot."] },
+  { id:36, title:"Beef Caldereta", category:"Main Dish", servings:5, prepTime:20, cookTime:120,
+    composition:[["baka",700],["kamatis",150],["carrot",100],["kamote",150],["mani",30],["gata",100],["bawang",20],["sibuyas",80]],
+    instructions:["Sauté garlic, onion, and tomato; brown the beef chunks.","Add water or broth and simmer until the beef is tender.","Add carrots and potatoes (or kamote), and stir in peanut butter and a splash of coconut milk or cream.","Simmer until the sauce thickens and vegetables are tender; serve with rice."] },
+  { id:37, title:"Pork Menudo", category:"Main Dish", servings:5, prepTime:20, cookTime:60,
+    composition:[["baboy_kasim",500],["liver_pork",150],["kamatis",150],["carrot",100],["kamote",150],["sibuyas",80],["bawang",20]],
+    instructions:["Sauté garlic, onion, and tomato; add diced pork and cook until browned.","Add liver and cook briefly, then pour in water or broth and simmer until pork is tender.","Add carrots and potatoes, and simmer until vegetables are cooked through.","Season to taste and serve with rice."] },
+  { id:38, title:"Chicken Afritada", category:"Main Dish", servings:5, prepTime:15, cookTime:50,
+    composition:[["manok",700],["kamatis",150],["carrot",100],["kamote",150],["sibuyas",80],["bawang",20]],
+    instructions:["Sauté garlic, onion, and tomato; add chicken pieces and cook until lightly browned.","Pour in water or broth and simmer until the chicken is tender.","Add carrots and potatoes, and cook until vegetables are tender.","Season to taste and serve with steamed rice."] },
+  { id:39, title:"Pork Afritada", category:"Main Dish", servings:5, prepTime:15, cookTime:60,
+    composition:[["baboy_kasim",600],["kamatis",150],["carrot",100],["kamote",150],["sibuyas",80],["bawang",20]],
+    instructions:["Sauté garlic, onion, and tomato; brown the pork pieces.","Add water or broth and simmer until the pork is tender.","Add carrots and potatoes, and cook until tender.","Adjust seasoning and serve with rice."] },
+  { id:40, title:"Bistek Tagalog", category:"Main Dish", servings:4, prepTime:30, cookTime:20,
+    composition:[["baka",600],["toyo",60],["kalamansi",40],["sibuyas",100],["bawang",20],["mantika",20]],
+    instructions:["Marinate thinly sliced beef in soy sauce, calamansi juice, and garlic for at least 30 minutes.","Pan-fry the beef quickly in hot oil; set aside.","In the same pan, sauté onion rings and the marinade until slightly reduced.","Return the beef to the pan, top with onions, and serve with rice."] },
+  { id:41, title:"Pork Sisig", category:"Main Dish", servings:4, prepTime:30, cookTime:60,
+    composition:[["baboy_liempo",600],["liver_pork",100],["sibuyas",100],["kalamansi",30],["toyo",20],["mantika",20]],
+    instructions:["Boil pork (and liver) until tender, then grill until lightly charred.","Chop everything finely and mix with chopped onions and chilies.","Sizzle the mixture on a hot plate with a little oil and butter.","Squeeze calamansi over the top and serve immediately with rice."] },
+  { id:42, title:"Chicken Curry", category:"Main Dish", servings:5, prepTime:15, cookTime:45,
+    composition:[["manok",700],["gata",400],["kalabasa",150],["carrot",100],["sibuyas",80],["bawang",20],["luya",15]],
+    instructions:["Sauté garlic, onion, and ginger; add curry powder and toast briefly.","Add chicken pieces and cook until lightly browned.","Pour in coconut milk and simmer until the chicken is tender.","Add carrots and squash, simmer until vegetables are cooked, and serve with rice."] },
+  { id:43, title:"Ginataang Manok", category:"Main Dish", servings:5, prepTime:15, cookTime:40,
+    composition:[["manok",700],["gata",400],["malunggay",60],["luya",20],["sibuyas",60],["bawang",15]],
+    instructions:["Sauté ginger, garlic, and onion until fragrant.","Add chicken pieces and cook until lightly browned.","Pour in coconut milk and simmer until the chicken is tender and the sauce thickens.","Stir in malunggay leaves, season with patis, and serve with rice."] },
+  { id:44, title:"Dinengdeng", category:"Vegetable Dish", servings:4, prepTime:15, cookTime:20,
+    composition:[["ampalaya",100],["sitaw",100],["talong",100],["okra",100],["kalabasa",100],["bagoong",30],["galunggong",150]],
+    instructions:["Bring water to a boil and dissolve bagoong (fish or shrimp paste) into it.","Add the grilled or fried fish pieces.","Add the vegetables, starting with the ones that take longest to cook.","Simmer until vegetables are just tender and serve with rice."] },
+  { id:45, title:"Chopsuey Gulay (Vegetarian)", category:"Vegetable Dish", servings:4, prepTime:20, cookTime:15,
+    composition:[["kalabasa",100],["baguio_beans",100],["repolyo",150],["carrot",80],["sitaw",80],["tokwa",150],["bawang",15]],
+    instructions:["Pan-fry cubed tofu until golden; set aside.","Sauté garlic and the harder vegetables (carrot, baguio beans, kalabasa) first.","Add cabbage and sitaw, and stir-fry until tender-crisp.","Return the tofu, season lightly with soy sauce, and serve hot."] },
+  { id:46, title:"Munggo Guisado with Malunggay", category:"Main Dish", servings:5, prepTime:10, cookTime:40,
+    composition:[["monggo",200],["malunggay",80],["bawang",15],["sibuyas",60],["kamatis",80],["baboy_kasim",100]],
+    instructions:["Boil monggo beans until soft and the skins split.","Sauté garlic, onion, tomato, and pork until the pork is cooked through.","Combine with the cooked monggo and simmer until well blended.","Stir in malunggay leaves, season with patis, and serve with rice."] },
+  { id:47, title:"Tinolang Isda (Galunggong)", category:"Soup", servings:4, prepTime:15, cookTime:25,
+    composition:[["galunggong",500],["luya",30],["sibuyas",60],["sayote",200],["malunggay",50]],
+    instructions:["Sauté ginger and onion until fragrant.","Add water and bring to a boil, then add the fish and simmer gently.","Add sayote and cook until tender.","Stir in malunggay leaves, season with patis, and serve hot."] },
+  { id:48, title:"Sinampalukang Manok", category:"Soup", servings:5, prepTime:15, cookTime:40,
+    composition:[["manok",700],["kangkong",150],["sitaw",100],["kamatis",150],["sibuyas",60]],
+    instructions:["Sauté garlic, onion, and tomato; add chicken pieces and cook until lightly browned.","Pour in water and simmer until the chicken is tender.","Stir in tamarind (sampalok) base for a sour broth, then add sitaw.","Add kangkong last, season with patis, and serve hot with rice."] },
+  { id:49, title:"Paksiw na Pata", category:"Main Dish", servings:5, prepTime:15, cookTime:90,
+    composition:[["baboy_liempo",800],["suka",100],["toyo",40],["bawang",30],["sibuyas",60]],
+    instructions:["Simmer pork (pata-style cut) in water with garlic and onion until tender.","Add vinegar and soy sauce, and continue simmering without stirring at first.","Add bay leaves and peppercorns, and reduce the sauce until slightly thickened.","Sweeten lightly to taste and serve with rice."] },
+  { id:50, title:"Tokwa't Baboy", category:"Appetizer", servings:4, prepTime:15, cookTime:30,
+    composition:[["tokwa",300],["baboy_liempo",300],["toyo",60],["suka",40],["sibuyas",80],["bawang",15]],
+    instructions:["Boil pork until tender, then slice into small cubes.","Fry tofu cubes until golden and crisp; cube them as well.","Combine pork and tofu in a bowl with chopped onions.","Make a soy-vinegar-garlic dipping sauce, pour over, and serve as a side dish or appetizer."] },
 ];
 
-// ═══════════════ UTILITY ═══════════════
+// ═══════════════ COMPUTATION ENGINE — derives nutrition, cost & scores from quantities ═══════════════
 
 const DRV = { protein:50, carbs:275, fat:78, fiber:25, vitaminC:60, iron:18, calcium:1000, vitaminA:900 };
+const NUTR_KEYS = ["calories","protein","carbs","fat","fiber","vitaminA","vitaminC","iron","calcium"];
 
 function pct(val, key) {
   return DRV[key] ? Math.min(100, Math.round((val / DRV[key]) * 100)) : 0;
 }
+
+function round1(n) { return Math.round(n * 10) / 10; }
+
+function computeRecipe(rec) {
+  // Sum nutrition (per 100g basis × grams/100) and cost (₱ per 100 units × grams/100) across all ingredients.
+  const totals = NUTR_KEYS.reduce((acc, k) => ({ ...acc, [k]: 0 }), {});
+  let totalCost = 0;
+  const ingredientRows = [];
+
+  for (const [key, amount] of rec.composition) {
+    const ref = INGREDIENTS[key];
+    const factor = amount / 100;
+    NUTR_KEYS.forEach((k, i) => { totals[k] += ref.nutr[i] * factor; });
+    totalCost += ref.pricePer100 * factor;
+    const [daName, daUnit, daPrice] = ref.da;
+    ingredientRows.push({
+      name: ref.label,
+      qty: `${amount}${ref.unit} ${ref.label}`,
+      price: daPrice,
+      unit: daUnit,
+      daName,
+    });
+  }
+
+  const servings = rec.servings;
+  const perServing = {};
+  NUTR_KEYS.forEach((k) => { perServing[k] = Math.round((totals[k] / servings) * 10) / 10; });
+  const costPerServing = round1(totalCost / servings);
+
+  // Nutrition score: DRV-weighted composite of the per-serving micro/macro profile (0-100).
+  const nutritionScore = Math.round(
+    pct(perServing.protein, "protein") * 0.22 +
+    pct(perServing.fiber, "fiber") * 0.16 +
+    pct(perServing.vitaminA, "vitaminA") * 0.14 +
+    pct(perServing.vitaminC, "vitaminC") * 0.16 +
+    pct(perServing.iron, "iron") * 0.16 +
+    pct(perServing.calcium, "calcium") * 0.16
+  );
+
+  // Sulit ("value") score: nutrition gained per peso spent, scaled for readability.
+  const valueScore = round1((nutritionScore / costPerServing) * 3);
+
+  return {
+    ...rec,
+    img: PP(rec.title.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")),
+    ingredients: ingredientRows,
+    nutrition: { calories:Math.round(perServing.calories), protein:perServing.protein, carbs:perServing.carbs, fat:perServing.fat, fiber:perServing.fiber, vitaminA:Math.round(perServing.vitaminA), vitaminC:perServing.vitaminC, iron:perServing.iron, calcium:Math.round(perServing.calcium) },
+    cost: { total: round1(totalCost), perServing: costPerServing },
+    calories: Math.round(perServing.calories),
+    protein: perServing.protein,
+    carbs: perServing.carbs,
+    fat: perServing.fat,
+    fiber: perServing.fiber,
+    vitaminC: perServing.vitaminC,
+    iron: perServing.iron,
+    calcium: Math.round(perServing.calcium),
+    nutritionScore,
+    costPerServing,
+    valueScore,
+  };
+}
+
+const RECIPES = RAW_RECIPES.map(computeRecipe);
+
+// ═══════════════ UTILITY ═══════════════
 
 function scoreColor(val) {
   if (val >= 10) return "bg-green-100 text-green-800";
