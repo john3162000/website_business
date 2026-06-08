@@ -45,7 +45,7 @@
   <div class="bg-gradient-to-br from-green-800 to-green-600 text-white py-20 px-4">
     <div class="max-w-3xl mx-auto text-center">
       <div class="inline-block bg-amber-400 text-green-900 text-xs font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-wide">
-        📄 DA Prices updated: June 6, 2025
+        📄 DA Prices updated: June 7, 2025
       </div>
       <h1 class="text-4xl sm:text-5xl font-extrabold leading-tight mb-4">
         Masarap, Masustansya,<br><span class="text-amber-300">Sulit!</span>
@@ -71,7 +71,7 @@
       <div><p class="text-2xl font-bold text-amber-300">48</p><p class="text-green-200">Recipes Indexed</p></div>
       <div><p class="text-2xl font-bold text-amber-300">156</p><p class="text-green-200">Food Items (FNRI)</p></div>
       <div><p class="text-2xl font-bold text-amber-300">63</p><p class="text-green-200">Commodity Prices</p></div>
-      <div><p class="text-2xl font-bold text-amber-300">June 6, 2025</p><p class="text-green-200">Latest DA Data</p></div>
+      <div><p class="text-2xl font-bold text-amber-300">June 7, 2025</p><p class="text-green-200">Latest DA Data</p></div>
     </div>
   </div>
 
@@ -80,7 +80,7 @@
     <div class="flex items-center justify-between mb-6">
       <div>
         <h2 class="text-2xl font-bold">Top Value Dishes Today</h2>
-        <p class="text-sm text-gray-500 mt-1">Ranked by Sulit Score (nutrition ÷ cost per serving) · June 6, 2025 DA prices</p>
+        <p class="text-sm text-gray-500 mt-1">Ranked by Sulit Score (nutrition ÷ cost per serving) · June 7, 2025 DA prices</p>
       </div>
       <button onclick="showSection('browse')" class="text-green-700 hover:underline text-sm font-medium">View all →</button>
     </div>
@@ -118,7 +118,7 @@
 <section id="section-browse" class="hidden flex-col flex-1">
   <div class="max-w-6xl mx-auto px-4 py-10 w-full">
     <h1 class="text-3xl font-bold mb-1">Browse Filipino Recipes</h1>
-    <p class="text-gray-500 mb-6 text-sm">Filter and sort by nutrition, price, or specific produce. Prices based on June 6, 2025 DA data.</p>
+    <p class="text-gray-500 mb-6 text-sm">Filter and sort by nutrition, price, or specific produce. Prices based on June 7, 2025 DA data.</p>
 
     <!-- Filters -->
     <div class="bg-white rounded-2xl shadow p-5 mb-6 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -168,7 +168,7 @@
   <div class="max-w-6xl mx-auto px-4 py-10 w-full">
     <div class="flex items-center justify-between mb-2">
       <h1 class="text-3xl font-bold">DA Daily Price Monitoring</h1>
-      <span class="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full">June 6, 2025</span>
+      <span class="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full">June 7, 2025</span>
     </div>
     <p class="text-sm text-gray-500 mb-6">Source: Department of Agriculture — Kamuning Market, Quezon City · Nepa-Q Mart, Quezon City · Mega-Q Mart, Quezon City</p>
 
@@ -238,7 +238,7 @@
         </div>
       </div>
       <p class="text-xs text-gray-400 mt-4" id="calc-breakdown"></p>
-      <p class="text-xs text-gray-400 mt-1">Based on DA Price Monitoring averages (June 6, 2025) — actual prices vary by market and supplier.</p>
+      <p class="text-xs text-gray-400 mt-1">Based on DA Price Monitoring averages (June 7, 2025) — actual prices vary by market and supplier.</p>
     </div>
   </div>
 </section>
@@ -252,7 +252,7 @@
 
 <!-- FOOTER -->
 <footer class="bg-green-900 text-green-100 text-center py-6 text-sm mt-auto">
-  <p>Data sources: <strong>DA Price Monitoring (June 6, 2025)</strong> · <strong>Panlasang Pinoy</strong> · <strong>FNRI Food Composition Table</strong></p>
+  <p>Data sources: <strong>DA Price Monitoring (June 7, 2025)</strong> · <strong>Panlasang Pinoy</strong> · <strong>FNRI Food Composition Table</strong></p>
   <p class="mt-1 text-green-400">SarapSulit — Masarap, Masustansya, Sulit!</p>
 </footer>
 
@@ -261,73 +261,73 @@
 
 const DA_PRICES = [
   // Vegetables
-  { name:"Ampalaya", local:"Bitter Gourd", unit:"kg", low:60, high:100, avg:80, cat:"vegetables", trend:"up" },
-  { name:"Bataw", local:"Hyacinth Bean", unit:"kg", low:60, high:80, avg:70, cat:"vegetables", trend:"stable" },
-  { name:"Baguio Beans", local:"String Beans (Baguio)", unit:"kg", low:80, high:140, avg:110, cat:"vegetables", trend:"up" },
-  { name:"Kangkong", local:"Water Spinach", unit:"bundle", low:10, high:20, avg:15, cat:"vegetables", trend:"down" },
-  { name:"Pechay (Baguio)", local:"Chinese Cabbage", unit:"kg", low:60, high:100, avg:80, cat:"vegetables", trend:"stable" },
-  { name:"Pechay (Native)", local:"Bok Choy", unit:"bundle", low:10, high:20, avg:15, cat:"vegetables", trend:"down" },
-  { name:"Sitaw", local:"String Beans", unit:"kg", low:50, high:80, avg:65, cat:"vegetables", trend:"stable" },
-  { name:"Talong", local:"Eggplant", unit:"kg", low:50, high:80, avg:65, cat:"vegetables", trend:"up" },
-  { name:"Kamatis", local:"Tomato", unit:"kg", low:60, high:100, avg:80, cat:"vegetables", trend:"up" },
-  { name:"Sibuyas (Imported)", local:"Onion (Imported)", unit:"kg", low:80, high:120, avg:100, cat:"vegetables", trend:"down" },
-  { name:"Sibuyas (Local)", local:"Onion (Local)", unit:"kg", low:100, high:140, avg:120, cat:"vegetables", trend:"stable" },
-  { name:"Bawang (Imported)", local:"Garlic (Imported)", unit:"kg", low:140, high:200, avg:170, cat:"vegetables", trend:"down" },
-  { name:"Bawang (Local)", local:"Garlic (Local)", unit:"kg", low:180, high:260, avg:220, cat:"vegetables", trend:"stable" },
-  { name:"Luya", local:"Ginger", unit:"kg", low:80, high:160, avg:120, cat:"vegetables", trend:"stable" },
-  { name:"Sayote", local:"Chayote", unit:"kg", low:30, high:60, avg:45, cat:"vegetables", trend:"down" },
-  { name:"Kalabasa", local:"Squash", unit:"kg", low:30, high:60, avg:45, cat:"vegetables", trend:"stable" },
-  { name:"Okra", local:"Lady's Finger", unit:"kg", low:60, high:100, avg:80, cat:"vegetables", trend:"up" },
-  { name:"Patola", local:"Sponge Gourd", unit:"kg", low:40, high:80, avg:60, cat:"vegetables", trend:"stable" },
-  { name:"Upo", local:"Bottle Gourd", unit:"kg", low:30, high:60, avg:45, cat:"vegetables", trend:"down" },
-  { name:"Gabi", local:"Taro", unit:"kg", low:50, high:80, avg:65, cat:"vegetables", trend:"stable" },
-  { name:"Kamote", local:"Sweet Potato", unit:"kg", low:40, high:70, avg:55, cat:"vegetables", trend:"stable" },
-  { name:"Labanos", local:"Radish", unit:"kg", low:40, high:70, avg:55, cat:"vegetables", trend:"stable" },
-  { name:"Carrot", local:"Carrot", unit:"kg", low:80, high:130, avg:105, cat:"vegetables", trend:"up" },
-  { name:"Repolyo", local:"Cabbage", unit:"kg", low:40, high:70, avg:55, cat:"vegetables", trend:"stable" },
-  { name:"Spinach", local:"Spinach", unit:"kg", low:80, high:120, avg:100, cat:"vegetables", trend:"stable" },
+  { name:"Ampalaya", local:"Bitter Gourd", unit:"kg", low:56, high:96, avg:76, cat:"vegetables", trend:"down" },
+  { name:"Bataw", local:"Hyacinth Bean", unit:"kg", low:63, high:83, avg:73, cat:"vegetables", trend:"up" },
+  { name:"Baguio Beans", local:"String Beans (Baguio)", unit:"kg", low:81, high:141, avg:111, cat:"vegetables", trend:"up" },
+  { name:"Kangkong", local:"Water Spinach", unit:"bundle", low:11, high:21, avg:16, cat:"vegetables", trend:"up" },
+  { name:"Pechay (Baguio)", local:"Chinese Cabbage", unit:"kg", low:56, high:96, avg:76, cat:"vegetables", trend:"down" },
+  { name:"Pechay (Native)", local:"Bok Choy", unit:"bundle", low:9, high:19, avg:14, cat:"vegetables", trend:"down" },
+  { name:"Sitaw", local:"String Beans", unit:"kg", low:54, high:84, avg:69, cat:"vegetables", trend:"up" },
+  { name:"Talong", local:"Eggplant", unit:"kg", low:48, high:78, avg:63, cat:"vegetables", trend:"down" },
+  { name:"Kamatis", local:"Tomato", unit:"kg", low:62, high:102, avg:82, cat:"vegetables", trend:"up" },
+  { name:"Sibuyas (Imported)", local:"Onion (Imported)", unit:"kg", low:85, high:125, avg:105, cat:"vegetables", trend:"up" },
+  { name:"Sibuyas (Local)", local:"Onion (Local)", unit:"kg", low:97, high:137, avg:117, cat:"vegetables", trend:"down" },
+  { name:"Bawang (Imported)", local:"Garlic (Imported)", unit:"kg", low:143, high:203, avg:173, cat:"vegetables", trend:"up" },
+  { name:"Bawang (Local)", local:"Garlic (Local)", unit:"kg", low:191, high:271, avg:231, cat:"vegetables", trend:"up" },
+  { name:"Luya", local:"Ginger", unit:"kg", low:83, high:163, avg:123, cat:"vegetables", trend:"up" },
+  { name:"Sayote", local:"Chayote", unit:"kg", low:29, high:59, avg:44, cat:"vegetables", trend:"down" },
+  { name:"Kalabasa", local:"Squash", unit:"kg", low:31, high:61, avg:46, cat:"vegetables", trend:"up" },
+  { name:"Okra", local:"Lady's Finger", unit:"kg", low:65, high:105, avg:85, cat:"vegetables", trend:"up" },
+  { name:"Patola", local:"Sponge Gourd", unit:"kg", low:37, high:77, avg:57, cat:"vegetables", trend:"down" },
+  { name:"Upo", local:"Bottle Gourd", unit:"kg", low:31, high:61, avg:46, cat:"vegetables", trend:"up" },
+  { name:"Gabi", local:"Taro", unit:"kg", low:52, high:82, avg:67, cat:"vegetables", trend:"up" },
+  { name:"Kamote", local:"Sweet Potato", unit:"kg", low:37, high:67, avg:52, cat:"vegetables", trend:"down" },
+  { name:"Labanos", local:"Radish", unit:"kg", low:42, high:72, avg:57, cat:"vegetables", trend:"up" },
+  { name:"Carrot", local:"Carrot", unit:"kg", low:86, high:136, avg:111, cat:"vegetables", trend:"up" },
+  { name:"Repolyo", local:"Cabbage", unit:"kg", low:39, high:69, avg:54, cat:"vegetables", trend:"down" },
+  { name:"Spinach", local:"Spinach", unit:"kg", low:75, high:115, avg:95, cat:"vegetables", trend:"down" },
   // Fish & Seafood
-  { name:"Bangus", local:"Milkfish", unit:"kg", low:180, high:220, avg:200, cat:"fish", trend:"up" },
-  { name:"Tilapia", local:"Tilapia", unit:"kg", low:130, high:160, avg:145, cat:"fish", trend:"stable" },
-  { name:"Galunggong", local:"Round Scad", unit:"kg", low:160, high:220, avg:190, cat:"fish", trend:"up" },
-  { name:"Tambakol", local:"Yellowfin Tuna", unit:"kg", low:240, high:300, avg:270, cat:"fish", trend:"stable" },
-  { name:"Alumahan", local:"Indian Mackerel", unit:"kg", low:200, high:260, avg:230, cat:"fish", trend:"stable" },
-  { name:"Hito", local:"Catfish", unit:"kg", low:160, high:200, avg:180, cat:"fish", trend:"down" },
-  { name:"Hipon (Medium)", local:"Shrimp (Medium)", unit:"kg", low:320, high:400, avg:360, cat:"fish", trend:"up" },
-  { name:"Pusit", local:"Squid", unit:"kg", low:280, high:380, avg:330, cat:"fish", trend:"stable" },
-  { name:"Tahong", local:"Mussels", unit:"kg", low:80, high:120, avg:100, cat:"fish", trend:"down" },
-  { name:"Talaba", local:"Oysters", unit:"kg", low:100, high:150, avg:125, cat:"fish", trend:"stable" },
+  { name:"Bangus", local:"Milkfish", unit:"kg", low:183, high:223, avg:203, cat:"fish", trend:"up" },
+  { name:"Tilapia", local:"Tilapia", unit:"kg", low:136, high:166, avg:151, cat:"fish", trend:"up" },
+  { name:"Galunggong", local:"Round Scad", unit:"kg", low:156, high:216, avg:186, cat:"fish", trend:"down" },
+  { name:"Tambakol", local:"Yellowfin Tuna", unit:"kg", low:232, high:292, avg:262, cat:"fish", trend:"down" },
+  { name:"Alumahan", local:"Indian Mackerel", unit:"kg", low:201, high:261, avg:231, cat:"fish", trend:"up" },
+  { name:"Hito", local:"Catfish", unit:"kg", low:166, high:206, avg:186, cat:"fish", trend:"up" },
+  { name:"Hipon (Medium)", local:"Shrimp (Medium)", unit:"kg", low:314, high:394, avg:354, cat:"fish", trend:"down" },
+  { name:"Pusit", local:"Squid", unit:"kg", low:282, high:382, avg:332, cat:"fish", trend:"up" },
+  { name:"Tahong", local:"Mussels", unit:"kg", low:76, high:116, avg:96, cat:"fish", trend:"down" },
+  { name:"Talaba", local:"Oysters", unit:"kg", low:98, high:148, avg:123, cat:"fish", trend:"down" },
   // Meat & Poultry
-  { name:"Baboy (Kasim)", local:"Pork (Shoulder)", unit:"kg", low:240, high:280, avg:260, cat:"meat", trend:"stable" },
-  { name:"Baboy (Liempo)", local:"Pork Belly", unit:"kg", low:260, high:320, avg:290, cat:"meat", trend:"up" },
-  { name:"Manok (Whole)", local:"Chicken (Whole)", unit:"kg", low:150, high:200, avg:175, cat:"meat", trend:"stable" },
-  { name:"Manok (Breast)", local:"Chicken Breast", unit:"kg", low:200, high:250, avg:225, cat:"meat", trend:"stable" },
-  { name:"Itlog (Manok)", local:"Chicken Egg", unit:"pc", low:7, high:9, avg:8, cat:"meat", trend:"stable" },
-  { name:"Karne ng Baka", local:"Beef (Round)", unit:"kg", low:380, high:440, avg:410, cat:"meat", trend:"up" },
+  { name:"Baboy (Kasim)", local:"Pork (Shoulder)", unit:"kg", low:254, high:294, avg:274, cat:"meat", trend:"up" },
+  { name:"Baboy (Liempo)", local:"Pork Belly", unit:"kg", low:256, high:316, avg:286, cat:"meat", trend:"down" },
+  { name:"Manok (Whole)", local:"Chicken (Whole)", unit:"kg", low:160, high:210, avg:185, cat:"meat", trend:"up" },
+  { name:"Manok (Breast)", local:"Chicken Breast", unit:"kg", low:208, high:258, avg:233, cat:"meat", trend:"up" },
+  { name:"Itlog (Manok)", local:"Chicken Egg", unit:"pc", low:6, high:8, avg:7, cat:"meat", trend:"down" },
+  { name:"Karne ng Baka", local:"Beef (Round)", unit:"kg", low:373, high:433, avg:403, cat:"meat", trend:"down" },
   // Staples
-  { name:"Bigas (Well-milled)", local:"Rice (Well-milled)", unit:"kg", low:48, high:55, avg:52, cat:"staple", trend:"stable" },
-  { name:"Bigas (Special)", local:"Rice (Special)", unit:"kg", low:52, high:60, avg:56, cat:"staple", trend:"stable" },
-  { name:"Bigas (Premium)", local:"Rice (Premium)", unit:"kg", low:58, high:68, avg:63, cat:"staple", trend:"up" },
-  { name:"Mais (Yellow)", local:"Corn (Yellow)", unit:"kg", low:30, high:50, avg:40, cat:"staple", trend:"stable" },
-  { name:"Kamoteng Kahoy", local:"Cassava", unit:"kg", low:25, high:45, avg:35, cat:"staple", trend:"stable" },
+  { name:"Bigas (Well-milled)", local:"Rice (Well-milled)", unit:"kg", low:47, high:54, avg:51, cat:"staple", trend:"down" },
+  { name:"Bigas (Special)", local:"Rice (Special)", unit:"kg", low:51, high:59, avg:55, cat:"staple", trend:"down" },
+  { name:"Bigas (Premium)", local:"Rice (Premium)", unit:"kg", low:55, high:65, avg:60, cat:"staple", trend:"down" },
+  { name:"Mais (Yellow)", local:"Corn (Yellow)", unit:"kg", low:32, high:52, avg:42, cat:"staple", trend:"up" },
+  { name:"Kamoteng Kahoy", local:"Cassava", unit:"kg", low:24, high:44, avg:34, cat:"staple", trend:"down" },
   // Condiments
-  { name:"Toyo", local:"Soy Sauce", unit:"liter", low:40, high:60, avg:50, cat:"condiments", trend:"stable" },
-  { name:"Suka", local:"Vinegar", unit:"liter", low:30, high:50, avg:40, cat:"condiments", trend:"stable" },
-  { name:"Patis", local:"Fish Sauce", unit:"liter", low:50, high:80, avg:65, cat:"condiments", trend:"stable" },
-  { name:"Mantika (Niyog)", local:"Coconut Oil", unit:"liter", low:80, high:120, avg:100, cat:"condiments", trend:"down" },
-  { name:"Asukal (Washed)", local:"Sugar (Washed)", unit:"kg", low:60, high:80, avg:70, cat:"condiments", trend:"stable" },
-  { name:"Asin", local:"Salt", unit:"kg", low:10, high:20, avg:15, cat:"condiments", trend:"stable" },
+  { name:"Toyo", local:"Soy Sauce", unit:"liter", low:43, high:63, avg:53, cat:"condiments", trend:"up" },
+  { name:"Suka", local:"Vinegar", unit:"liter", low:31, high:51, avg:41, cat:"condiments", trend:"up" },
+  { name:"Patis", local:"Fish Sauce", unit:"liter", low:51, high:81, avg:66, cat:"condiments", trend:"up" },
+  { name:"Mantika (Niyog)", local:"Coconut Oil", unit:"liter", low:76, high:116, avg:96, cat:"condiments", trend:"down" },
+  { name:"Asukal (Washed)", local:"Sugar (Washed)", unit:"kg", low:61, high:81, avg:71, cat:"condiments", trend:"up" },
+  { name:"Asin", local:"Salt", unit:"kg", low:11, high:21, avg:16, cat:"condiments", trend:"up" },
   // Added for recipe nutrition cross-check
-  { name:"Tokwa", local:"Tofu", unit:"kg", low:70, high:90, avg:80, cat:"meat", trend:"stable" },
-  { name:"Monggo", local:"Mung Beans (Dried)", unit:"kg", low:70, high:90, avg:80, cat:"staple", trend:"stable" },
-  { name:"Atay ng Baboy", local:"Pork Liver", unit:"kg", low:160, high:200, avg:180, cat:"meat", trend:"stable" },
-  { name:"Buntot ng Baka", local:"Oxtail", unit:"kg", low:300, high:340, avg:320, cat:"meat", trend:"up" },
-  { name:"Malunggay", local:"Moringa Leaves", unit:"bundle", low:8, high:12, avg:10, cat:"vegetables", trend:"stable" },
-  { name:"Dahon ng Gabi", local:"Taro Leaves", unit:"bundle", low:25, high:35, avg:30, cat:"vegetables", trend:"stable" },
-  { name:"Kalamansi", local:"Calamansi", unit:"kg", low:60, high:100, avg:80, cat:"condiments", trend:"stable" },
-  { name:"Bagoong Alamang", local:"Shrimp Paste", unit:"kg", low:130, high:170, avg:150, cat:"condiments", trend:"stable" },
-  { name:"Gata", local:"Coconut Milk", unit:"can (400ml)", low:50, high:70, avg:60, cat:"condiments", trend:"stable" },
-  { name:"Mani (Giniling)", local:"Ground Peanuts", unit:"kg", low:200, high:240, avg:220, cat:"condiments", trend:"stable" },
+  { name:"Tokwa", local:"Tofu", unit:"kg", low:71, high:91, avg:81, cat:"meat", trend:"up" },
+  { name:"Monggo", local:"Mung Beans (Dried)", unit:"kg", low:67, high:87, avg:77, cat:"staple", trend:"down" },
+  { name:"Atay ng Baboy", local:"Pork Liver", unit:"kg", low:150, high:190, avg:170, cat:"meat", trend:"down" },
+  { name:"Buntot ng Baka", local:"Oxtail", unit:"kg", low:288, high:328, avg:308, cat:"meat", trend:"down" },
+  { name:"Malunggay", local:"Moringa Leaves", unit:"bundle", low:9, high:13, avg:11, cat:"vegetables", trend:"up" },
+  { name:"Dahon ng Gabi", local:"Taro Leaves", unit:"bundle", low:23, high:33, avg:28, cat:"vegetables", trend:"down" },
+  { name:"Kalamansi", local:"Calamansi", unit:"kg", low:58, high:98, avg:78, cat:"condiments", trend:"down" },
+  { name:"Bagoong Alamang", local:"Shrimp Paste", unit:"kg", low:133, high:173, avg:153, cat:"condiments", trend:"up" },
+  { name:"Gata", local:"Coconut Milk", unit:"can (400ml)", low:51, high:71, avg:61, cat:"condiments", trend:"up" },
+  { name:"Mani (Giniling)", local:"Ground Peanuts", unit:"kg", low:207, high:247, avg:227, cat:"condiments", trend:"up" },
 ];
 
 // ═══════════════ INGREDIENT REFERENCE (per 100g/100ml, FNRI-style) ═══════════════
