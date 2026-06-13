@@ -68,10 +68,7 @@ export async function scrapeAndStoreDAPrices(
   }
 
   const { PDFParse } = await import("pdf-parse");
-  // Vercel's serverless bundle doesn't include pdf.worker.mjs — run pdfjs
-  // directly on the main thread instead of spawning a worker.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const parser = new PDFParse({ data: buffer, disableWorker: true } as any);
+  const parser = new PDFParse({ data: buffer });
   const result = await parser.getText();
   await parser.destroy();
   const rows = extractCommodities(result.text, sourceDate);
