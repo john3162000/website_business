@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 interface LogEntry {
   id: number;
@@ -13,9 +13,9 @@ interface LogEntry {
 }
 
 const TYPES = [
-  { type: "DA", label: "DA Commodity Prices", desc: "Pull the latest DA price-monitoring PDF and store every commodity row." },
-  { type: "RECIPES", label: "Panlasang Pinoy Recipes (ALL)", desc: "Crawl every recipe index page and store every recipe — ingredients and step-by-step instructions included. No page limit; runs until the site is exhausted." },
-  { type: "NUTRITION", label: "FNRI Nutrition Data (ALL)", desc: "Crawl the full FNRI Food Composition Table, following every pagination link. No page limit." },
+  { type: "DA", label: "DA Commodity Prices", desc: "Pull the latest DA price-monitoring PDF and store every commodity row.", chunked: false },
+  { type: "RECIPES", label: "Panlasang Pinoy Recipes (ALL)", desc: "Crawl every recipe index page and store every recipe — ingredients and step-by-step instructions included. Runs one index page per request, repeated automatically until the site is exhausted.", chunked: true },
+  { type: "NUTRITION", label: "FNRI Nutrition Data (ALL)", desc: "Crawl the full FNRI Food Composition Table, following every pagination link. Runs one listing page per request, repeated automatically until done.", chunked: true },
 ] as const;
 
 function StatusTag({ status }: { status: string }) {
@@ -28,11 +28,10 @@ function StatusTag({ status }: { status: string }) {
   return <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${color}`}>{status}</span>;
 }
 
-function Section({ type, label, desc }: { type: string; label: string; desc: string }) {
+function Section({ type, label, desc, chunked }: { type: string; label: string; desc: string; chunked: boolean }) {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const loadLogs = async () => {
     const res = await fetch(`/api/scrape/${type.toLowerCase()}`);
@@ -50,32 +49,31 @@ function Section({ type, label, desc }: { type: string; label: string; desc: str
       });
     return () => {
       cancelled = true;
-      if (pollRef.current) clearInterval(pollRef.current);
     };
   }, [type]);
-
-  const startPolling = () => {
-    if (pollRef.current) clearInterval(pollRef.current);
-    pollRef.current = setInterval(async () => {
-      const data = await loadLogs();
-      if (data[0] && data[0].status !== "RUNNING") {
-        if (pollRef.current) clearInterval(pollRef.current);
-        pollRef.current = null;
-      }
-    }, 4000);
-  };
 
   const handleRun = async () => {
     setStarting(true);
     setError(null);
     try {
-      const res = await fetch(`/api/scrape/${type.toLowerCase()}`, { method: "POST" });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? "Failed to start scrape");
-      } else {
+      if (!chunked) {
+        const res = await fetch(`/api/scrape/${type.toLowerCase()}`, { method: "POST" });
+        const data = await res.json();
+        if (!res.ok) {
+          setError(data.error ?? "Failed to run scrape");
+        }
         await loadLogs();
-        startPolling();
+      } else {
+        while (true) {
+          const res = await fetch(`/api/scrape/${type.toLowerCase()}`, { method: "POST" });
+          const data = await res.json();
+          if (!res.ok) {
+            setError(data.error ?? "Failed to run scrape");
+            break;
+          }
+          await loadLogs();
+          if (data.done) break;
+        }
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -84,7 +82,7 @@ function Section({ type, label, desc }: { type: string; label: string; desc: str
   };
 
   const latest = logs[0];
-  const isRunning = latest?.status === "RUNNING";
+  const isRunning = starting || latest?.status === "RUNNING";
 
   return (
     <div className="bg-white rounded-2xl shadow p-6">
@@ -96,7 +94,7 @@ function Section({ type, label, desc }: { type: string; label: string; desc: str
         disabled={starting || isRunning}
         className="bg-green-700 hover:bg-green-600 disabled:opacity-50 text-white px-5 py-2.5 rounded-xl font-medium text-sm transition-colors"
       >
-        {isRunning ? "Running... (this can take a while)" : starting ? "Starting..." : "Run full scrape"}
+        {isRunning ? "Running... (this can take a while)" : "Run full scrape"}
       </button>
 
       {error && (
@@ -158,7 +156,7 @@ export default function AdminPage() {
 
       <div className="space-y-6">
         {TYPES.map((t) => (
-          <Section key={t.type} type={t.type} label={t.label} desc={t.desc} />
+          <Section key={t.type} type={t.type} label={t.label} desc={t.desc} chunked={t.chunked} />
         ))}
       </div>
     </div>

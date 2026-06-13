@@ -117,72 +117,90 @@ export async function scrapeAndStoreAllRecipes(
   let page = 1;
 
   while (true) {
-    onProgress?.(`Fetching recipe index page ${page}...`);
-    let urls: string[];
-    try {
-      urls = await getRecipeUrlsFromIndexPage(page);
-    } catch (err) {
-      onProgress?.(`Stopping — failed to load index page ${page}: ${err instanceof Error ? err.message : err}`);
-      break;
-    }
-
-    if (urls.length === 0) {
-      onProgress?.(`Page ${page} has no recipes — reached the end.`);
-      break;
-    }
-
-    for (const url of urls) {
-      const existing = await prisma.recipe.findUnique({ where: { url } });
-      if (existing) {
-        onProgress?.(`Already in DB, skipping: ${url}`);
-        continue;
-      }
-
-      await sleep(DELAY_MS);
-      onProgress?.(`Scraping: ${url}`);
-
-      let scraped: ScrapedRecipe | null;
-      try {
-        scraped = await scrapeRecipePage(url);
-      } catch (err) {
-        onProgress?.(`Failed to scrape ${url}: ${err instanceof Error ? err.message : err}`);
-        continue;
-      }
-      if (!scraped) continue;
-
-      await prisma.recipe.create({
-        data: {
-          title: scraped.title,
-          url: scraped.url,
-          imageUrl: scraped.imageUrl,
-          description: scraped.description,
-          servings: scraped.servings,
-          prepTime: scraped.prepTime,
-          cookTime: scraped.cookTime,
-          sourceSite: "PanlasangPinoy",
-          ingredients: {
-            create: scraped.ingredients.map((ing) => ({
-              rawText: ing.rawText,
-              name: ing.name,
-              amount: ing.amount,
-              unit: ing.unit,
-            })),
-          },
-          instructions: {
-            create: scraped.instructions.map((text, idx) => ({
-              stepNumber: idx + 1,
-              text,
-            })),
-          },
-        },
-      });
-
-      total++;
-      onProgress?.(`Saved (${total}): ${scraped.title}`);
-    }
-
+    const result = await scrapeRecipeIndexPage(page, onProgress);
+    total += result.saved;
+    if (result.done) break;
     page++;
   }
 
   return total;
+}
+
+/**
+ * Scrapes a single recipe index page and stores any new recipes found on it.
+ * Returns how many were saved and whether this was the last (empty) page —
+ * used to drive a chunked, request-sized scrape from the API route.
+ */
+export async function scrapeRecipeIndexPage(
+  page: number,
+  onProgress?: (msg: string) => void
+): Promise<{ saved: number; done: boolean }> {
+  onProgress?.(`Fetching recipe index page ${page}...`);
+
+  let urls: string[];
+  try {
+    urls = await getRecipeUrlsFromIndexPage(page);
+  } catch (err) {
+    onProgress?.(`Stopping — failed to load index page ${page}: ${err instanceof Error ? err.message : err}`);
+    return { saved: 0, done: true };
+  }
+
+  if (urls.length === 0) {
+    onProgress?.(`Page ${page} has no recipes — reached the end.`);
+    return { saved: 0, done: true };
+  }
+
+  let saved = 0;
+
+  for (const url of urls) {
+    const existing = await prisma.recipe.findUnique({ where: { url } });
+    if (existing) {
+      onProgress?.(`Already in DB, skipping: ${url}`);
+      continue;
+    }
+
+    await sleep(DELAY_MS);
+    onProgress?.(`Scraping: ${url}`);
+
+    let scraped: ScrapedRecipe | null;
+    try {
+      scraped = await scrapeRecipePage(url);
+    } catch (err) {
+      onProgress?.(`Failed to scrape ${url}: ${err instanceof Error ? err.message : err}`);
+      continue;
+    }
+    if (!scraped) continue;
+
+    await prisma.recipe.create({
+      data: {
+        title: scraped.title,
+        url: scraped.url,
+        imageUrl: scraped.imageUrl,
+        description: scraped.description,
+        servings: scraped.servings,
+        prepTime: scraped.prepTime,
+        cookTime: scraped.cookTime,
+        sourceSite: "PanlasangPinoy",
+        ingredients: {
+          create: scraped.ingredients.map((ing) => ({
+            rawText: ing.rawText,
+            name: ing.name,
+            amount: ing.amount,
+            unit: ing.unit,
+          })),
+        },
+        instructions: {
+          create: scraped.instructions.map((text, idx) => ({
+            stepNumber: idx + 1,
+            text,
+          })),
+        },
+      },
+    });
+
+    saved++;
+    onProgress?.(`Saved: ${scraped.title}`);
+  }
+
+  return { saved, done: false };
 }
