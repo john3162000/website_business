@@ -143,8 +143,9 @@ export async function scrapeRecipeChunk(
   try {
     urls = await getRecipeUrlsFromIndexPage(page);
   } catch (err) {
-    onProgress?.(`Stopping — failed to load index page ${page}: ${err instanceof Error ? err.message : err}`);
-    return { saved: 0, cursor, done: true };
+    // A fetch error (e.g. rate limiting) is transient — don't mark the crawl
+    // as done or lose the cursor, so it can resume from this page later.
+    throw new Error(`Failed to load index page ${page}: ${err instanceof Error ? err.message : err}`);
   }
 
   if (urls.length === 0) {

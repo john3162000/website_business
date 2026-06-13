@@ -67,14 +67,11 @@ export async function scrapeAndStoreDAPrices(
     (globalThis as any).DOMMatrix = DOMMatrixPolyfill;
   }
 
-  const pdfParseModule: unknown = await import("pdf-parse");
-  const pdfParse = (
-    typeof pdfParseModule === "function"
-      ? pdfParseModule
-      : (pdfParseModule as { default: unknown }).default
-  ) as (buf: Buffer) => Promise<{ text: string }>;
-  const data = await pdfParse(buffer);
-  const rows = extractCommodities(data.text, sourceDate);
+  const { PDFParse } = await import("pdf-parse");
+  const parser = new PDFParse({ data: buffer });
+  const result = await parser.getText();
+  await parser.destroy();
+  const rows = extractCommodities(result.text, sourceDate);
 
   if (rows.length === 0) {
     throw new Error("No commodity rows extracted — PDF format may have changed");

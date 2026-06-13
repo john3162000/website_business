@@ -16,6 +16,21 @@ export async function POST() {
     where: { type: TYPE, status: "RUNNING" },
   });
 
+  if (!log) {
+    // Resume a previously interrupted run (e.g. timeout/transient error) rather
+    // than starting over from scratch, as long as it left a cursor behind.
+    const last = await prisma.scrapingLog.findFirst({
+      where: { type: TYPE },
+      orderBy: { id: "desc" },
+    });
+    if (last && last.status !== "DONE" && last.cursor) {
+      log = await prisma.scrapingLog.update({
+        where: { id: last.id },
+        data: { status: "RUNNING", message: "Resuming...", finishedAt: null },
+      });
+    }
+  }
+
   let cursor: NutritionCursor;
   if (log?.cursor) {
     cursor = JSON.parse(log.cursor);
