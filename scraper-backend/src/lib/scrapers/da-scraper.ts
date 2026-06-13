@@ -60,6 +60,15 @@ export async function scrapeAndStoreDAPrices(
   onProgress?.("Downloading DA price monitoring PDF...");
   const buffer = await fetchPdfBuffer();
 
+  if (typeof globalThis.DOMMatrix === "undefined") {
+    // pdfjs-dist (used by pdf-parse) references DOMMatrix even when unused for text extraction.
+    class DOMMatrixPolyfill {
+      constructor(..._args: unknown[]) {}
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any).DOMMatrix = DOMMatrixPolyfill;
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const pdfParse = require("pdf-parse");
   const data = await pdfParse(buffer);
