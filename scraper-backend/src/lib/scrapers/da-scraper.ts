@@ -10,33 +10,94 @@ import { prisma } from "@/lib/db";
 const DA_PAGE_URL = "https://www.da.gov.ph/price-monitoring/";
 
 export interface CommodityRow {
+  category: string | null;
   name: string;
-  unit: string;
-  lowPrice: number;
-  highPrice: number;
-  prevailingPrice: number;
+  price: number | null;
   sourceDate: Date;
 }
 
-const PRICE_LINE = /^(.+?)\s+(kg|pc|bunch|tray|head|bag|liter|L|pcs|g|gram)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)/i;
+// Page/section boilerplate that appears in the extracted text but isn't data.
+const SKIP_PATTERNS: RegExp[] = [
+  /^Page \d+ of \d+$/i,
+  /^-+\s*\d+\s*of\s*\d+\s*-+$/i,
+  /^Department of Agriculture$/i,
+  /^DAILY PRICE INDEX$/i,
+  /^National Capital Region/i,
+  /^\(.*\d{4}\)$/, // the "(Friday, June 12, 2026)" date line
+  /^Prevailing Retail Price/i,
+  /^COMMODITY SPECIFICATION$/i,
+  /^PREVAILING$/i,
+  /^RETAIL PRICE PER$/i,
+  /^UNIT \(P\/UNIT\)$/i,
+];
 
+const PRICE_AT_END = /^(.*\S)\s+([\d,]+\.\d{2})$/;
+const NA_AT_END = /^(.*\S)\s+n\/a$/i;
+
+/** Parse the report date from the "(Friday, June 12, 2026)" header line. */
+function parseReportDate(text: string): Date {
+  const m = text.match(/\(?(?:[A-Za-z]+,\s*)?([A-Z][a-z]+\s+\d{1,2},\s*\d{4})\)?/);
+  if (m) {
+    const d = new Date(m[1]);
+    if (!isNaN(d.getTime())) return d;
+  }
+  return new Date();
+}
+
+/**
+ * The DA "Daily Price Index" lists an ALL-CAPS category header, then one
+ * commodity per line ending in either a price ("194.00") or "n/a". Some
+ * commodity names wrap onto a second line, so non-price/non-header lines are
+ * buffered and prepended to the following line.
+ */
 function extractCommodities(text: string, sourceDate: Date): CommodityRow[] {
   const rows: CommodityRow[] = [];
-  const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
+  const lines = text
+    .split("\n")
+    .map((l) => l.replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+
+  let category: string | null = null;
+  let pendingName = "";
+  let lastWasCategory = false;
 
   for (const line of lines) {
-    const match = line.match(PRICE_LINE);
-    if (!match) continue;
+    if (SKIP_PATTERNS.some((re) => re.test(line))) {
+      pendingName = "";
+      lastWasCategory = false;
+      continue;
+    }
 
-    const name = match[1].trim();
-    const unit = match[2].trim();
-    const lowPrice = parseFloat(match[3]);
-    const highPrice = parseFloat(match[4]);
-    const prevailingPrice = parseFloat(match[5]);
+    const priceMatch = line.match(PRICE_AT_END);
+    if (priceMatch) {
+      const name = `${pendingName} ${priceMatch[1]}`.trim();
+      const price = parseFloat(priceMatch[2].replace(/,/g, ""));
+      if (name && !isNaN(price)) rows.push({ category, name, price, sourceDate });
+      pendingName = "";
+      lastWasCategory = false;
+      continue;
+    }
 
-    if ([lowPrice, highPrice, prevailingPrice].some((n) => isNaN(n) || n <= 0)) continue;
+    const naMatch = line.match(NA_AT_END);
+    if (naMatch) {
+      const name = `${pendingName} ${naMatch[1]}`.trim();
+      if (name) rows.push({ category, name, price: null, sourceDate });
+      pendingName = "";
+      lastWasCategory = false;
+      continue;
+    }
 
-    rows.push({ name, unit, lowPrice, highPrice, prevailingPrice, sourceDate });
+    // No price on this line: it's either a category header (ALL CAPS, possibly
+    // wrapped across two lines) or the start of a wrapped commodity name.
+    const isAllCaps = /[A-Z]/.test(line) && line === line.toUpperCase();
+    if (isAllCaps) {
+      category = lastWasCategory && category ? `${category} ${line}` : line;
+      lastWasCategory = true;
+      pendingName = "";
+    } else {
+      pendingName = `${pendingName} ${line}`.trim();
+      lastWasCategory = false;
+    }
   }
 
   return rows;
@@ -90,8 +151,6 @@ async function fetchPdfBuffer(onProgress?: (msg: string) => void): Promise<Buffe
 export async function scrapeAndStoreDAPrices(
   onProgress?: (msg: string) => void
 ): Promise<number> {
-  const sourceDate = new Date();
-
   onProgress?.("Looking up latest DA price monitoring PDF...");
   const buffer = await fetchPdfBuffer(onProgress);
 
@@ -106,23 +165,21 @@ export async function scrapeAndStoreDAPrices(
   const parser = new PDFParse({ data: buffer });
   const result = await parser.getText();
   await parser.destroy();
+
+  const sourceDate = parseReportDate(result.text);
   const rows = extractCommodities(result.text, sourceDate);
 
   if (rows.length === 0) {
     throw new Error("No commodity rows extracted — PDF format may have changed");
   }
 
-  onProgress?.(`Parsed ${rows.length} commodity rows, saving...`);
+  onProgress?.(`Parsed ${rows.length} commodity rows for ${sourceDate.toDateString()}, saving...`);
 
   for (const row of rows) {
     await prisma.commodity.upsert({
-      where: { name_unit_sourceDate: { name: row.name, unit: row.unit, sourceDate: row.sourceDate } },
-      create: row,
-      update: {
-        lowPrice: row.lowPrice,
-        highPrice: row.highPrice,
-        prevailingPrice: row.prevailingPrice,
-      },
+      where: { name_region_sourceDate: { name: row.name, region: "NCR", sourceDate: row.sourceDate } },
+      create: { category: row.category, name: row.name, price: row.price, region: "NCR", sourceDate: row.sourceDate },
+      update: { category: row.category, price: row.price },
     });
   }
 
