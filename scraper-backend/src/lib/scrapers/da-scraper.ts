@@ -62,15 +62,17 @@ export async function scrapeAndStoreDAPrices(
 
   if (typeof globalThis.DOMMatrix === "undefined") {
     // pdfjs-dist (used by pdf-parse) references DOMMatrix even when unused for text extraction.
-    class DOMMatrixPolyfill {
-      constructor(..._args: unknown[]) {}
-    }
+    class DOMMatrixPolyfill {}
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (globalThis as any).DOMMatrix = DOMMatrixPolyfill;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const pdfParse = require("pdf-parse");
+  const pdfParseModule: unknown = await import("pdf-parse");
+  const pdfParse = (
+    typeof pdfParseModule === "function"
+      ? pdfParseModule
+      : (pdfParseModule as { default: unknown }).default
+  ) as (buf: Buffer) => Promise<{ text: string }>;
   const data = await pdfParse(buffer);
   const rows = extractCommodities(data.text, sourceDate);
 
