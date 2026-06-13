@@ -82,7 +82,7 @@ function Section({ type, label, desc, chunked }: { type: string; label: string; 
   };
 
   const latest = logs[0];
-  const isRunning = starting || latest?.status === "RUNNING";
+  const isRunning = starting;
 
   return (
     <div className="bg-white rounded-2xl shadow p-6">
@@ -91,7 +91,7 @@ function Section({ type, label, desc, chunked }: { type: string; label: string; 
 
       <button
         onClick={handleRun}
-        disabled={starting || isRunning}
+        disabled={isRunning}
         className="bg-green-700 hover:bg-green-600 disabled:opacity-50 text-white px-5 py-2.5 rounded-xl font-medium text-sm transition-colors"
       >
         {isRunning ? "Running... (this can take a while)" : "Run full scrape"}
