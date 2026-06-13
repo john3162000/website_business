@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SarapSulit — Masarap, Masustansya, Sulit!</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    * { font-family: 'Inter', sans-serif; }
+    .tab-btn.active { background: #15803d; color: white; }
+    .recipe-card:hover .recipe-img { transform: scale(1.05); }
+    .fade-in { animation: fadeIn .3s ease; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    .price-up { color: #dc2626; }
+    .price-down { color: #16a34a; }
+    .bar { height: 6px; border-radius: 9999px; background: #e5e7eb; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 9999px; background: #15803d; transition: width .5s ease; }
+    .modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:100; align-items:center; justify-content:center; }
+    .modal-bg.open { display:flex; }
+    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #f1f5f9; } ::-webkit-scrollbar-thumb { background: #15803d; border-radius: 3px; }
+  </style>
+</head>
+<body class="bg-amber-50 text-gray-900 min-h-screen flex flex-col">
+
+<!-- NAV -->
+<header class="bg-green-800 text-white shadow-lg sticky top-0 z-50">
+  <div class="max-w-6xl mx-auto px-4 flex items-center justify-between h-16">
+    <a href="#" class="flex items-center gap-2 font-bold text-xl" onclick="showSection('home')">
+      <span class="text-2xl">🍚</span> SarapSulit
+    </a>
+    <nav class="flex gap-1 text-sm font-medium">
+      <button onclick="showSection('home')" id="nav-home" class="tab-btn active px-4 py-2 rounded-md transition-colors hover:bg-green-700 text-green-100">Home</button>
+      <button onclick="showSection('browse')" id="nav-browse" class="tab-btn px-4 py-2 rounded-md transition-colors hover:bg-green-700 text-green-100">Browse Recipes</button>
+      <button onclick="showSection('prices')" id="nav-prices" class="tab-btn px-4 py-2 rounded-md transition-colors hover:bg-green-700 text-green-100">DA Prices</button>
+      <button onclick="showSection('calculator')" id="nav-calculator" class="tab-btn px-4 py-2 rounded-md transition-colors hover:bg-green-700 text-green-100">Calculator</button>
+    </nav>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════ HOME ═══════════════════════════════════ -->
+<section id="section-home" class="flex flex-col">
+
+  <!-- Hero -->
+  <div class="bg-gradient-to-br from-green-800 to-green-600 text-white py-20 px-4">
+    <div class="max-w-3xl mx-auto text-center">
+      <div class="inline-block bg-amber-400 text-green-900 text-xs font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-wide">
+        📄 DA Prices updated: June 7, 2025
+      </div>
+      <h1 class="text-4xl sm:text-5xl font-extrabold leading-tight mb-4">
+        Masarap, Masustansya,<br><span class="text-amber-300">Sulit!</span>
+      </h1>
+      <p class="text-lg text-green-100 mb-8 max-w-xl mx-auto">
+        Discover the best Filipino dishes to cook today — ranked by nutritional value and current
+        DA market prices. Make the most of your grocery budget.
+      </p>
+      <div class="flex flex-col sm:flex-row gap-3 justify-center">
+        <button onclick="showSection('browse')" class="bg-amber-400 hover:bg-amber-300 text-gray-900 font-bold px-8 py-3 rounded-full transition-colors shadow-lg">
+          Browse Recipes
+        </button>
+        <button onclick="showSection('prices')" class="bg-white/20 hover:bg-white/30 text-white font-semibold px-8 py-3 rounded-full transition-colors border border-white/40">
+          View DA Prices
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="bg-green-700 text-white py-4">
+    <div class="max-w-6xl mx-auto px-4 flex flex-wrap justify-center gap-10 text-center text-sm">
+      <div><p class="text-2xl font-bold text-amber-300">48</p><p class="text-green-200">Recipes Indexed</p></div>
+      <div><p class="text-2xl font-bold text-amber-300">156</p><p class="text-green-200">Food Items (FNRI)</p></div>
+      <div><p class="text-2xl font-bold text-amber-300">63</p><p class="text-green-200">Commodity Prices</p></div>
+      <div><p class="text-2xl font-bold text-amber-300">June 7, 2025</p><p class="text-green-200">Latest DA Data</p></div>
+    </div>
+  </div>
+
+  <!-- Top Recipes -->
+  <div class="max-w-6xl mx-auto px-4 py-12">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h2 class="text-2xl font-bold">Top Value Dishes Today</h2>
+        <p class="text-sm text-gray-500 mt-1">Ranked by Sulit Score (nutrition ÷ cost per serving) · June 7, 2025 DA prices</p>
+      </div>
+      <button onclick="showSection('browse')" class="text-green-700 hover:underline text-sm font-medium">View all →</button>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5" id="top-recipes-grid"></div>
+  </div>
+
+  <!-- How it works -->
+  <div class="bg-white border-t border-amber-100 py-12">
+    <div class="max-w-5xl mx-auto px-4">
+      <h2 class="text-2xl font-bold text-center mb-10">How It Works</h2>
+      <div class="grid sm:grid-cols-3 gap-8 text-center">
+        <div class="flex flex-col items-center gap-3 p-6 rounded-2xl bg-green-50">
+          <span class="text-5xl">📄</span>
+          <h3 class="font-bold text-lg">DA Price Index</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Daily commodity prices from the Department of Agriculture — vegetables, meat, fish, rice, and more from Kamuning, Nepa-Q Mart, and other markets.</p>
+        </div>
+        <div class="flex flex-col items-center gap-3 p-6 rounded-2xl bg-amber-50">
+          <span class="text-5xl">🥘</span>
+          <h3 class="font-bold text-lg">Panlasang Pinoy Recipes</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Recipes from panlasangpinoy.com — scraped for ingredients, instructions, servings, and cook time. Ingredients are matched to DA commodity prices.</p>
+        </div>
+        <div class="flex flex-col items-center gap-3 p-6 rounded-2xl bg-blue-50">
+          <span class="text-5xl">📊</span>
+          <h3 class="font-bold text-lg">FNRI Nutrition Data</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Nutritional values from the FNRI Food Composition Table — the Philippine standard. Calories, protein, vitamins, minerals per 100g for each ingredient.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ═══════════════════════════════════ BROWSE ═══════════════════════════════════ -->
+<section id="section-browse" class="hidden flex-col flex-1">
+  <div class="max-w-6xl mx-auto px-4 py-10 w-full">
+    <h1 class="text-3xl font-bold mb-1">Browse Filipino Recipes</h1>
+    <p class="text-gray-500 mb-6 text-sm">Filter and sort by nutrition, price, or specific produce. Prices based on June 7, 2025 DA data.</p>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-2xl shadow p-5 mb-6 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div>
+        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1">Sort by</label>
+        <select id="sort-select" onchange="filterRecipes()" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+          <option value="valueScore">Best Value (Sulit Score)</option>
+          <option value="nutritionScore">Most Nutritious</option>
+          <option value="costPerServing">Cheapest per Serving</option>
+          <option value="protein">Highest Protein</option>
+          <option value="calories">Highest Calories</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1">Min Protein (g/serving)</label>
+        <input type="number" id="min-protein" placeholder="e.g. 15" oninput="filterRecipes()" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"/>
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1">Max Cost per Serving (₱)</label>
+        <input type="number" id="max-cost" placeholder="e.g. 60" oninput="filterRecipes()" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"/>
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1">Contains Produce</label>
+        <input type="text" id="produce-filter" placeholder="e.g. kangkong, pork" oninput="filterRecipes()" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"/>
+      </div>
+    </div>
+
+    <!-- Dietary filter -->
+    <div class="bg-white rounded-2xl shadow p-5 mb-6">
+      <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-2">Dietary Filter</label>
+      <div id="diet-filter-options" class="flex flex-wrap gap-2"></div>
+      <p class="text-xs text-gray-400 mt-2">Tags are computed from each dish's actual ingredients and per-serving nutrition — not hand-labeled.</p>
+    </div>
+
+    <div class="mb-5">
+      <input type="text" id="search-input" placeholder="Search by dish name..." oninput="filterRecipes()"
+        class="w-full sm:w-80 border border-gray-300 rounded-full px-5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"/>
+    </div>
+
+    <p id="result-count" class="text-sm text-gray-500 mb-4"></p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5" id="browse-grid"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ DA PRICES ═══════════════════════════════════ -->
+<section id="section-prices" class="hidden flex-col flex-1">
+  <div class="max-w-6xl mx-auto px-4 py-10 w-full">
+    <div class="flex items-center justify-between mb-2">
+      <h1 class="text-3xl font-bold">DA Daily Price Monitoring</h1>
+      <span class="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full">June 7, 2025</span>
+    </div>
+    <p class="text-sm text-gray-500 mb-6">Source: Department of Agriculture — Kamuning Market, Quezon City · Nepa-Q Mart, Quezon City · Mega-Q Mart, Quezon City</p>
+
+    <div class="flex gap-2 mb-5 flex-wrap">
+      <button onclick="filterPrices('all')" id="cat-all" class="price-cat-btn bg-green-700 text-white text-xs px-4 py-1.5 rounded-full font-medium">All</button>
+      <button onclick="filterPrices('vegetables')" id="cat-vegetables" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50">Vegetables</button>
+      <button onclick="filterPrices('fish')" id="cat-fish" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50">Fish & Seafood</button>
+      <button onclick="filterPrices('meat')" id="cat-meat" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50">Meat & Poultry</button>
+      <button onclick="filterPrices('staple')" id="cat-staple" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50">Rice & Staples</button>
+      <button onclick="filterPrices('condiments')" id="cat-condiments" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50">Condiments</button>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-green-700 text-white">
+            <tr>
+              <th class="text-left px-5 py-3 font-semibold">Commodity</th>
+              <th class="text-left px-3 py-3 font-semibold hidden sm:table-cell">Local Name</th>
+              <th class="text-left px-3 py-3 font-semibold">Unit</th>
+              <th class="text-right px-3 py-3 font-semibold">Low (₱)</th>
+              <th class="text-right px-3 py-3 font-semibold">High (₱)</th>
+              <th class="text-right px-5 py-3 font-semibold">Avg (₱)</th>
+              <th class="text-center px-3 py-3 font-semibold hidden md:table-cell">Trend</th>
+            </tr>
+          </thead>
+          <tbody id="price-table-body" class="divide-y divide-gray-100"></tbody>
+        </table>
+      </div>
+    </div>
+    <p class="text-xs text-gray-400 mt-3">* Prices collected from retail markets in Metro Manila. DA Price Monitoring Report.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ COMMODITY CALCULATOR ═══════════════════════════════════ -->
+<section id="section-calculator" class="hidden flex-col flex-1">
+  <div class="max-w-3xl mx-auto px-4 py-10 w-full">
+    <h1 class="text-3xl font-bold mb-1">Commodity Cost Calculator</h1>
+    <p class="text-gray-500 mb-6 text-sm">Estimate how much a commodity will cost based on the latest DA Price Monitoring averages — handy for budgeting your next ulam.</p>
+
+    <div class="bg-white rounded-2xl shadow p-5 mb-6 grid sm:grid-cols-2 gap-4">
+      <div>
+        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1">Commodity</label>
+        <select id="calc-commodity" onchange="updateCommodityCalculator()" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"></select>
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1">Quantity (<span id="calc-unit-label">kg</span>)</label>
+        <input type="number" id="calc-qty" value="1" min="0" step="0.1" oninput="updateCommodityCalculator()"
+          class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"/>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow p-6">
+      <h3 class="font-bold text-gray-900 mb-4">Estimated Cost</h3>
+      <div class="grid grid-cols-3 gap-4 text-center">
+        <div class="bg-gray-50 rounded-xl px-3 py-4">
+          <p class="text-xl font-bold text-gray-700" id="calc-low">₱0.00</p>
+          <p class="text-xs text-gray-500 font-medium mt-1">Low Estimate</p>
+        </div>
+        <div class="bg-green-50 border border-green-200 rounded-xl px-3 py-4">
+          <p class="text-2xl font-bold text-green-700" id="calc-avg">₱0.00</p>
+          <p class="text-xs text-green-600 font-medium mt-1">Avg Estimate</p>
+        </div>
+        <div class="bg-gray-50 rounded-xl px-3 py-4">
+          <p class="text-xl font-bold text-gray-700" id="calc-high">₱0.00</p>
+          <p class="text-xs text-gray-500 font-medium mt-1">High Estimate</p>
+        </div>
+      </div>
+      <p class="text-xs text-gray-400 mt-4" id="calc-breakdown"></p>
+      <p class="text-xs text-gray-400 mt-1">Based on DA Price Monitoring averages (June 7, 2025) — actual prices vary by market and supplier.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ RECIPE MODAL ═══════════════════════════════════ -->
+<div class="modal-bg" id="recipe-modal" onclick="closeModal(event)">
+  <div class="bg-white rounded-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+    <div id="modal-content" class="p-6 md:p-8"></div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="bg-green-900 text-green-100 text-center py-6 text-sm mt-auto">
+  <p>Data sources: <strong>DA Price Monitoring (June 7, 2025)</strong> · <strong>Panlasang Pinoy</strong> · <strong>FNRI Food Composition Table</strong></p>
+  <p class="mt-1 text-green-400">SarapSulit — Masarap, Masustansya, Sulit!</p>
+</footer>
+
+<script>
+// ═══════════════ DATA ═══════════════
+
+const DA_PRICES = [
+  // Vegetables
+  { name:"Ampalaya", local:"Bitter Gourd", unit:"kg", low:56, high:96, avg:76, cat:"vegetables", trend:"down" },
+  { name:"Bataw", local:"Hyacinth Bean", unit:"kg", low:63, high:83, avg:73, cat:"vegetables", trend:"up" },
+  { name:"Baguio Beans", local:"String Beans (Baguio)", unit:"kg", low:81, high:141, avg:111, cat:"vegetables", trend:"up" },
+  { name:"Kangkong", local:"Water Spinach", unit:"bundle", low:11, high:21, avg:16, cat:"vegetables", trend:"up" },
+  { name:"Pechay (Baguio)", local:"Chinese Cabbage", unit:"kg", low:56, high:96, avg:76, cat:"vegetables", trend:"down" },
+  { name:"Pechay (Native)", local:"Bok Choy", unit:"bundle", low:9, high:19, avg:14, cat:"vegetables", trend:"down" },
+  { name:"Sitaw", local:"String Beans", unit:"kg", low:54, high:84, avg:69, cat:"vegetables", trend:"up" },
+  { name:"Talong", local:"Eggplant", unit:"kg", low:48, high:78, avg:63, cat:"vegetables", trend:"down" },
+  { name:"Kamatis", local:"Tomato", unit:"kg", low:62, high:102, avg:82, cat:"vegetables", trend:"up" },
+  { name:"Sibuyas (Imported)", local:"Onion (Imported)", unit:"kg", low:85, high:125, avg:105, cat:"vegetables", trend:"up" },
+  { name:"Sibuyas (Local)", local:"Onion (Local)", unit:"kg", low:97, high:137, avg:117, cat:"vegetables", trend:"down" },
+  { name:"Bawang (Imported)", local:"Garlic (Imported)", unit:"kg", low:143, high:203, avg:173, cat:"vegetables", trend:"up" },
+  { name:"Bawang (Local)", local:"Garlic (Local)", unit:"kg", low:191, high:271, avg:231, cat:"vegetables", trend:"up" },
+  { name:"Luya", local:"Ginger", unit:"kg", low:83, high:163, avg:123, cat:"vegetables", trend:"up" },
+  { name:"Sayote", local:"Chayote", unit:"kg", low:29, high:59, avg:44, cat:"vegetables", trend:"down" },
+  { name:"Kalabasa", local:"Squash", unit:"kg", low:31, high:61, avg:46, cat:"vegetables", trend:"up" },
+  { name:"Okra", local:"Lady's Finger", unit:"kg", low:65, high:105, avg:85, cat:"vegetables", trend:"up" },
+  { name:"Patola", local:"Sponge Gourd", unit:"kg", low:37, high:77, avg:57, cat:"vegetables", trend:"down" },
+  { name:"Upo", local:"Bottle Gourd", unit:"kg", low:31, high:61, avg:46, cat:"vegetables", trend:"up" },
+  { name:"Gabi", local:"Taro", unit:"kg", low:52, high:82, avg:67, cat:"vegetables", trend:"up" },
+  { name:"Kamote", local:"Sweet Potato", unit:"kg", low:37, high:67, avg:52, cat:"vegetables", trend:"down" },
+  { name:"Labanos", local:"Radish", unit:"kg", low:42, high:72, avg:57, cat:"vegetables", trend:"up" },
+  { name:"Carrot", local:"Carrot", unit:"kg", low:86, high:136, avg:111, cat:"vegetables", trend:"up" },
+  { name:"Repolyo", local:"Cabbage", unit:"kg", low:39, high:69, avg:54, cat:"vegetables", trend:"down" },
+  { name:"Spinach", local:"Spinach", unit:"kg", low:75, high:115, avg:95, cat:"vegetables", trend:"down" },
+  // Fish & Seafood
+  { name:"Bangus", local:"Milkfish", unit:"kg", low:183, high:223, avg:203, cat:"fish", trend:"up" },
+  { name:"Tilapia", local:"Tilapia", unit:"kg", low:136, high:166, avg:151, cat:"fish", trend:"up" },
+  { name:"Galunggong", local:"Round Scad", unit:"kg", low:156, high:216, avg:186, cat:"fish", trend:"down" },
+  { name:"Tambakol", local:"Yellowfin Tuna", unit:"kg", low:232, high:292, avg:262, cat:"fish", trend:"down" },
+  { name:"Alumahan", local:"Indian Mackerel", unit:"kg", low:201, high:261, avg:231, cat:"fish", trend:"up" },
+  { name:"Hito", local:"Catfish", unit:"kg", low:166, high:206, avg:186, cat:"fish", trend:"up" },
+  { name:"Hipon (Medium)", local:"Shrimp (Medium)", unit:"kg", low:314, high:394, avg:354, cat:"fish", trend:"down" },
+  { name:"Pusit", local:"Squid", unit:"kg", low:282, high:382, avg:332, cat:"fish", trend:"up" },
+  { name:"Tahong", local:"Mussels", unit:"kg", low:76, high:116, avg:96, cat:"fish", trend:"down" },
+  { name:"Talaba", local:"Oysters", unit:"kg", low:98, high:148, avg:123, cat:"fish", trend:"down" },
+  // Meat & Poultry
+  { name:"Baboy (Kasim)", local:"Pork (Shoulder)", unit:"kg", low:254, high:294, avg:274, cat:"meat", trend:"up" },
+  { name:"Baboy (Liempo)", local:"Pork Belly", unit:"kg", low:256, high:316, avg:286, cat:"meat", trend:"down" },
+  { name:"Manok (Whole)", local:"Chicken (Whole)", unit:"kg", low:160, high:210, avg:185, cat:"meat", trend:"up" },
+  { name:"Manok (Breast)", local:"Chicken Breast", unit:"kg", low:208, high:258, avg:233, cat:"meat", trend:"up" },
+  { name:"Itlog (Manok)", local:"Chicken Egg", unit:"pc", low:6, high:8, avg:7, cat:"meat", trend:"down" },
+  { name:"Karne ng Baka", local:"Beef (Round)", unit:"kg", low:373, high:433, avg:403, cat:"meat", trend:"down" },
+  // Staples
+  { name:"Bigas (Well-milled)", local:"Rice (Well-milled)", unit:"kg", low:47, high:54, avg:51, cat:"staple", trend:"down" },
+  { name:"Bigas (Special)", local:"Rice (Special)", unit:"kg", low:51, high:59, avg:55, cat:"staple", trend:"down" },
+  { name:"Bigas (Premium)", local:"Rice (Premium)", unit:"kg", low:55, high:65, avg:60, cat:"staple", trend:"down" },
+  { name:"Mais (Yellow)", local:"Corn (Yellow)", unit:"kg", low:32, high:52, avg:42, cat:"staple", trend:"up" },
+  { name:"Kamoteng Kahoy", local:"Cassava", unit:"kg", low:24, high:44, avg:34, cat:"staple", trend:"down" },
+  // Condiments
+  { name:"Toyo", local:"Soy Sauce", unit:"liter", low:43, high:63, avg:53, cat:"condiments", trend:"up" },
+  { name:"Suka", local:"Vinegar", unit:"liter", low:31, high:51, avg:41, cat:"condiments", trend:"up" },
+  { name:"Patis", local:"Fish Sauce", unit:"liter", low:51, high:81, avg:66, cat:"condiments", trend:"up" },
+  { name:"Mantika (Niyog)", local:"Coconut Oil", unit:"liter", low:76, high:116, avg:96, cat:"condiments", trend:"down" },
+  { name:"Asukal (Washed)", local:"Sugar (Washed)", unit:"kg", low:61, high:81, avg:71, cat:"condiments", trend:"up" },
+  { name:"Asin", local:"Salt", unit:"kg", low:11, high:21, avg:16, cat:"condiments", trend:"up" },
+  // Added for recipe nutrition cross-check
+  { name:"Tokwa", local:"Tofu", unit:"kg", low:71, high:91, avg:81, cat:"meat", trend:"up" },
+  { name:"Monggo", local:"Mung Beans (Dried)", unit:"kg", low:67, high:87, avg:77, cat:"staple", trend:"down" },
+  { name:"Atay ng Baboy", local:"Pork Liver", unit:"kg", low:150, high:190, avg:170, cat:"meat", trend:"down" },
+  { name:"Buntot ng Baka", local:"Oxtail", unit:"kg", low:288, high:328, avg:308, cat:"meat", trend:"down" },
+  { name:"Malunggay", local:"Moringa Leaves", unit:"bundle", low:9, high:13, avg:11, cat:"vegetables", trend:"up" },
+  { name:"Dahon ng Gabi", local:"Taro Leaves", unit:"bundle", low:23, high:33, avg:28, cat:"vegetables", trend:"down" },
+  { name:"Kalamansi", local:"Calamansi", unit:"kg", low:58, high:98, avg:78, cat:"condiments", trend:"down" },
+  { name:"Bagoong Alamang", local:"Shrimp Paste", unit:"kg", low:133, high:173, avg:153, cat:"condiments", trend:"up" },
+  { name:"Gata", local:"Coconut Milk", unit:"can (400ml)", low:51, high:71, avg:61, cat:"condiments", trend:"up" },
+  { name:"Mani (Giniling)", local:"Ground Peanuts", unit:"kg", low:207, high:247, avg:227, cat:"condiments", trend:"up" },
+];
+
+// ═══════════════ INGREDIENT REFERENCE (per 100g/100ml, FNRI-style) ═══════════════
+// nutr = [calories, protein(g), carbs(g), fat(g), fiber(g), vitaminA(mcg), vitaminC(mg), iron(mg), calcium(mg)]
+// pricePer100 = derived from DA_PRICES avg ÷ (grams or ml per purchase unit) × 100 — keeps cost cross-checkable.
+const PP = (slug) => `https://panlasangpinoy.com/wp-content/uploads/2021/04/${slug}.jpg`;
+
+const INGREDIENTS = {
+  bangus:        { label:"Bangus (Milkfish)",      unit:"g",  nutr:[148,20.5,0,6.7,0,30,0,1.0,30],   pricePer100:20,   da:["Bangus","kg",200] },
+  tilapia:       { label:"Tilapia",                 unit:"g",  nutr:[96,20.1,0,1.7,0,17,0,0.6,14],    pricePer100:14.5, da:["Tilapia","kg",145] },
+  galunggong:    { label:"Galunggong (Round Scad)", unit:"g",  nutr:[109,22,0,1.8,0,30,0,1.3,27],     pricePer100:19,   da:["Galunggong","kg",190] },
+  hipon:         { label:"Hipon (Shrimp)",          unit:"g",  nutr:[99,24,0.2,0.3,0,33,1.7,0.5,70],  pricePer100:36,   da:["Hipon (Medium)","kg",360] },
+  pusit:         { label:"Pusit (Squid)",           unit:"g",  nutr:[92,15.6,3.1,1.4,0,10,1.8,0.7,32],pricePer100:33,   da:["Pusit","kg",330] },
+  manok:         { label:"Manok (Whole Chicken)",   unit:"g",  nutr:[215,18.6,0,15,0,41,1.2,1.0,11],  pricePer100:17.5, da:["Manok (Whole)","kg",175] },
+  manok_breast:  { label:"Manok (Chicken Breast)",  unit:"g",  nutr:[165,31,0,3.6,0,16,0,0.7,15],     pricePer100:22.5, da:["Manok (Breast)","kg",225] },
+  baboy_kasim:   { label:"Baboy (Pork Shoulder)",   unit:"g",  nutr:[242,17,0,19,0,2,0.6,0.9,19],     pricePer100:26,   da:["Baboy (Kasim)","kg",260] },
+  baboy_liempo:  { label:"Baboy (Pork Belly)",      unit:"g",  nutr:[518,9.3,0,53,0,2,0,0.8,15],      pricePer100:29,   da:["Baboy (Liempo)","kg",290] },
+  baka:          { label:"Karne ng Baka (Beef)",    unit:"g",  nutr:[205,26,0,11,0,0,0,2.6,18],       pricePer100:41,   da:["Karne ng Baka","kg",410] },
+  itlog:         { label:"Itlog (Egg)",             unit:"g",  nutr:[155,13,1.1,11,0,160,0,1.8,56],   pricePer100:16,   da:["Itlog (Manok)","pc (50g)",8] },
+  tokwa:         { label:"Tokwa (Tofu)",            unit:"g",  nutr:[76,8,1.9,4.8,0.3,0,0.1,5.4,350], pricePer100:8,    da:["Tokwa","kg",80] },
+  monggo:        { label:"Monggo (Mung Beans, dried)", unit:"g", nutr:[347,24,63,1.2,16.3,6,4.8,6.7,132], pricePer100:8, da:["Monggo","kg",80] },
+  liver_pork:    { label:"Atay ng Baboy (Pork Liver)", unit:"g", nutr:[134,21,2.5,3.7,0,9442,23,18,8],  pricePer100:18,  da:["Atay ng Baboy","kg",180] },
+  kangkong:      { label:"Kangkong (Water Spinach)", unit:"g", nutr:[19,2.6,3.1,0.2,2.1,315,55,2.5,99], pricePer100:6,   da:["Kangkong","bundle (250g)",15] },
+  ampalaya:      { label:"Ampalaya (Bitter Gourd)", unit:"g",  nutr:[25,1.0,5.7,0.2,2.8,24,84,0.4,19], pricePer100:8,    da:["Ampalaya","kg",80] },
+  talong:        { label:"Talong (Eggplant)",       unit:"g",  nutr:[25,1.0,5.9,0.2,3.0,1,2.2,0.2,9],  pricePer100:6.5,  da:["Talong","kg",65] },
+  sitaw:         { label:"Sitaw (String Beans)",    unit:"g",  nutr:[47,2.8,8.4,0.3,3.4,35,16.3,1.0,50], pricePer100:6.5, da:["Sitaw","kg",65] },
+  kamatis:       { label:"Kamatis (Tomato)",        unit:"g",  nutr:[18,0.9,3.9,0.2,1.2,42,14,0.3,10], pricePer100:8,    da:["Kamatis","kg",80] },
+  sibuyas:       { label:"Sibuyas (Onion)",         unit:"g",  nutr:[40,1.1,9.3,0.1,1.7,0,7.4,0.2,23], pricePer100:10,   da:["Sibuyas (Local)","kg",120] },
+  bawang:        { label:"Bawang (Garlic)",         unit:"g",  nutr:[149,6.4,33,0.5,2.1,0,31,1.7,181], pricePer100:22,   da:["Bawang (Local)","kg",220] },
+  luya:          { label:"Luya (Ginger)",           unit:"g",  nutr:[80,1.8,18,0.8,2.0,0,5,0.6,16],   pricePer100:12,   da:["Luya","kg",120] },
+  sayote:        { label:"Sayote (Chayote)",        unit:"g",  nutr:[19,0.8,4.5,0.1,1.7,1,7.7,0.3,17], pricePer100:4.5,  da:["Sayote","kg",45] },
+  kalabasa:      { label:"Kalabasa (Squash)",       unit:"g",  nutr:[26,1.0,6.5,0.1,0.5,369,9,0.8,21], pricePer100:4.5,  da:["Kalabasa","kg",45] },
+  okra:          { label:"Okra",                    unit:"g",  nutr:[33,1.9,7.5,0.2,3.2,36,23,0.6,82], pricePer100:8,    da:["Okra","kg",80] },
+  repolyo:       { label:"Repolyo (Cabbage)",       unit:"g",  nutr:[25,1.3,5.8,0.1,2.5,5,36.6,0.5,40], pricePer100:5.5, da:["Repolyo","kg",55] },
+  pechay:        { label:"Pechay (Bok Choy)",       unit:"g",  nutr:[13,1.5,2.2,0.2,1.0,243,45,0.8,105], pricePer100:7.5, da:["Pechay (Native)","bundle (200g)",15] },
+  labanos:       { label:"Labanos (Radish)",        unit:"g",  nutr:[16,0.7,3.4,0.1,1.6,0,14.8,0.3,25], pricePer100:5.5, da:["Labanos","kg",55] },
+  kamote:        { label:"Kamote (Sweet Potato)",   unit:"g",  nutr:[86,1.6,20,0.1,3.0,709,2.4,0.6,30], pricePer100:5.5, da:["Kamote","kg",55] },
+  gabi:          { label:"Gabi (Taro)",             unit:"g",  nutr:[112,1.5,26,0.2,4.1,0,4.5,0.6,43], pricePer100:6.5,  da:["Gabi","kg",65] },
+  taro_leaves:   { label:"Dahon ng Gabi (Taro Leaves)", unit:"g", nutr:[42,4.7,6.4,0.6,3.7,281,52,1.5,91], pricePer100:7.5, da:["Dahon ng Gabi","bundle (200g)",30] },
+  malunggay:     { label:"Malunggay (Moringa Leaves)", unit:"g", nutr:[64,9.4,8.3,1.4,2.0,378,51.7,4.0,185], pricePer100:10, da:["Malunggay","bundle (100g)",10] },
+  baguio_beans:  { label:"Baguio Beans",            unit:"g",  nutr:[31,1.8,7.0,0.2,3.4,35,16,1.0,37], pricePer100:11,   da:["Baguio Beans","kg",110] },
+  carrot:        { label:"Carrot",                  unit:"g",  nutr:[41,0.9,9.6,0.2,2.8,835,5.9,0.3,33], pricePer100:10.5, da:["Carrot","kg",105] },
+  bigas:         { label:"Bigas (Rice, raw)",       unit:"g",  nutr:[365,7.1,80,0.7,1.3,0,0,0.8,28],  pricePer100:5.2,  da:["Bigas (Well-milled)","kg",52] },
+  toyo:          { label:"Toyo (Soy Sauce)",        unit:"ml", nutr:[60,8,6,0,0,0,0,2,20],            pricePer100:5,    da:["Toyo","liter",50] },
+  suka:          { label:"Suka (Vinegar)",          unit:"ml", nutr:[18,0,0.4,0,0,0,0,0.2,6],         pricePer100:4,    da:["Suka","liter",40] },
+  patis:         { label:"Patis (Fish Sauce)",      unit:"ml", nutr:[35,5,3,0,0,0,0,1,30],            pricePer100:6.5,  da:["Patis","liter",65] },
+  mantika:       { label:"Mantika (Cooking Oil)",   unit:"ml", nutr:[884,0,0,100,0,0,0,0,0],          pricePer100:10,   da:["Mantika (Niyog)","liter",100] },
+  gata:          { label:"Gata (Coconut Milk)",     unit:"ml", nutr:[230,2.3,5.5,24,2.2,0,1.0,1.6,16],pricePer100:15,   da:["Gata","can (400ml)",60] },
+  kalamansi:     { label:"Kalamansi",               unit:"g",  nutr:[30,0.7,10,0.2,1.0,20,30,0.3,19], pricePer100:8,    da:["Kalamansi","kg",80] },
+  bagoong:       { label:"Bagoong Alamang (Shrimp Paste)", unit:"g", nutr:[90,12,4,2,0,30,0,2,130],   pricePer100:15,   da:["Bagoong Alamang","kg",150] },
+  mani:          { label:"Mani (Ground Peanuts)",   unit:"g",  nutr:[588,25,20,50,6,0,0,1.9,49],      pricePer100:22,   da:["Mani (Giniling)","kg",220] },
+};
+
+// ═══════════════ RECIPES — composed from ingredient quantities ═══════════════
+// Each recipe lists [ingredientKey, grams_or_ml]. Nutrition, cost, and scores are
+// COMPUTED from these quantities × the reference table above (see computeRecipe),
+// so every figure shown is mathematically traceable to the amounts actually used.
+const RAW_RECIPES = [
+  { id:1, title:"Sinigang na Bangus", category:"Soup", servings:4, prepTime:15, cookTime:30,
+    composition:[["bangus",600],["kamatis",150],["kangkong",150],["sibuyas",80],["labanos",150],["sitaw",80]],
+    instructions:["Clean and cut bangus into serving pieces; season lightly with salt.","Boil water with kamatis and sibuyas for 5 minutes, then add bangus and simmer 8 minutes.","Add labanos and sitaw, cook 3 minutes, then stir in sinigang mix or sampaloc to taste.","Add kangkong last, season with patis, and simmer 2 minutes before serving with rice."] },
+  { id:2, title:"Sinigang na Hipon", category:"Soup", servings:4, prepTime:15, cookTime:20,
+    composition:[["hipon",400],["kamatis",150],["kangkong",150],["labanos",150],["sibuyas",80]],
+    instructions:["Clean and devein shrimp, keeping shells on for flavor.","Boil water with kamatis and sibuyas for 5 minutes, then add labanos and cook 3 minutes.","Add shrimp and souring agent; cook just 3-4 minutes until shrimp turn pink.","Add kangkong, season with patis, and serve immediately with rice."] },
+  { id:3, title:"Sinigang na Baboy", category:"Soup", servings:5, prepTime:15, cookTime:60,
+    composition:[["baboy_liempo",600],["kamatis",150],["kangkong",150],["labanos",150],["sitaw",100],["gabi",150]],
+    instructions:["Boil pork belly in water until tender, about 40 minutes, skimming the scum.","Add kamatis and sibuyas, simmer 5 minutes, then add gabi and cook until soft.","Add labanos and sitaw; stir in souring agent (tamarind or mix) to taste.","Add kangkong last, season with patis, and serve hot with rice."] },
+  { id:4, title:"Ginisang Monggo", category:"Main Dish", servings:5, prepTime:10, cookTime:40,
+    composition:[["monggo",200],["kangkong",150],["baboy_kasim",150],["bawang",20],["sibuyas",80],["kamatis",100]],
+    instructions:["Boil monggo beans in water until soft, about 30-40 minutes.","Sauté garlic, onion, and tomato; add pork and cook until lightly browned.","Pour in the cooked monggo with its broth, season with patis, and simmer 10 minutes.","Add kangkong leaves, simmer 2 minutes more, and serve with rice."] },
+  { id:5, title:"Ginisang Kangkong", category:"Vegetable Dish", servings:3, prepTime:5, cookTime:10,
+    composition:[["kangkong",400],["bawang",20],["baboy_kasim",50],["toyo",30]],
+    instructions:["Separate kangkong leaves from stems; cut stems into short lengths.","Sauté garlic until golden, then add pork and cook through.","Add kangkong stems, stir-fry briefly, then add leaves and splash with soy sauce.","Toss quickly over high heat and serve immediately."] },
+  { id:6, title:"Ginisang Ampalaya with Egg", category:"Vegetable Dish", servings:3, prepTime:10, cookTime:15,
+    composition:[["ampalaya",300],["itlog",100],["kamatis",80],["sibuyas",60],["bawang",15]],
+    instructions:["Slice ampalaya thinly, salt briefly, then rinse to reduce bitterness.","Sauté garlic, onion, and tomato until softened.","Add ampalaya and cook until just tender, about 5 minutes.","Push to the side, scramble in the eggs, then mix everything together and serve."] },
+  { id:7, title:"Ginisang Sitaw with Pork", category:"Vegetable Dish", servings:4, prepTime:10, cookTime:20,
+    composition:[["sitaw",300],["baboy_kasim",150],["kamatis",100],["bawang",15],["sibuyas",60]],
+    instructions:["Cut sitaw into two-inch lengths.","Sauté garlic, onion, and tomato; add pork and cook until browned.","Add sitaw and a splash of water; cover and simmer until tender-crisp.","Season with patis and serve hot with rice."] },
+  { id:8, title:"Pakbet Ilocano", category:"Vegetable Dish", servings:4, prepTime:20, cookTime:25,
+    composition:[["ampalaya",150],["talong",150],["okra",100],["sitaw",100],["kalabasa",150],["kamatis",100],["baboy_liempo",150],["bagoong",20]],
+    instructions:["Cut all vegetables into bite-sized pieces.","Sauté garlic, onion, and tomato; add pork and cook until lightly browned.","Add kalabasa first (longest to cook), cover and simmer 5 minutes, then add the rest except ampalaya.","Stir in bagoong, add ampalaya last, and steam-cook briefly without overcooking."] },
+  { id:9, title:"Pinakbet Tagalog", category:"Vegetable Dish", servings:4, prepTime:20, cookTime:25,
+    composition:[["talong",150],["kalabasa",200],["sitaw",100],["okra",100],["kamatis",100],["hipon",100],["bagoong",15]],
+    instructions:["Cut vegetables into bite-sized pieces.","Sauté garlic, onion, and tomato; add shrimp and cook briefly.","Add kalabasa, cover, and simmer until almost tender, then add remaining vegetables.","Season with bagoong, simmer until just cooked, and serve with rice."] },
+  { id:10, title:"Tinolang Manok", category:"Soup", servings:5, prepTime:15, cookTime:35,
+    composition:[["manok",700],["sayote",250],["luya",30],["bawang",15],["sibuyas",60],["malunggay",50]],
+    instructions:["Sauté ginger, garlic, and onion until fragrant.","Add chicken pieces and cook until lightly browned.","Pour in water, bring to a boil, then simmer 20 minutes until chicken is tender.","Add sayote, cook until tender, then stir in malunggay leaves and season with patis."] },
+  { id:11, title:"Adobong Manok", category:"Main Dish", servings:4, prepTime:10, cookTime:45,
+    composition:[["manok",700],["toyo",90],["suka",60],["bawang",30],["mantika",15]],
+    instructions:["Marinate chicken in soy sauce, vinegar, garlic, and bay leaves for 30 minutes.","Bring everything to a boil in a pot, then lower heat and simmer 25 minutes.","Remove chicken, sear in oil until golden, then return to the reduced sauce.","Toss to coat well and serve with steamed rice."] },
+  { id:12, title:"Adobong Baboy", category:"Main Dish", servings:4, prepTime:10, cookTime:45,
+    composition:[["baboy_liempo",700],["toyo",90],["suka",60],["bawang",30],["mantika",15]],
+    instructions:["Marinate pork in soy sauce, vinegar, garlic, and bay leaves for 30 minutes.","Simmer in a pot until the pork is tender and the sauce reduces.","Sear the pork pieces in a little oil until lightly crisped.","Return to the sauce, toss to coat, and serve with rice."] },
+  { id:13, title:"Adobong Pusit", category:"Main Dish", servings:3, prepTime:15, cookTime:20,
+    composition:[["pusit",500],["toyo",60],["suka",40],["bawang",25],["sibuyas",60]],
+    instructions:["Clean squid and slice into rings, keeping the ink sac if available.","Sauté garlic and onion until fragrant.","Add squid, soy sauce, and vinegar; simmer briefly — do not overcook the squid.","Season to taste and serve hot with rice."] },
+  { id:14, title:"Nilagang Baka", category:"Soup", servings:5, prepTime:10, cookTime:90,
+    composition:[["baka",600],["repolyo",200],["pechay",150],["kamote",200],["sibuyas",80]],
+    instructions:["Boil beef with onion, skimming off the foam, until very tender (about 1.5 hours).","Add kamote wedges and cook 10 minutes.","Add cabbage and cook 5 minutes more.","Add pechay last, season with salt and fish sauce, and serve hot."] },
+  { id:15, title:"Bulalo", category:"Soup", servings:5, prepTime:15, cookTime:120,
+    composition:[["baka",700],["repolyo",150],["kamote",200],["sibuyas",80],["sitaw",80],["baguio_beans",80]],
+    instructions:["Simmer beef shank and bone marrow in water for about two hours until very tender.","Add kamote and simmer until soft.","Add cabbage, sitaw, and baguio beans; cook until just tender.","Season with salt and pepper, and serve piping hot."] },
+  { id:16, title:"Kare-Kare", category:"Main Dish", servings:5, prepTime:25, cookTime:120,
+    composition:[["baka",600],["talong",150],["sitaw",100],["kalabasa",150],["mani",80],["bagoong",30]],
+    instructions:["Simmer beef (oxtail or shank cuts) until tender, reserving the broth.","Make the sauce by toasting rice flour and blending with ground peanuts and broth.","Add the beef and vegetables to the peanut sauce and simmer until vegetables are tender.","Serve with sautéed shrimp paste (bagoong) on the side."] },
+  { id:17, title:"Bicol Express", category:"Main Dish", servings:4, prepTime:15, cookTime:35,
+    composition:[["baboy_liempo",500],["gata",400],["sibuyas",60],["bawang",20],["bagoong",30]],
+    instructions:["Sauté garlic, onion, and chilies in oil until fragrant.","Add sliced pork belly and cook until lightly browned.","Pour in coconut milk and shrimp paste, and simmer until the sauce thickens.","Adjust seasoning with chilies and serve with rice."] },
+  { id:18, title:"Laing", category:"Vegetable Dish", servings:4, prepTime:20, cookTime:45,
+    composition:[["taro_leaves",250],["gata",400],["baboy_liempo",150],["bagoong",20],["luya",15],["sibuyas",60]],
+    instructions:["Layer dried taro leaves in a pot with sliced pork, ginger, onion, and chilies.","Pour in coconut milk without stirring (to prevent the leaves from itching).","Simmer slowly over low heat until the leaves are tender and the sauce thickens.","Stir in shrimp paste at the end and simmer briefly before serving."] },
+  { id:19, title:"Ginataang Gulay", category:"Vegetable Dish", servings:4, prepTime:15, cookTime:25,
+    composition:[["kalabasa",250],["sitaw",150],["gata",300],["hipon",150],["bawang",15]],
+    instructions:["Sauté garlic and shrimp briefly until shrimp turn pink; set shrimp aside.","Add kalabasa and coconut milk, and simmer until squash softens.","Add sitaw and cook until tender-crisp.","Return shrimp to the pot, season with patis, and simmer briefly before serving."] },
+  { id:20, title:"Chopsuey", category:"Vegetable Dish", servings:4, prepTime:20, cookTime:15,
+    composition:[["kalabasa",100],["baguio_beans",100],["repolyo",150],["carrot",80],["sitaw",80],["hipon",100],["manok_breast",100]],
+    instructions:["Sauté garlic and onion; add chicken and shrimp and cook until done.","Add the harder vegetables (carrot, baguio beans, kalabasa) first and stir-fry briefly.","Add cabbage and sitaw, and stir-fry until just tender-crisp.","Season with a little soy sauce and oyster sauce, and serve hot."] },
+  { id:21, title:"Lumpiang Gulay", category:"Vegetable Dish", servings:5, prepTime:30, cookTime:25,
+    composition:[["kalabasa",150],["baguio_beans",100],["carrot",100],["sitaw",80],["baboy_kasim",100],["bawang",15]],
+    instructions:["Julienne all the vegetables finely.","Sauté garlic and pork until cooked, then add the vegetables and stir-fry until just wilted.","Season with patis and let the mixture cool slightly.","Wrap in spring roll wrappers and serve fresh or lightly fried."] },
+  { id:22, title:"Tortang Talong", category:"Vegetable Dish", servings:3, prepTime:15, cookTime:15,
+    composition:[["talong",300],["itlog",150],["sibuyas",40],["mantika",30]],
+    instructions:["Grill the eggplants until the skin chars, then peel and flatten.","Beat eggs with chopped onion and a pinch of salt.","Dip the flattened eggplant in the egg mixture.","Pan-fry until golden on both sides and serve with rice and ketchup or vinegar dip."] },
+  { id:23, title:"Tortang Giniling", category:"Main Dish", servings:4, prepTime:15, cookTime:20,
+    composition:[["baka",300],["itlog",150],["sibuyas",60],["kamatis",80],["mantika",20]],
+    instructions:["Sauté garlic, onion, and tomato; add ground beef and cook until browned.","Let the mixture cool slightly, then mix in the beaten eggs.","Pour spoonfuls onto a hot, oiled pan and fry until set on both sides.","Serve hot with rice and ketchup."] },
+  { id:24, title:"Sinigang na Baboy sa Miso", category:"Soup", servings:5, prepTime:15, cookTime:60,
+    composition:[["baboy_liempo",600],["kamatis",100],["kangkong",150],["labanos",100],["sitaw",100],["toyo",40]],
+    instructions:["Boil pork until tender, skimming off the scum.","Add kamatis and a souring agent, and simmer to develop the broth.","Stir in miso (soybean paste) and simmer 10 minutes for depth of flavor.","Add labanos, sitaw, and kangkong; season with soy sauce and serve hot."] },
+  { id:25, title:"Paksiw na Bangus", category:"Main Dish", servings:4, prepTime:10, cookTime:30,
+    composition:[["bangus",700],["suka",100],["luya",30],["sibuyas",60],["talong",100]],
+    instructions:["Arrange bangus, ginger, onion, and talong in a pot.","Pour in vinegar and a little water; do not stir.","Bring to a boil uncovered, then cover and simmer until the fish is cooked through.","Season with salt and pepper and serve with rice."] },
+  { id:26, title:"Paksiw na Galunggong", category:"Main Dish", servings:4, prepTime:10, cookTime:25,
+    composition:[["galunggong",600],["suka",80],["luya",25],["sibuyas",60],["ampalaya",100]],
+    instructions:["Arrange fish, ginger, onion, and ampalaya in a shallow pan.","Add vinegar and a splash of water; bring to a boil without stirring.","Cover and simmer until the fish is cooked and the sauce reduces slightly.","Serve with steamed rice."] },
+  { id:27, title:"Escabecheng Isda", category:"Main Dish", servings:4, prepTime:20, cookTime:25,
+    composition:[["tilapia",700],["suka",80],["sibuyas",80],["carrot",80],["kamatis",60],["mantika",40]],
+    instructions:["Fry the fish until golden and crisp; set aside.","Sauté garlic, onion, carrot, and tomato in a little oil.","Add vinegar, sugar, and a splash of water; simmer to make a sweet-sour sauce.","Pour the sauce over the fried fish and serve immediately."] },
+  { id:28, title:"Inihaw na Bangus", category:"Main Dish", servings:4, prepTime:20, cookTime:20,
+    composition:[["bangus",800],["kalamansi",40],["toyo",30],["luya",20],["sibuyas",60]],
+    instructions:["Butterfly the bangus and marinate in soy sauce, calamansi, and ginger for 20 minutes.","Stuff the cavity with chopped tomato and onion.","Grill over charcoal until cooked through and lightly charred.","Serve with a soy-calamansi dipping sauce and rice."] },
+  { id:29, title:"Daing na Bangus", category:"Main Dish", servings:4, prepTime:20, cookTime:15,
+    composition:[["bangus",800],["suka",60],["bawang",30],["mantika",30]],
+    instructions:["Marinate butterflied bangus in vinegar, crushed garlic, salt, and pepper overnight.","Drain well before frying.","Fry in hot oil until golden and crisp on both sides.","Serve with garlic rice, fried egg, and a vinegar-soy dip."] },
+  { id:30, title:"Sarciadong Isda", category:"Main Dish", servings:4, prepTime:15, cookTime:20,
+    composition:[["tilapia",600],["itlog",100],["kamatis",150],["sibuyas",60],["bawang",15]],
+    instructions:["Fry the fish lightly until just cooked; set aside.","Sauté garlic, onion, and tomato until saucy.","Add a little water and simmer, then return the fish to the sauce.","Drizzle in beaten egg, swirl gently to set, and serve hot with rice."] },
+  { id:31, title:"Ginisang Munggo with Hipon", category:"Main Dish", servings:5, prepTime:10, cookTime:35,
+    composition:[["monggo",200],["hipon",200],["malunggay",60],["bawang",15],["sibuyas",60],["kamatis",80]],
+    instructions:["Boil monggo beans until soft.","Sauté garlic, onion, and tomato; add shrimp and cook briefly.","Combine with the cooked monggo and simmer until well blended.","Stir in malunggay leaves, season with patis, and serve with rice."] },
+  { id:32, title:"Chicken Lugaw", category:"Rice & Noodles", servings:5, prepTime:10, cookTime:40,
+    composition:[["manok",400],["bigas",250],["luya",30],["bawang",15],["sibuyas",60]],
+    instructions:["Sauté ginger, garlic, and onion until fragrant.","Add chicken and rice, and toast briefly in the aromatics.","Pour in water and simmer, stirring occasionally, until the rice breaks down into porridge.","Season with patis and top with toasted garlic and spring onions."] },
+  { id:33, title:"Arroz Caldo", category:"Rice & Noodles", servings:5, prepTime:15, cookTime:45,
+    composition:[["manok",500],["bigas",250],["luya",40],["bawang",20],["sibuyas",60],["itlog",50]],
+    instructions:["Sauté a generous amount of ginger, garlic, and onion until aromatic.","Add chicken pieces and rice; cook briefly to coat in the aromatics.","Pour in broth and simmer, stirring often, until thick and porridge-like.","Top each bowl with a soft-boiled egg, toasted garlic, and scallions."] },
+  { id:34, title:"Plain Lugaw", category:"Rice & Noodles", servings:4, prepTime:5, cookTime:35,
+    composition:[["bigas",250],["luya",25],["bawang",10],["sibuyas",40],["patis",20]],
+    instructions:["Sauté ginger, garlic, and onion in a little oil.","Add rice and water, and bring to a boil.","Simmer over low heat, stirring occasionally, until the rice is fully broken down.","Season with fish sauce and serve with toppings of choice."] },
+  { id:35, title:"Goto", category:"Rice & Noodles", servings:5, prepTime:15, cookTime:90,
+    composition:[["baka",200],["bigas",250],["luya",30],["bawang",20],["sibuyas",60],["itlog",50]],
+    instructions:["Simmer beef tripe (or lean beef) until very tender, reserving the broth.","Sauté ginger, garlic, and onion; add rice and toast briefly.","Pour in the broth and simmer, stirring often, until porridge-like.","Add the cooked meat, top with a soft-boiled egg, and serve hot."] },
+  { id:36, title:"Beef Caldereta", category:"Main Dish", servings:5, prepTime:20, cookTime:120,
+    composition:[["baka",700],["kamatis",150],["carrot",100],["kamote",150],["mani",30],["gata",100],["bawang",20],["sibuyas",80]],
+    instructions:["Sauté garlic, onion, and tomato; brown the beef chunks.","Add water or broth and simmer until the beef is tender.","Add carrots and potatoes (or kamote), and stir in peanut butter and a splash of coconut milk or cream.","Simmer until the sauce thickens and vegetables are tender; serve with rice."] },
+  { id:37, title:"Pork Menudo", category:"Main Dish", servings:5, prepTime:20, cookTime:60,
+    composition:[["baboy_kasim",500],["liver_pork",150],["kamatis",150],["carrot",100],["kamote",150],["sibuyas",80],["bawang",20]],
+    instructions:["Sauté garlic, onion, and tomato; add diced pork and cook until browned.","Add liver and cook briefly, then pour in water or broth and simmer until pork is tender.","Add carrots and potatoes, and simmer until vegetables are cooked through.","Season to taste and serve with rice."] },
+  { id:38, title:"Chicken Afritada", category:"Main Dish", servings:5, prepTime:15, cookTime:50,
+    composition:[["manok",700],["kamatis",150],["carrot",100],["kamote",150],["sibuyas",80],["bawang",20]],
+    instructions:["Sauté garlic, onion, and tomato; add chicken pieces and cook until lightly browned.","Pour in water or broth and simmer until the chicken is tender.","Add carrots and potatoes, and cook until vegetables are tender.","Season to taste and serve with steamed rice."] },
+  { id:39, title:"Pork Afritada", category:"Main Dish", servings:5, prepTime:15, cookTime:60,
+    composition:[["baboy_kasim",600],["kamatis",150],["carrot",100],["kamote",150],["sibuyas",80],["bawang",20]],
+    instructions:["Sauté garlic, onion, and tomato; brown the pork pieces.","Add water or broth and simmer until the pork is tender.","Add carrots and potatoes, and cook until tender.","Adjust seasoning and serve with rice."] },
+  { id:40, title:"Bistek Tagalog", category:"Main Dish", servings:4, prepTime:30, cookTime:20,
+    composition:[["baka",600],["toyo",60],["kalamansi",40],["sibuyas",100],["bawang",20],["mantika",20]],
+    instructions:["Marinate thinly sliced beef in soy sauce, calamansi juice, and garlic for at least 30 minutes.","Pan-fry the beef quickly in hot oil; set aside.","In the same pan, sauté onion rings and the marinade until slightly reduced.","Return the beef to the pan, top with onions, and serve with rice."] },
+  { id:41, title:"Pork Sisig", category:"Main Dish", servings:4, prepTime:30, cookTime:60,
+    composition:[["baboy_liempo",600],["liver_pork",100],["sibuyas",100],["kalamansi",30],["toyo",20],["mantika",20]],
+    instructions:["Boil pork (and liver) until tender, then grill until lightly charred.","Chop everything finely and mix with chopped onions and chilies.","Sizzle the mixture on a hot plate with a little oil and butter.","Squeeze calamansi over the top and serve immediately with rice."] },
+  { id:42, title:"Chicken Curry", category:"Main Dish", servings:5, prepTime:15, cookTime:45,
+    composition:[["manok",700],["gata",400],["kalabasa",150],["carrot",100],["sibuyas",80],["bawang",20],["luya",15]],
+    instructions:["Sauté garlic, onion, and ginger; add curry powder and toast briefly.","Add chicken pieces and cook until lightly browned.","Pour in coconut milk and simmer until the chicken is tender.","Add carrots and squash, simmer until vegetables are cooked, and serve with rice."] },
+  { id:43, title:"Ginataang Manok", category:"Main Dish", servings:5, prepTime:15, cookTime:40,
+    composition:[["manok",700],["gata",400],["malunggay",60],["luya",20],["sibuyas",60],["bawang",15]],
+    instructions:["Sauté ginger, garlic, and onion until fragrant.","Add chicken pieces and cook until lightly browned.","Pour in coconut milk and simmer until the chicken is tender and the sauce thickens.","Stir in malunggay leaves, season with patis, and serve with rice."] },
+  { id:44, title:"Dinengdeng", category:"Vegetable Dish", servings:4, prepTime:15, cookTime:20,
+    composition:[["ampalaya",100],["sitaw",100],["talong",100],["okra",100],["kalabasa",100],["bagoong",30],["galunggong",150]],
+    instructions:["Bring water to a boil and dissolve bagoong (fish or shrimp paste) into it.","Add the grilled or fried fish pieces.","Add the vegetables, starting with the ones that take longest to cook.","Simmer until vegetables are just tender and serve with rice."] },
+  { id:45, title:"Chopsuey Gulay (Vegetarian)", category:"Vegetable Dish", servings:4, prepTime:20, cookTime:15,
+    composition:[["kalabasa",100],["baguio_beans",100],["repolyo",150],["carrot",80],["sitaw",80],["tokwa",150],["bawang",15]],
+    instructions:["Pan-fry cubed tofu until golden; set aside.","Sauté garlic and the harder vegetables (carrot, baguio beans, kalabasa) first.","Add cabbage and sitaw, and stir-fry until tender-crisp.","Return the tofu, season lightly with soy sauce, and serve hot."] },
+  { id:46, title:"Munggo Guisado with Malunggay", category:"Main Dish", servings:5, prepTime:10, cookTime:40,
+    composition:[["monggo",200],["malunggay",80],["bawang",15],["sibuyas",60],["kamatis",80],["baboy_kasim",100]],
+    instructions:["Boil monggo beans until soft and the skins split.","Sauté garlic, onion, tomato, and pork until the pork is cooked through.","Combine with the cooked monggo and simmer until well blended.","Stir in malunggay leaves, season with patis, and serve with rice."] },
+  { id:47, title:"Tinolang Isda (Galunggong)", category:"Soup", servings:4, prepTime:15, cookTime:25,
+    composition:[["galunggong",500],["luya",30],["sibuyas",60],["sayote",200],["malunggay",50]],
+    instructions:["Sauté ginger and onion until fragrant.","Add water and bring to a boil, then add the fish and simmer gently.","Add sayote and cook until tender.","Stir in malunggay leaves, season with patis, and serve hot."] },
+  { id:48, title:"Sinampalukang Manok", category:"Soup", servings:5, prepTime:15, cookTime:40,
+    composition:[["manok",700],["kangkong",150],["sitaw",100],["kamatis",150],["sibuyas",60]],
+    instructions:["Sauté garlic, onion, and tomato; add chicken pieces and cook until lightly browned.","Pour in water and simmer until the chicken is tender.","Stir in tamarind (sampalok) base for a sour broth, then add sitaw.","Add kangkong last, season with patis, and serve hot with rice."] },
+  { id:49, title:"Paksiw na Pata", category:"Main Dish", servings:5, prepTime:15, cookTime:90,
+    composition:[["baboy_liempo",800],["suka",100],["toyo",40],["bawang",30],["sibuyas",60]],
+    instructions:["Simmer pork (pata-style cut) in water with garlic and onion until tender.","Add vinegar and soy sauce, and continue simmering without stirring at first.","Add bay leaves and peppercorns, and reduce the sauce until slightly thickened.","Sweeten lightly to taste and serve with rice."] },
+  { id:50, title:"Tokwa't Baboy", category:"Appetizer", servings:4, prepTime:15, cookTime:30,
+    composition:[["tokwa",300],["baboy_liempo",300],["toyo",60],["suka",40],["sibuyas",80],["bawang",15]],
+    instructions:["Boil pork until tender, then slice into small cubes.","Fry tofu cubes until golden and crisp; cube them as well.","Combine pork and tofu in a bowl with chopped onions.","Make a soy-vinegar-garlic dipping sauce, pour over, and serve as a side dish or appetizer."] },
+];
+
+// ═══════════════ COMPUTATION ENGINE — derives nutrition, cost & scores from quantities ═══════════════
+
+const DRV = { protein:50, carbs:275, fat:78, fiber:25, vitaminC:60, iron:18, calcium:1000, vitaminA:900 };
+const NUTR_KEYS = ["calories","protein","carbs","fat","fiber","vitaminA","vitaminC","iron","calcium"];
+
+// Ingredient keys derived from meat, fish/seafood, or other animal sources — used to flag "Vegetarian" dishes.
+const ANIMAL_KEYS = new Set([
+  "bangus","tilapia","galunggong","hipon","pusit","manok","manok_breast",
+  "baboy_kasim","baboy_liempo","baka","liver_pork","bagoong","patis","itlog",
+]);
+
+const DIET_OPTIONS = [
+  { key:"vegetarian",    label:"Vegetarian" },
+  { key:"high-protein",  label:"High Protein (≥20g/serving)" },
+  { key:"low-carb",      label:"Low Carb (≤20g/serving)" },
+  { key:"high-fiber",    label:"High Fiber (≥5g/serving)" },
+  { key:"low-fat",       label:"Low Fat (≤10g/serving)" },
+  { key:"low-calorie",   label:"Low Calorie (≤200 kcal/serving)" },
+];
+
+function pct(val, key) {
+  return DRV[key] ? Math.min(100, Math.round((val / DRV[key]) * 100)) : 0;
+}
+
+function round1(n) { return Math.round(n * 10) / 10; }
+
+function computeRecipe(rec) {
+  // Sum nutrition (per 100g basis × grams/100) and cost (₱ per 100 units × grams/100) across all ingredients.
+  const totals = NUTR_KEYS.reduce((acc, k) => ({ ...acc, [k]: 0 }), {});
+  let totalCost = 0;
+  const ingredientRows = [];
+
+  for (const [key, amount] of rec.composition) {
+    const ref = INGREDIENTS[key];
+    const factor = amount / 100;
+    NUTR_KEYS.forEach((k, i) => { totals[k] += ref.nutr[i] * factor; });
+    totalCost += ref.pricePer100 * factor;
+    const [daName, daUnit, daPrice] = ref.da;
+    ingredientRows.push({
+      name: ref.label,
+      qty: `${amount}${ref.unit} ${ref.label}`,
+      price: daPrice,
+      unit: daUnit,
+      daName,
+    });
+  }
+
+  const servings = rec.servings;
+  const perServing = {};
+  NUTR_KEYS.forEach((k) => { perServing[k] = Math.round((totals[k] / servings) * 10) / 10; });
+  const costPerServing = round1(totalCost / servings);
+
+  // Nutrition score: DRV-weighted composite of the per-serving micro/macro profile (0-100).
+  const nutritionScore = Math.round(
+    pct(perServing.protein, "protein") * 0.22 +
+    pct(perServing.fiber, "fiber") * 0.16 +
+    pct(perServing.vitaminA, "vitaminA") * 0.14 +
+    pct(perServing.vitaminC, "vitaminC") * 0.16 +
+    pct(perServing.iron, "iron") * 0.16 +
+    pct(perServing.calcium, "calcium") * 0.16
+  );
+
+  // Sulit ("value") score: nutrition gained per peso spent, scaled for readability.
+  const valueScore = round1((nutritionScore / costPerServing) * 3);
+
+  // Dietary tags — derived straight from the composed ingredients & computed per-serving profile,
+  // so "Vegetarian" / "Low Carb" / etc. are guaranteed to match what's actually in the dish.
+  const usesAnimalIngredient = rec.composition.some(([key]) => ANIMAL_KEYS.has(key));
+  const dietTags = [];
+  if (!usesAnimalIngredient) dietTags.push("vegetarian");
+  if (perServing.carbs <= 20) dietTags.push("low-carb");
+  if (perServing.protein >= 20) dietTags.push("high-protein");
+  if (perServing.fiber >= 5) dietTags.push("high-fiber");
+  if (perServing.fat <= 10) dietTags.push("low-fat");
+  if (perServing.calories <= 200) dietTags.push("low-calorie");
+
+  return {
+    ...rec,
+    dietTags,
+    img: PP(rec.title.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")),
+    ingredients: ingredientRows,
+    nutrition: { calories:Math.round(perServing.calories), protein:perServing.protein, carbs:perServing.carbs, fat:perServing.fat, fiber:perServing.fiber, vitaminA:Math.round(perServing.vitaminA), vitaminC:perServing.vitaminC, iron:perServing.iron, calcium:Math.round(perServing.calcium) },
+    cost: { total: round1(totalCost), perServing: costPerServing },
+    calories: Math.round(perServing.calories),
+    protein: perServing.protein,
+    carbs: perServing.carbs,
+    fat: perServing.fat,
+    fiber: perServing.fiber,
+    vitaminC: perServing.vitaminC,
+    iron: perServing.iron,
+    calcium: Math.round(perServing.calcium),
+    nutritionScore,
+    costPerServing,
+    valueScore,
+  };
+}
+
+const RECIPES = RAW_RECIPES.map(computeRecipe);
+
+// ═══════════════ UTILITY ═══════════════
+
+function scoreColor(val) {
+  if (val >= 10) return "bg-green-100 text-green-800";
+  if (val >= 7) return "bg-lime-100 text-lime-700";
+  if (val >= 4) return "bg-yellow-100 text-yellow-700";
+  return "bg-red-100 text-red-700";
+}
+
+function buildRecipeCard(r) {
+  return `
+    <div class="recipe-card bg-white rounded-2xl overflow-hidden shadow hover:shadow-lg transition-shadow cursor-pointer flex flex-col group"
+         onclick="openModal(${r.id})">
+      <div class="relative h-44 bg-amber-100 overflow-hidden">
+        <img src="${r.img}" alt="${r.title}" class="recipe-img w-full h-full object-cover transition-transform duration-300"
+             onerror="this.parentElement.innerHTML='<div class=\\'flex items-center justify-center h-full text-5xl\\'>🍽️</div>'"/>
+        <div class="absolute top-2 right-2 bg-green-700 text-white text-xs font-bold px-2 py-1 rounded-full shadow">
+          ★ ${r.valueScore} sulit
+        </div>
+      </div>
+      <div class="p-4 flex flex-col gap-2 flex-1">
+        <h3 class="font-semibold text-gray-900 leading-snug group-hover:text-green-700 transition-colors">${r.title}</h3>
+        <span class="text-xs text-gray-400 uppercase tracking-wide">${r.category}</span>
+        ${r.dietTags.length > 0 ? `<div class="flex flex-wrap gap-1">${r.dietTags.map(t => `<span class="text-[10px] bg-green-50 text-green-700 border border-green-200 px-1.5 py-0.5 rounded-full font-medium">${DIET_OPTIONS.find(d=>d.key===t).label.replace(/\s*\(.*\)/, '')}</span>`).join('')}</div>` : ''}
+        <div class="flex flex-wrap gap-1 mt-auto pt-2">
+          <span class="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-medium">₱${r.costPerServing}/serving</span>
+          <span class="text-xs ${scoreColor(r.nutritionScore/10)} px-2 py-0.5 rounded-full font-semibold">Nutri: ${r.nutritionScore}</span>
+          <span class="text-xs text-gray-500">${r.protein}g protein</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+function buildModal(r) {
+  const nutr = r.nutrition;
+  const ingRows = r.ingredients.map(i => `
+    <div class="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3">
+      <div>
+        <p class="font-medium text-sm">${i.qty} ${i.name}</p>
+        <p class="text-xs text-gray-400">DA Avg: ₱${i.price}/${i.unit}</p>
+      </div>
+    </div>`).join('');
+
+  const steps = r.instructions.map((s,i) => `
+    <li class="flex gap-4">
+      <span class="flex-shrink-0 w-8 h-8 bg-green-700 text-white rounded-full flex items-center justify-center text-sm font-bold">${i+1}</span>
+      <p class="text-gray-700 leading-relaxed pt-1">${s}</p>
+    </li>`).join('');
+
+  const nutriBars = [
+    { label:"Protein", val:nutr.protein, key:"protein", unit:"g" },
+    { label:"Carbs", val:nutr.carbs, key:"carbs", unit:"g" },
+    { label:"Fat", val:nutr.fat, key:"fat", unit:"g" },
+    { label:"Fiber", val:nutr.fiber, key:"fiber", unit:"g" },
+    { label:"Vitamin C", val:nutr.vitaminC, key:"vitaminC", unit:"mg" },
+    { label:"Iron", val:nutr.iron, key:"iron", unit:"mg" },
+    { label:"Calcium", val:nutr.calcium, key:"calcium", unit:"mg" },
+  ].map(n => {
+    const p = pct(n.val, n.key);
+    return `
+      <div>
+        <div class="flex justify-between text-xs mb-1">
+          <span class="text-gray-600">${n.label}</span>
+          <span class="font-medium">${n.val}${n.unit} <span class="text-gray-400">(${p}% DRV)</span></span>
+        </div>
+        <div class="bar"><div class="bar-fill" style="width:${p}%"></div></div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h2 class="text-2xl font-bold">${r.title}</h2>
+        <span class="text-sm text-gray-500">${r.category} · ${r.servings} servings · ${(r.prepTime||0)+(r.cookTime||0)} min</span>
+      </div>
+      <button onclick="closeModalBtn()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">✕</button>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="md:col-span-2 space-y-6">
+
+        <!-- Scores -->
+        <div class="flex flex-wrap gap-3">
+          <div class="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-center">
+            <p class="text-2xl font-bold text-green-700">${r.valueScore}</p>
+            <p class="text-xs text-green-600 font-medium">Sulit Score</p>
+          </div>
+          <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-center">
+            <p class="text-2xl font-bold text-amber-700">₱${r.costPerServing}</p>
+            <p class="text-xs text-amber-600 font-medium">Per Serving</p>
+          </div>
+          <div class="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-center">
+            <p class="text-2xl font-bold text-blue-700">${r.nutritionScore}</p>
+            <p class="text-xs text-blue-600 font-medium">Nutrition Score</p>
+          </div>
+          <div class="bg-gray-50 border rounded-xl px-4 py-3 text-center">
+            <p class="text-2xl font-bold text-gray-700">${r.calories}</p>
+            <p class="text-xs text-gray-500 font-medium">kcal/serving</p>
+          </div>
+        </div>
+
+        <!-- Ingredients -->
+        <div>
+          <h3 class="font-bold text-lg mb-3">Ingredients</h3>
+          <div class="space-y-2">${ingRows}</div>
+          <div class="mt-3 flex justify-between text-sm bg-amber-50 rounded-xl px-4 py-3">
+            <span class="text-gray-600">Estimated total cost</span>
+            <div class="text-right">
+              <p class="font-bold text-amber-700">₱${r.cost.total.toFixed(0)}</p>
+              <p class="text-xs text-gray-400">₱${r.costPerServing}/serving × ${r.servings} servings</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Instructions -->
+        <div>
+          <h3 class="font-bold text-lg mb-3">Instructions</h3>
+          <ol class="space-y-4">${steps}</ol>
+        </div>
+      </div>
+
+      <!-- Nutrition sidebar -->
+      <div class="space-y-4">
+        <div class="border-2 border-gray-900 rounded-xl p-4">
+          <div class="border-b-8 border-gray-900 pb-1 mb-1">
+            <p class="text-xs font-bold uppercase">Nutrition Facts</p>
+            <p class="text-xs text-gray-500">${r.servings} servings per recipe</p>
+            <p class="text-sm font-bold">Per Serving</p>
+          </div>
+          <div class="border-b-4 border-gray-900 pb-2 mb-2">
+            <div class="flex justify-between items-center">
+              <span class="text-xs">Calories</span>
+              <span class="text-3xl font-black">${nutr.calories}</span>
+            </div>
+          </div>
+          <div class="space-y-2">${nutriBars}</div>
+          <p class="text-xs text-gray-400 mt-3">Source: FNRI FCT · per serving estimate</p>
+        </div>
+        <div class="bg-green-50 border border-green-200 rounded-xl p-3 text-xs text-green-700">
+          <p class="font-bold mb-1">💡 Why this scores well</p>
+          <p>High nutrition score relative to low cost. Rich in ${r.protein >= 20 ? 'protein' : r.fiber >= 5 ? 'fiber' : 'vitamins'} and affordable with current DA prices.</p>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ═══════════════ RENDER ═══════════════
+
+function renderTopRecipes() {
+  const sorted = [...RECIPES].sort((a,b) => b.valueScore - a.valueScore).slice(0,8);
+  document.getElementById('top-recipes-grid').innerHTML = sorted.map(buildRecipeCard).join('');
+}
+
+let currentPriceCat = 'all';
+
+function renderPrices(cat) {
+  currentPriceCat = cat;
+  const filtered = cat === 'all' ? DA_PRICES : DA_PRICES.filter(p => p.cat === cat);
+  const trendIcon = { up:'▲', down:'▼', stable:'–' };
+  const trendColor = { up:'price-up', down:'price-down', stable:'text-gray-400' };
+
+  document.getElementById('price-table-body').innerHTML = filtered.map((p,i) => `
+    <tr class="${i%2===0 ? 'bg-white' : 'bg-gray-50'} hover:bg-green-50 transition-colors">
+      <td class="px-5 py-3 font-medium">${p.name}</td>
+      <td class="px-3 py-3 text-gray-500 hidden sm:table-cell">${p.local}</td>
+      <td class="px-3 py-3 text-gray-500">/${p.unit}</td>
+      <td class="px-3 py-3 text-right text-gray-600 tabular-nums">${p.low}</td>
+      <td class="px-3 py-3 text-right text-gray-600 tabular-nums">${p.high}</td>
+      <td class="px-5 py-3 text-right font-bold tabular-nums">₱${p.avg}</td>
+      <td class="px-3 py-3 text-center hidden md:table-cell">
+        <span class="text-xs font-bold ${trendColor[p.trend]}">${trendIcon[p.trend]}</span>
+      </td>
+    </tr>`).join('');
+
+  document.querySelectorAll('.price-cat-btn').forEach(b => {
+    b.classList.remove('bg-green-700','text-white');
+    b.classList.add('bg-white','border','text-gray-600');
+  });
+  const active = document.getElementById(`cat-${cat}`);
+  if (active) {
+    active.classList.remove('bg-white','border','text-gray-600');
+    active.classList.add('bg-green-700','text-white');
+  }
+}
+
+function filterPrices(cat) { renderPrices(cat); }
+
+// ═══════════════ DIETARY FILTER ═══════════════
+
+const selectedDietTags = new Set();
+
+function renderDietFilterOptions() {
+  document.getElementById('diet-filter-options').innerHTML = DIET_OPTIONS.map(d => `
+    <button type="button" onclick="toggleDietTag('${d.key}')" id="diet-${d.key}"
+      class="diet-chip border text-xs px-3 py-1.5 rounded-full font-medium transition-colors bg-white border-gray-200 text-gray-600 hover:bg-green-50">
+      ${d.label}
+    </button>`).join('');
+}
+
+function toggleDietTag(key) {
+  if (selectedDietTags.has(key)) selectedDietTags.delete(key);
+  else selectedDietTags.add(key);
+
+  const btn = document.getElementById(`diet-${key}`);
+  const active = selectedDietTags.has(key);
+  btn.classList.toggle('bg-green-700', active);
+  btn.classList.toggle('text-white', active);
+  btn.classList.toggle('border-green-700', active);
+  btn.classList.toggle('bg-white', !active);
+  btn.classList.toggle('border-gray-200', !active);
+  btn.classList.toggle('text-gray-600', !active);
+
+  filterRecipes();
+}
+
+function filterRecipes() {
+  const sort = document.getElementById('sort-select').value;
+  const minProt = parseFloat(document.getElementById('min-protein').value) || 0;
+  const maxCost = parseFloat(document.getElementById('max-cost').value) || Infinity;
+  const produce = document.getElementById('produce-filter').value.toLowerCase();
+  const search = document.getElementById('search-input').value.toLowerCase();
+
+  let filtered = RECIPES.filter(r => {
+    if (r.protein < minProt) return false;
+    if (r.costPerServing > maxCost) return false;
+    if (produce && !r.ingredients.some(i => i.name.toLowerCase().includes(produce))) return false;
+    if (search && !r.title.toLowerCase().includes(search)) return false;
+    if (selectedDietTags.size > 0 && ![...selectedDietTags].every(tag => r.dietTags.includes(tag))) return false;
+    return true;
+  });
+
+  filtered.sort((a,b) => {
+    const map = { valueScore:'valueScore', nutritionScore:'nutritionScore', costPerServing:'costPerServing', protein:'protein', calories:'calories' };
+    const key = map[sort];
+    return sort === 'costPerServing' ? a[key] - b[key] : b[key] - a[key];
+  });
+
+  document.getElementById('result-count').textContent = `${filtered.length} recipe${filtered.length !== 1 ? 's' : ''} found`;
+  document.getElementById('browse-grid').innerHTML = filtered.length > 0
+    ? filtered.map(buildRecipeCard).join('')
+    : `<div class="col-span-4 text-center py-16 text-gray-400">
+        <p class="text-4xl mb-3">🔍</p>
+        <p class="font-medium">No recipes match your filters</p>
+        <p class="text-sm mt-1">Try widening the criteria above.</p>
+       </div>`;
+}
+
+// ═══════════════ MODAL ═══════════════
+
+function openModal(id) {
+  const r = RECIPES.find(r => r.id === id);
+  if (!r) return;
+  document.getElementById('modal-content').innerHTML = buildModal(r);
+  document.getElementById('recipe-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  // Animate bars
+  setTimeout(() => {
+    document.querySelectorAll('.bar-fill').forEach(b => {
+      b.style.width = b.style.width;
+    });
+  }, 100);
+}
+
+function closeModal(e) {
+  document.getElementById('recipe-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function closeModalBtn() { closeModal(); }
+
+// ═══════════════ COMMODITY CALCULATOR ═══════════════
+
+function renderCommodityCalculatorOptions() {
+  const select = document.getElementById('calc-commodity');
+  select.innerHTML = DA_PRICES.map((c, i) =>
+    `<option value="${i}">${c.name} (${c.local}) — ₱${c.avg}/${c.unit}</option>`
+  ).join('');
+  updateCommodityCalculator();
+}
+
+function updateCommodityCalculator() {
+  const idx = parseInt(document.getElementById('calc-commodity').value, 10) || 0;
+  const commodity = DA_PRICES[idx];
+  const qty = parseFloat(document.getElementById('calc-qty').value) || 0;
+
+  document.getElementById('calc-unit-label').textContent = commodity.unit;
+  document.getElementById('calc-low').textContent = `₱${(commodity.low * qty).toFixed(2)}`;
+  document.getElementById('calc-avg').textContent = `₱${(commodity.avg * qty).toFixed(2)}`;
+  document.getElementById('calc-high').textContent = `₱${(commodity.high * qty).toFixed(2)}`;
+  document.getElementById('calc-breakdown').textContent =
+    `${qty} ${commodity.unit} × ₱${commodity.avg}/${commodity.unit} (avg) = ₱${(commodity.avg * qty).toFixed(2)} for ${commodity.name} (${commodity.local})`;
+}
+
+// ═══════════════ NAVIGATION ═══════════════
+
+function showSection(name) {
+  ['home','browse','prices','calculator'].forEach(s => {
+    document.getElementById(`section-${s}`).classList.toggle('hidden', s !== name);
+    document.getElementById(`section-${s}`).classList.toggle('flex', s === name);
+    const btn = document.getElementById(`nav-${s}`);
+    if (btn) btn.classList.toggle('active', s === name);
+  });
+  window.scrollTo(0,0);
+  if (name === 'browse') filterRecipes();
+}
+
+// ═══════════════ INIT ═══════════════
+renderTopRecipes();
+renderPrices('all');
+renderDietFilterOptions();
+renderCommodityCalculatorOptions();
+filterRecipes();
+</script>
+</body>
+</html>

@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Commodity {
+  id        Int      @id @default(autoincrement())
+  name      String
+  localName String?
+  unit      String
+  lowPrice  Float
+  highPrice Float
+  avgPrice  Float
+  market    String?
+  region    String?
+  date      DateTime
+  source    String   @default("DA")
+  createdAt DateTime @default(now())
+
+  @@index([name, date])
+}
+
+model Recipe {
+  id           Int                @id @default(autoincrement())
+  title        String
+  slug         String             @unique
+  url          String
+  description  String?            @db.Text
+  imageUrl     String?
+  servings     Int?
+  prepTime     Int?
+  cookTime     Int?
+  totalTime    Int?
+  category     String?
+  cuisine      String             @default("Filipino")
+  instructions String?            @db.Text
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  ingredients  RecipeIngredient[]
+  score        RecipeScore?
+}
+
+model RecipeIngredient {
+  id              Int     @id @default(autoincrement())
+  recipeId        Int
+  recipe          Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  name            String
+  quantity        Float?
+  unit            String?
+  rawText         String
+  commodityMatch  String?
+  estimatedCost   Float?
+}
+
+model NutritionFact {
+  id             Int      @id @default(autoincrement())
+  ingredientName String   @unique
+  per100g        Boolean  @default(true)
+  calories       Float?
+  protein        Float?
+  carbohydrates  Float?
+  fat            Float?
+  fiber          Float?
+  sugar          Float?
+  sodium         Float?
+  calcium        Float?
+  iron           Float?
+  vitaminA       Float?
+  vitaminC       Float?
+  vitaminB1      Float?
+  vitaminB2      Float?
+  source         String   @default("FNRI")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model RecipeScore {
+  id             Int      @id @default(autoincrement())
+  recipeId       Int      @unique
+  recipe         Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  estimatedCost  Float?
+  servings       Int?
+  costPerServing Float?
+  calories       Float?
+  protein        Float?
+  carbohydrates  Float?
+  fat            Float?
+  fiber          Float?
+  vitaminA       Float?
+  vitaminC       Float?
+  iron           Float?
+  calcium        Float?
+  nutritionScore Float?
+  valueScore     Float?
+  computedAt     DateTime @default(now())
+}
+
+model ScrapingLog {
+  id        Int      @id @default(autoincrement())
+  source    String
+  status    String
+  message   String?  @db.Text
+  count     Int?
+  createdAt DateTime @default(now())
+}
