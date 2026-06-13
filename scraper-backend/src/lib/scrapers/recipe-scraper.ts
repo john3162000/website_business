@@ -110,31 +110,33 @@ async function getRecipeUrlsFromIndexPage(page: number): Promise<string[]> {
   return [...new Set(urls)];
 }
 
-export async function scrapeAndStoreAllRecipes(
-  onProgress?: (msg: string) => void
-): Promise<number> {
-  let total = 0;
-  let page = 1;
+// Cap on how many *new* recipes a single chunk scrapes — each one costs a
+// politeness delay plus a fetch, so this keeps a request well under typical
+// serverless time limits even on pages full of not-yet-saved recipes.
+const MAX_NEW_PER_CHUNK = 4;
 
-  while (true) {
-    const result = await scrapeRecipeIndexPage(page, onProgress);
-    total += result.saved;
-    if (result.done) break;
-    page++;
-  }
+export interface RecipeCursor {
+  page: number;
+  index: number;
+}
 
-  return total;
+export function initialRecipeCursor(): RecipeCursor {
+  return { page: 1, index: 0 };
 }
 
 /**
- * Scrapes a single recipe index page and stores any new recipes found on it.
- * Returns how many were saved and whether this was the last (empty) page —
- * used to drive a chunked, request-sized scrape from the API route.
+ * Scrapes up to MAX_NEW_PER_CHUNK new recipes starting at `cursor.index` on
+ * `cursor.page`, returning the updated cursor. Designed to be called
+ * repeatedly (one small chunk per request) so a full crawl can be driven
+ * from short-lived serverless invocations without ever risking a timeout
+ * mid-page (which would otherwise lose all progress on that page).
  */
-export async function scrapeRecipeIndexPage(
-  page: number,
+export async function scrapeRecipeChunk(
+  cursor: RecipeCursor,
   onProgress?: (msg: string) => void
-): Promise<{ saved: number; done: boolean }> {
+): Promise<{ saved: number; cursor: RecipeCursor; done: boolean }> {
+  const { page } = cursor;
+
   onProgress?.(`Fetching recipe index page ${page}...`);
 
   let urls: string[];
@@ -142,20 +144,24 @@ export async function scrapeRecipeIndexPage(
     urls = await getRecipeUrlsFromIndexPage(page);
   } catch (err) {
     onProgress?.(`Stopping — failed to load index page ${page}: ${err instanceof Error ? err.message : err}`);
-    return { saved: 0, done: true };
+    return { saved: 0, cursor, done: true };
   }
 
   if (urls.length === 0) {
     onProgress?.(`Page ${page} has no recipes — reached the end.`);
-    return { saved: 0, done: true };
+    return { saved: 0, cursor, done: true };
   }
 
   let saved = 0;
+  let index = cursor.index;
+  let newCount = 0;
 
-  for (const url of urls) {
+  while (index < urls.length && newCount < MAX_NEW_PER_CHUNK) {
+    const url = urls[index];
     const existing = await prisma.recipe.findUnique({ where: { url } });
     if (existing) {
       onProgress?.(`Already in DB, skipping: ${url}`);
+      index++;
       continue;
     }
 
@@ -167,9 +173,15 @@ export async function scrapeRecipeIndexPage(
       scraped = await scrapeRecipePage(url);
     } catch (err) {
       onProgress?.(`Failed to scrape ${url}: ${err instanceof Error ? err.message : err}`);
+      index++;
+      newCount++;
       continue;
     }
-    if (!scraped) continue;
+    if (!scraped) {
+      index++;
+      newCount++;
+      continue;
+    }
 
     await prisma.recipe.create({
       data: {
@@ -199,8 +211,13 @@ export async function scrapeRecipeIndexPage(
     });
 
     saved++;
+    newCount++;
+    index++;
     onProgress?.(`Saved: ${scraped.title}`);
   }
 
-  return { saved, done: false };
+  if (index >= urls.length) {
+    return { saved, cursor: { page: page + 1, index: 0 }, done: false };
+  }
+  return { saved, cursor: { page, index }, done: false };
 }

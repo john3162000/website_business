@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { scrapeRecipeIndexPage } from "@/lib/scrapers/recipe-scraper";
+import { initialRecipeCursor, scrapeRecipeChunk, type RecipeCursor } from "@/lib/scrapers/recipe-scraper";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -7,26 +7,28 @@ export const maxDuration = 60;
 const TYPE = "RECIPES";
 
 /**
- * Scrapes one recipe index page per request (chunked, since a full crawl of
- * every recipe can take far longer than a serverless function is allowed to run).
- * The client should keep calling POST while the response's `done` is false.
+ * Scrapes a small chunk (a handful of new recipes) per request, since a full
+ * crawl of every recipe can take far longer than a serverless function is
+ * allowed to run. The client should keep calling POST while the response's
+ * `done` is false.
  */
 export async function POST() {
   let log = await prisma.scrapingLog.findFirst({
     where: { type: TYPE, status: "RUNNING" },
   });
 
-  let page = 1;
+  let cursor: RecipeCursor;
   if (log?.cursor) {
-    page = JSON.parse(log.cursor).page ?? 1;
+    cursor = JSON.parse(log.cursor);
   } else {
+    cursor = initialRecipeCursor();
     log = await prisma.scrapingLog.create({
-      data: { type: TYPE, status: "RUNNING", message: "Starting full Panlasang Pinoy recipe scrape...", cursor: JSON.stringify({ page: 1 }) },
+      data: { type: TYPE, status: "RUNNING", message: "Starting full Panlasang Pinoy recipe scrape...", cursor: JSON.stringify(cursor) },
     });
   }
 
   try {
-    const result = await scrapeRecipeIndexPage(page, (msg) =>
+    const result = await scrapeRecipeChunk(cursor, (msg) =>
       prisma.scrapingLog
         .update({ where: { id: log!.id }, data: { message: msg } })
         .catch(() => {})
@@ -44,9 +46,9 @@ export async function POST() {
 
     await prisma.scrapingLog.update({
       where: { id: log.id },
-      data: { itemsScraped, cursor: JSON.stringify({ page: page + 1 }) },
+      data: { itemsScraped, cursor: JSON.stringify(result.cursor) },
     });
-    return Response.json({ done: false, itemsScraped, page: page + 1 });
+    return Response.json({ done: false, itemsScraped, cursor: result.cursor });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     await prisma.scrapingLog.update({

@@ -12,6 +12,10 @@ interface LogEntry {
   finishedAt: string | null;
 }
 
+function sleep(ms: number) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
 const TYPES = [
   { type: "DA", label: "DA Commodity Prices", desc: "Pull the latest DA price-monitoring PDF and store every commodity row.", chunked: false },
   { type: "RECIPES", label: "Panlasang Pinoy Recipes (ALL)", desc: "Crawl every recipe index page and store every recipe — ingredients and step-by-step instructions included. Runs one index page per request, repeated automatically until the site is exhausted.", chunked: true },
@@ -52,27 +56,47 @@ function Section({ type, label, desc, chunked }: { type: string; label: string; 
     };
   }, [type]);
 
+  const postScrape = async () => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 55000);
+    try {
+      const res = await fetch(`/api/scrape/${type.toLowerCase()}`, { method: "POST", signal: controller.signal });
+      const data = await res.json();
+      return { ok: res.ok, data };
+    } finally {
+      clearTimeout(timer);
+    }
+  };
+
   const handleRun = async () => {
     setStarting(true);
     setError(null);
     try {
       if (!chunked) {
-        const res = await fetch(`/api/scrape/${type.toLowerCase()}`, { method: "POST" });
-        const data = await res.json();
-        if (!res.ok) {
-          setError(data.error ?? "Failed to run scrape");
-        }
+        const { ok, data } = await postScrape();
+        if (!ok) setError(data.error ?? "Failed to run scrape");
         await loadLogs();
       } else {
+        let failures = 0;
         while (true) {
-          const res = await fetch(`/api/scrape/${type.toLowerCase()}`, { method: "POST" });
-          const data = await res.json();
-          if (!res.ok) {
-            setError(data.error ?? "Failed to run scrape");
-            break;
+          try {
+            const { ok, data } = await postScrape();
+            if (!ok) {
+              setError(data.error ?? "Failed to run scrape");
+              break;
+            }
+            failures = 0;
+            await loadLogs();
+            if (data.done) break;
+          } catch {
+            failures++;
+            await loadLogs();
+            if (failures >= 5) {
+              setError("Repeated request timeouts — stopped. Click Run again to resume.");
+              break;
+            }
+            await sleep(2000);
           }
-          await loadLogs();
-          if (data.done) break;
         }
       }
     } catch (e) {
