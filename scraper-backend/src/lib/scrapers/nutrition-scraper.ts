@@ -102,10 +102,10 @@ function getNextPageUrls($: ReturnType<typeof cheerio.load>): string[] {
 // Cap on how many entries from a single listing page get upserted per
 // request — some FNRI listing pages (e.g. the "/all" view) contain
 // thousands of rows, which would blow past a serverless time limit if done
-// in one go. Processing happens in bounded batches, with the queue/visited
-// state advanced as soon as the page is fetched so a timeout never causes
-// the crawl to "lose its place" and re-fetch the same huge page forever.
-const ROWS_PER_CHUNK = 100;
+// alongside the page fetch/parse. Fetching+parsing a page and saving its
+// rows are split into separate requests (via `pending`) so each request
+// does only one of those, keeping every request comfortably short.
+const ROWS_PER_CHUNK = 25;
 
 export interface NutritionCursor {
   queue: string[];
@@ -190,11 +190,7 @@ export async function scrapeNutritionBatch(
     return { saved: 0, cursor: { queue, visited: [...visited] }, done: queue.length === 0 };
   }
 
-  const slice = rows.slice(0, ROWS_PER_CHUNK);
-  const saved = await saveRows(slice);
-
-  if (rows.length <= ROWS_PER_CHUNK) {
-    return { saved, cursor: { queue, visited: [...visited] }, done: queue.length === 0 };
-  }
-  return { saved, cursor: { queue, visited: [...visited], pending: { url, rows, index: ROWS_PER_CHUNK } }, done: false };
+  // Defer saving to the next request(s) — fetching/parsing this page is
+  // already done, so don't risk a timeout before the cursor can advance.
+  return { saved: 0, cursor: { queue, visited: [...visited], pending: { url, rows, index: 0 } }, done: false };
 }
