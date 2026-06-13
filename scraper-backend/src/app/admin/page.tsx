@@ -79,23 +79,32 @@ function Section({ type, label, desc, chunked }: { type: string; label: string; 
       } else {
         let failures = 0;
         while (true) {
+          let transient = false;
           try {
             const { ok, data } = await postScrape();
-            if (!ok) {
-              setError(data.error ?? "Failed to run scrape");
-              break;
+            if (ok) {
+              failures = 0;
+              setError(null);
+              await loadLogs();
+              if (data.done) break;
+              continue;
             }
-            failures = 0;
-            await loadLogs();
-            if (data.done) break;
+            // Server returned a recoverable error (timeout/rate-limit) — the
+            // crawl keeps its cursor, so back off and retry from where it left off.
+            transient = true;
+            setError((data.error ?? "Request failed") + " — retrying...");
           } catch {
+            transient = true;
+            setError("Request timed out — retrying...");
+          }
+          if (transient) {
             failures++;
             await loadLogs();
-            if (failures >= 5) {
-              setError("Repeated request timeouts — stopped. Click Run again to resume.");
+            if (failures >= 6) {
+              setError("Repeated failures — stopped. Click Run again to resume where it left off.");
               break;
             }
-            await sleep(2000);
+            await sleep(3000 * failures);
           }
         }
       }

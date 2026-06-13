@@ -21,7 +21,7 @@ async function fetchHtml(url: string): Promise<string> {
       "User-Agent": "Mozilla/5.0 (compatible; ScraperBackend/1.0)",
       Accept: "text/html,application/xhtml+xml",
     },
-    signal: AbortSignal.timeout(30000),
+    signal: AbortSignal.timeout(50000),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
   return res.text();
@@ -168,13 +168,10 @@ export async function scrapeNutritionBatch(
   visited.add(url);
 
   onProgress?.(`Fetching: ${url}`);
-  let html: string;
-  try {
-    html = await fetchHtml(url);
-  } catch (err) {
-    onProgress?.(`Failed to load ${url}: ${err instanceof Error ? err.message : err}`);
-    return { saved: 0, cursor: { queue, visited: [...visited] }, done: queue.length === 0 };
-  }
+  // A fetch failure (e.g. timeout on the very large "/all" page) is transient —
+  // throw so the route keeps the pre-call cursor intact and the run can resume
+  // from this URL, rather than dropping it and falsely finishing.
+  const html = await fetchHtml(url);
 
   const $ = cheerio.load(html);
   const rows = extractRows($, url);
