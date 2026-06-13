@@ -99,48 +99,66 @@ function getNextPageUrls($: ReturnType<typeof cheerio.load>): string[] {
   return urls;
 }
 
-export async function scrapeAndStoreAllNutrition(
+export interface NutritionCursor {
+  queue: string[];
+  visited: string[];
+}
+
+export function initialNutritionCursor(): NutritionCursor {
+  return { queue: [FNRI_ALL_URL], visited: [] };
+}
+
+/**
+ * Processes a single page from the BFS queue and returns the updated cursor.
+ * Designed to be called repeatedly (one page per request) so a full crawl
+ * can be driven from short-lived serverless invocations.
+ */
+export async function scrapeNutritionBatch(
+  cursor: NutritionCursor,
   onProgress?: (msg: string) => void
-): Promise<number> {
-  let total = 0;
-  const visited = new Set<string>();
-  const queue: string[] = [FNRI_ALL_URL];
+): Promise<{ saved: number; cursor: NutritionCursor; done: boolean }> {
+  const queue = [...cursor.queue];
+  const visited = new Set(cursor.visited);
 
-  while (queue.length > 0) {
-    const url = queue.shift()!;
-    if (visited.has(url)) continue;
-    visited.add(url);
-
-    onProgress?.(`Fetching: ${url}`);
-    let html: string;
-    try {
-      html = await fetchHtml(url);
-    } catch (err) {
-      onProgress?.(`Failed to load ${url}: ${err instanceof Error ? err.message : err}`);
-      continue;
-    }
-
-    const $ = cheerio.load(html);
-    const rows = extractRows($, url);
-    onProgress?.(`Found ${rows.length} entries on this page`);
-
-    for (const row of rows) {
-      if (!row.foodName) continue;
-      await prisma.nutritionFact.upsert({
-        where: { foodCode: row.foodCode },
-        create: { ...row, source: "FNRI" },
-        update: { ...row, source: "FNRI" },
-      });
-      total++;
-    }
-
-    for (const nextUrl of getNextPageUrls($)) {
-      if (!visited.has(nextUrl) && !queue.includes(nextUrl)) queue.push(nextUrl);
-    }
-
-    await sleep(DELAY_MS);
+  const url = queue.shift();
+  if (!url) {
+    return { saved: 0, cursor: { queue: [], visited: [...visited] }, done: true };
   }
 
-  onProgress?.(`Done — ${total} nutrition entries stored across ${visited.size} pages.`);
-  return total;
+  if (visited.has(url)) {
+    return { saved: 0, cursor: { queue, visited: [...visited] }, done: queue.length === 0 };
+  }
+  visited.add(url);
+
+  onProgress?.(`Fetching: ${url}`);
+  let html: string;
+  try {
+    html = await fetchHtml(url);
+  } catch (err) {
+    onProgress?.(`Failed to load ${url}: ${err instanceof Error ? err.message : err}`);
+    return { saved: 0, cursor: { queue, visited: [...visited] }, done: queue.length === 0 };
+  }
+
+  const $ = cheerio.load(html);
+  const rows = extractRows($, url);
+  onProgress?.(`Found ${rows.length} entries on this page`);
+
+  let saved = 0;
+  for (const row of rows) {
+    if (!row.foodName) continue;
+    await prisma.nutritionFact.upsert({
+      where: { foodCode: row.foodCode },
+      create: { ...row, source: "FNRI" },
+      update: { ...row, source: "FNRI" },
+    });
+    saved++;
+  }
+
+  for (const nextUrl of getNextPageUrls($)) {
+    if (!visited.has(nextUrl) && !queue.includes(nextUrl)) queue.push(nextUrl);
+  }
+
+  await sleep(DELAY_MS);
+
+  return { saved, cursor: { queue, visited: [...visited] }, done: queue.length === 0 };
 }
