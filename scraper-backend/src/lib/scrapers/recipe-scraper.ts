@@ -9,7 +9,17 @@ import * as cheerio from "cheerio";
 import { prisma } from "@/lib/db";
 
 const BASE_URL = "https://panlasangpinoy.com";
-const RECIPE_INDEX_URL = `${BASE_URL}/recipes/`;
+// The "/recipes/" landing page only lists a small curated subset (~68
+// recipes) and its pagination runs out quickly. The Yoast-generated post
+// sitemaps enumerate every published post on the site (~3000 across 3
+// files), which is the actual full catalog. Not every post is a recipe
+// (some are roundups/articles), so non-recipe pages are skipped during
+// scraping based on the absence of WPRM recipe markup.
+const POST_SITEMAPS = [
+  `${BASE_URL}/post-sitemap.xml`,
+  `${BASE_URL}/post-sitemap2.xml`,
+  `${BASE_URL}/post-sitemap3.xml`,
+];
 const DELAY_MS = 1500;
 
 function sleep(ms: number) {
@@ -98,16 +108,15 @@ async function scrapeRecipePage(url: string): Promise<ScrapedRecipe | null> {
   return { title, url, imageUrl, description, servings, prepTime, cookTime, ingredients, instructions };
 }
 
-async function getRecipeUrlsFromIndexPage(page: number): Promise<string[]> {
-  const url = page === 1 ? RECIPE_INDEX_URL : `${RECIPE_INDEX_URL}page/${page}/`;
-  const html = await fetchHtml(url);
-  const $ = cheerio.load(html);
+async function getRecipeUrlsFromSitemap(sitemapUrl: string): Promise<string[]> {
+  const xml = await fetchHtml(sitemapUrl);
+  const $ = cheerio.load(xml, { xmlMode: true });
   const urls: string[] = [];
-  $("article a[rel='bookmark'], .entry-title a, h2.entry-title a").each((_, el) => {
-    const href = $(el).attr("href");
-    if (href && href.startsWith(BASE_URL)) urls.push(href);
+  $("url > loc").each((_, el) => {
+    const href = $(el).text().trim();
+    if (href.startsWith(BASE_URL)) urls.push(href);
   });
-  return [...new Set(urls)];
+  return urls;
 }
 
 // Cap on how many *new* recipes a single chunk scrapes — each one costs a
@@ -116,45 +125,51 @@ async function getRecipeUrlsFromIndexPage(page: number): Promise<string[]> {
 const MAX_NEW_PER_CHUNK = 4;
 
 export interface RecipeCursor {
-  page: number;
-  index: number;
+  sitemapIndex: number;
+  urlIndex: number;
 }
 
 export function initialRecipeCursor(): RecipeCursor {
-  return { page: 1, index: 0 };
+  return { sitemapIndex: 0, urlIndex: 0 };
 }
 
 /**
- * Scrapes up to MAX_NEW_PER_CHUNK new recipes starting at `cursor.index` on
- * `cursor.page`, returning the updated cursor. Designed to be called
- * repeatedly (one small chunk per request) so a full crawl can be driven
- * from short-lived serverless invocations without ever risking a timeout
- * mid-page (which would otherwise lose all progress on that page).
+ * Scrapes up to MAX_NEW_PER_CHUNK new recipes starting at `cursor.urlIndex`
+ * in `POST_SITEMAPS[cursor.sitemapIndex]`, returning the updated cursor.
+ * Designed to be called repeatedly (one small chunk per request) so a full
+ * crawl can be driven from short-lived serverless invocations without ever
+ * risking a timeout mid-sitemap (which would otherwise lose all progress).
  */
 export async function scrapeRecipeChunk(
   cursor: RecipeCursor,
   onProgress?: (msg: string) => void
 ): Promise<{ saved: number; cursor: RecipeCursor; done: boolean }> {
-  const { page } = cursor;
+  const { sitemapIndex } = cursor;
 
-  onProgress?.(`Fetching recipe index page ${page}...`);
-
-  let urls: string[];
-  try {
-    urls = await getRecipeUrlsFromIndexPage(page);
-  } catch (err) {
-    // A fetch error (e.g. rate limiting) is transient — don't mark the crawl
-    // as done or lose the cursor, so it can resume from this page later.
-    throw new Error(`Failed to load index page ${page}: ${err instanceof Error ? err.message : err}`);
-  }
-
-  if (urls.length === 0) {
-    onProgress?.(`Page ${page} has no recipes — reached the end.`);
+  if (sitemapIndex >= POST_SITEMAPS.length) {
+    onProgress?.("All post sitemaps processed — reached the end.");
     return { saved: 0, cursor, done: true };
   }
 
+  const sitemapUrl = POST_SITEMAPS[sitemapIndex];
+  onProgress?.(`Fetching sitemap: ${sitemapUrl}...`);
+
+  let urls: string[];
+  try {
+    urls = await getRecipeUrlsFromSitemap(sitemapUrl);
+  } catch (err) {
+    // A fetch error (e.g. rate limiting) is transient — don't mark the crawl
+    // as done or lose the cursor, so it can resume from this sitemap later.
+    throw new Error(`Failed to load sitemap ${sitemapUrl}: ${err instanceof Error ? err.message : err}`);
+  }
+
+  if (urls.length === 0) {
+    onProgress?.(`Sitemap ${sitemapUrl} has no URLs — skipping.`);
+    return { saved: 0, cursor: { sitemapIndex: sitemapIndex + 1, urlIndex: 0 }, done: false };
+  }
+
   let saved = 0;
-  let index = cursor.index;
+  let index = cursor.urlIndex;
   let newCount = 0;
 
   while (index < urls.length && newCount < MAX_NEW_PER_CHUNK) {
@@ -218,7 +233,7 @@ export async function scrapeRecipeChunk(
   }
 
   if (index >= urls.length) {
-    return { saved, cursor: { page: page + 1, index: 0 }, done: false };
+    return { saved, cursor: { sitemapIndex: sitemapIndex + 1, urlIndex: 0 }, done: false };
   }
-  return { saved, cursor: { page, index }, done: false };
+  return { saved, cursor: { sitemapIndex, urlIndex: index }, done: false };
 }
