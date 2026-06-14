@@ -78,10 +78,16 @@ async function scrapeRecipePage(url: string): Promise<ScrapedRecipe | null> {
     $("meta[name='description']").attr("content") ||
     undefined;
 
-  const imageUrl =
-    $(".wprm-recipe-image img").first().attr("src") ||
-    $("article img").first().attr("src") ||
-    undefined;
+  // Images are lazy-loaded (perfmatters): in the raw server HTML `src` is an
+  // inline SVG placeholder and the real URL lives in `data-src`/`data-lazy-src`.
+  // Prefer those, and reject any data: URI that slips through.
+  const pickImage = (selector: string): string | undefined => {
+    const el = $(selector).first();
+    const candidate =
+      el.attr("data-lazy-src") || el.attr("data-src") || el.attr("src") || undefined;
+    return candidate && !candidate.startsWith("data:") ? candidate : undefined;
+  };
+  const imageUrl = pickImage(".wprm-recipe-image img") || pickImage("article img") || undefined;
 
   const servingsText = $(".wprm-recipe-servings").first().text().trim();
   const servings = servingsText ? parseInt(servingsText) || undefined : undefined;
