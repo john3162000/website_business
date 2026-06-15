@@ -315,7 +315,55 @@ const STOPWORDS = new Set(["and","or","the","of","a","with","fresh","dried","gro
 function tokenize(s) {
   return String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
     .replace(/[^a-z0-9 ]/g, " ").split(/\s+/)
-    .filter((w) => w.length > 2 && !STOPWORDS.has(w));
+    .filter((w) => w.length > 2 && !STOPWORDS.has(w))
+    .map((w) => (w.length > 4 && w.endsWith("es")) ? w.slice(0, -2)
+              : (w.length > 4 && w.endsWith("s")) ? w.slice(0, -1) : w);
+}
+
+// Ingredient name (substring, lowercase) → extra English/Filipino tokens to help match
+// against DA commodity names that use different naming conventions.
+const COMMODITY_ALIASES = [
+  ["garlic", ["bawang"]],
+  ["onion", ["sibuyas"]],
+  ["shrimp", ["hipon", "shrimp"]],
+  ["prawn", ["hipon", "shrimp"]],
+  ["mussel", ["tahong"]],
+  ["clam", ["halaan"]],
+  ["crab", ["alimango", "alimasag"]],
+  ["squid", ["pusit"]],
+  ["milkfish", ["bangus"]],
+  ["bangus", ["milkfish"]],
+  ["tilapia", ["tilapia"]],
+  ["potato", ["potato"]],
+  ["sweet potato", ["kamote"]],
+  ["pork", ["baboy", "pork"]],
+  ["chicken", ["manok", "chicken"]],
+  ["beef", ["baka", "beef"]],
+  ["ginger", ["luya"]],
+  ["tomato", ["kamatis"]],
+  ["cabbage", ["repolyo"]],
+  ["eggplant", ["talong"]],
+  ["calamansi", ["calamansi", "lemon"]],
+];
+
+// Ingredients that shouldn't be treated as missing DA price matches — they're
+// either not sold as DA-tracked commodities or negligible-cost flavorings.
+const NON_PRICEABLE = ["water", "ice", "clove", "cloves", "leaves", "leaf",
+  "pepper", "msg", "bouillon", "stock", "broth", "food coloring", "annatto",
+  "vetsin", "powder"];
+
+function aliasTokens(name) {
+  const lc = String(name || "").toLowerCase();
+  const extra = [];
+  for (const [needle, words] of COMMODITY_ALIASES) {
+    if (lc.includes(needle)) extra.push(...words.flatMap(tokenize));
+  }
+  return extra;
+}
+
+function isNonPriceable(name) {
+  const lc = String(name || "").toLowerCase();
+  return NON_PRICEABLE.some((w) => lc.includes(w));
 }
 
 // Build an inverted index: token -> list of item indices, for fast best-overlap lookup.
@@ -330,8 +378,8 @@ function buildIndex(items, nameKey) {
   return index;
 }
 
-function bestMatch(name, items, index, nameKey) {
-  const tokens = tokenize(name);
+function bestMatch(name, items, index, nameKey, extraTokens) {
+  const tokens = tokenize(name).concat(extraTokens || []);
   if (tokens.length === 0) return null;
   const scores = new Map();
   for (const t of tokens) {
@@ -363,7 +411,7 @@ function enrichRecipe(raw) {
     if (ANIMAL_WORDS.some((w) => nameLc.includes(w))) usesAnimal = true;
 
     // Nutrition (FNRI is per 100g E.P.)
-    const food = bestMatch(ing.name, NUTRITION, NUTRITION_INDEX, "foodName");
+    const food = bestMatch(ing.name, NUTRITION, NUTRITION_INDEX, "foodName", aliasTokens(ing.name));
     if (food && grams) {
       const f = grams / 100;
       totals.calories += (food.calories || 0) * f;
@@ -378,7 +426,8 @@ function enrichRecipe(raw) {
     }
 
     // Cost (DA prevailing price is per kg for most commodities)
-    const com = bestMatch(ing.name, DA_PRICES, COMMODITY_INDEX, "name");
+    const nonPriceable = isNonPriceable(ing.name);
+    const com = nonPriceable ? null : bestMatch(ing.name, DA_PRICES, COMMODITY_INDEX, "name", aliasTokens(ing.name));
     let lineCost = null;
     if (com && com.price != null && grams) {
       lineCost = (com.price / 1000) * grams; // ₱/kg → ₱/g × grams
@@ -390,6 +439,7 @@ function enrichRecipe(raw) {
       matchedFood: food ? food.foodName : null,
       matchedCommodity: com ? com.name : null,
       price: com && com.price != null ? com.price : null,
+      nonPriceable,
     });
   }
 
@@ -516,7 +566,7 @@ function buildModal(r, instructions) {
     <div class="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3">
       <div>
         <p class="font-medium text-sm">${i.label}</p>
-        <p class="text-xs text-gray-400">${i.matchedCommodity ? `DA: ${i.matchedCommodity} — ₱${i.price}/kg` : 'No DA price match'}${i.matchedFood ? ` · FNRI: ${i.matchedFood}` : ''}</p>
+        <p class="text-xs text-gray-400">${i.matchedCommodity ? `DA: ${i.matchedCommodity} — ₱${i.price}/kg` : (i.nonPriceable ? '' : 'No DA price match')}${i.matchedFood ? ` · FNRI: ${i.matchedFood}` : ''}</p>
       </div>
     </div>`).join('');
 
