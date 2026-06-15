@@ -118,7 +118,7 @@ interface RawProduct {
   url_key: string | null;
   small_image: { url: string | null } | null;
   price_range: {
-    minimum_price: { final_price: { value: number | null } | null } | null;
+    minimum_price: { final_price: { value: number | string | null } | null } | null;
   } | null;
 }
 
@@ -207,7 +207,10 @@ export async function scrapeSMChunk(
   let saved = 0;
   for (const p of items) {
     if (!p.sku || !p.name) continue;
-    const price = p.price_range?.minimum_price?.final_price?.value ?? null;
+    // Magento can return the price as a string ("300.00") or a number; coerce.
+    const rawPrice = p.price_range?.minimum_price?.final_price?.value ?? null;
+    const priceNum = rawPrice == null ? NaN : Number(rawPrice);
+    const price = Number.isFinite(priceNum) ? priceNum : null;
     const url = p.url_key ? `${SM_BASE}/${p.url_key}.html` : null;
     await prisma.storeProduct.upsert({
       where: { sku_sourceDate: { sku: p.sku, sourceDate } },
