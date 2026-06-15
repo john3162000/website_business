@@ -49,40 +49,71 @@ interface NutritionRow {
   sourceUrl: string;
 }
 
+// Maps the human-readable nutrient labels used in each food's "Data" modal
+// to our NutritionFact fields. Labels come from the FNRI page verbatim,
+// e.g. `<div class="col-md-9">Protein (g)</div>` paired with
+// `<div class="col-md-3"><strong>8.3</strong></div>`.
+type NutrientField = Exclude<keyof NutritionRow, "foodName" | "foodCode" | "sourceUrl">;
+
+const NUTRIENT_LABELS: Record<string, NutrientField> = {
+  "Energy, calculated (kcal)": "calories",
+  "Protein (g)": "protein",
+  "Total Fat (g)": "fat",
+  "Carbohydrate, total (g)": "carbohydrates",
+  "Fiber, total dietary (g)": "fiber",
+  "Calcium, Ca (mg)": "calcium",
+  "Iron, Fe (mg)": "iron",
+  "Retinol Activity Equivalent, RAE (µg)": "vitaminA",
+  "Thiamin, Vitamin B1 (mg)": "vitaminB1",
+  "Riboflavin, Vitamin B2 (mg)": "vitaminB2",
+  "Ascorbic Acid, Vitamin C (mg)": "vitaminC",
+};
+
+/**
+ * The FNRI "/all" page's directory table only ever renders 10 rows (its
+ * pagination is client-side JS), but every food's full nutrient profile is
+ * server-rendered as a hidden Bootstrap modal `<div id="{Food_ID}_data">`
+ * with an `<h3>` food name and per-100g values in `.list-group-item.row`
+ * entries — and ALL ~1500 of these modals are present in the one page, so
+ * iterating over them directly captures the entire dataset in one fetch.
+ */
 function extractRows($: ReturnType<typeof cheerio.load>, sourceUrl: string): NutritionRow[] {
   const rows: NutritionRow[] = [];
 
-  $("table tbody tr, table tr").each((_, el) => {
-    const cells = $(el)
-      .find("td")
-      .map((_, td) => $(td).text().trim())
-      .get();
-    if (cells.length < 6) return;
+  $("div[id$='_data']").each((_, el) => {
+    const id = $(el).attr("id") ?? "";
+    const foodCode = id.replace(/_data$/, "");
+    const foodName = $(el).find("h3").first().text().trim();
+    if (!foodCode || !foodName) return;
 
-    const foodName = cells[0];
-    if (!foodName || foodName.length < 2) return;
-
-    // Some FNRI tables include a food code column; fall back to a derived key.
-    const possibleCode = cells[1] && /^[A-Za-z0-9-]+$/.test(cells[1]) && cells[1].length <= 12 ? cells[1] : null;
-    const valueCells = possibleCode ? cells.slice(2) : cells.slice(1);
-    const foodCode = possibleCode ?? `${foodName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}__${sourceUrl.split("/").pop()}`;
-
-    rows.push({
+    const row: NutritionRow = {
       foodName,
       foodCode,
-      calories: num(valueCells[0] || ""),
-      protein: num(valueCells[1] || ""),
-      fat: num(valueCells[2] || ""),
-      carbohydrates: num(valueCells[3] || ""),
-      fiber: num(valueCells[4] || ""),
-      calcium: num(valueCells[5] || ""),
-      iron: num(valueCells[6] || ""),
-      vitaminA: num(valueCells[7] || ""),
-      vitaminB1: num(valueCells[8] || ""),
-      vitaminB2: num(valueCells[9] || ""),
-      vitaminC: num(valueCells[10] || ""),
+      calories: null,
+      protein: null,
+      fat: null,
+      carbohydrates: null,
+      fiber: null,
+      calcium: null,
+      iron: null,
+      vitaminA: null,
+      vitaminB1: null,
+      vitaminB2: null,
+      vitaminC: null,
       sourceUrl,
-    });
+    };
+
+    $(el)
+      .find(".list-group-item.row")
+      .each((_, li) => {
+        const label = $(li).find(".col-md-9").first().text().trim();
+        const field = NUTRIENT_LABELS[label];
+        if (!field) return;
+        const value = $(li).find(".col-md-3 strong").first().text().trim();
+        row[field] = num(value);
+      });
+
+    rows.push(row);
   });
 
   return rows;

@@ -17,7 +17,7 @@ function sleep(ms: number) {
 }
 
 const TYPES = [
-  { type: "DA", label: "DA Commodity Prices", desc: "Pull the latest DA price-monitoring PDF and store every commodity row.", chunked: false },
+  { type: "DA", label: "DA Commodity Prices (30 days)", desc: "Backfill the last 30 days of DA Daily Price Index PDFs and store every commodity row per day. Runs one day per request, repeated automatically.", chunked: true },
   { type: "RECIPES", label: "Panlasang Pinoy Recipes (ALL)", desc: "Crawl every recipe index page and store every recipe — ingredients and step-by-step instructions included. Runs one index page per request, repeated automatically until the site is exhausted.", chunked: true },
   { type: "NUTRITION", label: "FNRI Nutrition Data (ALL)", desc: "Crawl the full FNRI Food Composition Table, following every pagination link. Runs one listing page per request, repeated automatically until done.", chunked: true },
 ] as const;
