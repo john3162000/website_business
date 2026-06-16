@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SarapSulit — Ingredient Match Review</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { font-family: ui-sans-serif, system-ui, sans-serif; }
+    .conf-high { background:#dcfce7; color:#15803d; }
+    .conf-mid  { background:#fef9c3; color:#854d0e; }
+    .conf-low  { background:#fee2e2; color:#b91c1c; }
+    .conf-none { background:#f3f4f6; color:#6b7280; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; } ::-webkit-scrollbar-thumb { background: #15803d; border-radius: 4px; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold mb-1">Ingredient Match Review</h1>
+  <p class="text-gray-500 text-sm mb-4">
+    Audits how every unique recipe ingredient matches to FNRI nutrition, DA commodity prices, and SM store prices —
+    using the exact same <code>matcher.js</code> the live site uses. Sorted worst-first so bad matches surface at the top.
+  </p>
+
+  <div class="flex flex-wrap gap-3 items-center mb-5">
+    <button id="download-btn" class="bg-green-700 hover:bg-green-600 text-white text-sm font-medium px-4 py-2 rounded-lg disabled:opacity-50" disabled>
+      ⬇ Download JSON report
+    </button>
+    <label class="text-sm text-gray-600 flex items-center gap-2">
+      Show:
+      <select id="filter-select" class="border rounded-lg px-2 py-1.5 text-sm">
+        <option value="all">All ingredients</option>
+        <option value="problem" selected>Problems only (low/no confidence)</option>
+        <option value="fnri-bad">FNRI low/missing</option>
+        <option value="price-bad">No price (DA &amp; SM)</option>
+      </select>
+    </label>
+    <input id="search" type="text" placeholder="Search ingredient…" class="border rounded-lg px-3 py-1.5 text-sm flex-1 min-w-[200px]" />
+  </div>
+
+  <div id="summary" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 mb-5 text-sm"></div>
+
+  <div id="status" class="text-gray-500 text-sm py-10 text-center">Loading live data…</div>
+
+  <div class="overflow-x-auto bg-white rounded-xl shadow">
+    <table class="w-full text-sm" id="audit-table" style="display:none">
+      <thead>
+        <tr class="text-left text-gray-500 uppercase text-xs tracking-wide border-b bg-gray-50">
+          <th class="px-3 py-2">#</th>
+          <th class="px-3 py-2">Ingredient</th>
+          <th class="px-3 py-2">FNRI match</th>
+          <th class="px-3 py-2">DA match</th>
+          <th class="px-3 py-2">SM match</th>
+          <th class="px-3 py-2 text-right">Recipes</th>
+        </tr>
+      </thead>
+      <tbody id="audit-body" class="divide-y divide-gray-100"></tbody>
+    </table>
+  </div>
+</div>
+
+<script src="matcher.js"></script>
+<script>
+const API_BASE = "https://website-business-beta.vercel.app";
+const { tokenize, buildIndex, rankMatch, aliasTokens, isNonPriceable, CONFIDENCE } = window.SarapMatcher;
+
+let ROWS = [];  // full computed audit rows
+
+function confClass(c) {
+  if (c == null) return "conf-none";
+  if (c >= 0.6) return "conf-high";
+  if (c >= 0.4) return "conf-mid";
+  return "conf-low";
+}
+function confBadge(label, name, c, threshold) {
+  if (!name) return `<span class="conf-none text-xs px-2 py-0.5 rounded">no match</span>`;
+  const cls = confClass(c);
+  const pct = Math.round(c * 100);
+  const gated = c < threshold ? " · below gate" : "";
+  return `<div><span class="${cls} text-xs px-2 py-0.5 rounded font-medium">${pct}%${gated}</span>
+          <div class="text-gray-700 mt-0.5">${name}</div></div>`;
+}
+
+async function load() {
+  let recipes, nutrition, commodities, store;
+  try {
+    [recipes, nutrition, commodities, store] = await Promise.all([
+      fetch(`${API_BASE}/api/recipes`).then(r => r.json()),
+      fetch(`${API_BASE}/api/nutrition`).then(r => r.json()),
+      fetch(`${API_BASE}/api/commodities`).then(r => r.json()),
+      fetch(`${API_BASE}/api/store-prices`).then(r => r.json()).catch(() => ({ products: [] })),
+    ]);
+  } catch (e) {
+    document.getElementById("status").innerHTML =
+      `<span class="text-red-600">Failed to load data: ${e.message}. Check API_BASE.</span>`;
+    return;
+  }
+
+  const NUTRITION = nutrition.facts || [];
+  const DA = (commodities.commodities || []).map(c => ({ name: c.name, price: c.price }));
+  const SM = (store.products || []).map(p => ({ name: p.name, price: p.price }));
+
+  const NUTRITION_INDEX = buildIndex(NUTRITION, "foodName");
+  const DA_INDEX = buildIndex(DA, "name");
+  const SM_INDEX = buildIndex(SM, "name");
+
+  // Collect unique ingredient names across all recipes, counting occurrences.
+  const byName = new Map();
+  for (const r of (recipes.recipes || [])) {
+    for (const ing of (r.ingredients || [])) {
+      const key = (ing.name || "").trim();
+      if (!key) continue;
+      if (!byName.has(key)) byName.set(key, { name: key, count: 0 });
+      byName.get(key).count++;
+    }
+  }
+
+  ROWS = [...byName.values()].map(({ name, count }) => {
+    const extra = aliasTokens(name);
+    const nonPriceable = isNonPriceable(name);
+    const fnri = rankMatch(name, NUTRITION, NUTRITION_INDEX, "foodName", extra);
+    const da = nonPriceable ? null : rankMatch(name, DA, DA_INDEX, "name", extra);
+    const sm = nonPriceable ? null : rankMatch(name, SM, SM_INDEX, "name", extra);
+    return {
+      ingredient: name,
+      recipeCount: count,
+      nonPriceable,
+      fnri: fnri ? { name: fnri.item.foodName, confidence: round(fnri.confidence) } : null,
+      da: da ? { name: da.item.name, price: da.item.price, confidence: round(da.confidence) } : null,
+      sm: sm ? { name: sm.item.name, price: sm.item.price, confidence: round(sm.confidence) } : null,
+    };
+  });
+
+  // Worst-first: lowest "best available" confidence at top, weighted by how many recipes use it.
+  ROWS.sort((a, b) => worstScore(a) - worstScore(b) || b.recipeCount - a.recipeCount);
+
+  renderSummary();
+  render();
+  document.getElementById("download-btn").disabled = false;
+  document.getElementById("status").style.display = "none";
+  document.getElementById("audit-table").style.display = "";
+}
+
+function round(n) { return Math.round(n * 1000) / 1000; }
+function worstScore(r) {
+  // The FNRI confidence is the main quality signal (nutrition is the headline).
+  return r.fnri ? r.fnri.confidence : -1;
+}
+
+function passesGate(m, threshold) { return m && m.confidence >= threshold; }
+
+function renderSummary() {
+  const total = ROWS.length;
+  const fnriOk = ROWS.filter(r => passesGate(r.fnri, CONFIDENCE.fnri)).length;
+  const fnriBad = total - fnriOk;
+  const priceOk = ROWS.filter(r => passesGate(r.da, CONFIDENCE.da) || passesGate(r.sm, CONFIDENCE.sm)).length;
+  const priceBad = ROWS.filter(r => !r.nonPriceable).length - ROWS.filter(r => !r.nonPriceable && (passesGate(r.da, CONFIDENCE.da) || passesGate(r.sm, CONFIDENCE.sm))).length;
+  const nonPriceable = ROWS.filter(r => r.nonPriceable).length;
+  const cards = [
+    ["Unique ingredients", total, "bg-white"],
+    ["FNRI matched", fnriOk, "bg-green-50"],
+    ["FNRI low/missing", fnriBad, "bg-red-50"],
+    ["Priced (DA or SM)", priceOk, "bg-green-50"],
+    ["No price match", priceBad, "bg-red-50"],
+    ["Non-priceable", nonPriceable, "bg-gray-100"],
+  ];
+  document.getElementById("summary").innerHTML = cards.map(([label, val, bg]) =>
+    `<div class="${bg} rounded-lg p-3 border"><div class="text-2xl font-bold">${val}</div><div class="text-gray-500 text-xs">${label}</div></div>`
+  ).join("");
+}
+
+function render() {
+  const filter = document.getElementById("filter-select").value;
+  const q = document.getElementById("search").value.trim().toLowerCase();
+  let rows = ROWS;
+
+  if (q) rows = rows.filter(r => r.ingredient.toLowerCase().includes(q));
+  if (filter === "problem") {
+    rows = rows.filter(r => !passesGate(r.fnri, CONFIDENCE.fnri) ||
+      (!r.nonPriceable && !passesGate(r.da, CONFIDENCE.da) && !passesGate(r.sm, CONFIDENCE.sm)));
+  } else if (filter === "fnri-bad") {
+    rows = rows.filter(r => !passesGate(r.fnri, CONFIDENCE.fnri));
+  } else if (filter === "price-bad") {
+    rows = rows.filter(r => !r.nonPriceable && !passesGate(r.da, CONFIDENCE.da) && !passesGate(r.sm, CONFIDENCE.sm));
+  }
+
+  document.getElementById("audit-body").innerHTML = rows.map((r, i) => `
+    <tr class="${i % 2 ? 'bg-gray-50' : 'bg-white'} align-top">
+      <td class="px-3 py-2 text-gray-400">${i + 1}</td>
+      <td class="px-3 py-2 font-medium">${escapeHtml(r.ingredient)}${r.nonPriceable ? ' <span class="text-xs text-gray-400">(non-priceable)</span>' : ''}</td>
+      <td class="px-3 py-2">${confBadge('FNRI', r.fnri && r.fnri.name, r.fnri && r.fnri.confidence, CONFIDENCE.fnri)}</td>
+      <td class="px-3 py-2">${r.nonPriceable ? '<span class="text-gray-300">—</span>' : confBadge('DA', r.da && r.da.name, r.da && r.da.confidence, CONFIDENCE.da)}</td>
+      <td class="px-3 py-2">${r.nonPriceable ? '<span class="text-gray-300">—</span>' : confBadge('SM', r.sm && r.sm.name, r.sm && r.sm.confidence, CONFIDENCE.sm)}</td>
+      <td class="px-3 py-2 text-right text-gray-500">${r.recipeCount}</td>
+    </tr>`).join("") || `<tr><td colspan="6" class="text-center text-gray-400 py-8">No rows match this filter.</td></tr>`;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+
+function download() {
+  const report = {
+    generatedAt: new Date().toISOString(),
+    gates: CONFIDENCE,
+    totalIngredients: ROWS.length,
+    rows: ROWS,
+  };
+  const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "sarapsulit-match-report.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+document.getElementById("filter-select").addEventListener("change", render);
+document.getElementById("search").addEventListener("input", render);
+document.getElementById("download-btn").addEventListener("click", download);
+load();
+</script>
+</body>
+</html>
