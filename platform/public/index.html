@@ -70,7 +70,8 @@
     <div class="max-w-6xl mx-auto px-4 flex flex-wrap justify-center gap-10 text-center text-sm">
       <div><p class="text-2xl font-bold text-amber-300" id="stat-recipes">—</p><p class="text-green-200">Recipes Indexed</p></div>
       <div><p class="text-2xl font-bold text-amber-300" id="stat-foods">—</p><p class="text-green-200">Food Items (FNRI)</p></div>
-      <div><p class="text-2xl font-bold text-amber-300" id="stat-commodities">—</p><p class="text-green-200">Commodity Prices</p></div>
+      <div><p class="text-2xl font-bold text-amber-300" id="stat-commodities">—</p><p class="text-green-200">DA Commodities</p></div>
+      <div><p class="text-2xl font-bold text-amber-300" id="stat-sm-products">—</p><p class="text-green-200">SM Store Prices</p></div>
       <div><p class="text-2xl font-bold text-amber-300" id="stat-da-date">—</p><p class="text-green-200">Latest DA Data</p></div>
     </div>
   </div>
@@ -587,7 +588,7 @@ function buildModal(r, instructions) {
     <div class="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3">
       <div>
         <p class="font-medium text-sm">${i.label}</p>
-        <p class="text-xs text-gray-400">${i.matchedCommodity ? `DA: ${i.matchedCommodity} — ₱${i.price}/kg` : (i.nonPriceable ? '' : 'No DA price match')}${i.matchedFood ? ` · FNRI: ${i.matchedFood}` : ''}</p>
+        <p class="text-xs text-gray-400">${i.matchedCommodity ? `DA: ${i.matchedCommodity} — ₱${i.price}/kg` : i.smProduct ? `SM: ${i.smProduct} — ₱${i.smPrice}` : (i.nonPriceable ? '' : 'No price match')}${i.matchedFood ? ` · FNRI: ${i.matchedFood}` : ''}</p>
       </div>
     </div>`).join('');
 
@@ -879,6 +880,7 @@ function updateLabels() {
   set('stat-recipes', RECIPES.length);
   set('stat-foods', NUTRITION.length);
   set('stat-commodities', DA_PRICES.length);
+  set('stat-sm-products', SM_PRODUCTS.length);
   set('stat-da-date', dateStr);
 }
 
