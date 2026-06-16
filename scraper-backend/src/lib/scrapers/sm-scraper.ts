@@ -79,17 +79,40 @@ interface SMCategory {
 }
 
 /**
- * Flattens the category tree into a de-duplicated list of categories that
- * actually contain products. Products that live in multiple categories are
- * de-duplicated later at the DB level (upsert by SKU), so overlapping
- * categories are harmless.
+ * Category name substrings (case-insensitive) that are considered food/grocery.
+ * Any category whose name does NOT match at least one of these is skipped, so
+ * the scrape stays limited to consumable products and avoids home goods, beauty,
+ * fashion, electronics, etc.
+ */
+const FOOD_CATEGORY_KEYWORDS = [
+  "produce", "vegetable", "fruit",
+  "meat", "seafood", "fish", "pork", "chicken", "beef",
+  "frozen", "chilled", "dairy", "milk", "cheese", "egg",
+  "bakery", "bread", "deli",
+  "pantry", "grocery", "canned", "condiment", "sauce", "oil", "vinegar",
+  "rice", "noodle", "pasta", "flour", "sugar",
+  "snack", "biscuit", "cracker", "chips",
+  "beverage", "drink", "juice", "water", "coffee", "tea",
+  "ready to", "heat", "cook", "instant",
+  "spice", "seasoning", "herb",
+  "baby food", "infant",
+];
+
+function isFoodCategory(name: string): boolean {
+  const lc = name.toLowerCase();
+  return FOOD_CATEGORY_KEYWORDS.some((kw) => lc.includes(kw));
+}
+
+/**
+ * Flattens the category tree into a de-duplicated list of **food/grocery**
+ * categories that actually contain products.
  */
 function flattenCategories(root: RawCategory | undefined): SMCategory[] {
   const out: SMCategory[] = [];
   const seen = new Set<string>();
   const walk = (cat: RawCategory | undefined) => {
     if (!cat) return;
-    if (cat.product_count > 0 && !seen.has(cat.uid)) {
+    if (cat.product_count > 0 && !seen.has(cat.uid) && isFoodCategory(cat.name)) {
       seen.add(cat.uid);
       out.push({ uid: cat.uid, name: cat.name });
     }
