@@ -58,19 +58,48 @@ async function gql<T>(query: string, variables: Record<string, unknown>): Promis
  */
 export async function probeSMProduct(sku: string): Promise<unknown> {
   const queries: Record<string, string> = {
-    custom_attributes: `
+    // Try flat attribute_code/value style (Magento 2.3 / some PWA builds)
+    custom_attributes_flat: `
       query Probe($sku: String!) {
         products(filter: { sku: { eq: $sku } }) {
           items {
             sku name
-            custom_attributes { code selected_attribute_options { attribute_option { label } } entered_attribute_value { value } }
+            custom_attributes { attribute_code value }
           }
         }
       }`,
+    // Try the newer AttributeValueInterface union style (Magento 2.4.5+)
+    custom_attributes_new: `
+      query Probe($sku: String!) {
+        products(filter: { sku: { eq: $sku } }) {
+          items {
+            sku name
+            custom_attributes {
+              ... on AttributeValue { code value }
+              ... on AttributeSelectedOptions {
+                code
+                selected_options { label value }
+              }
+            }
+          }
+        }
+      }`,
+    // Description HTML — may contain nutrition table for packaged products
     description: `
       query Probe($sku: String!) {
         products(filter: { sku: { eq: $sku } }) {
           items { sku name description { html } short_description { html } }
+        }
+      }`,
+    // Introspect what top-level fields ProductInterface exposes
+    product_fields: `
+      query Probe($sku: String!) {
+        products(filter: { sku: { eq: $sku } }) {
+          items {
+            sku name url_key
+            __typename
+            ... on SimpleProduct { weight }
+          }
         }
       }`,
   };
