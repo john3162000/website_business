@@ -247,6 +247,8 @@ let DA_PRICES = [];        // [{ name, category, price, prevPrice, trend, latest
 let DA_CATEGORIES = [];    // distinct category strings, for filter chips
 let NUTRITION = [];        // FNRI facts
 let RECIPES = [];          // enriched scraped recipes
+let SM_PRODUCTS = [];      // [{ sku, name, category, uom, price, prevPrice, url, trend }]
+let SM_INDEX = null;       // inverted token index for SM product name matching
 let LATEST_DA_DATE = null;
 
 // ═══════════════ COMPUTATION CONSTANTS ═══════════════
@@ -425,12 +427,18 @@ function enrichRecipe(raw) {
       totals.calcium  += (food.calcium || 0) * f;
     }
 
-    // Cost (DA prevailing price is per kg for most commodities)
+    // Cost — DA prevailing price (per kg) first, then SM retail price (exact unit price) as fallback.
     const nonPriceable = isNonPriceable(ing.name);
     const com = nonPriceable ? null : bestMatch(ing.name, DA_PRICES, COMMODITY_INDEX, "name", aliasTokens(ing.name));
+    // SM price is per-package (not per kg), so we only use it for a rough cost signal when DA has no match.
+    const smProd = (!nonPriceable && !com && SM_INDEX) ? bestMatch(ing.name, SM_PRODUCTS, SM_INDEX, "name", aliasTokens(ing.name)) : null;
     let lineCost = null;
     if (com && com.price != null && grams) {
       lineCost = (com.price / 1000) * grams; // ₱/kg → ₱/g × grams
+      totalCost += lineCost;
+    } else if (smProd && smProd.price != null) {
+      // Use SM package price as a flat per-ingredient estimate (no gram conversion — package price).
+      lineCost = smProd.price;
       totalCost += lineCost;
     }
 
@@ -439,6 +447,8 @@ function enrichRecipe(raw) {
       matchedFood: food ? food.foodName : null,
       matchedCommodity: com ? com.name : null,
       price: com && com.price != null ? com.price : null,
+      smProduct: smProd ? smProd.name : null,
+      smPrice: smProd && smProd.price != null ? smProd.price : null,
       nonPriceable,
     });
   }
@@ -503,10 +513,11 @@ function enrichRecipe(raw) {
 // ═══════════════ DATA LOADING ═══════════════
 
 async function loadData() {
-  const [comRes, nutRes, recRes] = await Promise.all([
+  const [comRes, nutRes, recRes, smRes] = await Promise.all([
     fetch(`${API_BASE}/api/commodities`).then((r) => r.json()),
     fetch(`${API_BASE}/api/nutrition`).then((r) => r.json()),
     fetch(`${API_BASE}/api/recipes`).then((r) => r.json()),
+    fetch(`${API_BASE}/api/store-prices`).then((r) => r.json()).catch(() => ({ products: [] })),
   ]);
 
   LATEST_DA_DATE = comRes.latestDate ? new Date(comRes.latestDate) : null;
@@ -523,6 +534,16 @@ async function loadData() {
   NUTRITION = nutRes.facts || [];
   NUTRITION_INDEX = buildIndex(NUTRITION, "foodName");
   COMMODITY_INDEX = buildIndex(DA_PRICES, "name");
+
+  SM_PRODUCTS = (smRes.products || []).map((p) => {
+    let trend = "stable";
+    if (p.price != null && p.prevPrice != null) {
+      if (p.price > p.prevPrice) trend = "up";
+      else if (p.price < p.prevPrice) trend = "down";
+    }
+    return { sku: p.sku, name: p.name, category: p.category || "Other", uom: p.uom, price: p.price, prevPrice: p.prevPrice, url: p.url, trend };
+  });
+  SM_INDEX = buildIndex(SM_PRODUCTS, "name");
 
   RECIPES = (recRes.recipes || []).map(enrichRecipe);
 }
