@@ -237,6 +237,7 @@
   <p class="mt-1 text-green-400">SarapSulit — Masarap, Masustansya, Sulit!</p>
 </footer>
 
+<script src="matcher.js"></script>
 <script>
 // ═══════════════ CONFIG ═══════════════
 // scraper-backend base URL — the SAME site as the /admin panel, WITHOUT the
@@ -271,159 +272,8 @@ function pct(val, key) {
 }
 function round1(n) { return Math.round(n * 10) / 10; }
 
-// ═══════════════ QUANTITY PARSING (scraped free-text amounts → grams) ═══════════════
-// Approximate per-unit gram weights. Cooking measures assume water-like density.
-const UNIT_GRAMS = {
-  g:1, gram:1, grams:1, gr:1, mg:0.001,
-  kg:1000, kilo:1000, kilogram:1000,
-  lb:453.6, lbs:453.6, pound:453.6, pounds:453.6,
-  oz:28.35, ounce:28.35, ounces:28.35,
-  ml:1, milliliter:1, l:1000, liter:1000, litre:1000,
-  cup:240, cups:240, tbsp:15, tablespoon:15, tablespoons:15,
-  tsp:5, teaspoon:5, teaspoons:5,
-  clove:5, cloves:5, piece:50, pieces:50, pc:50, pcs:50, pced:50,
-  slice:20, slices:20, bunch:200, bundle:200, can:400, pack:200, sachet:8,
-  pinch:0.5, dash:0.5, head:500, stalk:15,
-};
-const ANIMAL_WORDS = ["chicken","pork","beef","fish","shrimp","prawn","squid","bangus","tilapia",
-  "galunggong","tuna","crab","clam","mussel","oyster","egg","liver","meat","bacon","ham","sausage",
-  "milkfish","anchovy","sardine","fish sauce","patis","bagoong","gata"];
-
-function parseQuantity(amount, unit) {
-  // amount like "1", "1/2", "2-3", "1 1/2"; unit like "cup", "lbs", "g".
-  if (!amount) return null;
-  let a = String(amount).trim().toLowerCase().replace(/[()]/g, " ");
-  // take the lower end of any range
-  a = a.split(/\s*(?:-|to|–)\s*/)[0].trim();
-  let value = 0;
-  const mixed = a.match(/^(\d+)\s+(\d+)\/(\d+)/);
-  const frac = a.match(/^(\d+)\/(\d+)/);
-  const dec = a.match(/^(\d+(?:\.\d+)?)/);
-  if (mixed) value = parseInt(mixed[1]) + parseInt(mixed[2]) / parseInt(mixed[3]);
-  else if (frac) value = parseInt(frac[1]) / parseInt(frac[2]);
-  else if (dec) value = parseFloat(dec[1]);
-  else return null;
-  const u = String(unit || "").trim().toLowerCase().replace(/[^a-z]/g, "");
-  const perUnit = UNIT_GRAMS[u];
-  if (perUnit) return value * perUnit;
-  // No recognized unit — assume "pieces"-ish but cap influence.
-  return value * 60;
-}
-
-// ═══════════════ FUZZY MATCHING (ingredient name → FNRI food / DA commodity) ═══════════════
-const STOPWORDS = new Set(["and","or","the","of","a","with","fresh","dried","ground","raw","cooked",
-  "chopped","sliced","minced","large","small","medium","whole","to","taste","for","cup","cups","tbsp",
-  "tsp","g","kg","ml","piece","pieces","cut","into","serving","red","green","white","local","imported"]);
-
-function tokenize(s) {
-  return String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-z0-9 ]/g, " ").split(/\s+/)
-    .filter((w) => w.length > 2 && !STOPWORDS.has(w))
-    .map((w) => (w.length > 4 && w.endsWith("es")) ? w.slice(0, -2)
-              : (w.length > 4 && w.endsWith("s")) ? w.slice(0, -1) : w);
-}
-
-// Ingredient name (substring, lowercase) → extra English/Filipino tokens to help match
-// against DA commodity names that use different naming conventions.
-const COMMODITY_ALIASES = [
-  // Filipino ↔ English commodity names
-  ["garlic", ["bawang"]],
-  ["onion", ["sibuyas"]],
-  ["shrimp", ["hipon", "shrimp"]],
-  ["prawn", ["hipon", "shrimp"]],
-  ["mussel", ["tahong"]],
-  ["clam", ["halaan"]],
-  ["crab", ["alimango", "alimasag"]],
-  ["squid", ["pusit"]],
-  ["milkfish", ["bangus"]],
-  ["bangus", ["milkfish"]],
-  ["tilapia", ["tilapia"]],
-  ["potato", ["potato"]],
-  ["sweet potato", ["kamote"]],
-  ["pork", ["baboy", "pork"]],
-  ["pork belly", ["liempo"]],
-  ["pork ribs", ["ribs", "buto"]],
-  ["chicken", ["manok", "broiler", "fryer"]],
-  ["chicken breast", ["breast", "broiler"]],
-  ["beef", ["baka", "beef"]],
-  ["ginger", ["luya"]],
-  ["tomato", ["kamatis"]],
-  ["cabbage", ["repolyo"]],
-  ["eggplant", ["talong"]],
-  ["calamansi", ["calamansi", "lemon"]],
-  ["kangkong", ["water", "spinach", "kangkong"]],
-  ["malunggay", ["moringa", "malunggay"]],
-  ["bitter melon", ["ampalaya", "bitter"]],
-  ["ampalaya", ["bitter", "melon"]],
-  ["sayote", ["chayote", "sayote"]],
-  ["sitaw", ["string", "bean", "sitaw"]],
-  ["okra", ["okra", "lady"]],
-  ["pechay", ["pechay", "bok", "choy"]],
-  ["taro", ["gabi", "taro"]],
-  ["gabi", ["taro", "gabi"]],
-  ["vinegar", ["suka"]],
-  ["soy sauce", ["toyo"]],
-  ["fish sauce", ["patis"]],
-  ["shrimp paste", ["bagoong"]],
-  ["coconut milk", ["gata", "coconut"]],
-  ["coconut", ["gata", "niyog"]],
-];
-
-// Ingredients that shouldn't be treated as missing DA price matches — they're
-// either not sold as DA-tracked commodities or negligible-cost flavorings.
-const NON_PRICEABLE = ["water", "ice", "clove", "cloves", "leaf",
-  "pepper", "msg", "bouillon", "stock", "broth", "food coloring", "annatto",
-  "vetsin", "powder", "blossom", "puso", "flower", "peel", "zest", "rind",
-  "bay", "laurel", "pandan", "lemongrass", "tanglad"];
-
-function aliasTokens(name) {
-  const lc = String(name || "").toLowerCase();
-  const extra = [];
-  for (const [needle, words] of COMMODITY_ALIASES) {
-    if (lc.includes(needle)) extra.push(...words.flatMap(tokenize));
-  }
-  return extra;
-}
-
-function isNonPriceable(name) {
-  const lc = String(name || "").toLowerCase();
-  return NON_PRICEABLE.some((w) => lc.includes(w));
-}
-
-// Build an inverted index: token -> list of item indices, for fast best-overlap lookup.
-function buildIndex(items, nameKey) {
-  const index = new Map();
-  items.forEach((it, i) => {
-    for (const t of new Set(tokenize(it[nameKey]))) {
-      if (!index.has(t)) index.set(t, []);
-      index.get(t).push(i);
-    }
-  });
-  return index;
-}
-
-function bestMatch(name, items, index, nameKey, extraTokens, minScoreRatio) {
-  const tokens = tokenize(name).concat(extraTokens || []);
-  if (tokens.length === 0) return null;
-  const scores = new Map();
-  for (const t of tokens) {
-    const hits = index.get(t);
-    if (!hits) continue;
-    for (const i of hits) scores.set(i, (scores.get(i) || 0) + 1);
-  }
-  let best = -1, bestScore = 0;
-  for (const [i, s] of scores) {
-    if (s > bestScore) { bestScore = s; best = i; }
-  }
-  if (best < 0 || bestScore === 0) return null;
-  if (minScoreRatio) {
-    const itemTokens = tokenize(items[best][nameKey]).length || 1;
-    // Require the overlap to cover at least minScoreRatio of the shorter side.
-    const minRequired = Math.ceil(Math.min(tokens.length, itemTokens) * minScoreRatio);
-    if (bestScore < minRequired) return null;
-  }
-  return items[best];
-}
+// ═══════════════ MATCHING ENGINE (shared with match-review.html via matcher.js) ═══════════════
+const { parseQuantity, tokenize, buildIndex, rankMatch, bestMatch, aliasTokens, isNonPriceable, ANIMAL_WORDS, CONFIDENCE } = window.SarapMatcher;
 
 let NUTRITION_INDEX = null;
 let COMMODITY_INDEX = null;
@@ -442,9 +292,11 @@ function enrichRecipe(raw) {
     if (ANIMAL_WORDS.some((w) => nameLc.includes(w))) usesAnimal = true;
 
     // Nutrition (FNRI is per 100g E.P.)
-    // Nutrition (FNRI is per 100g E.P.). Use a 0.6 overlap ratio to prevent
-    // loose single-token false matches (e.g. "banana blossom" → "Banana chips").
-    const food = bestMatch(ing.name, NUTRITION, NUTRITION_INDEX, "foodName", aliasTokens(ing.name), 0.6);
+    // Nutrition (FNRI is per 100g E.P.). rankMatch returns a confidence; gate
+    // on CONFIDENCE.fnri so loose single-token false matches are rejected.
+    const foodM = rankMatch(ing.name, NUTRITION, NUTRITION_INDEX, "foodName", aliasTokens(ing.name));
+    const food = (foodM && foodM.confidence >= CONFIDENCE.fnri) ? foodM.item : null;
+    const foodConfidence = food ? foodM.confidence : null;
     if (food && grams) {
       const f = grams / 100;
       totals.calories += (food.calories || 0) * f;
@@ -458,11 +310,15 @@ function enrichRecipe(raw) {
       totals.calcium  += (food.calcium || 0) * f;
     }
 
-    // Cost — DA prevailing price (per kg) first, then SM retail price (exact unit price) as fallback.
+    // Cost — DA prevailing price (per kg) first, then SM retail price as fallback.
     const nonPriceable = isNonPriceable(ing.name);
-    const com = nonPriceable ? null : bestMatch(ing.name, DA_PRICES, COMMODITY_INDEX, "name", aliasTokens(ing.name));
-    // SM price is per-package (not per kg), so we only use it for a rough cost signal when DA has no match.
-    const smProd = (!nonPriceable && !com && SM_INDEX) ? bestMatch(ing.name, SM_PRODUCTS, SM_INDEX, "name", aliasTokens(ing.name)) : null;
+    const comM = nonPriceable ? null : rankMatch(ing.name, DA_PRICES, COMMODITY_INDEX, "name", aliasTokens(ing.name));
+    const com = (comM && comM.confidence >= CONFIDENCE.da) ? comM.item : null;
+    const comConfidence = com ? comM.confidence : null;
+    // SM price is per-package (not per kg), so we only use it when DA has no match.
+    const smM = (!nonPriceable && !com && SM_INDEX) ? rankMatch(ing.name, SM_PRODUCTS, SM_INDEX, "name", aliasTokens(ing.name)) : null;
+    const smProd = (smM && smM.confidence >= CONFIDENCE.sm) ? smM.item : null;
+    const smConfidence = smProd ? smM.confidence : null;
     let lineCost = null;
     if (com && com.price != null && grams) {
       lineCost = (com.price / 1000) * grams; // ₱/kg → ₱/g × grams
@@ -476,10 +332,13 @@ function enrichRecipe(raw) {
     ingredientRows.push({
       label: [ing.amount, ing.unit, ing.name].filter(Boolean).join(" ").trim() || ing.name,
       matchedFood: food ? food.foodName : null,
+      foodConfidence,
       matchedCommodity: com ? com.name : null,
       price: com && com.price != null ? com.price : null,
+      comConfidence,
       smProduct: smProd ? smProd.name : null,
       smPrice: smProd && smProd.price != null ? smProd.price : null,
+      smConfidence,
       nonPriceable,
     });
   }
