@@ -52,14 +52,17 @@
     "chopped", "sliced", "minced", "large", "small", "medium", "whole", "to", "taste", "for", "cup", "cups", "tbsp",
     "tsp", "ml", "piece", "pieces", "cut", "into", "serving", "red", "green", "white", "local", "imported",
     "boneless", "skinless", "peeled", "thinly", "finely", "about", "approximately", "optional", "your", "all",
-    "purpose", "extra", "lean", "ripe", "young", "old", "big", "thick", "thin", "long", "short"]);
+    "purpose", "extra", "lean", "ripe", "young", "old", "big", "thick", "thin", "long", "short",
+    // color/descriptor words that cause false positives (e.g. "yellow"→cassava, "black"→pomfret, "hard"→candy)
+    "yellow", "black", "dark", "light", "hard", "toasted", "roasted", "crushed", "sweet", "frozen", "dry"]);
 
   function tokenize(s) {
     return String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
       .replace(/[^a-z0-9 ]/g, " ").split(/\s+/)
       .filter((w) => w.length > 2 && !STOPWORDS.has(w))
-      .map((w) => (w.length > 4 && w.endsWith("es")) ? w.slice(0, -2)
-        : (w.length > 4 && w.endsWith("s")) ? w.slice(0, -1) : w);
+      // stem length > 3 (not > 4) so short plurals like "eggs"→"egg", "peas"→"pea" are normalized
+      .map((w) => (w.length > 3 && w.endsWith("es")) ? w.slice(0, -2)
+        : (w.length > 3 && w.endsWith("s")) ? w.slice(0, -1) : w);
   }
 
   // ───────── Filipino/English aliases ─────────
@@ -67,6 +70,8 @@
     ["garlic", ["bawang"]],
     ["onion", ["sibuyas"]],
     ["spring onion", ["scallion", "leek"]],
+    // bidirectional: scallion/green onion → spring onion
+    ["scallion", ["spring onion", "green onion"]],
     ["shrimp", ["hipon"]],
     ["prawn", ["hipon", "shrimp"]],
     ["mussel", ["tahong"]],
@@ -83,29 +88,76 @@
     ["tomato", ["kamatis"]],
     ["cabbage", ["repolyo"]],
     ["eggplant", ["talong"]],
-    ["calamansi", ["lemon"]],
-    ["kangkong", ["swamp", "kangkong"]],
-    ["malunggay", ["moringa", "malunggay"]],
+    ["talong", ["eggplant"]],
+    ["calamansi", ["lemon", "calamondin"]],
+    // kangkong = water spinach (removed "swamp" which was causing "Eel, swamp" false match)
+    ["kangkong", ["water", "spinach"]],
+    ["malunggay", ["moringa"]],
     ["bitter melon", ["ampalaya"]],
     ["ampalaya", ["bitter", "melon"]],
     ["sayote", ["chayote"]],
+    ["chayote", ["sayote"]],
     ["sitaw", ["string", "bean"]],
     ["pechay", ["bok", "choy"]],
+    ["bok choy", ["pechay"]],
     ["taro", ["gabi"]],
     ["gabi", ["taro"]],
     ["vinegar", ["suka"]],
     ["soy sauce", ["toyo"]],
     ["fish sauce", ["patis"]],
+    ["patis", ["fish sauce"]],
     ["shrimp paste", ["bagoong"]],
+    ["bagoong", ["shrimp paste"]],
     ["coconut milk", ["gata"]],
     ["coconut", ["niyog"]],
+    // tofu / tokwa (bean curd)
+    ["tofu", ["bean curd", "tokwa", "soybean"]],
+    ["tokwa", ["tofu", "bean curd"]],
+    // squash / kalabasa
+    ["kalabasa", ["squash", "pumpkin"]],
+    ["squash", ["kalabasa"]],
+    // paprika → chili/pepper family
+    ["paprika", ["pepper", "chili"]],
+    // Filipino spices / aromatics
+    ["tinapa", ["milkfish", "smoked"]],
+    ["galunggong", ["scad", "round scad"]],
+    ["danggit", ["rabbitfish", "dried"]],
+    ["tilapia", ["tilapia"]],
+    // root vegetables
+    ["singkamas", ["jicama", "turnip"]],
+    ["kamote", ["sweet potato", "yam"]],
+    ["ubi", ["purple yam"]],
+    // legumes
+    ["garbanzos", ["chickpea", "garbanzo"]],
+    ["monggo", ["mung bean"]],
+    ["mung bean", ["monggo"]],
+    ["tausi", ["black bean"]],
+    // noodles
+    ["bihon", ["rice noodle"]],
+    ["misua", ["wheat noodle"]],
+    ["miswa", ["wheat noodle"]],
+    // Filipino fermented / preserved
+    ["bagoong isda", ["fish paste"]],
+    ["bagoong monamon", ["fish paste"]],
+    ["tahure", ["fermented tofu"]],
+    // fruits
+    ["kamias", ["bilimbi"]],
+    ["dalandan", ["orange"]],
   ];
 
   // Flavorings / non-grocery items that should not count as a missing price match.
   const NON_PRICEABLE = ["water", "ice", "clove", "cloves", "leaf",
     "pepper", "msg", "bouillon", "stock", "broth", "food coloring", "annatto",
     "vetsin", "powder", "blossom", "puso", "flower", "peel", "zest", "rind",
-    "bay", "laurel", "pandan", "lemongrass", "tanglad"];
+    "bay", "laurel", "pandan", "lemongrass", "tanglad",
+    // spices / flavorings with no retail price match needed
+    "star anise", "anise", "vanilla extract",
+    // cooking liquids / wine
+    "sherry", "mirin", "sake", "rice wine",
+    // herbs (dried)
+    "oregano", "rosemary", "thyme", "sage", "basil leaves", "italian seasoning",
+    // recipe noise — unit/packaging words parsed as ingredient names
+    "cooking procedure", "marinade ingredients"];
 
   function aliasTokens(name) {
     const lc = String(name || "").toLowerCase();
