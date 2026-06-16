@@ -58,22 +58,55 @@ async function gql<T>(query: string, variables: Record<string, unknown>): Promis
  */
 export async function probeSMProduct(sku: string): Promise<unknown> {
   const queries: Record<string, string> = {
-    // Introspect the CustomAttribute type to discover its real field names
-    // (SM uses a non-standard CustomAttribute type that rejects code/attribute_code).
-    introspect_custom_attribute: `
-      query { __type(name: "CustomAttribute") { name kind fields { name type { name kind ofType { name kind } } } } }`,
-    // Introspect ProductInterface to find any nutrition-bearing top-level fields.
-    introspect_product: `
-      query { __type(name: "ProductInterface") { fields { name type { name kind ofType { name } } } } }`,
-    // Search the whole schema for any type whose name hints at nutrition.
-    introspect_nutrition_types: `
-      query { __schema { types { name kind } } }`,
-    // Description HTML — may contain a nutrition table for packaged products.
+    // Correct CustomAttribute query — uses attribute_metadata / entered_attribute_value / selected_attribute_options
+    custom_attributes: `
+      query Probe($sku: String!) {
+        products(filter: { sku: { eq: $sku } }) {
+          items {
+            sku name
+            custom_attributes {
+              attribute_metadata { uid code label data_type entity_type is_system }
+              entered_attribute_value { value }
+              selected_attribute_options {
+                attribute_option { label value is_default }
+              }
+            }
+          }
+        }
+      }`,
+    // Newer V2 field (ProductCustomAttributes union type on ProductInterface)
+    custom_attributesV2: `
+      query Probe($sku: String!) {
+        products(filter: { sku: { eq: $sku } }) {
+          items {
+            sku name
+            custom_attributesV2 {
+              items {
+                ... on AttributeValue { code value }
+                ... on AttributeSelectedOptions {
+                  code
+                  selected_options { label value uid }
+                }
+              }
+              errors { message type }
+            }
+          }
+        }
+      }`,
+    // Description HTML (non-empty for packaged/branded products)
     description: `
       query Probe($sku: String!) {
         products(filter: { sku: { eq: $sku } }) {
           items { sku name description { html } short_description { html } }
         }
+      }`,
+    // Introspect sub-types so we know what fields are actually available
+    introspect_subtypes: `
+      query {
+        ca:  __type(name: "AttributeMetadataInterface") { fields { name type { name kind } } }
+        eav: __type(name: "EnteredAttributeValue")      { fields { name type { name kind } } }
+        sao: __type(name: "SelectedAttributeOption")    { fields { name type { name kind } } }
+        pca: __type(name: "ProductCustomAttributes")    { fields { name type { name kind } } }
       }`,
   };
 
@@ -86,15 +119,7 @@ export async function probeSMProduct(sku: string): Promise<unknown> {
         body: JSON.stringify({ query, variables: { sku } }),
         signal: AbortSignal.timeout(30000),
       });
-      let json = await res.json();
-      // The full-schema introspection returns hundreds of types; keep only the
-      // ones whose name hints at nutrition / attributes so the response is usable.
-      if (key === "introspect_nutrition_types") {
-        const types = (json as { data?: { __schema?: { types?: { name: string }[] } } })
-          ?.data?.__schema?.types ?? [];
-        const hit = /nutri|attribute|custom|ingredient|fact|label/i;
-        json = { matchingTypes: types.filter((t) => t.name && hit.test(t.name)).map((t) => t.name) };
-      }
+      const json = await res.json();
       results[key] = json;
     } catch (err) {
       results[key] = { error: err instanceof Error ? err.message : String(err) };
