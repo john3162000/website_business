@@ -58,48 +58,21 @@ async function gql<T>(query: string, variables: Record<string, unknown>): Promis
  */
 export async function probeSMProduct(sku: string): Promise<unknown> {
   const queries: Record<string, string> = {
-    // Try flat attribute_code/value style (Magento 2.3 / some PWA builds)
-    custom_attributes_flat: `
-      query Probe($sku: String!) {
-        products(filter: { sku: { eq: $sku } }) {
-          items {
-            sku name
-            custom_attributes { attribute_code value }
-          }
-        }
-      }`,
-    // Try the newer AttributeValueInterface union style (Magento 2.4.5+)
-    custom_attributes_new: `
-      query Probe($sku: String!) {
-        products(filter: { sku: { eq: $sku } }) {
-          items {
-            sku name
-            custom_attributes {
-              ... on AttributeValue { code value }
-              ... on AttributeSelectedOptions {
-                code
-                selected_options { label value }
-              }
-            }
-          }
-        }
-      }`,
-    // Description HTML — may contain nutrition table for packaged products
+    // Introspect the CustomAttribute type to discover its real field names
+    // (SM uses a non-standard CustomAttribute type that rejects code/attribute_code).
+    introspect_custom_attribute: `
+      query { __type(name: "CustomAttribute") { name kind fields { name type { name kind ofType { name kind } } } } }`,
+    // Introspect ProductInterface to find any nutrition-bearing top-level fields.
+    introspect_product: `
+      query { __type(name: "ProductInterface") { fields { name type { name kind ofType { name } } } } }`,
+    // Search the whole schema for any type whose name hints at nutrition.
+    introspect_nutrition_types: `
+      query { __schema { types { name kind } } }`,
+    // Description HTML — may contain a nutrition table for packaged products.
     description: `
       query Probe($sku: String!) {
         products(filter: { sku: { eq: $sku } }) {
           items { sku name description { html } short_description { html } }
-        }
-      }`,
-    // Introspect what top-level fields ProductInterface exposes
-    product_fields: `
-      query Probe($sku: String!) {
-        products(filter: { sku: { eq: $sku } }) {
-          items {
-            sku name url_key
-            __typename
-            ... on SimpleProduct { weight }
-          }
         }
       }`,
   };
@@ -113,7 +86,16 @@ export async function probeSMProduct(sku: string): Promise<unknown> {
         body: JSON.stringify({ query, variables: { sku } }),
         signal: AbortSignal.timeout(30000),
       });
-      results[key] = await res.json();
+      let json = await res.json();
+      // The full-schema introspection returns hundreds of types; keep only the
+      // ones whose name hints at nutrition / attributes so the response is usable.
+      if (key === "introspect_nutrition_types") {
+        const types = (json as { data?: { __schema?: { types?: { name: string }[] } } })
+          ?.data?.__schema?.types ?? [];
+        const hit = /nutri|attribute|custom|ingredient|fact|label/i;
+        json = { matchingTypes: types.filter((t) => t.name && hit.test(t.name)).map((t) => t.name) };
+      }
+      results[key] = json;
     } catch (err) {
       results[key] = { error: err instanceof Error ? err.message : String(err) };
     }
