@@ -566,7 +566,7 @@ function buildModal(r, instructions) {
     <div class="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3">
       <div>
         <p class="font-medium text-sm">${i.label}</p>
-        <p class="text-xs text-gray-400">${i.matchedCommodity ? `DA: ${i.matchedCommodity} — ₱${i.price}/kg` : (i.nonPriceable ? '' : 'No DA price match')}${i.matchedFood ? ` · FNRI: ${i.matchedFood}` : ''}</p>
+        <p class="text-xs text-gray-400">${i.matchedCommodity ? `DA: ${i.matchedCommodity} — ₱${i.price}/kg` : i.smProduct ? `SM: ${i.smProduct} — ₱${i.smPrice}` : (i.nonPriceable ? '' : 'No price match')}${i.matchedFood ? ` · FNRI: ${i.matchedFood}` : ''}</p>
       </div>
     </div>`).join('');
 
@@ -858,6 +858,7 @@ function updateLabels() {
   set('stat-recipes', RECIPES.length);
   set('stat-foods', NUTRITION.length);
   set('stat-commodities', DA_PRICES.length);
+  set('stat-sm-products', SM_PRODUCTS.length);
   set('stat-da-date', dateStr);
 }
 
