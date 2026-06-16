@@ -326,6 +326,7 @@ function tokenize(s) {
 // Ingredient name (substring, lowercase) → extra English/Filipino tokens to help match
 // against DA commodity names that use different naming conventions.
 const COMMODITY_ALIASES = [
+  // Filipino ↔ English commodity names
   ["garlic", ["bawang"]],
   ["onion", ["sibuyas"]],
   ["shrimp", ["hipon", "shrimp"]],
@@ -340,20 +341,40 @@ const COMMODITY_ALIASES = [
   ["potato", ["potato"]],
   ["sweet potato", ["kamote"]],
   ["pork", ["baboy", "pork"]],
-  ["chicken", ["manok", "chicken"]],
+  ["pork belly", ["liempo"]],
+  ["pork ribs", ["ribs", "buto"]],
+  ["chicken", ["manok", "broiler", "fryer"]],
+  ["chicken breast", ["breast", "broiler"]],
   ["beef", ["baka", "beef"]],
   ["ginger", ["luya"]],
   ["tomato", ["kamatis"]],
   ["cabbage", ["repolyo"]],
   ["eggplant", ["talong"]],
   ["calamansi", ["calamansi", "lemon"]],
+  ["kangkong", ["water", "spinach", "kangkong"]],
+  ["malunggay", ["moringa", "malunggay"]],
+  ["bitter melon", ["ampalaya", "bitter"]],
+  ["ampalaya", ["bitter", "melon"]],
+  ["sayote", ["chayote", "sayote"]],
+  ["sitaw", ["string", "bean", "sitaw"]],
+  ["okra", ["okra", "lady"]],
+  ["pechay", ["pechay", "bok", "choy"]],
+  ["taro", ["gabi", "taro"]],
+  ["gabi", ["taro", "gabi"]],
+  ["vinegar", ["suka"]],
+  ["soy sauce", ["toyo"]],
+  ["fish sauce", ["patis"]],
+  ["shrimp paste", ["bagoong"]],
+  ["coconut milk", ["gata", "coconut"]],
+  ["coconut", ["gata", "niyog"]],
 ];
 
 // Ingredients that shouldn't be treated as missing DA price matches — they're
 // either not sold as DA-tracked commodities or negligible-cost flavorings.
-const NON_PRICEABLE = ["water", "ice", "clove", "cloves", "leaves", "leaf",
+const NON_PRICEABLE = ["water", "ice", "clove", "cloves", "leaf",
   "pepper", "msg", "bouillon", "stock", "broth", "food coloring", "annatto",
-  "vetsin", "powder"];
+  "vetsin", "powder", "blossom", "puso", "flower", "peel", "zest", "rind",
+  "bay", "laurel", "pandan", "lemongrass", "tanglad"];
 
 function aliasTokens(name) {
   const lc = String(name || "").toLowerCase();
@@ -381,7 +402,7 @@ function buildIndex(items, nameKey) {
   return index;
 }
 
-function bestMatch(name, items, index, nameKey, extraTokens) {
+function bestMatch(name, items, index, nameKey, extraTokens, minScoreRatio) {
   const tokens = tokenize(name).concat(extraTokens || []);
   if (tokens.length === 0) return null;
   const scores = new Map();
@@ -394,7 +415,14 @@ function bestMatch(name, items, index, nameKey, extraTokens) {
   for (const [i, s] of scores) {
     if (s > bestScore) { bestScore = s; best = i; }
   }
-  return best >= 0 && bestScore > 0 ? items[best] : null;
+  if (best < 0 || bestScore === 0) return null;
+  if (minScoreRatio) {
+    const itemTokens = tokenize(items[best][nameKey]).length || 1;
+    // Require the overlap to cover at least minScoreRatio of the shorter side.
+    const minRequired = Math.ceil(Math.min(tokens.length, itemTokens) * minScoreRatio);
+    if (bestScore < minRequired) return null;
+  }
+  return items[best];
 }
 
 let NUTRITION_INDEX = null;
@@ -414,7 +442,9 @@ function enrichRecipe(raw) {
     if (ANIMAL_WORDS.some((w) => nameLc.includes(w))) usesAnimal = true;
 
     // Nutrition (FNRI is per 100g E.P.)
-    const food = bestMatch(ing.name, NUTRITION, NUTRITION_INDEX, "foodName", aliasTokens(ing.name));
+    // Nutrition (FNRI is per 100g E.P.). Use a 0.6 overlap ratio to prevent
+    // loose single-token false matches (e.g. "banana blossom" → "Banana chips").
+    const food = bestMatch(ing.name, NUTRITION, NUTRITION_INDEX, "foodName", aliasTokens(ing.name), 0.6);
     if (food && grams) {
       const f = grams / 100;
       totals.calories += (food.calories || 0) * f;
