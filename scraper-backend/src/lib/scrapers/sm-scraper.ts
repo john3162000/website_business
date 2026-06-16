@@ -48,6 +48,50 @@ async function gql<T>(query: string, variables: Record<string, unknown>): Promis
   return json.data;
 }
 
+// ─────────────────────────── Schema probe ───────────────────────────
+
+/**
+ * Raw, non-throwing probe of a single product by SKU. Returns the full GraphQL
+ * payload (data + errors) for several candidate nutrition-bearing field sets so
+ * we can discover which one SM Markets actually exposes. Keyed by SKU so the
+ * nutrition data can later be tied back to the priced StoreProduct row.
+ */
+export async function probeSMProduct(sku: string): Promise<unknown> {
+  const queries: Record<string, string> = {
+    custom_attributes: `
+      query Probe($sku: String!) {
+        products(filter: { sku: { eq: $sku } }) {
+          items {
+            sku name
+            custom_attributes { code selected_attribute_options { attribute_option { label } } entered_attribute_value { value } }
+          }
+        }
+      }`,
+    description: `
+      query Probe($sku: String!) {
+        products(filter: { sku: { eq: $sku } }) {
+          items { sku name description { html } short_description { html } }
+        }
+      }`,
+  };
+
+  const results: Record<string, unknown> = {};
+  for (const [key, query] of Object.entries(queries)) {
+    try {
+      const res = await fetch(GRAPHQL_URL, {
+        method: "POST",
+        headers: FETCH_HEADERS,
+        body: JSON.stringify({ query, variables: { sku } }),
+        signal: AbortSignal.timeout(30000),
+      });
+      results[key] = await res.json();
+    } catch (err) {
+      results[key] = { error: err instanceof Error ? err.message : String(err) };
+    }
+  }
+  return { sku, results };
+}
+
 // ─────────────────────────── Category tree ───────────────────────────
 
 interface RawCategory {
