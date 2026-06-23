@@ -54,7 +54,13 @@
     "boneless", "skinless", "peeled", "thinly", "finely", "about", "approximately", "optional", "your", "all",
     "purpose", "extra", "lean", "ripe", "young", "old", "big", "thick", "thin", "long", "short",
     // color/descriptor words that cause false positives (e.g. "yellow"→cassava, "black"→pomfret, "hard"→candy)
-    "yellow", "black", "dark", "light", "hard", "toasted", "roasted", "crushed", "sweet", "frozen", "dry"]);
+    "yellow", "black", "dark", "light", "hard", "toasted", "roasted", "crushed", "sweet", "frozen", "dry",
+    // size/form modifiers that trigger wrong DB entries (e.g. "head garlic"→"Beef head", "baby bok choy"→cheseballs)
+    "head", "baby", "bunch", "bunches",
+    // "sea" causes "fine sea salt"→"Sea bass"; "eye" causes "bird's eye chili"→"Scad, big-eye"
+    "sea", "eye",
+    // "leaf"/"leaves" causes "dried bay leaves"→"Malunggay leaves powder"
+    "leaves", "leaf"]);
 
   function tokenize(s) {
     return String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
@@ -90,8 +96,8 @@
     ["eggplant", ["talong"]],
     ["talong", ["eggplant"]],
     ["calamansi", ["lemon", "calamondin"]],
-    // kangkong = water spinach (removed "swamp" which was causing "Eel, swamp" false match)
-    ["kangkong", ["water", "spinach"]],
+    // kangkong = water spinach ("water" removed — it was matching "Coconut water"; "kangkong" token alone matches FNRI)
+    ["kangkong", ["spinach"]],
     ["malunggay", ["moringa"]],
     ["bitter melon", ["ampalaya"]],
     ["ampalaya", ["bitter", "melon"]],
@@ -116,8 +122,12 @@
     // squash / kalabasa
     ["kalabasa", ["squash", "pumpkin"]],
     ["squash", ["kalabasa"]],
-    // paprika → chili/pepper family
+    // paprika / chili pepper family
     ["paprika", ["pepper", "chili"]],
+    ["siling labuyo", ["chili", "pepper", "bird"]],
+    ["birds eye chili", ["chili", "pepper", "siling labuyo"]],
+    ["bird chili", ["chili", "pepper", "siling labuyo"]],
+    ["thai chili", ["chili", "pepper"]],
     // Filipino spices / aromatics
     ["tinapa", ["milkfish", "smoked"]],
     ["galunggong", ["scad", "round scad"]],
@@ -134,8 +144,16 @@
     ["tausi", ["black bean"]],
     // noodles
     ["bihon", ["rice noodle"]],
+    ["pancit bihon", ["rice noodle", "bihon"]],
     ["misua", ["wheat noodle"]],
     ["miswa", ["wheat noodle"]],
+    ["lumpia wrapper", ["spring roll wrapper"]],
+    ["wonton wrapper", ["wonton"]],
+    // fish — aliases so common names match FNRI entries
+    ["salmon", ["salmon fish"]],
+    ["dilis", ["anchovy", "dried fish"]],
+    ["tuyo", ["dried fish", "herring"]],
+    ["tilapia", ["tilapia"]],
     // Filipino fermented / preserved
     ["bagoong isda", ["fish paste"]],
     ["bagoong monamon", ["fish paste"]],
