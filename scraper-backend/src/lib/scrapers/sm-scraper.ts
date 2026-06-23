@@ -58,23 +58,28 @@ async function gql<T>(query: string, variables: Record<string, unknown>): Promis
  */
 export async function probeSMProduct(sku: string): Promise<unknown> {
   const queries: Record<string, string> = {
-    // Correct CustomAttribute query — uses attribute_metadata / entered_attribute_value / selected_attribute_options
+    // Correct query using actual field names from introspection:
+    //   attribute_metadata → { code label }
+    //   entered_attribute_value → { value }
+    //   selected_attribute_options → { attribute_option (LIST, needs inline fragment) }
     custom_attributes: `
       query Probe($sku: String!) {
         products(filter: { sku: { eq: $sku } }) {
           items {
             sku name
             custom_attributes {
-              attribute_metadata { uid code label data_type entity_type is_system }
+              attribute_metadata { code label }
               entered_attribute_value { value }
               selected_attribute_options {
-                attribute_option { label value is_default }
+                attribute_option {
+                  ... on AttributeOption { label value }
+                }
               }
             }
           }
         }
       }`,
-    // Newer V2 field (ProductCustomAttributes union type on ProductInterface)
+    // V2 field — remove uid which isn't on AttributeSelectedOptionInterface
     custom_attributesV2: `
       query Probe($sku: String!) {
         products(filter: { sku: { eq: $sku } }) {
@@ -85,7 +90,7 @@ export async function probeSMProduct(sku: string): Promise<unknown> {
                 ... on AttributeValue { code value }
                 ... on AttributeSelectedOptions {
                   code
-                  selected_options { label value uid }
+                  selected_options { label value }
                 }
               }
               errors { message type }
@@ -93,20 +98,12 @@ export async function probeSMProduct(sku: string): Promise<unknown> {
           }
         }
       }`,
-    // Description HTML (non-empty for packaged/branded products)
+    // Description HTML (may contain nutrition table for packaged products)
     description: `
       query Probe($sku: String!) {
         products(filter: { sku: { eq: $sku } }) {
           items { sku name description { html } short_description { html } }
         }
-      }`,
-    // Introspect sub-types so we know what fields are actually available
-    introspect_subtypes: `
-      query {
-        ca:  __type(name: "AttributeMetadataInterface") { fields { name type { name kind } } }
-        eav: __type(name: "EnteredAttributeValue")      { fields { name type { name kind } } }
-        sao: __type(name: "SelectedAttributeOption")    { fields { name type { name kind } } }
-        pca: __type(name: "ProductCustomAttributes")    { fields { name type { name kind } } }
       }`,
   };
 
