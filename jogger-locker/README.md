@@ -10,7 +10,7 @@ and what that means for a 30-locker kiosk.
 January to April was 96% joggable; June to September was 57%, and August
 was the worst month at 19 of 62.
 
-Open `results/dashboard.html` for the calendar, monthly chart and revenue
+Open `results/up-oval-jogging-weather.html` for the calendar, monthly chart and revenue
 calculator.
 
 ## Rules
@@ -39,6 +39,8 @@ calculator.
 - `data/`: raw hourly weather from Open-Meteo
 - `results/sessions_best_match.csv`: one row per window, with rain figures
 - `results/summary.json`: totals, monthly counts and sensitivity checks
-- `results/dashboard.html`: the finished page
+- `results/dashboard.html`: the finished page, as published to Claude
+- `results/up-oval-jogging-weather.html`: the same page as a stand-alone file to
+  save and open in any browser
 
 Weather data: [Open-Meteo.com](https://open-meteo.com/), CC BY 4.0.

@@ -9,6 +9,7 @@ as "jogged" or "rained out", and writes:
   results/sessions_<model>.csv   one row per window, with the rain figures
   results/summary.json           totals, monthly counts and sensitivity checks
   results/dashboard.html         the summary rendered into dashboard_template.html
+  results/up-oval-jogging-weather.html   the same page as a stand-alone file
 
 Standard library only:  python3 weather_analysis.py
 """
@@ -270,6 +271,15 @@ def main():
         page = template.read_text(encoding="utf-8").replace("__SUMMARY_JSON__", data)
         (OUT_DIR / "dashboard.html").write_text(page, encoding="utf-8")
         print(f"wrote {OUT_DIR / 'dashboard.html'}")
+        # The published artifact gets its document shell from the host; the
+        # stand-alone copy needs its own to open correctly from a phone or disk.
+        body_start = page.index('<main class="page">')
+        standalone = (
+            '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
+            '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
+            + page[:body_start] + "</head>\n<body>\n" + page[body_start:] + "\n</body>\n</html>\n")
+        (OUT_DIR / "up-oval-jogging-weather.html").write_text(standalone, encoding="utf-8")
+        print(f"wrote {OUT_DIR / 'up-oval-jogging-weather.html'}")
 
 
 if __name__ == "__main__":

@@ -1,3 +1,8 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>UP Oval Jogging Weather</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -313,6 +318,8 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fo
 }
 </style>
 
+</head>
+<body>
 <main class="page">
   <header class="masthead">
     <p class="eyebrow" id="eyebrow">UP Diliman Academic Oval · 2.2 km loop</p>
@@ -977,3 +984,6 @@ new ResizeObserver(() => {
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", redraw);
 new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 </script>
+
+</body>
+</html>
