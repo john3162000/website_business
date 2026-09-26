@@ -43,4 +43,19 @@ calculator.
 - `results/up-oval-jogging-weather.html`: the same page as a stand-alone file to
   save and open in any browser
 
+## Locker design
+
+`design/` holds the proposed 30-door locker bank: 6 small doors with USB
+charging, 21 backpack doors and 3 large doors around a control column.
+It is 2.80 x 0.62 x 1.85 m and needs about 4.9 m2 of floor with a clear strip
+in front. The page also estimates rent at DiliMall and Gyud Food.
+
+- `design/build_locker_bank.py`: draws the elevation, section and floor plan
+  from the door layout in `COLUMNS` and fills them into the template
+- `design/locker_bank_template.html`: page text and styling
+- `design/locker-bank.html`: the finished page, as published to Claude
+- `design/up-oval-locker-bank.html`: stand-alone copy to save and open
+
+Rerun with `python3 design/build_locker_bank.py` after changing the layout.
+
 Weather data: [Open-Meteo.com](https://open-meteo.com/), CC BY 4.0.

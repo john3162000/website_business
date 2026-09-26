@@ -1,0 +1,470 @@
+<title>UP Oval Locker Bank</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f3f4f1;
+  --surface: #fcfcfb;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #6b6a65;
+  --grid: #e1e0d9;
+  --line: rgba(11, 11, 11, 0.1);
+  --track: #ebeae4;
+  --accent: #7b1113;
+  --warn-bg: #fbeee0;
+  --warn-edge: #c7792a;
+  --body: #e4e3dd;
+  --panel: #cfcec6;
+  --panel-door: #e9e8e2;
+  --sign: #1d1d1b;
+  --sign-ink: #f5f5f2;
+  --plinth: #b3b2aa;
+  --housing: #3a3a37;
+  --screen: #111111;
+  --screen-ink: #dce8f8;
+  --interior: #f7f7f4;
+  --bag: #e3c3c4;
+  --bag-ink: #0b0b0b;
+  --zone: rgba(123, 17, 19, 0.07);
+  --hatch: #b3b2aa;
+  --door-s: #86b6ef;
+  --door-s-ink: #0b0b0b;
+  --door-m: #3987e5;
+  --door-m-ink: #0b0b0b;
+  --door-l: #1c5cab;
+  --door-l-ink: #ffffff;
+  --font-ui: "Public Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0f100f;
+    --surface: #1a1a19;
+    --ink: #ffffff;
+    --ink-2: #c3c2b7;
+    --muted: #a3a29b;
+    --grid: #2c2c2a;
+    --line: rgba(255, 255, 255, 0.1);
+    --track: #262625;
+    --accent: #f0a0a3;
+    --warn-bg: #2e2418;
+    --warn-edge: #d99a4e;
+    --body: #2b2b29;
+    --panel: #3b3b37;
+    --panel-door: #31312e;
+    --sign: #e9e8e2;
+    --sign-ink: #111111;
+    --plinth: #4a4944;
+    --housing: #0c0c0b;
+    --screen: #000000;
+    --screen-ink: #cfe0f7;
+    --interior: #202020;
+    --bag: #6b3437;
+    --bag-ink: #ffffff;
+    --zone: rgba(240, 160, 163, 0.09);
+    --hatch: #4a4944;
+    --door-s: #184f95;
+    --door-s-ink: #ffffff;
+    --door-m: #3987e5;
+    --door-m-ink: #0b0b0b;
+    --door-l: #9ec5f4;
+    --door-l-ink: #0b0b0b;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0f100f;
+  --surface: #1a1a19;
+  --ink: #ffffff;
+  --ink-2: #c3c2b7;
+  --muted: #a3a29b;
+  --grid: #2c2c2a;
+  --line: rgba(255, 255, 255, 0.1);
+  --track: #262625;
+  --accent: #f0a0a3;
+  --warn-bg: #2e2418;
+  --warn-edge: #d99a4e;
+  --body: #2b2b29;
+  --panel: #3b3b37;
+  --panel-door: #31312e;
+  --sign: #e9e8e2;
+  --sign-ink: #111111;
+  --plinth: #4a4944;
+  --housing: #0c0c0b;
+  --screen: #000000;
+  --screen-ink: #cfe0f7;
+  --interior: #202020;
+  --bag: #6b3437;
+  --bag-ink: #ffffff;
+  --zone: rgba(240, 160, 163, 0.09);
+  --hatch: #4a4944;
+  --door-s: #184f95;
+  --door-s-ink: #ffffff;
+  --door-m: #3987e5;
+  --door-m-ink: #0b0b0b;
+  --door-l: #9ec5f4;
+  --door-l-ink: #0b0b0b;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 15px/1.55 var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+[hidden] { display: none !important; }
+p { margin: 0; }
+.page {
+  max-width: 1120px;
+  margin-inline: auto;
+  padding-inline: 24px;
+  padding-block: 44px 72px;
+  display: grid;
+  gap: 60px;
+}
+.masthead { display: grid; gap: 14px; }
+.eyebrow {
+  font: 600 12px/1.4 var(--font-ui);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+h1 {
+  font: 700 clamp(40px, 7.5vw, 64px)/0.92 var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.005em;
+  margin: 0;
+  text-wrap: balance;
+}
+.lede { max-width: 68ch; color: var(--ink-2); font-size: 16px; }
+h2 { font: 600 30px/1.05 var(--font-display); letter-spacing: 0.005em; margin: 0; text-wrap: balance; }
+h3 { font: 600 15px/1.3 var(--font-ui); margin: 0; }
+.section { display: grid; gap: 18px; }
+.section-head { display: grid; gap: 6px; }
+.note { color: var(--ink-2); max-width: 72ch; }
+.small { font-size: 13px; color: var(--muted); max-width: 80ch; }
+a { color: inherit; text-underline-offset: 2px; }
+
+/* Key figures */
+.figures {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+  margin: 0;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+.figure-tile { display: grid; gap: 4px; align-content: start; }
+.figure-tile dt { font-size: 13px; color: var(--ink-2); }
+.figure-tile dd { margin: 0; font: 600 30px/1.1 var(--font-ui); letter-spacing: -0.01em; }
+.figure-tile dd small { display: block; margin-top: 4px; font: 400 13px/1.4 var(--font-ui); color: var(--muted); letter-spacing: 0; }
+
+/* Tables */
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+th { font-size: 13px; font-weight: 600; color: var(--ink-2); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.dims { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sizes td:first-child { white-space: nowrap; }
+tr.total td { font-weight: 600; }
+.size-chip {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 22px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 12px;
+  margin-right: 8px;
+  vertical-align: 1px;
+}
+.chip-s { background: var(--door-s); color: var(--door-s-ink); }
+.chip-m { background: var(--door-m); color: var(--door-m-ink); }
+.chip-l { background: var(--door-l); color: var(--door-l-ink); }
+.chip-c { background: var(--panel); color: var(--ink); }
+
+/* Drawings */
+.sheet {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+.sheet-pair { display: grid; grid-template-columns: minmax(0, 3540fr) minmax(0, 1420fr); gap: 18px; align-items: start; }
+figure.dwg { margin: 0; display: grid; gap: 10px; min-width: 0; }
+.tb {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--grid);
+}
+.tb-no { font: 700 18px/1 var(--font-display); letter-spacing: 0.04em; color: var(--accent); }
+.tb-name { font-weight: 600; }
+.tb-meta { margin-left: auto; font-size: 12px; color: var(--muted); }
+.dwg-scroll { overflow-x: auto; }
+.dwg-scroll svg { display: block; width: 100%; height: auto; }
+.w-elev svg { min-width: 640px; }
+.w-sect svg { min-width: 280px; max-width: 520px; margin-inline: auto; }
+.w-plan svg { min-width: 600px; }
+figure.dwg figcaption { font-size: 13px; color: var(--ink-2); max-width: 80ch; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--ink-2); }
+.legend li { display: inline-flex; align-items: center; gap: 8px; }
+.sw { width: 16px; height: 16px; border-radius: 3px; flex: none; }
+.sw-dash { width: 22px; height: 0; border-top: 2px dashed var(--muted); flex: none; }
+
+.dwg text { font-family: var(--font-ui); }
+.dwg .body { fill: var(--body); }
+.dwg .outline { fill: none; stroke: var(--ink); stroke-width: 8; }
+.dwg .frame { stroke: var(--ink); stroke-width: 4; }
+.dwg .sign { fill: var(--sign); }
+.dwg .sign-t { fill: var(--sign-ink); font-weight: 700; letter-spacing: 6px; }
+.dwg .plinth { fill: var(--plinth); stroke: var(--ink); stroke-width: 4; }
+.dwg .door { stroke: var(--ink); stroke-width: 3; }
+.dwg .door-s { fill: var(--door-s); }
+.dwg .door-m { fill: var(--door-m); }
+.dwg .door-l { fill: var(--door-l); }
+.dwg .door-t-s { fill: var(--door-s-ink); }
+.dwg .door-t-m { fill: var(--door-m-ink); }
+.dwg .door-t-l { fill: var(--door-l-ink); }
+.dwg .b { font-weight: 700; }
+.dwg .panel { fill: var(--panel); }
+.dwg .housing { fill: var(--housing); }
+.dwg .screen { fill: var(--screen); }
+.dwg .screen-t { fill: var(--screen-ink); font-weight: 600; }
+.dwg .plate { fill: var(--surface); stroke: var(--ink); stroke-width: 3; }
+.dwg .qr { fill: var(--ink); }
+.dwg .qr-in { fill: var(--surface); }
+.dwg .service { fill: var(--panel-door); stroke: var(--ink); stroke-width: 3; }
+.dwg .key { fill: var(--ink); }
+.dwg .opt { fill: none; stroke: var(--muted); stroke-width: 5; stroke-dasharray: 30 18; }
+.dwg .floor, .dwg .wall-face { stroke: var(--ink); stroke-width: 8; }
+.dwg .hatch { stroke: var(--hatch); stroke-width: 4; }
+.dwg .dim { stroke: var(--muted); stroke-width: 3; }
+.dwg .tick { stroke-width: 5; }
+.dwg .dim-t { fill: var(--muted); font-variant-numeric: tabular-nums; }
+.dwg .t { fill: var(--ink-2); }
+.dwg .t-strong { fill: var(--ink); font-weight: 600; }
+.dwg .interior { fill: var(--interior); }
+.dwg .bag { fill: var(--bag); stroke: var(--ink); stroke-width: 4; }
+.dwg .bag-t { fill: var(--bag-ink); font-weight: 600; }
+.dwg .bolt { stroke: var(--ink); stroke-width: 12; }
+.dwg .zone { fill: var(--zone); stroke: var(--accent); stroke-width: 4; stroke-dasharray: 24 16; }
+.dwg .leaf { stroke: var(--ink); stroke-width: 6; }
+.dwg .swing { fill: none; stroke: var(--muted); stroke-width: 3; }
+.dwg .swing-opt { fill: none; stroke: var(--muted); stroke-width: 3; stroke-dasharray: 18 14; }
+
+/* Rent */
+.callout {
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: var(--warn-bg);
+  border-left: 4px solid var(--warn-edge);
+  max-width: 80ch;
+}
+.callout strong { font-weight: 600; }
+.pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; align-items: start; }
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.list { margin: 0; padding-left: 20px; display: grid; gap: 8px; color: var(--ink-2); }
+.list strong { color: var(--ink); font-weight: 600; }
+.footer { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 4px; }
+.sources { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 13px; color: var(--ink-2); }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.92em; }
+
+@media (max-width: 900px) {
+  .sheet-pair { grid-template-columns: 1fr; }
+  .figures { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pair { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .page { padding-inline: 16px; padding-block: 28px 56px; gap: 48px; }
+  .sheet, .card { padding: 14px; }
+  .figure-tile dd { font-size: 24px; }
+  th, td { padding-inline: 8px; }
+}
+</style>
+
+<main class="page">
+  <header class="masthead">
+    <p class="eyebrow">Jogger locker kiosk · Design proposal 1 · 26 Sep 2026</p>
+    <h1>UP Oval Locker Bank</h1>
+    <p class="lede">A 30-door steel locker bank sized for what joggers carry. It has 6 small doors with phone charging, 21 backpack doors and 3 large doors, plus a control column with the touch screen and QR payment. It stands 2.80 m wide, 0.62 m deep and 1.85 m tall.</p>
+  </header>
+
+  <dl class="figures" aria-label="Key figures">
+    <div class="figure-tile"><dt>Doors</dt><dd>30<small>6 small · 21 backpack · 3 large</small></dd></div>
+    <div class="figure-tile"><dt>Unit size</dt><dd>2.80 × 0.62 m<small>1.85 m tall, 1.90 m with a canopy</small></dd></div>
+    <div class="figure-tile"><dt>Floor space</dt><dd>4.9 m²<small>1.74 m² for the unit plus 1 m clear in front</small></dd></div>
+    <div class="figure-tile"><dt>Estimated rent</dt><dd>₱1.9k–₱10.2k<small>a month with VAT; ₱16.8k if Gyud Food only rents full stalls</small></dd></div>
+  </dl>
+
+  <section class="section" aria-labelledby="sizesTitle">
+    <div class="section-head">
+      <h2 id="sizesTitle">Three door sizes</h2>
+      <p class="note">Every door is 360 mm wide and 550 mm deep inside, so a 20–30 L laptop backpack fits lying flat. Only the height changes. The backpack door is close to a Japanese small coin locker (340 × 350 × 570 mm), which is sized for daypacks.</p>
+    </div>
+    <div class="table-wrap">
+      <table class="sizes">
+        <thead><tr><th>Size</th><th class="num">Doors</th><th>Inside, W × H × D</th><th>What fits</th><th class="num">Suggested price, 4 h</th></tr></thead>
+        <tbody>
+          <tr><td><span class="size-chip chip-s">S</span>Small</td><td class="num">6</td><td class="dims">360 × 140 × 550 mm</td><td>Phone, wallet, keys, power bank. USB-A and USB-C charging inside.</td><td class="num">₱30</td></tr>
+          <tr><td><span class="size-chip chip-m">M</span>Backpack</td><td class="num">21</td><td class="dims">360 × 300 × 550 mm</td><td>A 20–30 L laptop backpack lying flat (up to about 500 × 330 × 250 mm), a gym duffel, or a bike helmet.</td><td class="num">₱50</td></tr>
+          <tr><td><span class="size-chip chip-l">L</span>Large</td><td class="num">3</td><td class="dims">360 × 620 × 550 mm</td><td>Two backpacks, a backpack standing up, or a helmet with a bag. Good for friends jogging together.</td><td class="num">₱80</td></tr>
+          <tr class="total"><td>All doors</td><td class="num">30</td><td></td><td>Average price across the doors</td><td class="num">₱49</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small">At these prices the average door earns ₱49, so the weather page's revenue figures (₱50 a rental) still hold. Overstay: charge ₱10–₱20 for each extra hour before the door opens.</p>
+  </section>
+
+  <section class="section" aria-labelledby="dwgTitle">
+    <div class="section-head">
+      <h2 id="dwgTitle">Drawings</h2>
+      <p class="note">Front view and side cut at the same scale. Door numbers run column by column, top to bottom. Smaller doors sit higher and heavier bags go low. All dimensions are in millimetres.</p>
+    </div>
+    <div class="sheet">
+      <div class="sheet-pair">
+        <figure class="dwg">
+          <div class="tb"><span class="tb-no">A-01</span><span class="tb-name">Front elevation</span><span class="tb-meta">mm</span></div>
+          <div class="dwg-scroll w-elev">{{ELEVATION}}</div>
+          <figcaption>Seven 400 mm columns. The control column in the middle holds a 10-inch touch screen (centre 1,325 mm above the floor), a QR payment plate and a locked service cabinet for the controller, power supply, battery backup and router. The top door edge is 1,700 mm.</figcaption>
+        </figure>
+        <figure class="dwg">
+          <div class="tb"><span class="tb-no">A-02</span><span class="tb-name">Side section</span><span class="tb-meta">mm</span></div>
+          <div class="dwg-scroll w-sect">{{SECTION}}</div>
+          <figcaption>Cut through a backpack column. A 480 × 330 × 220 mm backpack lies flat with 70 mm to spare in depth. A 30 mm cable channel runs up the back panel to every lock.</figcaption>
+        </figure>
+      </div>
+      <ul class="legend" aria-label="Legend">
+        <li><span class="sw" style="background: var(--door-s)"></span>S · small, 6 doors</li>
+        <li><span class="sw" style="background: var(--door-m)"></span>M · backpack, 21 doors</li>
+        <li><span class="sw" style="background: var(--door-l)"></span>L · large, 3 doors</li>
+        <li><span class="sw" style="background: var(--panel)"></span>Control column</li>
+        <li><span class="sw-dash"></span>Canopy, only for outdoor sites</li>
+      </ul>
+    </div>
+    <div class="sheet">
+      <figure class="dwg">
+        <div class="tb"><span class="tb-no">A-03</span><span class="tb-name">Floor plan and door swing</span><span class="tb-meta">mm</span></div>
+        <div class="dwg-scroll w-plan">{{PLAN}}</div>
+        <figcaption>The unit itself covers 2.80 × 0.62 m = 1.74 m². Doors open 360 mm into the walkway, and a person needs room to stand, so plan a clear 1,000 mm strip in front and 100 mm at each side: 3.00 × 1.62 m = 4.86 m². If the only space is a corridor, ask whether the landlord charges for the unit alone or for the strip too. The dashed line 300 mm past the doors is the canopy edge, needed only outdoors.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="rentTitle">
+    <div class="section-head">
+      <h2 id="rentTitle">Rent at DiliMall and Gyud Food</h2>
+      <p class="note">Neither place publishes its rates. The figures below come from a 2025 graft complaint over both projects, as reported in the news: DiliMall's basic rent is ₱1,000 per m² a month, and Gyud Food charges ₱1,875 per m², or ₱15,000 a month for a stall. The Ombudsman later dismissed the complaint, and rates may have changed since. Use them as a starting point and get a written quote.</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Venue and what you rent</th><th class="num">Area</th><th class="num">Rent</th><th class="num">With 12% VAT</th><th class="num">Break-even</th></tr></thead>
+        <tbody>
+          <tr><td>DiliMall, unit only</td><td class="num">1.74 m²</td><td class="num">₱1,736</td><td class="num">₱1,944</td><td class="num">3.5</td></tr>
+          <tr><td>DiliMall, unit and clear strip</td><td class="num">4.86 m²</td><td class="num">₱4,860</td><td class="num">₱5,443</td><td class="num">5.1</td></tr>
+          <tr><td>Gyud Food, unit only</td><td class="num">1.74 m²</td><td class="num">₱3,255</td><td class="num">₱3,646</td><td class="num">4.3</td></tr>
+          <tr><td>Gyud Food, unit and clear strip</td><td class="num">4.86 m²</td><td class="num">₱9,113</td><td class="num">₱10,206</td><td class="num">7.2</td></tr>
+          <tr><td>Gyud Food, full stall</td><td class="num">about 8 m²</td><td class="num">₱15,000</td><td class="num">₱16,800</td><td class="num">10.2</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small">Break-even is rentals per joggable window, using the weather page's numbers: 573 joggable windows a year, ₱47 kept per rental after fees and SMS, and ₱6,000 of other monthly costs. Many leases also ask for about 3 months' advance and 3 months' deposit, which is ₱11,700 for the smallest option and ₱100,800 for a full Gyud stall. Electricity is usually billed on top.</p>
+
+    <div class="callout" role="note">
+      <strong>Both places open at 7 AM, and your morning peak starts at 5 AM.</strong>
+      <p>Robinsons Easymart at DiliMall and Gyud Food both run 7 AM to 10 PM. Mornings are 306 of the 573 joggable windows. If nobody can reach the lockers before 7 AM, only about 369 windows stay sellable, and break-even rises by about half (5.1 becomes 7.9 at DiliMall with the clear strip). Ask for a spot on an outside wall, under a roof, that can be reached from 5 AM, with lighting and CCTV.</p>
+    </div>
+
+    <div class="pair">
+      <div class="card">
+        <h3>Gyud Food Hub</h3>
+        <ul class="list">
+          <li><strong>Where:</strong> the UP Diliman Food Hub on E. Jacinto St. near University Avenue, across from the College of Fine Arts. Guides put it 5–10 minutes' walk from the Oblation, and visitors mention stopping there after running the Oval.</li>
+          <li><strong>Hours:</strong> 7 AM to 10 PM daily, open-air, with free parking.</li>
+          <li><strong>Rent:</strong> the highest per m². Reports say some vendors backed out over high rent.</li>
+          <li><strong>Fit:</strong> the right crowd for this idea. It is worth the extra rent only if they will lease a small wall spot by the m² with early access.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>DiliMall</h3>
+        <ul class="list">
+          <li><strong>Where:</strong> the old UP Shopping Center site on Laurel Ave., G. Apacible, Pio Valenzuela and Roces St., near the Parish of the Holy Sacrifice and the UP Infirmary. Walk it from the Oval before deciding.</li>
+          <li><strong>Hours:</strong> Robinsons Easymart there opens 7 AM to 10 PM. Other tenants vary.</li>
+          <li><strong>Rent:</strong> about half of Gyud Food's per m².</li>
+          <li><strong>Fit:</strong> cheaper, with chain-store traffic. The mall is controversial with student groups, which may matter for a student-facing brand.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="askTitle">
+    <div class="section-head">
+      <h2 id="askTitle">Questions for the leasing offices</h2>
+    </div>
+    <ul class="list">
+      <li>Can I rent just the floor area of a locker unit, about 2 m², or only full stalls?</li>
+      <li>Is the rate per m² per month? Does it include VAT and common-area charges?</li>
+      <li>Can people reach the lockers from 5 AM, or 24 hours? Is there a guard or CCTV at night?</li>
+      <li>Is there a covered outside wall with a 220 V outlet? Is electricity sub-metered or a flat fee?</li>
+      <li>Can I bolt the unit to the floor and wall, and put up a sign?</li>
+      <li>How much advance and deposit, what minimum term, and what yearly increase? Would you take a share of sales instead of fixed rent?</li>
+      <li>Who handles disputes over lost items, and do I need insurance?</li>
+    </ul>
+  </section>
+
+  <section class="section" aria-labelledby="buildTitle">
+    <div class="section-head">
+      <h2 id="buildTitle">Notes for the fabricator</h2>
+    </div>
+    <ul class="list">
+      <li><strong>Steel:</strong> 0.8 mm (22 gauge) powder-coated shell and shelves; 1.0 mm (20 gauge) doors with a folded stiffener. Use a light color so the inside stays cooler.</li>
+      <li><strong>Locks:</strong> 12 V electronic cabinet locks with a door-closed sensor. They must stay locked if the power fails. A master override lives inside the service cabinet.</li>
+      <li><strong>Power:</strong> one 220 V outlet, about 150 W at peak for locks, screen, router, lights and charging. A battery backup rides through brownouts.</li>
+      <li><strong>Air:</strong> vent slots at the top and bottom of every door and in the back panel, so sweaty clothes do not leave a smell.</li>
+      <li><strong>Charging:</strong> USB-A and USB-C ports in the 6 small doors.</li>
+      <li><strong>Light:</strong> an LED strip in the sign band. It is still dark at 5 AM all year round.</li>
+      <li><strong>Security:</strong> bolt to the floor and tie to the wall, point a CCTV camera at the doors, and raise an alarm if a door is forced.</li>
+      <li><strong>Outdoor sites:</strong> add the 300 mm canopy with a drip edge, seal the electronics box, and keep the unit out of the afternoon sun.</li>
+      <li><strong>Reach:</strong> the system should hand out low doors first and use the top row only when the rest are full.</li>
+    </ul>
+  </section>
+
+  <section class="section" aria-labelledby="nextTitle">
+    <div class="section-head">
+      <h2 id="nextTitle">Next: system architecture</h2>
+      <p class="note">How a QR Ph payment reaches the server, how the server opens a door through the lock controller, how the PIN reaches the jogger by SMS, and what happens when the internet or power drops.</p>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <h3>Sources</h3>
+    <ul class="sources">
+      <li>Rent figures: <a href="https://newsinfo.inquirer.net/2155414/up-officials-2-firms-face-raps-over-mall-food-hub" rel="noopener">Inquirer, UP officials, 2 firms face raps over mall, food hub</a>; <a href="https://phkule.substack.com/p/inside-the-corruption-complaint-against" rel="noopener">PHKule, Inside the corruption complaint</a>; <a href="https://www.rappler.com/philippines/ombudsman-dismisses-complaints-university-philippines-officials-dilimall/" rel="noopener">Rappler, Ombudsman dismisses complaints</a></li>
+      <li>DiliMall: <a href="https://interaksyon.philstar.com/trends-spotlights/2023/11/30/265913/dilimall-why-up-dilimans-new-shopping-center-is-drawing-flak/" rel="noopener">Interaksyon</a>; <a href="https://www.tinigngplaridel.net/robinsons-easymart-dilimall/" rel="noopener">Tinig ng Plaridel</a>; <a href="https://www.robinsonseasymart.com.ph/directory" rel="noopener">Robinsons Easymart store directory</a>; <a href="https://iskomunidad.upd.edu.ph/index.php/University_Shopping_Center" rel="noopener">Iskomunidad</a></li>
+      <li>Gyud Food: <a href="https://up.edu.ph/up-diliman-food-hub-opens/" rel="noopener">UP, Diliman Food Hub opens</a>; <a href="https://awesome.blog/2024/02/gyud-food-guide.html" rel="noopener">Our Awesome Planet guide</a>; <a href="https://wanderlog.com/place/details/6564816/gyud-food-market-at-up-food-hub" rel="noopener">Wanderlog</a>; <a href="https://www.philippinebeaches.org/where-to-eat-in-up-diliman/" rel="noopener">Philippine Beach Guide</a>; <a href="https://www.gyudfoodhub.com/spaces-for-lease/" rel="noopener">Gyud Food Hub, spaces for lease</a></li>
+      <li>Sizes: <a href="https://livejapan.com/en/article-a0000274/" rel="noopener">LIVE JAPAN, coin locker sizes</a>; <a href="https://www.japan-guide.com/e/e2274.html" rel="noopener">japan-guide.com, luggage</a>; <a href="https://vancharlioutdoor.com/blog/standard-backpack-size-guide-for-everyday-use/" rel="noopener">backpack size guide</a></li>
+    </ul>
+    <p>Design proposal 1. Figures are estimates to check with the landlord and a fabricator. Source files: <code>jogger-locker/design/</code> on branch <code>claude/jogger-locker-kiosk-r03nh0</code>.</p>
+  </footer>
+</main>
