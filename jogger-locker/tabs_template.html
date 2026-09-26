@@ -1,0 +1,190 @@
+<title>UP Oval Locker Kiosk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Public+Sans:wght@500;600&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f3f4f1;
+  --surface: #fcfcfb;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #6b6a65;
+  --line: rgba(11, 11, 11, 0.1);
+  --hover: rgba(11, 11, 11, 0.06);
+  --accent: #7b1113;
+  --font-ui: "Public Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0f100f;
+    --surface: #1a1a19;
+    --ink: #ffffff;
+    --ink-2: #c3c2b7;
+    --muted: #a3a29b;
+    --line: rgba(255, 255, 255, 0.1);
+    --hover: rgba(255, 255, 255, 0.08);
+    --accent: #f0a0a3;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0f100f;
+  --surface: #1a1a19;
+  --ink: #ffffff;
+  --ink-2: #c3c2b7;
+  --muted: #a3a29b;
+  --line: rgba(255, 255, 255, 0.1);
+  --hover: rgba(255, 255, 255, 0.08);
+  --accent: #f0a0a3;
+}
+html, body { height: 100%; }
+body {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--ink);
+  font: 500 15px/1.4 var(--font-ui);
+}
+[hidden] { display: none !important; }
+.bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px 22px;
+  padding-inline: 20px;
+  padding-block: 10px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+.brand {
+  margin: 0;
+  font: 700 21px/1 var(--font-display);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.brand span { color: var(--accent); }
+.tabs {
+  display: flex;
+  gap: 4px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  flex: none;
+  font: 600 14px/1 var(--font-ui);
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.tab:hover { background: var(--hover); color: var(--ink); }
+.tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tab[aria-selected="true"] { background: var(--ink); color: var(--bg); }
+.panels { flex: 1; min-height: 0; position: relative; }
+.panel { position: absolute; inset: 0; }
+.panel iframe { display: block; width: 100%; height: 100%; border: 0; background: var(--bg); }
+@media (max-width: 720px) {
+  .bar { flex-wrap: wrap; padding-inline: 16px; padding-block: 10px 8px; }
+  .brand { font-size: 18px; }
+  .tabs { width: 100%; gap: 2px; }
+  .tab { flex: 1 0 auto; padding: 9px 6px; font-size: 13px; }
+}
+@media (max-width: 359px) {
+  .tab { padding-inline: 4px; font-size: 12px; }
+}
+</style>
+
+<header class="bar">
+  <p class="brand">UP Oval <span>Locker Kiosk</span></p>
+  <nav class="tabs" role="tablist" aria-label="Pages">
+__TABS__
+  </nav>
+</header>
+<main class="panels">
+__PANELS__
+</main>
+
+<script type="application/json" id="pages">__PAGES__</script>
+<script>
+(function () {
+  const pages = JSON.parse(document.getElementById("pages").textContent);
+  const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
+  const ids = tabs.map((t) => t.dataset.page);
+  const frames = {};
+  // The 3D tab runs a render loop, so it is unloaded when you leave it.
+  const HEAVY = "model";
+
+  function syncTheme(frame) {
+    try {
+      const theme = document.documentElement.getAttribute("data-theme");
+      const root = frame.contentDocument && frame.contentDocument.documentElement;
+      if (!root) return;
+      if (theme) root.setAttribute("data-theme", theme);
+      else root.removeAttribute("data-theme");
+    } catch (e) {
+      // The frame is not reachable; it follows the system theme instead.
+    }
+  }
+  function load(id) {
+    if (frames[id]) return;
+    const frame = document.createElement("iframe");
+    frame.title = pages[id].title;
+    frame.addEventListener("load", () => syncTheme(frame));
+    frame.srcdoc = pages[id].html;
+    document.getElementById("panel-" + id).append(frame);
+    frames[id] = frame;
+  }
+  function unload(id) {
+    if (!frames[id]) return;
+    frames[id].remove();
+    delete frames[id];
+  }
+  function select(id, focus) {
+    if (!ids.includes(id)) id = ids[0];
+    for (const t of tabs) {
+      const on = t.dataset.page === id;
+      t.setAttribute("aria-selected", String(on));
+      t.tabIndex = on ? 0 : -1;
+      document.getElementById("panel-" + t.dataset.page).hidden = !on;
+      if (on) {
+        t.scrollIntoView({ block: "nearest", inline: "nearest" });
+        if (focus) t.focus();
+      }
+    }
+    if (id !== HEAVY) unload(HEAVY);
+    load(id);
+    try {
+      history.replaceState(null, "", "#" + id);
+    } catch (e) {
+      // Some viewers do not allow changing the address; the tab still switches.
+    }
+  }
+  tabs.forEach((t, i) => {
+    t.addEventListener("click", () => select(t.dataset.page));
+    t.addEventListener("keydown", (e) => {
+      const step = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
+      let next = null;
+      if (step) next = ids[(i + step + ids.length) % ids.length];
+      else if (e.key === "Home") next = ids[0];
+      else if (e.key === "End") next = ids[ids.length - 1];
+      if (next === null) return;
+      e.preventDefault();
+      select(next, true);
+    });
+  });
+  new MutationObserver(() => Object.values(frames).forEach(syncTheme))
+    .observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  window.addEventListener("hashchange", () => select(location.hash.slice(1)));
+  select(location.hash.slice(1));
+})();
+</script>

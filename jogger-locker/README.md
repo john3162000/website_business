@@ -104,4 +104,18 @@ size colors, a 1.60 m figure for scale and 5 AM lighting.
 - `model/render_media.js`: exports the .glb and renders the rental video
   frame by frame with Playwright (encode with the ffmpeg line in the file)
 
+## All pages in one
+
+`compile_pages.py` puts the five pages in one page with a tab each: Weather,
+Design, System, Locks and 3D model. Each tab opens its page in its own frame,
+so styles and scripts stay separate. Build the five pages first, then run
+`python3 compile_pages.py`.
+
+- `tabs_template.html`: the tab bar. It passes light or dark mode to every
+  tab, links a tab by its address (`#weather`, `#design`, `#system`, `#locks`,
+  `#model`), and unloads the 3D tab when you leave it
+- `all-pages.html`: the page as published (three.js from jsDelivr)
+- `up-oval-locker-kiosk.html`: stand-alone copy with three.js inside, so all
+  five tabs open offline
+
 Weather data: [Open-Meteo.com](https://open-meteo.com/), CC BY 4.0.
