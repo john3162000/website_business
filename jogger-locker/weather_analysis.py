@@ -8,6 +8,7 @@ as "jogged" or "rained out", and writes:
 
   results/sessions_<model>.csv   one row per window, with the rain figures
   results/summary.json           totals, monthly counts and sensitivity checks
+  results/dashboard.html         the summary rendered into dashboard_template.html
 
 Standard library only:  python3 weather_analysis.py
 """
@@ -44,9 +45,14 @@ MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
 
 
 def load_precipitation(path):
-    """Return {timestamp: mm} from an Open-Meteo CSV export (hourly block)."""
+    """Return ({timestamp: mm}, grid point) from an Open-Meteo CSV export."""
     lines = path.read_text(encoding="utf-8").splitlines()
     start = next(i for i, line in enumerate(lines) if line.startswith("time,"))
+    grid = None
+    if lines[0].startswith("latitude,"):
+        meta = dict(zip(lines[0].split(","), lines[1].split(",")))
+        grid = {"lat": float(meta["latitude"]), "lon": float(meta["longitude"]),
+                "elevation_m": float(meta["elevation"])}
     rows = csv.reader(lines[start:])
     header = next(rows)
     # Column names look like "precipitation (mm)" or "precipitation_era5 (mm)".
@@ -59,7 +65,7 @@ def load_precipitation(path):
         value = row[col].strip() if col < len(row) else ""
         series[datetime.fromisoformat(row[0])] = (
             float(value) if value not in ("", "NaN", "nan", "null") else None)
-    return series
+    return series, grid
 
 
 def rain_in_hour(series, day, hour):
@@ -222,10 +228,10 @@ def main():
         if not path.exists():
             print(f"skip {key}: {path.name} not found")
             continue
-        series = load_precipitation(path)
+        series, grid = load_precipitation(path)
         sessions, stats = analyse(series)
         write_sessions(OUT_DIR / f"sessions_{key}.csv", sessions)
-        summary["models"][key] = {"label": label, **stats}
+        summary["models"][key] = {"label": label, "grid_point": grid, **stats}
         if key == PRIMARY:
             lookup = {(s["date"], s["window"]): s for s in sessions}
             summary["days"] = []
@@ -257,6 +263,13 @@ def main():
 
     (OUT_DIR / "summary.json").write_text(json.dumps(summary, indent=1), encoding="utf-8")
     print(f"\nwrote {OUT_DIR / 'summary.json'}")
+
+    template = HERE / "dashboard_template.html"
+    if template.exists() and PRIMARY in summary["models"]:
+        data = json.dumps(summary, separators=(",", ":")).replace("</", "<\\/")
+        page = template.read_text(encoding="utf-8").replace("__SUMMARY_JSON__", data)
+        (OUT_DIR / "dashboard.html").write_text(page, encoding="utf-8")
+        print(f"wrote {OUT_DIR / 'dashboard.html'}")
 
 
 if __name__ == "__main__":

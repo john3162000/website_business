@@ -1,0 +1,978 @@
+<title>UP Oval Jogging Weather</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f3f4f1;
+  --surface: #fcfcfb;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #6b6a65;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --track: #ebeae4;
+  --line: rgba(11, 11, 11, 0.1);
+  --shadow: 0 1px 2px rgba(11, 11, 11, 0.06), 0 10px 28px rgba(11, 11, 11, 0.1);
+  --accent: #7b1113;
+  --rain-0: #cde2fb;
+  --rain-1: #5598e7;
+  --rain-2: #184f95;
+  --bar: #52514e;
+  --loss: #e34948;
+  --font-ui: "Public Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0f100f;
+    --surface: #1a1a19;
+    --ink: #ffffff;
+    --ink-2: #c3c2b7;
+    --muted: #a3a29b;
+    --grid: #2c2c2a;
+    --axis: #383835;
+    --track: #262625;
+    --line: rgba(255, 255, 255, 0.1);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px rgba(0, 0, 0, 0.45);
+    --accent: #f0a0a3;
+    --rain-0: #104281;
+    --rain-1: #3987e5;
+    --rain-2: #b7d3f6;
+    --bar: #c3c2b7;
+    --loss: #e66767;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0f100f;
+  --surface: #1a1a19;
+  --ink: #ffffff;
+  --ink-2: #c3c2b7;
+  --muted: #a3a29b;
+  --grid: #2c2c2a;
+  --axis: #383835;
+  --track: #262625;
+  --line: rgba(255, 255, 255, 0.1);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px rgba(0, 0, 0, 0.45);
+  --accent: #f0a0a3;
+  --rain-0: #104281;
+  --rain-1: #3987e5;
+  --rain-2: #b7d3f6;
+  --bar: #c3c2b7;
+  --loss: #e66767;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 15px/1.55 var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+.page {
+  max-width: 1080px;
+  margin-inline: auto;
+  padding-inline: 24px;
+  padding-block: 44px 72px;
+  display: grid;
+  gap: 60px;
+}
+p { margin: 0; }
+[hidden] { display: none !important; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+/* Masthead */
+.masthead { display: grid; gap: 14px; }
+.eyebrow {
+  font: 600 12px/1.4 var(--font-ui);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+h1 {
+  font: 700 clamp(40px, 7.5vw, 64px)/0.92 var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.005em;
+  margin: 0;
+  text-wrap: balance;
+}
+.lede { max-width: 66ch; color: var(--ink-2); font-size: 16px; }
+h2 {
+  font: 600 30px/1.05 var(--font-display);
+  letter-spacing: 0.005em;
+  margin: 0;
+  text-wrap: balance;
+}
+h3 { font: 600 15px/1.3 var(--font-ui); margin: 0; }
+.section { display: grid; gap: 16px; }
+.section-head { display: grid; gap: 6px; }
+.section-note { color: var(--ink-2); max-width: 70ch; }
+
+/* Summary */
+.summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 28px 44px;
+  align-items: end;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+.hero-label { font-weight: 600; color: var(--ink-2); }
+.hero-value { font: 600 68px/1 var(--font-ui); letter-spacing: -0.02em; margin-block: 8px; }
+.hero-value small { font-size: 22px; font-weight: 500; letter-spacing: 0; color: var(--ink-2); }
+.hero-note { color: var(--ink-2); max-width: 34ch; }
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+  margin: 0;
+}
+.kpi { display: grid; gap: 4px; align-content: start; padding-top: 12px; border-top: 1px solid var(--line); }
+.kpi dt { font-size: 13px; color: var(--ink-2); }
+.kpi dd { margin: 0; font: 600 28px/1.1 var(--font-ui); }
+.kpi dd small { display: block; margin-top: 4px; font: 400 13px/1.35 var(--font-ui); color: var(--muted); }
+.facts {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.facts li { display: grid; gap: 2px; color: var(--ink-2); font-size: 14px; }
+.facts strong { color: var(--ink); font-size: 15px; font-weight: 600; }
+
+/* Legend */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.legend li { display: inline-flex; align-items: center; gap: 8px; }
+.sw { width: 14px; height: 14px; border-radius: 3px; flex: none; }
+.sw-day {
+  display: grid; grid-template-rows: 1fr 1fr; gap: 2px;
+  width: 16px; height: 16px; border-radius: 3px; overflow: hidden; flex: none;
+}
+.sw-day i { background: var(--rain-0); }
+.sw-day i:first-child { background: var(--rain-2); }
+
+/* Calendar */
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(146px, 1fr));
+  gap: 24px 26px;
+  border-radius: 8px;
+}
+.calendar:focus-visible { outline: 2px solid var(--accent); outline-offset: 8px; }
+.cal-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+.cal-title { font-weight: 600; font-size: 14px; white-space: nowrap; }
+.cal-count { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; }
+.cal-dow { font-size: 10px; line-height: 16px; text-align: center; color: var(--muted); }
+.cal-day {
+  aspect-ratio: 1 / 1;
+  max-width: 100%;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 2px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.cal-day i { display: block; }
+.cal-day.is-outside { visibility: hidden; }
+.cal-day[data-i] { cursor: pointer; }
+.cal-day[data-i]:hover { outline: 2px solid var(--ink-2); outline-offset: 1px; }
+.cal-day.is-focus { outline: 2px solid var(--ink); outline-offset: 1px; }
+.s-dry { background: var(--rain-0); }
+.s-drizzle { background: var(--rain-1); }
+.s-out { background: var(--rain-2); }
+
+/* Cards and charts */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 20px;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.chart { width: 100%; min-width: 0; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart text { font-family: var(--font-ui); font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+.chart .val { fill: var(--ink-2); font-weight: 600; }
+.chart .hit { fill: transparent; cursor: pointer; outline: none; }
+.chart .hit:focus-visible { stroke: var(--ink); stroke-width: 2; }
+.caption { font-size: 13px; color: var(--muted); max-width: 80ch; }
+.toggle {
+  font: 600 13px/1 var(--font-ui);
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+.toggle:hover { border-color: var(--axis); }
+.toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: 7px 10px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+th { font-weight: 600; color: var(--ink-2); }
+th:first-child, td:first-child { text-align: left; }
+.wrap th, .wrap td { white-space: normal; padding-inline: 8px; }
+.wrap .num { white-space: nowrap; }
+
+/* Calculator */
+.calc { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 32px; align-items: start; }
+.inputs { display: grid; gap: 18px; margin: 0; padding: 0; border: 0; min-width: 0; }
+.field { display: grid; gap: 6px; }
+.field-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.field label { font-size: 14px; color: var(--ink-2); }
+.field output { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+input[type="range"] { width: 100%; margin: 0; accent-color: var(--accent); }
+input[type="range"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
+.hint { font-size: 12px; color: var(--muted); }
+.results { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 24px; margin: 0; }
+.result { display: grid; gap: 2px; align-content: start; padding-top: 10px; border-top: 1px solid var(--line); }
+.result dt { font-size: 13px; color: var(--ink-2); }
+.result dd { margin: 0; font: 600 26px/1.15 var(--font-ui); }
+.result dd small { display: block; margin-top: 3px; font: 400 12.5px/1.4 var(--font-ui); color: var(--muted); }
+.assumption {
+  font-size: 13px;
+  color: var(--ink-2);
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--track);
+}
+
+/* Lower sections */
+.pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; align-items: start; }
+.method { margin: 0; padding-left: 18px; display: grid; gap: 8px; color: var(--ink-2); max-width: 80ch; }
+.method strong { color: var(--ink); font-weight: 600; }
+.footer { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 4px; }
+.footer a { color: inherit; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.92em; }
+
+/* Tooltip */
+.tip {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 20;
+  pointer-events: none;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  width: max-content;
+  max-width: min(300px, calc(100vw - 24px));
+  display: grid;
+  gap: 5px;
+}
+.tip-title { font-weight: 600; }
+.tip-row { display: grid; grid-template-columns: 12px minmax(0, 1fr); column-gap: 8px; align-items: center; }
+.tip-key { width: 12px; height: 4px; border-radius: 2px; }
+.tip-row span { color: var(--ink-2); }
+.tip-foot { color: var(--muted); }
+
+@media (max-width: 860px) {
+  .summary { grid-template-columns: 1fr; }
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .calc { grid-template-columns: 1fr; }
+  .pair { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .page { padding-inline: 16px; padding-block: 28px 56px; gap: 48px; }
+  .facts { grid-template-columns: 1fr; }
+  .hero-value { font-size: 56px; }
+  .card { padding: 14px; }
+  .results { gap: 16px; }
+  .result dd { font-size: 22px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { scroll-behavior: auto !important; transition: none !important; }
+}
+</style>
+
+<main class="page">
+  <header class="masthead">
+    <p class="eyebrow" id="eyebrow">UP Diliman Academic Oval · 2.2 km loop</p>
+    <h1>UP Oval Jogging Weather</h1>
+    <p class="lede" id="lede">Hour-by-hour rain for the last 365 days, checked against the two jogging peaks, 5–8 AM and 5–8 PM. A window counts as jogged when no hour in it reached 0.5 mm of rain and it did not pour (2.5 mm or more in an hour) in the two hours before.</p>
+  </header>
+
+  <section class="summary" aria-label="Summary">
+    <div>
+      <p class="hero-label">Joggable windows in the last 365 days</p>
+      <p class="hero-value"><span id="heroCount"></span> <small id="heroOf"></small></p>
+      <p class="hero-note" id="heroNote"></p>
+    </div>
+    <dl class="kpis">
+      <div class="kpi"><dt>Mornings, 5–8 AM</dt><dd><span id="kAm"></span><small id="kAmNote"></small></dd></div>
+      <div class="kpi"><dt>Evenings, 5–8 PM</dt><dd><span id="kPm"></span><small id="kPmNote"></small></dd></div>
+      <div class="kpi"><dt>Days with no joggable window</dt><dd><span id="kNone"></span><small id="kNoneNote"></small></dd></div>
+      <div class="kpi"><dt>Longest washout</dt><dd><span id="kWash"></span><small id="kWashNote"></small></dd></div>
+    </dl>
+    <ul class="facts" id="facts"></ul>
+  </section>
+
+  <section class="section" aria-labelledby="calTitle">
+    <div class="section-head">
+      <h2 id="calTitle">Every window, day by day</h2>
+      <p class="section-note">Each square is one day. The top half is the 5–8 AM window and the bottom half is 5–8 PM. Darker means wetter. The number beside each month is joggable windows out of all windows. Hover or tap a day for the rain figures, or focus the calendar and use the arrow keys.</p>
+    </div>
+    <ul class="legend">
+      <li><span class="sw s-dry"></span>Dry: jogged</li>
+      <li><span class="sw s-drizzle"></span>Light drizzle, under 0.5 mm/h: jogged</li>
+      <li><span class="sw s-out"></span>Rained out</li>
+      <li><span class="sw-day" aria-hidden="true"><i></i><i></i></span>Example: rained-out morning, dry evening</li>
+    </ul>
+    <div class="calendar" id="calendar" tabindex="0" aria-label="Calendar of jogging windows, 21 September 2025 to 20 September 2026. Use the arrow keys to move between days." aria-describedby="calLive"></div>
+    <p class="sr-only" id="calLive" aria-live="polite"></p>
+  </section>
+
+  <section class="section" aria-labelledby="monthTitle">
+    <div class="section-head">
+      <h2 id="monthTitle">Joggable windows per month</h2>
+      <p class="section-note" id="monthNote"></p>
+    </div>
+    <figure class="card" style="margin:0">
+      <div class="chart" id="monthChart"></div>
+      <figcaption class="caption">Dark bars: joggable windows. Pale bars: every window in the month (two per day), so the pale part is what rain took. The number on each bar is the joggable count. Oct–Dec are 2025 and Jan–Aug are 2026. Sep* combines 21–30 Sep 2025 with 1–20 Sep 2026.</figcaption>
+      <div><button class="toggle" type="button" id="monthToggle" aria-expanded="false" aria-controls="monthTableWrap">Show table</button></div>
+      <div class="table-wrap" id="monthTableWrap" hidden>
+        <table>
+          <thead><tr><th scope="col">Month</th><th scope="col">Joggable</th><th scope="col">Of</th><th scope="col">Share</th><th scope="col">Mornings</th><th scope="col">Evenings</th><th scope="col">Rain (mm)</th></tr></thead>
+          <tbody id="monthTable"></tbody>
+        </table>
+      </div>
+    </figure>
+  </section>
+
+  <section class="section" aria-labelledby="calcTitle">
+    <div class="section-head">
+      <h2 id="calcTitle">What the weather means for a 30-locker kiosk</h2>
+      <p class="section-note">Revenue is counted only in joggable windows. Move the sliders to match your quotes and your own head count at the Oval.</p>
+    </div>
+    <div class="card">
+      <div class="calc">
+        <fieldset class="inputs">
+          <legend class="sr-only">Assumptions</legend>
+          <div class="field">
+            <div class="field-top"><label for="rWkd">Rentals per joggable window, weekdays</label><output id="rWkdOut" for="rWkd"></output></div>
+            <input type="range" id="rWkd" min="0" max="60" step="1" value="10">
+          </div>
+          <div class="field">
+            <div class="field-top"><label for="rWke">Rentals per joggable window, weekends</label><output id="rWkeOut" for="rWke"></output></div>
+            <input type="range" id="rWke" min="0" max="60" step="1" value="15">
+            <p class="hint" id="capHint">30 means every locker is used once per window. Above 30, lockers turn over within the same 3 hours.</p>
+          </div>
+          <div class="field">
+            <div class="field-top"><label for="price">Price per rental (4 hours)</label><output id="priceOut" for="price"></output></div>
+            <input type="range" id="price" min="20" max="150" step="5" value="50">
+          </div>
+          <div class="field">
+            <div class="field-top"><label for="fees">Payment fee and SMS per rental</label><output id="feesOut" for="fees"></output></div>
+            <input type="range" id="fees" min="0" max="10" step="0.5" value="3">
+          </div>
+          <div class="field">
+            <div class="field-top"><label for="rent">Monthly rent</label><output id="rentOut" for="rent"></output></div>
+            <input type="range" id="rent" min="0" max="40000" step="500" value="10000">
+          </div>
+          <div class="field">
+            <div class="field-top"><label for="fixed">Other monthly costs</label><output id="fixedOut" for="fixed"></output></div>
+            <input type="range" id="fixed" min="0" max="20000" step="500" value="6000">
+            <p class="hint">Electricity, internet, server, repairs and a part-time checker.</p>
+          </div>
+          <div class="field">
+            <div class="field-top"><label for="setup">Setup cost</label><output id="setupOut" for="setup"></output></div>
+            <input type="range" id="setup" min="50000" max="400000" step="5000" value="180000">
+          </div>
+        </fieldset>
+        <div style="display:grid; gap:20px; min-width:0">
+          <dl class="results">
+            <div class="result"><dt>Profit in a year</dt><dd><span id="oProfit"></span><small id="oProfitNote"></small></dd></div>
+            <div class="result"><dt>Pays back setup in</dt><dd><span id="oPayback"></span><small id="oPaybackNote"></small></dd></div>
+            <div class="result"><dt>Revenue in a year</dt><dd><span id="oRevenue"></span><small id="oRevenueNote"></small></dd></div>
+            <div class="result"><dt>Revenue lost to rain</dt><dd><span id="oLost"></span><small id="oLostNote"></small></dd></div>
+            <div class="result"><dt>Break-even</dt><dd><span id="oBreak"></span><small id="oBreakNote"></small></dd></div>
+            <div class="result"><dt>Months that lose money</dt><dd><span id="oLossMonths"></span><small id="oLossNote"></small></dd></div>
+          </dl>
+          <p class="assumption">The rentals per window are guesses, not measurements. Count people carrying bags at the Oval on a few weekday and weekend peaks, then set the sliders to that.</p>
+        </div>
+      </div>
+    </div>
+    <figure class="card" style="margin:0">
+      <div class="card-head"><h3>Profit by month</h3><span class="caption" id="profitSub"></span></div>
+      <div class="chart" id="profitChart"></div>
+      <figcaption class="caption">Gray bars are profitable months; red bars lose money. Profit is revenue minus payment fees, SMS, rent and other costs.</figcaption>
+      <div><button class="toggle" type="button" id="profitToggle" aria-expanded="false" aria-controls="profitTableWrap">Show table</button></div>
+      <div class="table-wrap" id="profitTableWrap" hidden>
+        <table>
+          <thead><tr><th scope="col">Month</th><th scope="col">Joggable windows</th><th scope="col">Rentals</th><th scope="col">Revenue</th><th scope="col">Costs</th><th scope="col">Profit</th></tr></thead>
+          <tbody id="profitTable"></tbody>
+        </table>
+      </div>
+    </figure>
+  </section>
+
+  <section class="section" aria-labelledby="checkTitle">
+    <div class="section-head">
+      <h2 id="checkTitle">How firm are these numbers?</h2>
+    </div>
+    <div class="pair">
+      <div class="card">
+        <h3>If “rained out” is stricter or looser</h3>
+        <div class="table-wrap">
+          <table class="wrap">
+            <thead><tr><th scope="col">Rule</th><th scope="col" class="num">Joggable</th><th scope="col" class="num">vs. this page</th></tr></thead>
+            <tbody id="sensTable"></tbody>
+          </table>
+        </div>
+        <p class="caption">Revenue moves with the joggable count, so a stricter reading of rain cuts the figures above by about the same share.</p>
+      </div>
+      <div class="card">
+        <h3>Wettest days of the year</h3>
+        <div class="table-wrap">
+          <table class="wrap">
+            <thead><tr><th scope="col" class="num">Date</th><th scope="col" class="num">Rain</th><th scope="col">5–8 AM</th><th scope="col">5–8 PM</th></tr></thead>
+            <tbody id="wetTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <ul class="method" id="method"></ul>
+  </section>
+
+  <footer class="footer">
+    <p>Weather data: <a href="https://open-meteo.com/" rel="noopener">Open-Meteo.com</a> historical archive (CC BY 4.0).</p>
+    <p>Analysis: <code>jogger-locker/weather_analysis.py</code> on branch <code>claude/jogger-locker-kiosk-r03nh0</code> of john3162000/website_business.</p>
+  </footer>
+</main>
+<div class="tip" id="tip" role="tooltip" hidden></div>
+
+<script>
+const S = {"location":{"name":"UP Diliman Academic Oval","lat":14.6537,"lon":121.0685},"period":{"start":"2025-09-21","end":"2026-09-20","days":365},"rules":{"windows":{"am":"5:00-8:00 AM","pm":"5:00-8:00 PM"},"rain_limit_mm_per_hour":0.5,"downpour_before_mm_per_hour":2.5,"downpour_check_hours":2,"dry_below_mm":0.1},"source":"Open-Meteo Historical Weather API (archive-api.open-meteo.com)","models":{"best_match":{"label":"Open-Meteo best match","grid_point":{"lat":14.657293,"lon":121.0316,"elevation_m":72.0},"totals":{"sessions":730,"drizzle":105,"jogged":573,"am_jogged":306,"weekend_jogged":166,"weekend_sessions":210,"pm_jogged":267,"weekday_jogged":407,"weekday_sessions":520,"out":157,"out_during":145,"dry":468,"out_before":12,"days_both":239,"days_one":95,"days_none":31},"monthly":[{"month":1,"label":"Jan 2026","days":31,"sessions":62,"am_jogged":30,"pm_jogged":26,"jogged":56,"weekend_jogged":15,"rain_mm":74.4},{"month":2,"label":"Feb 2026","days":28,"sessions":56,"am_jogged":28,"pm_jogged":26,"jogged":54,"weekend_jogged":14,"rain_mm":66.1},{"month":3,"label":"Mar 2026","days":31,"sessions":62,"am_jogged":31,"pm_jogged":31,"jogged":62,"weekend_jogged":18,"rain_mm":24.0},{"month":4,"label":"Apr 2026","days":30,"sessions":60,"am_jogged":30,"pm_jogged":29,"jogged":59,"weekend_jogged":16,"rain_mm":9.1},{"month":5,"label":"May 2026","days":31,"sessions":62,"am_jogged":29,"pm_jogged":23,"jogged":52,"weekend_jogged":15,"rain_mm":78.3},{"month":6,"label":"Jun 2026","days":30,"sessions":60,"am_jogged":22,"pm_jogged":19,"jogged":41,"weekend_jogged":12,"rain_mm":207.0},{"month":7,"label":"Jul 2026","days":31,"sessions":62,"am_jogged":26,"pm_jogged":18,"jogged":44,"weekend_jogged":10,"rain_mm":337.2},{"month":8,"label":"Aug 2026","days":31,"sessions":62,"am_jogged":6,"pm_jogged":13,"jogged":19,"weekend_jogged":7,"rain_mm":626.2},{"month":9,"label":"Sep*","days":30,"sessions":60,"am_jogged":22,"pm_jogged":12,"jogged":34,"weekend_jogged":15,"rain_mm":451.8},{"month":10,"label":"Oct 2025","days":31,"sessions":62,"am_jogged":28,"pm_jogged":19,"jogged":47,"weekend_jogged":12,"rain_mm":273.7},{"month":11,"label":"Nov 2025","days":30,"sessions":60,"am_jogged":26,"pm_jogged":26,"jogged":52,"weekend_jogged":17,"rain_mm":245.0},{"month":12,"label":"Dec 2025","days":31,"sessions":62,"am_jogged":28,"pm_jogged":25,"jogged":53,"weekend_jogged":15,"rain_mm":147.2}],"sensitivity":{"limit_0.2":506,"limit_0.5":573,"limit_1.0":623,"no_downpour_rule":585},"longest_washout":{"days":5,"start":"2026-08-06","end":"2026-08-10"},"wettest_days":[{"date":"2026-07-29","mm":91.0},{"date":"2025-11-09","mm":68.9},{"date":"2026-07-12","mm":51.1},{"date":"2026-08-28","mm":48.8},{"date":"2026-08-18","mm":43.0},{"date":"2026-08-29","mm":42.8},{"date":"2026-02-14","mm":40.5},{"date":"2026-08-03","mm":39.3},{"date":"2026-08-08","mm":38.3},{"date":"2026-08-12","mm":36.1}],"annual_rain_mm":2540.0}},"days":[{"date":"2025-09-21","dow":6,"mm":15.3,"am":"drizzle","am_mm":0.1,"pm":"drizzle","pm_mm":0.1},{"date":"2025-09-22","dow":0,"mm":24.4,"am":"drizzle","am_mm":0.3,"pm":"out","pm_mm":2.0},{"date":"2025-09-23","dow":1,"mm":28.6,"am":"out","am_mm":4.6,"pm":"out","pm_mm":1.7},{"date":"2025-09-24","dow":2,"mm":14.4,"am":"drizzle","am_mm":0.2,"pm":"out","pm_mm":1.5},{"date":"2025-09-25","dow":3,"mm":9.6,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":0.2,"pm_before":3.9},{"date":"2025-09-26","dow":4,"mm":20.1,"am":"out","am_mm":1.4,"pm":"dry","pm_mm":0.0},{"date":"2025-09-27","dow":5,"mm":1.2,"am":"drizzle","am_mm":0.4,"pm":"dry","pm_mm":0.0},{"date":"2025-09-28","dow":6,"mm":4.7,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-09-29","dow":0,"mm":4.1,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-09-30","dow":1,"mm":21.2,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":5.1},{"date":"2025-10-01","dow":2,"mm":7.2,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":2.8},{"date":"2025-10-02","dow":3,"mm":3.3,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-10-03","dow":4,"mm":34.8,"am":"out","am_mm":2.9,"pm":"out","pm_mm":2.3},{"date":"2025-10-04","dow":5,"mm":6.3,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":0.1,"pm_before":4.3},{"date":"2025-10-05","dow":6,"mm":0.4,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-10-06","dow":0,"mm":15.2,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":4.4},{"date":"2025-10-07","dow":1,"mm":4.2,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-10-08","dow":2,"mm":12.1,"am":"drizzle","am_mm":0.1,"pm":"out","pm_mm":0.0,"pm_before":3.5},{"date":"2025-10-09","dow":3,"mm":12.0,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":0.5},{"date":"2025-10-10","dow":4,"mm":13.2,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":6.7},{"date":"2025-10-11","dow":5,"mm":6.5,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-10-12","dow":6,"mm":5.2,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-10-13","dow":0,"mm":14.2,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-10-14","dow":1,"mm":2.5,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-10-15","dow":2,"mm":25.0,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":0.0,"pm_before":3.6},{"date":"2025-10-16","dow":3,"mm":1.1,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-10-17","dow":4,"mm":3.1,"am":"drizzle","am_mm":0.3,"pm":"dry","pm_mm":0.0},{"date":"2025-10-18","dow":5,"mm":3.0,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.1},{"date":"2025-10-19","dow":6,"mm":25.9,"am":"out","am_mm":1.3,"pm":"out","pm_mm":0.7},{"date":"2025-10-20","dow":0,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-10-21","dow":1,"mm":0.7,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-10-22","dow":2,"mm":4.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-10-23","dow":3,"mm":1.2,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":0.6},{"date":"2025-10-24","dow":4,"mm":5.2,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-10-25","dow":5,"mm":5.3,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":4.4},{"date":"2025-10-26","dow":6,"mm":8.9,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-10-27","dow":0,"mm":12.6,"am":"drizzle","am_mm":0.1,"pm":"dry","pm_mm":0.0},{"date":"2025-10-28","dow":1,"mm":11.4,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-10-29","dow":2,"mm":3.4,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-10-30","dow":3,"mm":25.5,"am":"out","am_mm":4.2,"pm":"out","pm_mm":6.5},{"date":"2025-10-31","dow":4,"mm":0.3,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-11-01","dow":5,"mm":2.1,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":0.5},{"date":"2025-11-02","dow":6,"mm":1.7,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-11-03","dow":0,"mm":17.8,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-11-04","dow":1,"mm":5.6,"am":"drizzle","am_mm":0.1,"pm":"drizzle","pm_mm":0.1},{"date":"2025-11-05","dow":2,"mm":0.6,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-11-06","dow":3,"mm":3.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-11-07","dow":4,"mm":10.2,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-11-08","dow":5,"mm":0.9,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-11-09","dow":6,"mm":68.9,"am":"out","am_mm":0.9,"pm":"out","pm_mm":4.6},{"date":"2025-11-10","dow":0,"mm":28.3,"am":"out","am_mm":2.8,"pm":"out","pm_mm":1.7},{"date":"2025-11-11","dow":1,"mm":2.8,"am":"drizzle","am_mm":0.2,"pm":"dry","pm_mm":0.0},{"date":"2025-11-12","dow":2,"mm":0.7,"am":"drizzle","am_mm":0.1,"pm":"dry","pm_mm":0.0},{"date":"2025-11-13","dow":3,"mm":0.2,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-11-14","dow":4,"mm":5.3,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":0.0,"pm_before":3.1},{"date":"2025-11-15","dow":5,"mm":0.2,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-11-16","dow":6,"mm":1.1,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-11-17","dow":0,"mm":2.7,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-11-18","dow":1,"mm":1.6,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-11-19","dow":2,"mm":2.2,"am":"out","am_mm":0.8,"pm":"dry","pm_mm":0.0},{"date":"2025-11-20","dow":3,"mm":1.3,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-11-21","dow":4,"mm":0.9,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-11-22","dow":5,"mm":3.4,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-11-23","dow":6,"mm":1.8,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-11-24","dow":0,"mm":3.7,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-11-25","dow":1,"mm":28.2,"am":"out","am_mm":3.1,"pm":"drizzle","pm_mm":0.4},{"date":"2025-11-26","dow":2,"mm":2.7,"am":"drizzle","am_mm":0.3,"pm":"dry","pm_mm":0.0},{"date":"2025-11-27","dow":3,"mm":10.7,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-11-28","dow":4,"mm":24.6,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-11-29","dow":5,"mm":10.3,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.2},{"date":"2025-11-30","dow":6,"mm":1.5,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-12-01","dow":0,"mm":4.8,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":0.1,"pm_before":4.3},{"date":"2025-12-02","dow":1,"mm":1.7,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-12-03","dow":2,"mm":1.4,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-12-04","dow":3,"mm":3.9,"am":"drizzle","am_mm":0.1,"pm":"dry","pm_mm":0.0},{"date":"2025-12-05","dow":4,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-12-06","dow":5,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-12-07","dow":6,"mm":2.6,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":0.6},{"date":"2025-12-08","dow":0,"mm":17.1,"am":"out","am_mm":6.2,"pm":"dry","pm_mm":0.0},{"date":"2025-12-09","dow":1,"mm":18.2,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":0.0,"pm_before":5.8},{"date":"2025-12-10","dow":2,"mm":19.1,"am":"out","am_mm":1.0,"pm":"dry","pm_mm":0.0},{"date":"2025-12-11","dow":3,"mm":1.9,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.3},{"date":"2025-12-12","dow":4,"mm":0.8,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-12-13","dow":5,"mm":0.7,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-12-14","dow":6,"mm":0.5,"am":"drizzle","am_mm":0.2,"pm":"dry","pm_mm":0.0},{"date":"2025-12-15","dow":0,"mm":9.5,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":1.2},{"date":"2025-12-16","dow":1,"mm":12.0,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":4.0},{"date":"2025-12-17","dow":2,"mm":9.5,"am":"out","am_mm":0.5,"pm":"dry","pm_mm":0.0},{"date":"2025-12-18","dow":3,"mm":0.5,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-12-19","dow":4,"mm":1.7,"am":"drizzle","am_mm":0.2,"pm":"dry","pm_mm":0.0},{"date":"2025-12-20","dow":5,"mm":8.8,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-12-21","dow":6,"mm":1.5,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-12-22","dow":0,"mm":17.3,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.1},{"date":"2025-12-23","dow":1,"mm":4.7,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-12-24","dow":2,"mm":4.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-12-25","dow":3,"mm":2.3,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":0.5},{"date":"2025-12-26","dow":4,"mm":0.3,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-12-27","dow":5,"mm":0.2,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-12-28","dow":6,"mm":0.6,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-12-29","dow":0,"mm":0.5,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-12-30","dow":1,"mm":0.2,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2025-12-31","dow":2,"mm":0.9,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-01-01","dow":3,"mm":11.5,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":1.3},{"date":"2026-01-02","dow":4,"mm":19.7,"am":"drizzle","am_mm":0.3,"pm":"out","pm_mm":4.0},{"date":"2026-01-03","dow":5,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-01-04","dow":6,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-01-05","dow":0,"mm":2.2,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.2},{"date":"2026-01-06","dow":1,"mm":1.6,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.1},{"date":"2026-01-07","dow":2,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-01-08","dow":3,"mm":1.7,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-01-09","dow":4,"mm":1.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-01-10","dow":5,"mm":7.4,"am":"out","am_mm":1.9,"pm":"out","pm_mm":0.7},{"date":"2026-01-11","dow":6,"mm":7.8,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":0.0,"pm_before":6.9},{"date":"2026-01-12","dow":0,"mm":0.4,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-01-13","dow":1,"mm":1.8,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-01-14","dow":2,"mm":2.4,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-01-15","dow":3,"mm":1.5,"am":"drizzle","am_mm":0.1,"pm":"dry","pm_mm":0.0},{"date":"2026-01-16","dow":4,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-01-17","dow":5,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-01-18","dow":6,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-01-19","dow":0,"mm":1.1,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-01-20","dow":1,"mm":1.2,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-01-21","dow":2,"mm":0.7,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-01-22","dow":3,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-01-23","dow":4,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-01-24","dow":5,"mm":0.7,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-01-25","dow":6,"mm":0.2,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-01-26","dow":0,"mm":3.3,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-01-27","dow":1,"mm":6.2,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":0.1,"pm_before":3.2},{"date":"2026-01-28","dow":2,"mm":0.6,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-01-29","dow":3,"mm":0.1,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-01-30","dow":4,"mm":1.2,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-01-31","dow":5,"mm":0.1,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-02-01","dow":6,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-02-02","dow":0,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-02-03","dow":1,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-02-04","dow":2,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-02-05","dow":3,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-02-06","dow":4,"mm":0.5,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.3},{"date":"2026-02-07","dow":5,"mm":8.1,"am":"drizzle","am_mm":0.1,"pm":"out","pm_mm":1.6},{"date":"2026-02-08","dow":6,"mm":3.4,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-02-09","dow":0,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-02-10","dow":1,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-02-11","dow":2,"mm":0.6,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-02-12","dow":3,"mm":0.8,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-02-13","dow":4,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-02-14","dow":5,"mm":40.5,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":5.7},{"date":"2026-02-15","dow":6,"mm":0.5,"am":"drizzle","am_mm":0.3,"pm":"dry","pm_mm":0.0},{"date":"2026-02-16","dow":0,"mm":1.0,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.3},{"date":"2026-02-17","dow":1,"mm":0.4,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-02-18","dow":2,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-02-19","dow":3,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-02-20","dow":4,"mm":1.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-02-21","dow":5,"mm":0.1,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-02-22","dow":6,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-02-23","dow":0,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-02-24","dow":1,"mm":8.3,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-02-25","dow":2,"mm":0.9,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-02-26","dow":3,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-02-27","dow":4,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-02-28","dow":5,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-03-01","dow":6,"mm":0.3,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-03-02","dow":0,"mm":1.4,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-03-03","dow":1,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-03-04","dow":2,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-03-05","dow":3,"mm":0.9,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-03-06","dow":4,"mm":1.8,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-03-07","dow":5,"mm":0.4,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.1},{"date":"2026-03-08","dow":6,"mm":3.3,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-03-09","dow":0,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-03-10","dow":1,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-03-11","dow":2,"mm":1.8,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-03-12","dow":3,"mm":0.8,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-03-13","dow":4,"mm":1.0,"am":"drizzle","am_mm":0.1,"pm":"dry","pm_mm":0.0},{"date":"2026-03-14","dow":5,"mm":0.1,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-03-15","dow":6,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-03-16","dow":0,"mm":0.1,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-03-17","dow":1,"mm":2.6,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-03-18","dow":2,"mm":2.4,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.2},{"date":"2026-03-19","dow":3,"mm":1.9,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-03-20","dow":4,"mm":0.6,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-03-21","dow":5,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-03-22","dow":6,"mm":1.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-03-23","dow":0,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-03-24","dow":1,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-03-25","dow":2,"mm":0.6,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-03-26","dow":3,"mm":0.7,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-03-27","dow":4,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-03-28","dow":5,"mm":0.7,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-03-29","dow":6,"mm":1.2,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-03-30","dow":0,"mm":0.2,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-03-31","dow":1,"mm":0.2,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-04-01","dow":2,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-04-02","dow":3,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-04-03","dow":4,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-04-04","dow":5,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-04-05","dow":6,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-04-06","dow":0,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-04-07","dow":1,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-04-08","dow":2,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-04-09","dow":3,"mm":0.7,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.1},{"date":"2026-04-10","dow":4,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-04-11","dow":5,"mm":0.1,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-04-12","dow":6,"mm":0.1,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-04-13","dow":0,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-04-14","dow":1,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-04-15","dow":2,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-04-16","dow":3,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-04-17","dow":4,"mm":0.3,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-04-18","dow":5,"mm":0.3,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-04-19","dow":6,"mm":0.9,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.3},{"date":"2026-04-20","dow":0,"mm":0.7,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-04-21","dow":1,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-04-22","dow":2,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-04-23","dow":3,"mm":0.4,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-04-24","dow":4,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-04-25","dow":5,"mm":0.6,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.2},{"date":"2026-04-26","dow":6,"mm":0.8,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.1},{"date":"2026-04-27","dow":0,"mm":1.3,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.2},{"date":"2026-04-28","dow":1,"mm":2.1,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":1.2},{"date":"2026-04-29","dow":2,"mm":0.4,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-04-30","dow":3,"mm":0.4,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-05-01","dow":4,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-05-02","dow":5,"mm":0.6,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-05-03","dow":6,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-05-04","dow":0,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-05-05","dow":1,"mm":1.7,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.3},{"date":"2026-05-06","dow":2,"mm":0.2,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-05-07","dow":3,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-05-08","dow":4,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-05-09","dow":5,"mm":0.3,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-05-10","dow":6,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-05-11","dow":0,"mm":0.2,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-05-12","dow":1,"mm":0.3,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.1},{"date":"2026-05-13","dow":2,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-05-14","dow":3,"mm":1.2,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-05-15","dow":4,"mm":7.1,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-05-16","dow":5,"mm":11.7,"am":"out","am_mm":0.5,"pm":"drizzle","pm_mm":0.3},{"date":"2026-05-17","dow":6,"mm":7.8,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":1.7},{"date":"2026-05-18","dow":0,"mm":10.1,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":1.9},{"date":"2026-05-19","dow":1,"mm":6.2,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.3},{"date":"2026-05-20","dow":2,"mm":2.4,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.4},{"date":"2026-05-21","dow":3,"mm":1.9,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.4},{"date":"2026-05-22","dow":4,"mm":2.7,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":1.4},{"date":"2026-05-23","dow":5,"mm":2.8,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":1.4},{"date":"2026-05-24","dow":6,"mm":2.3,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.1},{"date":"2026-05-25","dow":0,"mm":2.3,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-05-26","dow":1,"mm":2.1,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":0.6},{"date":"2026-05-27","dow":2,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-05-28","dow":3,"mm":2.5,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":0.6},{"date":"2026-05-29","dow":4,"mm":3.3,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":1.9},{"date":"2026-05-30","dow":5,"mm":5.5,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":1.4},{"date":"2026-05-31","dow":6,"mm":3.1,"am":"out","am_mm":0.5,"pm":"drizzle","pm_mm":0.1},{"date":"2026-06-01","dow":0,"mm":21.5,"am":"out","am_mm":0.5,"pm":"out","pm_mm":3.9},{"date":"2026-06-02","dow":1,"mm":14.6,"am":"out","am_mm":2.4,"pm":"out","pm_mm":0.7},{"date":"2026-06-03","dow":2,"mm":24.0,"am":"out","am_mm":0.6,"pm":"drizzle","pm_mm":0.1},{"date":"2026-06-04","dow":3,"mm":3.2,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-06-05","dow":4,"mm":18.2,"am":"out","am_mm":2.1,"pm":"out","pm_mm":0.5},{"date":"2026-06-06","dow":5,"mm":8.1,"am":"out","am_mm":0.6,"pm":"drizzle","pm_mm":0.1},{"date":"2026-06-07","dow":6,"mm":2.7,"am":"drizzle","am_mm":0.2,"pm":"drizzle","pm_mm":0.1},{"date":"2026-06-08","dow":0,"mm":4.5,"am":"drizzle","am_mm":0.2,"pm":"dry","pm_mm":0.0},{"date":"2026-06-09","dow":1,"mm":0.3,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-06-10","dow":2,"mm":2.2,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-06-11","dow":3,"mm":4.3,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":0.8},{"date":"2026-06-12","dow":4,"mm":1.3,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.4},{"date":"2026-06-13","dow":5,"mm":6.9,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":1.2},{"date":"2026-06-14","dow":6,"mm":1.3,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.2},{"date":"2026-06-15","dow":0,"mm":10.4,"am":"drizzle","am_mm":0.2,"pm":"out","pm_mm":0.2,"pm_before":3.1},{"date":"2026-06-16","dow":1,"mm":1.5,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.4},{"date":"2026-06-17","dow":2,"mm":0.4,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-06-18","dow":3,"mm":3.1,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.4},{"date":"2026-06-19","dow":4,"mm":4.3,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.2},{"date":"2026-06-20","dow":5,"mm":0.5,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.3},{"date":"2026-06-21","dow":6,"mm":2.5,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":1.2},{"date":"2026-06-22","dow":0,"mm":1.9,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-06-23","dow":1,"mm":2.6,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-06-24","dow":2,"mm":6.6,"am":"out","am_mm":0.5,"pm":"drizzle","pm_mm":0.2},{"date":"2026-06-25","dow":3,"mm":10.6,"am":"out","am_mm":1.8,"pm":"out","pm_mm":0.5},{"date":"2026-06-26","dow":4,"mm":19.2,"am":"drizzle","am_mm":0.2,"pm":"out","pm_mm":2.1},{"date":"2026-06-27","dow":5,"mm":2.0,"am":"drizzle","am_mm":0.2,"pm":"drizzle","pm_mm":0.1},{"date":"2026-06-28","dow":6,"mm":2.6,"am":"out","am_mm":1.4,"pm":"dry","pm_mm":0.0},{"date":"2026-06-29","dow":0,"mm":10.7,"am":"drizzle","am_mm":0.3,"pm":"out","pm_mm":5.9},{"date":"2026-06-30","dow":1,"mm":15.0,"am":"drizzle","am_mm":0.2,"pm":"out","pm_mm":0.7},{"date":"2026-07-01","dow":2,"mm":8.9,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":4.1},{"date":"2026-07-02","dow":3,"mm":8.4,"am":"drizzle","am_mm":0.3,"pm":"dry","pm_mm":0.0},{"date":"2026-07-03","dow":4,"mm":4.7,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.2},{"date":"2026-07-04","dow":5,"mm":3.6,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-07-05","dow":6,"mm":3.2,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.1},{"date":"2026-07-06","dow":0,"mm":2.4,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":0.9},{"date":"2026-07-07","dow":1,"mm":4.6,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":1.8},{"date":"2026-07-08","dow":2,"mm":6.1,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":1.2},{"date":"2026-07-09","dow":3,"mm":1.3,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-07-10","dow":4,"mm":14.4,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":1.9},{"date":"2026-07-11","dow":5,"mm":21.2,"am":"out","am_mm":0.8,"pm":"out","pm_mm":0.7},{"date":"2026-07-12","dow":6,"mm":51.1,"am":"out","am_mm":3.3,"pm":"out","pm_mm":3.0},{"date":"2026-07-13","dow":0,"mm":9.5,"am":"drizzle","am_mm":0.1,"pm":"out","pm_mm":0.0,"pm_before":2.8},{"date":"2026-07-14","dow":1,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-07-15","dow":2,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-07-16","dow":3,"mm":0.3,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-07-17","dow":4,"mm":0.3,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-07-18","dow":5,"mm":2.6,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.2},{"date":"2026-07-19","dow":6,"mm":6.9,"am":"drizzle","am_mm":0.1,"pm":"out","pm_mm":1.7},{"date":"2026-07-20","dow":0,"mm":4.1,"am":"out","am_mm":0.9,"pm":"drizzle","pm_mm":0.3},{"date":"2026-07-21","dow":1,"mm":4.9,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.1},{"date":"2026-07-22","dow":2,"mm":1.0,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.1},{"date":"2026-07-23","dow":3,"mm":17.2,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":1.8},{"date":"2026-07-24","dow":4,"mm":7.7,"am":"out","am_mm":1.3,"pm":"drizzle","pm_mm":0.4},{"date":"2026-07-25","dow":5,"mm":21.3,"am":"drizzle","am_mm":0.4,"pm":"out","pm_mm":0.4,"pm_before":8.8},{"date":"2026-07-26","dow":6,"mm":2.3,"am":"drizzle","am_mm":0.4,"pm":"dry","pm_mm":0.0},{"date":"2026-07-27","dow":0,"mm":15.7,"am":"drizzle","am_mm":0.4,"pm":"drizzle","pm_mm":0.1},{"date":"2026-07-28","dow":1,"mm":14.7,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":3.4},{"date":"2026-07-29","dow":2,"mm":91.0,"am":"out","am_mm":0.8,"pm":"out","pm_mm":0.7},{"date":"2026-07-30","dow":3,"mm":0.0,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-07-31","dow":4,"mm":7.8,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.2},{"date":"2026-08-01","dow":5,"mm":6.8,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":1.4},{"date":"2026-08-02","dow":6,"mm":20.0,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":1.7},{"date":"2026-08-03","dow":0,"mm":39.3,"am":"out","am_mm":3.9,"pm":"drizzle","pm_mm":0.1},{"date":"2026-08-04","dow":1,"mm":11.3,"am":"drizzle","am_mm":0.4,"pm":"out","pm_mm":1.2},{"date":"2026-08-05","dow":2,"mm":11.9,"am":"out","am_mm":1.2,"pm":"drizzle","pm_mm":0.4},{"date":"2026-08-06","dow":3,"mm":22.1,"am":"out","am_mm":0.9,"pm":"out","pm_mm":0.5},{"date":"2026-08-07","dow":4,"mm":33.4,"am":"out","am_mm":0.5,"pm":"out","pm_mm":1.9},{"date":"2026-08-08","dow":5,"mm":38.3,"am":"out","am_mm":4.8,"pm":"out","pm_mm":1.7},{"date":"2026-08-09","dow":6,"mm":34.3,"am":"out","am_mm":1.3,"pm":"out","pm_mm":2.6},{"date":"2026-08-10","dow":0,"mm":22.4,"am":"out","am_mm":1.2,"pm":"out","pm_mm":3.0},{"date":"2026-08-11","dow":1,"mm":11.0,"am":"out","am_mm":0.6,"pm":"drizzle","pm_mm":0.2},{"date":"2026-08-12","dow":2,"mm":36.1,"am":"out","am_mm":0.6,"pm":"out","pm_mm":3.3},{"date":"2026-08-13","dow":3,"mm":24.1,"am":"out","am_mm":1.5,"pm":"out","pm_mm":1.1},{"date":"2026-08-14","dow":4,"mm":33.0,"am":"out","am_mm":0.6,"pm":"drizzle","pm_mm":0.2},{"date":"2026-08-15","dow":5,"mm":4.1,"am":"out","am_mm":0.9,"pm":"drizzle","pm_mm":0.4},{"date":"2026-08-16","dow":6,"mm":19.7,"am":"drizzle","am_mm":0.3,"pm":"out","pm_mm":1.2},{"date":"2026-08-17","dow":0,"mm":34.0,"am":"out","am_mm":1.7,"pm":"out","pm_mm":3.8},{"date":"2026-08-18","dow":1,"mm":43.0,"am":"out","am_mm":3.5,"pm":"out","pm_mm":2.6},{"date":"2026-08-19","dow":2,"mm":17.1,"am":"out","am_mm":2.9,"pm":"out","pm_mm":2.0},{"date":"2026-08-20","dow":3,"mm":6.6,"am":"out","am_mm":1.6,"pm":"drizzle","pm_mm":0.1},{"date":"2026-08-21","dow":4,"mm":3.1,"am":"out","am_mm":0.7,"pm":"dry","pm_mm":0.0},{"date":"2026-08-22","dow":5,"mm":2.8,"am":"drizzle","am_mm":0.2,"pm":"drizzle","pm_mm":0.1},{"date":"2026-08-23","dow":6,"mm":5.4,"am":"out","am_mm":0.6,"pm":"drizzle","pm_mm":0.2},{"date":"2026-08-24","dow":0,"mm":7.4,"am":"out","am_mm":0.7,"pm":"drizzle","pm_mm":0.4},{"date":"2026-08-25","dow":1,"mm":6.6,"am":"drizzle","am_mm":0.4,"pm":"out","pm_mm":0.5},{"date":"2026-08-26","dow":2,"mm":5.3,"am":"out","am_mm":0.7,"pm":"drizzle","pm_mm":0.2},{"date":"2026-08-27","dow":3,"mm":10.9,"am":"out","am_mm":0.5,"pm":"drizzle","pm_mm":0.4},{"date":"2026-08-28","dow":4,"mm":48.8,"am":"out","am_mm":0.8,"pm":"out","pm_mm":3.5},{"date":"2026-08-29","dow":5,"mm":42.8,"am":"out","am_mm":2.9,"pm":"out","pm_mm":0.5},{"date":"2026-08-30","dow":6,"mm":17.1,"am":"out","am_mm":1.7,"pm":"out","pm_mm":0.6},{"date":"2026-08-31","dow":0,"mm":7.5,"am":"out","am_mm":1.2,"pm":"dry","pm_mm":0.0},{"date":"2026-09-01","dow":1,"mm":6.9,"am":"out","am_mm":0.5,"pm":"drizzle","pm_mm":0.1},{"date":"2026-09-02","dow":2,"mm":11.6,"am":"drizzle","am_mm":0.4,"pm":"out","pm_mm":0.7},{"date":"2026-09-03","dow":3,"mm":25.9,"am":"out","am_mm":0.7,"pm":"out","pm_mm":0.7},{"date":"2026-09-04","dow":4,"mm":25.7,"am":"out","am_mm":1.1,"pm":"drizzle","pm_mm":0.4},{"date":"2026-09-05","dow":5,"mm":22.9,"am":"drizzle","am_mm":0.3,"pm":"out","pm_mm":1.4},{"date":"2026-09-06","dow":6,"mm":13.5,"am":"drizzle","am_mm":0.2,"pm":"dry","pm_mm":0.0},{"date":"2026-09-07","dow":0,"mm":15.6,"am":"out","am_mm":0.5,"pm":"out","pm_mm":1.2},{"date":"2026-09-08","dow":1,"mm":23.9,"am":"drizzle","am_mm":0.1,"pm":"out","pm_mm":0.8},{"date":"2026-09-09","dow":2,"mm":35.4,"am":"out","am_mm":5.8,"pm":"out","pm_mm":0.8},{"date":"2026-09-10","dow":3,"mm":30.9,"am":"out","am_mm":3.0,"pm":"out","pm_mm":1.4},{"date":"2026-09-11","dow":4,"mm":4.6,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.3},{"date":"2026-09-12","dow":5,"mm":4.4,"am":"dry","am_mm":0.0,"pm":"dry","pm_mm":0.0},{"date":"2026-09-13","dow":6,"mm":11.0,"am":"drizzle","am_mm":0.1,"pm":"out","pm_mm":0.6},{"date":"2026-09-14","dow":0,"mm":2.0,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":0.6},{"date":"2026-09-15","dow":1,"mm":7.6,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.2},{"date":"2026-09-16","dow":2,"mm":20.8,"am":"drizzle","am_mm":0.1,"pm":"out","pm_mm":8.0},{"date":"2026-09-17","dow":3,"mm":18.0,"am":"drizzle","am_mm":0.1,"pm":"out","pm_mm":2.4},{"date":"2026-09-18","dow":4,"mm":10.5,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":0.6},{"date":"2026-09-19","dow":5,"mm":15.8,"am":"dry","am_mm":0.0,"pm":"out","pm_mm":2.6},{"date":"2026-09-20","dow":6,"mm":1.2,"am":"dry","am_mm":0.0,"pm":"drizzle","pm_mm":0.3}]};
+const M = S.models.best_match;
+const T = M.totals;
+const DAYS = S.days;
+const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const WIN = { am: "5–8 AM", pm: "5–8 PM" };
+const STATE_VAR = { dry: "--rain-0", drizzle: "--rain-1", out: "--rain-2" };
+
+const isJog = (s) => s === "dry" || s === "drizzle";
+const num = (n) => Math.round(n).toLocaleString("en-PH");
+const peso = (n) => (n < 0 ? "−₱" : "₱") + Math.abs(Math.round(n)).toLocaleString("en-PH");
+const pesoK = (n) => {
+  const a = Math.abs(n);
+  const s = a >= 1000 ? (a / 1000).toFixed(1).replace(/\.0$/, "") + "k" : String(Math.round(a));
+  return (n < 0 ? "−₱" : "₱") + s;
+};
+const pct = (a, b) => Math.round((100 * a) / b) + "%";
+const toDate = (s) => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+const longDate = (s) => { const d = toDate(s); return `${DOW[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]} ${d.getFullYear()}`; };
+const shortDate = (s) => { const d = toDate(s); return `${d.getDate()} ${MON[d.getMonth()]} ${d.getFullYear()}`; };
+const cssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+function sv(tag, attrs, text) {
+  const e = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+const setText = (id, t) => { document.getElementById(id).textContent = t; };
+
+// Column with a 4px rounded data end and a square base.
+function colPath(x, yBase, w, yEnd) {
+  const h = Math.abs(yBase - yEnd);
+  if (h < 0.5) return "";
+  const r = Math.min(4, w / 2, h);
+  if (yEnd < yBase) {
+    return `M${x},${yBase}V${yEnd + r}Q${x},${yEnd} ${x + r},${yEnd}H${x + w - r}Q${x + w},${yEnd} ${x + w},${yEnd + r}V${yBase}Z`;
+  }
+  return `M${x},${yBase}V${yEnd - r}Q${x},${yEnd} ${x + r},${yEnd}H${x + w - r}Q${x + w},${yEnd} ${x + w},${yEnd - r}V${yBase}Z`;
+}
+
+/* ---------- Tooltip ---------- */
+const tip = document.getElementById("tip");
+let tipAnchor = null;
+function showTip(nodes, anchor) {
+  tipAnchor = anchor;
+  tip.replaceChildren(...nodes);
+  tip.hidden = false;
+  placeTip();
+}
+function placeTip() {
+  if (!tipAnchor) return;
+  const r = tipAnchor.getBoundingClientRect();
+  const tw = tip.offsetWidth, th = tip.offsetHeight;
+  let x = r.left + r.width / 2 - tw / 2;
+  let y = r.top - th - 10;
+  if (y < 8) y = r.bottom + 10;
+  x = Math.max(8, Math.min(x, window.innerWidth - tw - 8));
+  y = Math.max(8, Math.min(y, window.innerHeight - th - 8));
+  tip.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+}
+function hideTip() { tip.hidden = true; tipAnchor = null; }
+function tipTitle(t) { return el("div", "tip-title", t); }
+function tipRow(color, strong, rest) {
+  const row = el("div", "tip-row");
+  const key = el("span", "tip-key");
+  key.style.background = color || "transparent";
+  const text = el("div");
+  text.append(el("strong", "", strong));
+  if (rest) text.append(" ", el("span", "", rest));
+  row.append(key, text);
+  return row;
+}
+document.addEventListener("pointerdown", (e) => {
+  if (!e.target.closest(".cal-day[data-i], .hit")) hideTip();
+});
+// Keyboard focus keeps its tooltip while the page scrolls; pointer tooltips close.
+window.addEventListener("scroll", () => {
+  if (tip.hidden) return;
+  const a = document.activeElement;
+  if (a && (a.id === "calendar" || (a.classList && a.classList.contains("hit")))) placeTip();
+  else hideTip();
+}, { passive: true });
+
+/* ---------- Monthly aggregates (Jan-Dec, Sep merged) ---------- */
+const MONTHS = MON.map((name, i) => ({
+  name: i === 8 ? "Sep*" : name, days: 0, windows: 0, jog: 0, am: 0, pm: 0, rain: 0,
+  wkdJ: 0, wkeJ: 0, wkdW: 0, wkeW: 0,
+}));
+for (const d of DAYS) {
+  const m = MONTHS[toDate(d.date).getMonth()];
+  const weekend = d.dow >= 5;
+  m.days += 1;
+  m.windows += 2;
+  m.rain += d.mm;
+  for (const w of ["am", "pm"]) {
+    if (weekend) m.wkeW += 1; else m.wkdW += 1;
+    if (isJog(d[w])) {
+      m.jog += 1;
+      m[w] += 1;
+      if (weekend) m.wkeJ += 1; else m.wkdJ += 1;
+    }
+  }
+}
+const sumOf = (list, k) => list.reduce((a, m) => a + m[k], 0);
+const axisMonth = (name, band) => (band < 27 ? name[0] + (name.endsWith("*") ? "*" : "") : name);
+
+/* ---------- Summary ---------- */
+(function summary() {
+  const nDays = DAYS.length;
+  const g = M.grid_point;
+  setText("eyebrow", `UP Diliman Academic Oval · 2.2 km loop · ${shortDate(S.period.start)} – ${shortDate(S.period.end)}`);
+  setText("heroCount", num(T.jogged));
+  setText("heroOf", `of ${num(T.sessions)}`);
+  setText("heroNote", `${pct(T.jogged, T.sessions)} of the year’s morning and evening peaks were dry enough to jog.`);
+  setText("kAm", num(T.am_jogged));
+  setText("kAmNote", `of ${nDays} · ${pct(T.am_jogged, nDays)}`);
+  setText("kPm", num(T.pm_jogged));
+  setText("kPmNote", `of ${nDays} · ${pct(T.pm_jogged, nDays)}`);
+  setText("kNone", num(T.days_none));
+  setText("kNoneNote", `both windows rained out`);
+  const wo = M.longest_washout;
+  setText("kWash", wo.days ? `${wo.days} days` : "None");
+  if (wo.days) {
+    const a = toDate(wo.start), b = toDate(wo.end);
+    const range = a.getMonth() === b.getMonth()
+      ? `${a.getDate()}–${b.getDate()} ${MON[b.getMonth()]} ${b.getFullYear()}`
+      : `${shortDate(wo.start)} – ${shortDate(wo.end)}`;
+    setText("kWashNote", range);
+  }
+  const dry = MONTHS.slice(0, 4), wet = MONTHS.slice(5, 9);
+  const worst = MONTHS.reduce((a, m) => (m.jog / m.windows < a.jog / a.windows ? m : a));
+  const facts = [
+    ["January to April", `${sumOf(dry, "jog")} of ${sumOf(dry, "windows")} windows joggable (${pct(sumOf(dry, "jog"), sumOf(dry, "windows"))}). The dry season is nearly all sellable.`],
+    ["June to September", `${sumOf(wet, "jog")} of ${sumOf(wet, "windows")} joggable (${pct(sumOf(wet, "jog"), sumOf(wet, "windows"))}). ${worst.name.replace("*", "")} was worst at ${worst.jog} of ${worst.windows}.`],
+    ["Evenings suffer more", `${nDays - T.pm_jogged} evenings were rained out against ${nDays - T.am_jogged} mornings, mostly from afternoon thunderstorms.`],
+  ];
+  const ul = document.getElementById("facts");
+  for (const [head, body] of facts) {
+    const li = el("li");
+    li.append(el("strong", "", head), el("span", "", body));
+    ul.append(li);
+  }
+  const best = MONTHS.reduce((a, m) => (m.jog / m.windows > a.jog / a.windows ? m : a));
+  setText("monthNote", `${best.name.replace("*", "")} had the most joggable windows (${best.jog} of ${best.windows}); ${worst.name.replace("*", "")} had the fewest (${worst.jog} of ${worst.windows}). Plan cash for the rainy months.`);
+  if (g) {
+    const toRad = (x) => (x * Math.PI) / 180;
+    const dLat = toRad(g.lat - S.location.lat), dLon = toRad(g.lon - S.location.lon);
+    const h = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(S.location.lat)) * Math.cos(toRad(g.lat)) * Math.sin(dLon / 2) ** 2;
+    S.gridKm = 2 * 6371 * Math.asin(Math.sqrt(h));
+  }
+})();
+
+/* ---------- Calendar ---------- */
+const cal = document.getElementById("calendar");
+const cells = [];
+(function buildCalendar() {
+  const groups = new Map();
+  DAYS.forEach((d, i) => {
+    const key = d.date.slice(0, 7);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(i);
+  });
+  for (const [key, idxs] of groups) {
+    const [y, m] = key.split("-").map(Number);
+    const firstDow = new Date(y, m - 1, 1).getDay();
+    const daysIn = new Date(y, m, 0).getDate();
+    const jog = idxs.reduce((a, i) => a + isJog(DAYS[i].am) + isJog(DAYS[i].pm), 0);
+    const month = el("div", "cal-month");
+    const head = el("div", "cal-head");
+    head.append(el("span", "cal-title", `${MON[m - 1]} ${y}`), el("span", "cal-count", `${jog}/${idxs.length * 2}`));
+    const grid = el("div", "cal-grid");
+    for (const ch of ["S", "M", "T", "W", "T", "F", "S"]) grid.append(el("span", "cal-dow", ch));
+    for (let b = 0; b < firstDow; b++) grid.append(el("span", "cal-day is-outside"));
+    const byDay = new Map(idxs.map((i) => [Number(DAYS[i].date.slice(8)), i]));
+    for (let day = 1; day <= daysIn; day++) {
+      const i = byDay.get(day);
+      const cell = el("span", i === undefined ? "cal-day is-outside" : "cal-day");
+      if (i !== undefined) {
+        cell.dataset.i = i;
+        cell.append(el("i", "s-" + DAYS[i].am), el("i", "s-" + DAYS[i].pm));
+        cells[i] = cell;
+      }
+      grid.append(cell);
+    }
+    month.append(head, grid);
+    cal.append(month);
+  }
+})();
+
+function windowWords(d, w) {
+  const s = d[w];
+  if (s === "dry") return ["Jogged", `${WIN[w]} · dry`];
+  if (s === "drizzle") return ["Jogged", `${WIN[w]} · light drizzle, peak ${d[w + "_mm"]} mm/h`];
+  if (s === "out" && d[w + "_before"] !== undefined) {
+    return ["Rained out", `${WIN[w]} · ${d[w + "_before"]} mm/h downpour just before`];
+  }
+  if (s === "out") return ["Rained out", `${WIN[w]} · peak ${d[w + "_mm"]} mm/h`];
+  return ["No data", WIN[w]];
+}
+function dayTip(i) {
+  const d = DAYS[i];
+  const rows = [tipTitle(longDate(d.date))];
+  for (const w of ["am", "pm"]) {
+    const [strong, rest] = windowWords(d, w);
+    rows.push(tipRow(cssVar(STATE_VAR[d[w]] || "--grid"), strong, rest));
+  }
+  rows.push(el("div", "tip-foot", `Rain that day: ${d.mm} mm`));
+  return rows;
+}
+cal.addEventListener("pointerover", (e) => {
+  const c = e.target.closest(".cal-day[data-i]");
+  if (c) showTip(dayTip(Number(c.dataset.i)), c);
+});
+cal.addEventListener("pointerleave", () => { if (document.activeElement !== cal) hideTip(); });
+
+let focusI = null;
+function focusDay(i) {
+  if (focusI !== null && cells[focusI]) cells[focusI].classList.remove("is-focus");
+  focusI = i;
+  const c = cells[i];
+  c.classList.add("is-focus");
+  c.scrollIntoView({ block: "nearest", inline: "nearest" });
+  showTip(dayTip(i), c);
+  const d = DAYS[i];
+  setText("calLive", `${longDate(d.date)}. Morning: ${windowWords(d, "am").join(", ")}. Evening: ${windowWords(d, "pm").join(", ")}. Rain that day ${d.mm} millimetres.`);
+}
+// A click or tap sets the starting day; only keyboard focus moves the highlight.
+cal.addEventListener("pointerdown", (e) => {
+  const c = e.target.closest(".cal-day[data-i]");
+  if (c) focusI = Number(c.dataset.i);
+});
+cal.addEventListener("focus", () => { if (cal.matches(":focus-visible")) focusDay(focusI ?? 0); });
+cal.addEventListener("blur", () => {
+  if (focusI !== null && cells[focusI]) cells[focusI].classList.remove("is-focus");
+  hideTip();
+});
+cal.addEventListener("keydown", (e) => {
+  const moves = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
+  let next = null;
+  if (e.key in moves) next = (focusI ?? 0) + moves[e.key];
+  else if (e.key === "Home") next = 0;
+  else if (e.key === "End") next = DAYS.length - 1;
+  else if (e.key === "Escape") { hideTip(); return; }
+  if (next === null) return;
+  e.preventDefault();
+  focusDay(Math.max(0, Math.min(DAYS.length - 1, next)));
+});
+
+/* ---------- Monthly chart ---------- */
+function drawMonthly() {
+  const box = document.getElementById("monthChart");
+  const W = Math.max(280, box.clientWidth), H = 250;
+  const m = { l: 30, r: 6, t: 20, b: 26 };
+  const pw = W - m.l - m.r, ph = H - m.t - m.b;
+  const maxY = 64;
+  const y = (v) => m.t + ph - (v / maxY) * ph;
+  const band = pw / 12, bw = Math.min(24, band * 0.62);
+  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: "img",
+    "aria-label": "Joggable windows per month. " + MONTHS.map((mm) => `${mm.name}: ${mm.jog} of ${mm.windows}`).join("; ") });
+  for (const t of [0, 20, 40, 60]) {
+    svg.append(sv("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), stroke: t === 0 ? cssVar("--axis") : cssVar("--grid"), "stroke-width": 1, "shape-rendering": "crispEdges" }));
+    svg.append(sv("text", { x: m.l - 8, y: y(t) + 4, "text-anchor": "end" }, String(t)));
+  }
+  MONTHS.forEach((mo, i) => {
+    const x = m.l + band * i + (band - bw) / 2;
+    svg.append(sv("path", { d: colPath(x, y(0), bw, y(mo.windows)), fill: cssVar("--track") }));
+    svg.append(sv("path", { d: colPath(x, y(0), bw, y(mo.jog)), fill: cssVar("--bar") }));
+    svg.append(sv("text", { x: x + bw / 2, y: y(mo.jog) - 6, "text-anchor": "middle", class: "val" }, String(mo.jog)));
+    svg.append(sv("text", { x: x + bw / 2, y: H - 8, "text-anchor": "middle" }, axisMonth(mo.name, band)));
+    const hit = sv("rect", { x: m.l + band * i, y: m.t - 14, width: band, height: ph + 14 + m.b, class: "hit", tabindex: 0, role: "img",
+      "aria-label": `${mo.name}: ${mo.jog} of ${mo.windows} windows joggable` });
+    const show = () => showTip([
+      tipTitle(mo.name === "Sep*" ? "September (2025 + 2026)" : `${mo.name} ${i >= 9 ? 2025 : 2026}`),
+      tipRow(cssVar("--bar"), `${mo.jog} of ${mo.windows}`, `windows joggable · ${pct(mo.jog, mo.windows)}`),
+      tipRow("", `${mo.am} mornings, ${mo.pm} evenings`, ""),
+      el("div", "tip-foot", `Rain: ${Math.round(mo.rain)} mm`),
+    ], hit);
+    hit.addEventListener("pointerenter", show);
+    hit.addEventListener("focus", show);
+    hit.addEventListener("pointerleave", hideTip);
+    hit.addEventListener("blur", hideTip);
+    svg.append(hit);
+  });
+  box.replaceChildren(svg);
+}
+(function monthTable() {
+  const tb = document.getElementById("monthTable");
+  for (const mo of MONTHS) {
+    const tr = el("tr");
+    for (const v of [mo.name, mo.jog, mo.windows, pct(mo.jog, mo.windows), mo.am, mo.pm, Math.round(mo.rain)]) tr.append(el("td", "", String(v)));
+    tb.append(tr);
+  }
+})();
+
+/* ---------- Calculator ---------- */
+const IDS = ["rWkd", "rWke", "price", "fees", "rent", "fixed", "setup"];
+const FORMAT = {
+  rWkd: (v) => String(v), rWke: (v) => String(v),
+  price: (v) => peso(v), fees: (v) => "₱" + v.toFixed(2).replace(/\.00$/, ""),
+  rent: (v) => peso(v), fixed: (v) => peso(v), setup: (v) => peso(v),
+};
+function readInputs() {
+  const p = {};
+  for (const id of IDS) p[id] = Number(document.getElementById(id).value);
+  return p;
+}
+function compute(p) {
+  const rows = MONTHS.map((mo) => {
+    const rentals = mo.wkdJ * p.rWkd + mo.wkeJ * p.rWke;
+    const revenue = rentals * p.price;
+    const costs = rentals * p.fees + p.rent + p.fixed;
+    const ideal = (mo.wkdW * p.rWkd + mo.wkeW * p.rWke) * p.price;
+    return { mo, rentals, revenue, costs, profit: revenue - costs, ideal };
+  });
+  const tot = (k) => rows.reduce((a, r) => a + r[k], 0);
+  return { rows, rentals: tot("rentals"), revenue: tot("revenue"), profit: tot("profit"), ideal: tot("ideal") };
+}
+
+function niceStep(raw) {
+  const p = Math.pow(10, Math.floor(Math.log10(raw)));
+  const n = raw / p;
+  return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p;
+}
+function drawProfit(res) {
+  const box = document.getElementById("profitChart");
+  const W = Math.max(280, box.clientWidth), H = 250;
+  const m = { l: 48, r: 6, t: 16, b: 26 };
+  const pw = W - m.l - m.r, ph = H - m.t - m.b;
+  const vals = res.rows.map((r) => r.profit);
+  const lo = Math.min(0, ...vals), hi = Math.max(0, ...vals);
+  const step = niceStep(Math.max(1000, (hi - lo) / 4));
+  const d0 = Math.floor(lo / step) * step, d1 = Math.ceil(hi / step) * step || step;
+  const y = (v) => m.t + ((d1 - v) / (d1 - d0)) * ph;
+  const band = pw / 12, bw = Math.min(24, band * 0.62);
+  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: "img",
+    "aria-label": "Profit by month. " + res.rows.map((r) => `${r.mo.name}: ${peso(r.profit)}`).join("; ") });
+  for (let t = d0; t <= d1 + 1e-6; t += step) {
+    svg.append(sv("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), stroke: cssVar("--grid"), "stroke-width": 1, "shape-rendering": "crispEdges" }));
+    svg.append(sv("text", { x: m.l - 8, y: y(t) + 4, "text-anchor": "end" }, pesoK(t)));
+  }
+  svg.append(sv("line", { x1: m.l, x2: W - m.r, y1: y(0), y2: y(0), stroke: cssVar("--axis"), "stroke-width": 1, "shape-rendering": "crispEdges" }));
+  let lastRight = -Infinity;
+  const minIdx = vals.indexOf(Math.min(...vals));
+  res.rows.forEach((r, i) => {
+    const x = m.l + band * i + (band - bw) / 2;
+    const neg = r.profit < 0;
+    svg.append(sv("path", { d: colPath(x, y(0), bw, y(r.profit)), fill: cssVar(neg ? "--loss" : "--bar") }));
+    svg.append(sv("text", { x: x + bw / 2, y: H - 8, "text-anchor": "middle" }, axisMonth(r.mo.name, band)));
+    if (neg || i === minIdx) {
+      const label = pesoK(r.profit);
+      const w = label.length * 6.4;
+      const cx = x + bw / 2;
+      const ly = neg ? y(r.profit) + 14 : y(r.profit) - 6;
+      if (cx - w / 2 > lastRight + 4 && ly < H - m.b + 2) {
+        svg.append(sv("text", { x: cx, y: ly, "text-anchor": "middle", class: "val" }, label));
+        lastRight = cx + w / 2;
+      }
+    }
+    const hit = sv("rect", { x: m.l + band * i, y: m.t, width: band, height: ph + m.b, class: "hit", tabindex: 0, role: "img",
+      "aria-label": `${r.mo.name}: profit ${peso(r.profit)}` });
+    const show = () => showTip([
+      tipTitle(r.mo.name === "Sep*" ? "September (2025 + 2026)" : `${r.mo.name} ${i >= 9 ? 2025 : 2026}`),
+      tipRow(cssVar(neg ? "--loss" : "--bar"), peso(r.profit), neg ? "loss" : "profit"),
+      tipRow("", num(r.rentals) + " rentals", `in ${r.mo.jog} joggable windows`),
+      el("div", "tip-foot", `Revenue ${peso(r.revenue)} · costs ${peso(r.costs)}`),
+    ], hit);
+    hit.addEventListener("pointerenter", show);
+    hit.addEventListener("focus", show);
+    hit.addEventListener("pointerleave", hideTip);
+    hit.addEventListener("blur", hideTip);
+    svg.append(hit);
+  });
+  box.replaceChildren(svg);
+}
+
+let lastRes = null;
+function update() {
+  const p = readInputs();
+  for (const id of IDS) setText(id + "Out", FORMAT[id](p[id]));
+  const res = compute(p);
+  lastRes = res;
+  const net = p.price - p.fees;
+  const J = T.jogged;
+  setText("oProfit", peso(res.profit));
+  setText("oProfitNote", `${peso(res.profit / 12)} a month on average`);
+  if (res.profit > 0) {
+    const months = Math.ceil(p.setup / (res.profit / 12));
+    setText("oPayback", `${months} months`);
+    setText("oPaybackNote", months > 36 ? "Slow: over 3 years" : `on a ${peso(p.setup)} setup`);
+  } else {
+    setText("oPayback", "Never");
+    setText("oPaybackNote", "The kiosk loses money over the year");
+  }
+  setText("oRevenue", peso(res.revenue));
+  setText("oRevenueNote", `${num(res.rentals)} rentals`);
+  const lost = res.ideal - res.revenue;
+  setText("oLost", peso(lost));
+  setText("oLostNote", res.ideal > 0 ? `${pct(lost, res.ideal)} of what a rain-free year would bring` : "");
+  if (net > 0) {
+    const be = (12 * (p.rent + p.fixed)) / (J * net);
+    setText("oBreak", `${be.toFixed(1)} per window`);
+    setText("oBreakNote", `about ${((be * J) / DAYS.length).toFixed(1)} rentals a day on average`);
+  } else {
+    setText("oBreak", "Not possible");
+    setText("oBreakNote", "Fees are as high as the price");
+  }
+  const losing = res.rows.filter((r) => r.profit < 0);
+  setText("oLossMonths", losing.length ? String(losing.length) : "None");
+  setText("oLossNote", losing.length ? losing.map((r) => r.mo.name.replace("*", "")).join(", ") : "Every month covers its costs");
+  setText("profitSub", `Rent ${peso(p.rent)} · ${p.rWkd} weekday / ${p.rWke} weekend rentals per joggable window`);
+  document.getElementById("capHint").style.color = p.rWkd > 30 || p.rWke > 30 ? "var(--ink)" : "";
+  const tb = document.getElementById("profitTable");
+  tb.replaceChildren();
+  for (const r of res.rows) {
+    const tr = el("tr");
+    for (const v of [r.mo.name, r.mo.jog, num(r.rentals), peso(r.revenue), peso(r.costs), peso(r.profit)]) tr.append(el("td", "", String(v)));
+    tb.append(tr);
+  }
+  const tr = el("tr");
+  for (const v of ["Year", J, num(res.rentals), peso(res.revenue), peso(res.revenue - res.profit), peso(res.profit)]) tr.append(el("td", "", String(v)));
+  tr.style.fontWeight = "600";
+  tb.append(tr);
+  drawProfit(res);
+}
+for (const id of IDS) document.getElementById(id).addEventListener("input", update);
+
+/* ---------- Sensitivity, wettest days, method ---------- */
+(function lower() {
+  const sens = M.sensitivity;
+  const base = sens["limit_0.5"];
+  const rows = [
+    ["Any hour at 0.2 mm or more", sens["limit_0.2"]],
+    ["Any hour at 0.5 mm or more (this page)", base],
+    ["Any hour at 1.0 mm or more", sens["limit_1.0"]],
+    ["0.5 mm, ignoring downpours just before", sens["no_downpour_rule"]],
+  ];
+  const tb = document.getElementById("sensTable");
+  for (const [rule, n] of rows) {
+    const diff = n === base ? "—" : `${n > base ? "+" : "−"}${Math.abs(Math.round((100 * (n - base)) / base))}%`;
+    const tr = el("tr");
+    tr.append(el("td", "", rule), el("td", "num", `${num(n)} · ${pct(n, T.sessions)}`), el("td", "num", diff));
+    tb.append(tr);
+  }
+  const byDate = new Map(DAYS.map((d) => [d.date, d]));
+  const wet = document.getElementById("wetTable");
+  const label = { dry: "Jogged", drizzle: "Jogged", out: "Rained out" };
+  for (const w of M.wettest_days.slice(0, 6)) {
+    const d = byDate.get(w.date);
+    const tr = el("tr");
+    tr.append(el("td", "num", shortDate(w.date)), el("td", "num", `${w.mm} mm`),
+      el("td", "", label[d.am] || "—"), el("td", "", label[d.pm] || "—"));
+    wet.append(tr);
+  }
+  const g = M.grid_point;
+  const where = g
+    ? `the nearest weather-model grid point, ${g.lat.toFixed(3)}° N, ${g.lon.toFixed(3)}° E, about ${S.gridKm.toFixed(0)} km from the Oval`
+    : "the weather-model grid point nearest the Oval";
+  const items = [
+    ["Data.", ` Hourly rain from the Open-Meteo historical archive for ${where}. Total rain for the 365 days: ${num(M.annual_rain_mm)} mm.`],
+    ["Rule.", " A window is rained out when any hour inside it reaches 0.5 mm, or when an hour in the two hours before reaches 2.5 mm (a downpour that wets the track and makes people cancel). Drizzle under 0.5 mm/h counts as jogged."],
+    ["Model rain, not a gauge.", " The archive blends weather-model and reanalysis data over a grid cell a few kilometres wide. It can miss a short downpour right on the Oval or spread one across neighbouring hours. The table above shows how much that matters."],
+    ["Possible jogging, not actual joggers.", " This counts when people could jog. How many rent a locker in each window is still an assumption until you count at the Oval."],
+    ["Not included.", " Semester breaks, holidays, heat, air quality and events that close the Oval."],
+  ];
+  const ul = document.getElementById("method");
+  for (const [b, t] of items) {
+    const li = el("li");
+    li.append(el("strong", "", b), document.createTextNode(t));
+    ul.append(li);
+  }
+})();
+
+/* ---------- Toggles and resizing ---------- */
+function wireToggle(btnId, wrapId) {
+  const btn = document.getElementById(btnId), wrap = document.getElementById(wrapId);
+  btn.addEventListener("click", () => {
+    wrap.hidden = !wrap.hidden;
+    btn.setAttribute("aria-expanded", String(!wrap.hidden));
+    btn.textContent = wrap.hidden ? "Show table" : "Hide table";
+  });
+}
+wireToggle("monthToggle", "monthTableWrap");
+wireToggle("profitToggle", "profitTableWrap");
+
+function redraw() {
+  drawMonthly();
+  if (lastRes) drawProfit(lastRes);
+}
+update();
+drawMonthly();
+let lastW = 0;
+new ResizeObserver(() => {
+  const w = document.getElementById("monthChart").clientWidth;
+  if (Math.abs(w - lastW) > 2) { lastW = w; redraw(); }
+}).observe(document.getElementById("monthChart"));
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", redraw);
+new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+</script>
