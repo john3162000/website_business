@@ -86,4 +86,22 @@ lists what to ask suppliers with a parts budget, and gives a bench test.
 - `locks/locker-locks.html`: the finished page, as published
 - `locks/up-oval-locker-locks.html`: stand-alone copy to save and open
 
+## 3D model
+
+`model/` builds an interactive three.js model of the locker bank from the
+same door layout as `design/`, with a scripted rental at door 15 (pay by QR,
+store a backpack, collect it with the PIN), tap-to-open doors, a canopy,
+size colors, a 1.60 m figure for scale and 5 AM lighting.
+
+- `model/build_model.py`: fills the template with the design measurements;
+  `--three-dir node_modules/three` (three@0.147.0) inlines three.js into the
+  stand-alone copy so it opens offline
+- `model/locker_3d_template.html`: page, scene and animation code
+- `model/locker-3d.html`: the page as published (three.js from jsDelivr)
+- `model/up-oval-locker-3d.html`: stand-alone copy with three.js inside
+- `model/up-oval-locker.glb`: the locker bank as a glTF model with two door
+  animations, for 3D viewer apps and fabricators
+- `model/render_media.js`: exports the .glb and renders the rental video
+  frame by frame with Playwright (encode with the ffmpeg line in the file)
+
 Weather data: [Open-Meteo.com](https://open-meteo.com/), CC BY 4.0.

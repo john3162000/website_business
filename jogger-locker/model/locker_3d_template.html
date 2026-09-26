@@ -1,0 +1,1057 @@
+<title>UP Oval Locker 3D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f3f4f1;
+  --surface: #fcfcfb;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #6b6a65;
+  --grid: #e1e0d9;
+  --line: rgba(11, 11, 11, 0.12);
+  --accent: #7b1113;
+  --on-accent: #ffffff;
+  --overlay: rgba(252, 252, 251, 0.92);
+  --stage: #e7e8e3;
+  --floor: #d3d1c9;
+  --wall: #eeeeea;
+  --font-ui: "Public Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0f100f;
+    --surface: #1a1a19;
+    --ink: #ffffff;
+    --ink-2: #c3c2b7;
+    --muted: #a3a29b;
+    --grid: #2c2c2a;
+    --line: rgba(255, 255, 255, 0.14);
+    --accent: #f0a0a3;
+    --on-accent: #111111;
+    --overlay: rgba(26, 26, 25, 0.9);
+    --stage: #1b1c1e;
+    --floor: #2b2b29;
+    --wall: #222326;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0f100f;
+  --surface: #1a1a19;
+  --ink: #ffffff;
+  --ink-2: #c3c2b7;
+  --muted: #a3a29b;
+  --grid: #2c2c2a;
+  --line: rgba(255, 255, 255, 0.14);
+  --accent: #f0a0a3;
+  --on-accent: #111111;
+  --overlay: rgba(26, 26, 25, 0.9);
+  --stage: #1b1c1e;
+  --floor: #2b2b29;
+  --wall: #222326;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 15px/1.55 var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+[hidden] { display: none !important; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+p { margin: 0; }
+a { color: inherit; text-underline-offset: 2px; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.9em; }
+.page {
+  max-width: 1180px;
+  margin-inline: auto;
+  padding-inline: 24px;
+  padding-block: 40px 72px;
+  display: grid;
+  gap: 48px;
+}
+.masthead { display: grid; gap: 14px; }
+.eyebrow {
+  font: 600 12px/1.4 var(--font-ui);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+h1 {
+  font: 700 clamp(40px, 7.5vw, 64px)/0.92 var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.005em;
+  margin: 0;
+  text-wrap: balance;
+}
+.lede { max-width: 72ch; color: var(--ink-2); font-size: 16px; }
+h2 { font: 600 30px/1.05 var(--font-display); letter-spacing: 0.005em; margin: 0; text-wrap: balance; }
+.section { display: grid; gap: 16px; }
+
+.stage { display: grid; gap: 14px; }
+.viewer {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  max-height: 78vh;
+  min-height: 340px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--stage);
+  border: 1px solid var(--line);
+  touch-action: none;
+}
+.viewer canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+.viewer canvas:active { cursor: grabbing; }
+.caption {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  max-width: min(560px, calc(100% - 24px));
+  display: grid;
+  gap: 2px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--overlay);
+  border: 1px solid var(--line);
+  pointer-events: none;
+}
+.caption-no { font: 600 12px/1.3 var(--font-ui); letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+.caption-text { font-weight: 600; font-size: 15px; }
+.fallback { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--ink-2); }
+.video-title { display: none; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 12px 22px; align-items: center; }
+.group { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.group-label { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-right: 2px; }
+.btn {
+  font: 600 14px/1 var(--font-ui);
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+.btn:hover { border-color: var(--muted); }
+.btn:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn.primary { background: var(--accent); color: var(--on-accent); border-color: transparent; }
+.btn[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+select {
+  font: 500 14px var(--font-ui);
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+}
+.hint { font-size: 13px; color: var(--muted); }
+
+.steps { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.steps button {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  gap: 4px;
+  text-align: left;
+  font: 500 14px/1.4 var(--font-ui);
+  color: var(--ink-2);
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  cursor: pointer;
+}
+.steps button:hover { border-color: var(--muted); }
+.steps button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.steps button.is-now { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+.step-no { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+.step-text { color: var(--ink); font-weight: 600; }
+
+.specs { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 36px; }
+.specs div { display: grid; gap: 2px; padding-top: 10px; border-top: 1px solid var(--line); }
+.specs dt { font-size: 13px; color: var(--ink-2); }
+.specs dd { margin: 0; font-weight: 600; }
+.footer { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 4px; }
+
+/* Full-frame layout used when recording the video */
+.video-mode { overflow: hidden; }
+.video-mode .page { display: block; padding: 0; max-width: none; }
+.video-mode .masthead, .video-mode .controls, .video-mode .hint, .video-mode .section, .video-mode .footer { display: none; }
+.video-mode .viewer { position: fixed; left: 0; top: 0; width: 1280px; height: 720px; aspect-ratio: auto; max-height: none; border: 0; border-radius: 0; }
+.video-mode .caption { left: 28px; bottom: 28px; padding: 14px 20px; max-width: 760px; }
+.video-mode .caption-text { font-size: 24px; }
+.video-mode .caption-no { font-size: 15px; }
+.video-mode .video-title {
+  display: block;
+  position: absolute;
+  left: 28px;
+  top: 24px;
+  font: 700 30px/1 var(--font-display);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+@media (max-width: 800px) {
+  .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .specs { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .page { padding-inline: 16px; padding-block: 28px 56px; gap: 36px; }
+  .viewer { aspect-ratio: 4 / 5; }
+  .steps { grid-template-columns: 1fr; }
+  .caption-text { font-size: 14px; }
+}
+</style>
+
+<main class="page">
+  <header class="masthead">
+    <p class="eyebrow">Jogger locker kiosk · 3D model 1 · 26 Sep 2026</p>
+    <h1>UP Oval Locker 3D</h1>
+    <p class="lede">The 30-door locker bank from the drawings, built to the same measurements. Drag to turn it, pinch or scroll to zoom, and tap any door to open it. Press play to watch a jogger pay by QR, leave a backpack in door 15 and collect it after the run.</p>
+  </header>
+
+  <section class="stage" aria-label="3D model">
+    <div class="viewer" id="viewer">
+      <canvas id="scene" role="img" aria-label="3D model of the 30-door locker bank with its touch-screen control column. Use the buttons below to play the rental, change the view or open doors."></canvas>
+      <p class="video-title">UP Oval Locker · a rental</p>
+      <div class="caption" id="caption" aria-live="polite">
+        <span class="caption-no" id="captionNo">Ready</span>
+        <span class="caption-text" id="captionText">Press play to watch a rental at door 15.</span>
+      </div>
+      <p class="fallback" id="fallback" hidden>The 3D view could not load. It needs the three.js library from the internet the first time you open it.</p>
+    </div>
+    <div class="controls">
+      <div class="group">
+        <button class="btn primary" type="button" id="play">Play the rental</button>
+        <button class="btn" type="button" id="stop" hidden>Stop</button>
+      </div>
+      <div class="group" role="group" aria-label="View">
+        <span class="group-label">View</span>
+        <button class="btn" type="button" data-view="angle">Angle</button>
+        <button class="btn" type="button" data-view="front">Front</button>
+        <button class="btn" type="button" data-view="side">Side</button>
+        <button class="btn" type="button" data-view="screen">Screen</button>
+      </div>
+      <div class="group" role="group" aria-label="Show">
+        <span class="group-label">Show</span>
+        <button class="btn" type="button" id="tCanopy" aria-pressed="false">Canopy</button>
+        <button class="btn" type="button" id="tColors" aria-pressed="false">Size colors</button>
+        <button class="btn" type="button" id="tPerson" aria-pressed="true">Person, 1.60 m</button>
+        <button class="btn" type="button" id="tNight" aria-pressed="false">5 AM light</button>
+      </div>
+      <div class="group" role="group" aria-label="Doors">
+        <span class="group-label">Doors</span>
+        <button class="btn" type="button" id="openAll">Open all</button>
+        <button class="btn" type="button" id="closeAll">Close all</button>
+        <label class="sr-only" for="doorPick">Door number</label>
+        <select id="doorPick"></select>
+        <button class="btn" type="button" id="doorToggle">Open or close</button>
+      </div>
+    </div>
+    <p class="hint">Drag to turn · pinch or scroll to zoom · two fingers or right-drag to move · tap a door to open or close it</p>
+  </section>
+
+  <section class="section" aria-labelledby="stepsTitle">
+    <h2 id="stepsTitle">The rental, step by step</h2>
+    <ol class="steps" id="steps"></ol>
+  </section>
+
+  <section class="section" aria-labelledby="specTitle">
+    <h2 id="specTitle">What's in the model</h2>
+    <dl class="specs">
+      <div><dt>Size</dt><dd>2.80 m wide, 0.62 m deep, 1.85 m tall, in seven 400 mm columns</dd></div>
+      <div><dt>Doors</dt><dd>6 small, 21 backpack and 3 large, numbered column by column</dd></div>
+      <div><dt>Control column</dt><dd>10-inch touch screen, instruction plate and a locked service cabinet</dd></div>
+      <div><dt>Outdoors</dt><dd>Turn on the canopy for a site without a roof; the lit sign band covers 5 AM</dd></div>
+      <div><dt>3D file</dt><dd><code>up-oval-locker.glb</code>, openable in 3D viewer apps, with door animations</dd></div>
+      <div><dt>Screen and QR</dt><dd>Sample screens and a sample QR code that cannot be paid</dd></div>
+    </dl>
+  </section>
+
+  <footer class="footer">
+    <p>Built with three.js r147 from the same door layout as the UP Oval Locker Bank drawings. Companion pages: UP Oval Locker System and UP Oval Locker Locks.</p>
+    <p>Source files: <code>jogger-locker/model/</code> on branch <code>claude/jogger-locker-kiosk-r03nh0</code>.</p>
+  </footer>
+</main>
+<!--THREE-->
+<script>
+(function () {
+  "use strict";
+  const P = __PARAMS__;
+  const viewer = document.getElementById("viewer");
+  const canvas = document.getElementById("scene");
+  const captionNo = document.getElementById("captionNo");
+  const captionText = document.getElementById("captionText");
+  if (!window.THREE || !THREE.OrbitControls) {
+    document.getElementById("fallback").hidden = false;
+    document.getElementById("caption").hidden = true;
+    return;
+  }
+
+  const mm = (v) => v / 1000;
+  const COLS = P.columns;
+  const MOD = mm(P.module), DEPTH = mm(P.depth), PLINTH = mm(P.plinth);
+  const DOOR_TOP = mm(P.doorTop), SIGN_TOP = mm(P.signTop);
+  const WIDTH = MOD * COLS.length, X0 = -WIDTH / 2, T = 0.02;
+  const DEMO = 15;
+  const OPEN_DEG = -100;
+  const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const clamp01 = (v) => Math.min(1, Math.max(0, v));
+  const ease = (v) => (v < 0.5 ? 4 * v * v * v : 1 - Math.pow(-2 * v + 2, 3) / 2);
+  const lerp = (a, b, k) => a + (b - a) * k;
+  const lin = (hex) => new THREE.Color(hex).convertSRGBToLinear();
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const FONT = "'Public Sans', system-ui, sans-serif";
+  const FONT_D = "'Barlow Condensed', 'Arial Narrow', sans-serif";
+
+  // ---------------------------------------------------------------- renderer
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(35, 1.6, 0.05, 60);
+  const controls = new THREE.OrbitControls(camera, canvas);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.minDistance = 0.6;
+  controls.maxDistance = 12;
+  controls.maxPolarAngle = Math.PI * 0.495;
+
+  const hemi = new THREE.HemisphereLight(0xffffff, 0x8f8c84, 0.8);
+  const sun = new THREE.DirectionalLight(0xffffff, 0.85);
+  sun.position.set(2.6, 5.2, 4.2);
+  sun.castShadow = true;
+  const shadowSize = window.innerWidth < 700 ? 1024 : 2048;
+  sun.shadow.mapSize.set(shadowSize, shadowSize);
+  Object.assign(sun.shadow.camera, { left: -3.5, right: 3.5, top: 3.5, bottom: -1.5, near: 0.5, far: 16 });
+  sun.shadow.camera.updateProjectionMatrix();
+  sun.shadow.bias = -0.0004;
+  sun.shadow.normalBias = 0.02;
+  const led = new THREE.SpotLight(0xfff1dc, 0, 5, 1.1, 0.7, 1.4);
+  led.position.set(0, SIGN_TOP - 0.16, 0.35);
+  led.target.position.set(0, 0.4, 0.7);
+  scene.add(hemi, sun, led, led.target);
+
+  const std = (hex, roughness = 0.6, metalness = 0.15) =>
+    new THREE.MeshStandardMaterial({ color: lin(hex), roughness, metalness });
+  const M = {
+    carcass: std("#d8d6ce", 0.5, 0.25),
+    inside: std("#8f8e88", 0.85, 0.05),
+    plinth: std("#4a4944", 0.7, 0.1),
+    panel: std("#c8c6be", 0.55, 0.2),
+    service: std("#dad8d1", 0.5, 0.2),
+    edge: std("#c2c0b8", 0.45, 0.3),
+    housing: std("#262624", 0.5, 0.2),
+    key: std("#9a9a96", 0.3, 0.9),
+    canopy: std("#bdbbb3", 0.5, 0.3),
+    bag: std("#1f6f78", 0.85, 0),
+    bagDark: std("#164e55", 0.85, 0),
+    person: std("#a19f97", 0.9, 0),
+    floor: std("#d3d1c9", 0.95, 0),
+    wall: std("#eeeeea", 0.95, 0),
+  };
+
+  function canvasTexture(w, h) {
+    const c = document.createElement("canvas");
+    c.width = w;
+    c.height = h;
+    const tex = new THREE.CanvasTexture(c);
+    tex.encoding = THREE.sRGBEncoding;
+    tex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+    return { c, g: c.getContext("2d"), tex };
+  }
+  function roundRect(g, x, y, w, h, r) {
+    g.beginPath();
+    g.moveTo(x + r, y);
+    g.arcTo(x + w, y, x + w, y + h, r);
+    g.arcTo(x + w, y + h, x, y + h, r);
+    g.arcTo(x, y + h, x, y, r);
+    g.arcTo(x, y, x + w, y, r);
+    g.closePath();
+  }
+
+  // ---------------------------------------------------------------- the locker bank
+  const model = new THREE.Group();
+  model.name = "locker-bank";
+  scene.add(model);
+  function box(w, h, d, mat, x, y, z, parent) {
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+    mesh.position.set(x, y, z);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    (parent || model).add(mesh);
+    return mesh;
+  }
+
+  const zone = DOOR_TOP - PLINTH;
+  box(WIDTH, SIGN_TOP - PLINTH, T, M.inside, 0, PLINTH + (SIGN_TOP - PLINTH) / 2, -DEPTH + T / 2);
+  box(WIDTH - 0.1, PLINTH, DEPTH - 0.05, M.plinth, 0, PLINTH / 2, -DEPTH / 2 - 0.025);
+  for (let k = 0; k <= COLS.length; k++) {
+    const x = X0 + k * MOD + (k === 0 ? T / 2 : k === COLS.length ? -T / 2 : 0);
+    box(T, zone, DEPTH, M.carcass, x, PLINTH + zone / 2, -DEPTH / 2);
+  }
+
+  const sign = canvasTexture(2048, 110);
+  const signMat = new THREE.MeshStandardMaterial({
+    map: sign.tex, emissive: 0xffffff, emissiveMap: sign.tex, emissiveIntensity: 0.3, roughness: 0.4,
+  });
+  const signBox = new THREE.Mesh(new THREE.BoxGeometry(WIDTH, SIGN_TOP - DOOR_TOP, DEPTH),
+    [M.carcass, M.carcass, M.carcass, M.carcass, signMat, M.carcass]);
+  signBox.position.set(0, (SIGN_TOP + DOOR_TOP) / 2, -DEPTH / 2);
+  signBox.castShadow = signBox.receiveShadow = true;
+  model.add(signBox);
+
+  const canopy = box(WIDTH + 0.2, mm(P.canopy), DEPTH + mm(P.canopyReach), M.canopy,
+    0, SIGN_TOP + mm(P.canopy) / 2, (mm(P.canopyReach) - DEPTH) / 2);
+  canopy.name = "canopy";
+  canopy.visible = false;
+
+  const SIZE_FILL = { S: "#86b6ef", M: "#3987e5", L: "#1c5cab" };
+  const SIZE_INK = { S: "#0b0b0b", M: "#0b0b0b", L: "#ffffff" };
+  let sizeColors = false;
+  const doors = [];
+  let screen = null, plate = null;
+
+  function shelf(left, y) {
+    box(MOD - T, T, DEPTH - T - 0.004, M.carcass, left + MOD / 2, y + T / 2, -DEPTH / 2 + T / 2 - 0.002);
+  }
+  function drawDoor(d) {
+    const { g, c } = d.art;
+    const px = c.width / d.w;
+    g.fillStyle = sizeColors ? SIZE_FILL[d.size] : "#e8e6e0";
+    g.fillRect(0, 0, c.width, c.height);
+    const shade = g.createLinearGradient(0, 0, 0, c.height);
+    shade.addColorStop(0, "rgba(255,255,255,0.12)");
+    shade.addColorStop(1, "rgba(0,0,0,0.08)");
+    g.fillStyle = shade;
+    g.fillRect(0, 0, c.width, c.height);
+    g.fillStyle = "rgba(0,0,0,0.5)";
+    const sw = 0.005 * px, sh = Math.min(0.025 * px, c.height * 0.16), gap = 0.016 * px, count = 8;
+    const sx = (c.width - (count * sw + (count - 1) * gap)) / 2 + 0.03 * px;
+    for (const sy of [0.018 * px, c.height - 0.018 * px - sh]) {
+      for (let i = 0; i < count; i++) g.fillRect(sx + i * (sw + gap), sy, sw, sh);
+    }
+    g.fillStyle = sizeColors ? SIZE_INK[d.size] : "#2b2b29";
+    g.font = `700 ${Math.round(0.055 * px)}px ${FONT}`;
+    g.textAlign = "left";
+    g.textBaseline = "top";
+    g.fillText(String(d.n), 0.022 * px, 0.016 * px);
+    g.font = `600 ${Math.round(0.03 * px)}px ${FONT}`;
+    g.textAlign = "right";
+    g.textBaseline = "middle";
+    g.fillText(d.size, c.width - 0.022 * px, c.height / 2);
+    d.art.tex.needsUpdate = true;
+  }
+  function makeDoor(n, size, left, bottom, h) {
+    const w = MOD - 0.024, dh = h - 0.008, t = 0.012;
+    const art = canvasTexture(256, Math.round((256 * dh) / w));
+    const front = new THREE.MeshStandardMaterial({ map: art.tex, roughness: 0.45, metalness: 0.15 });
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, dh, t), [M.edge, M.edge, M.edge, M.edge, front, M.edge]);
+    mesh.position.set(w / 2, 0, t / 2);
+    mesh.castShadow = mesh.receiveShadow = true;
+    mesh.userData.door = n;
+    mesh.name = `door-${n}`;
+    const hinge = new THREE.Group();
+    hinge.name = `door-${n}-hinge`;
+    hinge.position.set(left + 0.012, bottom + h / 2, 0.001);
+    hinge.add(mesh);
+    model.add(hinge);
+    const door = { n, size, w, hinge, mesh, art, angle: 0, from: 0, to: 0, t0: 0, dur: 0 };
+    drawDoor(door);
+    return door;
+  }
+  function buildControl(left) {
+    const cx = left + MOD / 2;
+    box(MOD - T, zone, 0.012, M.panel, cx, PLINTH + zone / 2, -0.006);
+    box(0.31, 0.35, 0.022, M.housing, cx, 1.325, 0.011);
+    screen = canvasTexture(512, 591);
+    const scr = new THREE.Mesh(new THREE.PlaneGeometry(0.26, 0.3),
+      new THREE.MeshBasicMaterial({ map: screen.tex, toneMapped: false }));
+    scr.name = "touch-screen";
+    scr.position.set(cx, 1.325, 0.0225);
+    model.add(scr);
+    plate = canvasTexture(310, 200);
+    const plateMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.31, 0.2),
+      new THREE.MeshStandardMaterial({ map: plate.tex, roughness: 0.6 }));
+    plateMesh.name = "instruction-plate";
+    plateMesh.position.set(cx, 1.0, 0.0015);
+    plateMesh.receiveShadow = true;
+    model.add(plateMesh);
+    box(MOD - 0.024, 0.745, 0.012, M.service, cx, PLINTH + 0.005 + 0.745 / 2, 0.006).name = "service-cabinet";
+    const key = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.012, 20), M.key);
+    key.rotation.x = Math.PI / 2;
+    key.position.set(cx + 0.14, 0.48, 0.016);
+    model.add(key);
+  }
+
+  let number = 0;
+  COLS.forEach((col, c) => {
+    const left = X0 + c * MOD;
+    if (col === null) {
+      buildControl(left);
+      return;
+    }
+    let top = DOOR_TOP;
+    shelf(left, top - T);
+    for (const size of col) {
+      const h = mm(P.pitch[size]);
+      number += 1;
+      doors.push(makeDoor(number, size, left, top - h, h));
+      shelf(left, top - h);
+      top -= h;
+    }
+  });
+  const doorMeshes = doors.map((d) => d.mesh);
+  const demo = doors[DEMO - 1];
+  const demoX = demo.hinge.position.x + demo.w / 2;
+
+  // ---------------------------------------------------------------- surroundings
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(16, 16), M.floor);
+  floor.rotation.x = -Math.PI / 2;
+  floor.receiveShadow = true;
+  const wall = new THREE.Mesh(new THREE.PlaneGeometry(12, 5), M.wall);
+  wall.position.set(0, 2.5, -DEPTH - 0.01);
+  wall.receiveShadow = true;
+  scene.add(floor, wall);
+
+  const person = new THREE.Group();
+  person.name = "person-1.6m";
+  function capsule(r, len, x, y) {
+    const m = new THREE.Mesh(new THREE.CapsuleGeometry(r, len, 6, 14), M.person);
+    m.position.set(x, y, 0);
+    m.castShadow = true;
+    person.add(m);
+    return m;
+  }
+  capsule(0.065, 0.66, -0.085, 0.395);
+  capsule(0.065, 0.66, 0.085, 0.395);
+  capsule(0.17, 0.34, 0, 1.12).scale.z = 0.62;
+  capsule(0.045, 0.52, -0.235, 1.07).rotation.z = 0.08;
+  capsule(0.045, 0.52, 0.235, 1.07).rotation.z = -0.08;
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.105, 20, 16), M.person);
+  head.position.set(0, 1.49, 0);
+  head.castShadow = true;
+  person.add(head);
+  person.position.set(X0 - 0.55, 0, 0.55);
+  person.rotation.y = 0.75;
+  scene.add(person);
+
+  const bag = new THREE.Group();
+  bag.name = "backpack";
+  box(0.32, 0.2, 0.46, M.bag, 0, 0, 0, bag);
+  box(0.24, 0.06, 0.22, M.bagDark, 0, 0.12, 0.06, bag);
+  const handle = new THREE.Mesh(new THREE.TorusGeometry(0.04, 0.009, 8, 20, Math.PI), M.bagDark);
+  handle.position.set(0, 0.02, 0.235);
+  bag.add(handle);
+  bag.visible = false;
+  scene.add(bag);
+
+  // ---------------------------------------------------------------- printed and screen artwork
+  function drawSign() {
+    const { g, c } = sign;
+    g.fillStyle = "#1d1d1b";
+    g.fillRect(0, 0, c.width, c.height);
+    g.fillStyle = "#f5f5f2";
+    g.font = `700 64px ${FONT_D}`;
+    g.textAlign = "center";
+    g.textBaseline = "middle";
+    if ("letterSpacing" in g) g.letterSpacing = "10px";
+    g.fillText("LOCKERS  ·  4 HOURS  ·  PAY BY QR", c.width / 2, c.height / 2 + 3);
+    sign.tex.needsUpdate = true;
+  }
+  function drawPlate() {
+    const { g, c } = plate;
+    g.fillStyle = "#f7f7f4";
+    g.fillRect(0, 0, c.width, c.height);
+    g.strokeStyle = "#0b0b0b";
+    g.lineWidth = 4;
+    g.strokeRect(2, 2, c.width - 4, c.height - 4);
+    g.fillStyle = "#7b1113";
+    g.fillRect(2, 2, c.width - 4, 38);
+    g.fillStyle = "#ffffff";
+    g.font = `700 24px ${FONT_D}`;
+    g.textAlign = "left";
+    g.textBaseline = "middle";
+    g.fillText("HOW IT WORKS", 16, 22);
+    const rows = ["1  Pick a size on the screen", "2  Scan and pay by QR", "3  Open with door no. and PIN"];
+    g.fillStyle = "#0b0b0b";
+    g.font = `600 15px ${FONT}`;
+    rows.forEach((row, i) => g.fillText(row, 16, 70 + i * 40));
+    plate.tex.needsUpdate = true;
+  }
+  function qrGrid(n, seed) {
+    let s = seed;
+    const rand = () => (s = (s * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+    const grid = Array.from({ length: n }, () => Array.from({ length: n }, () => rand() < 0.48));
+    const finder = (r0, q0) => {
+      for (let r = -1; r <= 7; r++) {
+        for (let q = -1; q <= 7; q++) {
+          const rr = r0 + r, qq = q0 + q;
+          if (rr < 0 || qq < 0 || rr >= n || qq >= n) continue;
+          const inside = r >= 0 && r <= 6 && q >= 0 && q <= 6;
+          grid[rr][qq] = inside && Math.max(Math.abs(r - 3), Math.abs(q - 3)) !== 2;
+        }
+      }
+    };
+    finder(0, 0);
+    finder(0, n - 7);
+    finder(n - 7, 0);
+    return grid;
+  }
+  function drawQR(g, x, y, size, seed) {
+    const n = 25, cell = size / n, grid = qrGrid(n, seed);
+    g.fillStyle = "#ffffff";
+    g.fillRect(x - 2 * cell, y - 2 * cell, size + 4 * cell, size + 4 * cell);
+    g.fillStyle = "#0b0b0b";
+    for (let r = 0; r < n; r++) {
+      for (let q = 0; q < n; q++) {
+        if (grid[r][q]) g.fillRect(x + q * cell, y + r * cell, Math.ceil(cell), Math.ceil(cell));
+      }
+    }
+  }
+  const CLOCK = { home: "5:40 AM", pay: "5:40 AM", paid: "5:41 AM", pin: "5:41 AM", back: "7:05 AM", open: "7:05 AM", free: "7:06 AM" };
+  let shownScreen = "";
+  function drawScreen(state, force) {
+    if (state === shownScreen && !force) return;
+    shownScreen = state;
+    const { g, c } = screen;
+    const W = c.width;
+    g.fillStyle = "#0e1116";
+    g.fillRect(0, 0, W, c.height);
+    g.fillStyle = "#7b1113";
+    g.fillRect(0, 0, W, 70);
+    g.fillStyle = "#ffffff";
+    g.textBaseline = "middle";
+    g.textAlign = "left";
+    g.font = `700 34px ${FONT_D}`;
+    g.fillText("OVAL LOCKERS", 26, 37);
+    g.textAlign = "right";
+    g.font = `600 24px ${FONT}`;
+    g.fillText(CLOCK[state], W - 26, 37);
+    g.textAlign = "center";
+    const text = (s, y, size, weight = 600, color = "#ffffff") => {
+      g.font = `${weight} ${size}px ${FONT}`;
+      g.fillStyle = color;
+      g.fillText(s, W / 2, y);
+    };
+    const soft = "#c9d4e0", dim = "#8a99aa";
+    if (state === "home") {
+      text("Rent a locker", 122, 40, 700);
+      [["S", "₱30", "phone, keys"], ["M", "₱50", "backpack"], ["L", "₱80", "two bags"]].forEach(([s, price, what], i) => {
+        const y = 170 + i * 104, sel = s === "M";
+        g.fillStyle = sel ? "#3987e5" : "#1e2530";
+        roundRect(g, 40, y, W - 80, 86, 14);
+        g.fill();
+        g.fillStyle = sel ? "#0b0b0b" : "#ffffff";
+        g.textAlign = "left";
+        g.font = `700 40px ${FONT}`;
+        g.fillText(s, 70, y + 45);
+        g.font = `600 26px ${FONT}`;
+        g.fillText(what, 128, y + 45);
+        g.textAlign = "right";
+        g.font = `700 30px ${FONT}`;
+        g.fillText(price, W - 70, y + 45);
+        g.textAlign = "center";
+      });
+      text("Open my locker", 524, 26, 600, soft);
+    } else if (state === "pay") {
+      text("Door 15 · backpack · 4 hours", 110, 26, 600, soft);
+      drawQR(g, W / 2 - 125, 150, 250, 11);
+      text("Scan to pay ₱50", 462, 36, 700);
+      text("GCash, Maya or any bank app", 504, 22, 500, soft);
+      text("Sample code · 4:58 left", 546, 20, 500, dim);
+    } else if (state === "paid") {
+      g.fillStyle = "#0ca30c";
+      g.beginPath();
+      g.arc(W / 2, 250, 92, 0, Math.PI * 2);
+      g.fill();
+      g.strokeStyle = "#ffffff";
+      g.lineWidth = 18;
+      g.lineCap = "round";
+      g.lineJoin = "round";
+      g.beginPath();
+      g.moveTo(W / 2 - 42, 252);
+      g.lineTo(W / 2 - 10, 284);
+      g.lineTo(W / 2 + 46, 222);
+      g.stroke();
+      text("Paid", 400, 46, 700);
+      text("Door 15 is opening", 450, 28, 600, soft);
+    } else if (state === "pin") {
+      text("Door 15 is locked", 128, 34, 700);
+      text("Your PIN", 212, 24, 500, soft);
+      text("482 913", 288, 76, 700);
+      text("Ends 9:40 AM", 380, 30, 600);
+      text("Also sent by SMS", 440, 24, 500, soft);
+      text("to 09•• ••• 4417", 474, 24, 500, soft);
+    } else if (state === "back") {
+      text("Open my locker", 118, 36, 700);
+      text("Door 15", 170, 28, 600, soft);
+      for (let i = 0; i < 6; i++) {
+        g.fillStyle = "#ffffff";
+        g.beginPath();
+        g.arc(W / 2 - 100 + i * 40, 222, 11, 0, Math.PI * 2);
+        g.fill();
+      }
+      const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "←", "0", "OK"];
+      keys.forEach((k, i) => {
+        const x = 96 + (i % 3) * 110, y = 262 + Math.floor(i / 3) * 76;
+        g.fillStyle = k === "OK" ? "#0ca30c" : "#1e2530";
+        roundRect(g, x, y, 96, 62, 10);
+        g.fill();
+        g.fillStyle = "#ffffff";
+        g.font = `700 28px ${FONT}`;
+        g.fillText(k, x + 48, y + 32);
+      });
+    } else if (state === "open") {
+      text("Door 15 is open", 230, 42, 700);
+      text("Take your things,", 300, 28, 500, soft);
+      text("then close the door", 338, 28, 500, soft);
+    } else if (state === "free") {
+      text("Thank you!", 236, 50, 700);
+      text("Door 15 is free again", 304, 28, 600, soft);
+      text("See you at the Oval", 360, 26, 500, dim);
+    }
+    screen.tex.needsUpdate = true;
+  }
+  function drawAll() {
+    drawSign();
+    drawPlate();
+    drawScreen(shownScreen || "home", true);
+    doors.forEach(drawDoor);
+  }
+  drawAll();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawAll);
+
+  // ---------------------------------------------------------------- camera views
+  function view(name) {
+    const vfov = THREE.MathUtils.degToRad(camera.fov);
+    const hfov = 2 * Math.atan(Math.tan(vfov / 2) * camera.aspect);
+    const fitW = (w) => w / 2 / Math.tan(hfov / 2);
+    const fitH = (h) => h / 2 / Math.tan(vfov / 2);
+    const V = (x, y, z) => new THREE.Vector3(x, y, z);
+    if (name === "front") {
+      return { pos: V(0, 1.05, Math.max(fitW(WIDTH + 0.6), fitH(2.3))), target: V(0, 0.98, 0) };
+    }
+    if (name === "side") {
+      return { pos: V(Math.max(fitW(2.4), fitH(2.4)), 1.2, 0.35), target: V(0, 0.98, -0.15) };
+    }
+    if (name === "screen") {
+      return { pos: V(0.1, 1.28, Math.max(fitW(1.1), fitH(0.9))), target: V(-0.1, 1.15, 0) };
+    }
+    if (name === "door") {
+      return { pos: V(-0.05, 1.2, Math.max(fitW(1.5), fitH(1.1))), target: V(-0.3, 0.98, 0) };
+    }
+    const d = Math.max(fitW(WIDTH + 1.4), fitH(2.5)) * 1.12;
+    return { pos: V(0.5, 0.3, 0.81).normalize().multiplyScalar(d).add(V(-0.2, 0.95, 0)), target: V(-0.25, 0.9, 0) };
+  }
+  let camTween = null;
+  function goTo(name, instant) {
+    const to = view(name);
+    if (instant || reduceMotion) {
+      camera.position.copy(to.pos);
+      controls.target.copy(to.target);
+      camTween = null;
+      return;
+    }
+    camTween = { from: { pos: camera.position.clone(), target: controls.target.clone() }, to, t0: performance.now(), dur: 1200 };
+  }
+
+  // ---------------------------------------------------------------- doors
+  function setDoor(d, deg) {
+    d.angle = deg;
+    d.hinge.rotation.y = THREE.MathUtils.degToRad(deg);
+  }
+  function swing(d, deg, delay = 0) {
+    d.from = d.angle;
+    d.to = deg;
+    d.t0 = performance.now() + delay;
+    d.dur = reduceMotion ? 1 : 900;
+  }
+  function tweenDoors(now) {
+    for (const d of doors) {
+      if (!d.dur) continue;
+      const k = clamp01((now - d.t0) / d.dur);
+      setDoor(d, lerp(d.from, d.to, ease(k)));
+      if (k >= 1) d.dur = 0;
+    }
+  }
+
+  // ---------------------------------------------------------------- the rental story
+  const STEPS = [
+    { t: 0, screen: "home", text: "5:40 AM. Pick a size on the screen." },
+    { t: 3.2, screen: "pay", text: "Door 15 is held. Scan the QR and pay ₱50 in GCash." },
+    { t: 6.6, screen: "paid", text: "PayMongo confirms the payment. Door 15 pops open." },
+    { t: 9.2, text: "Put the backpack in." },
+    { t: 11.6, text: "Push the door shut. It locks with no power." },
+    { t: 13.8, screen: "pin", text: "The PIN shows on screen and arrives by SMS." },
+    { t: 17.4, screen: "back", text: "7:05 AM, back from the Oval. Enter door 15 and the PIN." },
+    { t: 20.6, screen: "open", text: "Door 15 opens. Take the backpack." },
+    { t: 24.8, screen: "free", text: "Close the door. Door 15 is free again." },
+  ];
+  const END = 29;
+  const CAM_KEYS = [[0, "screen"], [6.6, "door"], [13.8, "screen"], [20.6, "door"], [26.4, "angle"]];
+  const DOOR_KEYS = [[0, 0], [7.0, 0], [7.15, -5], [8.4, -105], [11.7, -105], [12.8, 0],
+                     [21.0, 0], [21.15, -5], [22.4, -105], [25.0, -105], [26.1, 0]];
+  const BAG_Z = [[0, 0.95], [9.0, 0.95], [10.9, -0.31], [22.5, -0.31], [23.9, 0.95]];
+  const BAG_S = [[0, 0], [8.5, 0], [8.9, 1], [23.7, 1], [24.1, 0]];
+
+  function keyed(keys, t) {
+    if (t <= keys[0][0]) return keys[0][1];
+    for (let i = 1; i < keys.length; i++) {
+      if (t <= keys[i][0]) {
+        const [t0, v0] = keys[i - 1], [t1, v1] = keys[i];
+        return lerp(v0, v1, ease(clamp01((t - t0) / (t1 - t0))));
+      }
+    }
+    return keys[keys.length - 1][1];
+  }
+  function cameraAt(t) {
+    let i = 0;
+    while (i + 1 < CAM_KEYS.length && t >= CAM_KEYS[i + 1][0]) i++;
+    const a = view(i === 0 ? "angle" : CAM_KEYS[i - 1][1]), b = view(CAM_KEYS[i][1]);
+    const k = ease(clamp01((t - CAM_KEYS[i][0]) / 1.6));
+    return { pos: a.pos.lerp(b.pos, k), target: a.target.lerp(b.target, k) };
+  }
+  let stepShown = -1;
+  const stepButtons = [];
+  function showStep(i) {
+    if (i === stepShown) return;
+    stepShown = i;
+    stepButtons.forEach((b, j) => b.classList.toggle("is-now", j === i));
+    if (i < 0) {
+      captionNo.textContent = "Ready";
+      captionText.textContent = "Press play to watch a rental at door 15.";
+      return;
+    }
+    captionNo.textContent = `Step ${i + 1} of ${STEPS.length}`;
+    captionText.textContent = STEPS[i].text;
+    for (let j = i; j >= 0; j--) {
+      if (STEPS[j].screen) {
+        drawScreen(STEPS[j].screen);
+        break;
+      }
+    }
+  }
+  function storyAt(t, moveCamera) {
+    setDoor(demo, keyed(DOOR_KEYS, t));
+    const s = keyed(BAG_S, t), z = keyed(BAG_Z, t);
+    bag.visible = s > 0.002;
+    bag.scale.setScalar(Math.max(s, 0.002));
+    bag.position.set(demoX, 0.86 + 0.09 * clamp01((z + 0.31) / 1.26), z);
+    let i = 0;
+    while (i + 1 < STEPS.length && t >= STEPS[i + 1].t) i++;
+    showStep(i);
+    if (moveCamera) {
+      const cam = cameraAt(t);
+      camera.position.copy(cam.pos);
+      controls.target.copy(cam.target);
+      camera.lookAt(cam.target);
+    }
+  }
+
+  let playing = false, follow = false, frozen = false, startAt = 0;
+  const playBtn = document.getElementById("play");
+  const stopBtn = document.getElementById("stop");
+  function play(from) {
+    for (const d of doors) if (d !== demo) swing(d, 0);
+    demo.dur = 0;
+    camTween = null;
+    playing = true;
+    follow = true;
+    controls.enabled = false;
+    startAt = performance.now() - (from || 0) * 1000;
+    playBtn.textContent = "Restart";
+    stopBtn.hidden = false;
+  }
+  function stop(reset) {
+    playing = false;
+    follow = false;
+    controls.enabled = true;
+    playBtn.textContent = "Play the rental";
+    stopBtn.hidden = true;
+    if (reset) {
+      bag.visible = false;
+      swing(demo, 0);
+      showStep(-1);
+      drawScreen("home");
+    }
+  }
+  playBtn.addEventListener("click", () => play(0));
+  stopBtn.addEventListener("click", () => stop(true));
+  // Touching the view during playback hands the camera back to you; the story keeps going.
+  const takeCamera = () => {
+    if (follow) {
+      follow = false;
+      controls.enabled = true;
+    }
+    camTween = null;
+  };
+  canvas.addEventListener("pointerdown", takeCamera, { capture: true });
+  canvas.addEventListener("wheel", takeCamera, { capture: true, passive: true });
+
+  const stepsList = document.getElementById("steps");
+  STEPS.forEach((step, i) => {
+    const li = document.createElement("li");
+    const b = document.createElement("button");
+    b.type = "button";
+    const no = document.createElement("span");
+    no.className = "step-no";
+    no.textContent = `Step ${i + 1}`;
+    const tx = document.createElement("span");
+    tx.className = "step-text";
+    tx.textContent = step.text;
+    b.append(no, tx);
+    b.addEventListener("click", () => {
+      play(step.t);
+      viewer.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+    li.append(b);
+    stepsList.append(li);
+    stepButtons.push(b);
+  });
+
+  // ---------------------------------------------------------------- tapping doors and buttons
+  const raycaster = new THREE.Raycaster();
+  const ndc = new THREE.Vector2();
+  let down = null;
+  canvas.addEventListener("pointerdown", (e) => { down = { x: e.clientX, y: e.clientY, t: performance.now() }; });
+  canvas.addEventListener("pointerup", (e) => {
+    if (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6 || performance.now() - down.t > 500) return;
+    const r = canvas.getBoundingClientRect();
+    ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+    raycaster.setFromCamera(ndc, camera);
+    const hit = raycaster.intersectObjects(doorMeshes, false)[0];
+    if (hit) toggleDoor(hit.object.userData.door);
+  });
+  function toggleDoor(n) {
+    if (playing) stop(true);
+    const d = doors[n - 1];
+    swing(d, d.to === 0 && d.angle > -1 ? OPEN_DEG : 0);
+  }
+  const pick = document.getElementById("doorPick");
+  doors.forEach((d) => {
+    const o = document.createElement("option");
+    o.value = String(d.n);
+    o.textContent = `Door ${d.n} (${d.size})`;
+    pick.append(o);
+  });
+  pick.value = String(DEMO);
+  document.getElementById("doorToggle").addEventListener("click", () => toggleDoor(Number(pick.value)));
+  document.getElementById("openAll").addEventListener("click", () => {
+    if (playing) stop(true);
+    doors.forEach((d, i) => swing(d, OPEN_DEG, i * 40));
+  });
+  document.getElementById("closeAll").addEventListener("click", () => {
+    if (playing) stop(true);
+    doors.forEach((d, i) => swing(d, 0, i * 30));
+  });
+  document.querySelectorAll("[data-view]").forEach((b) =>
+    b.addEventListener("click", () => {
+      takeCamera();
+      goTo(b.dataset.view);
+    }));
+
+  let night = false;
+  function applyStage() {
+    scene.background = new THREE.Color(night ? "#0a0e13" : css("--stage"));
+    M.floor.color.copy(lin(night ? "#23231f" : css("--floor")));
+    M.wall.color.copy(lin(night ? "#171a1f" : css("--wall")));
+    hemi.intensity = night ? 0.12 : 0.8;
+    sun.intensity = night ? 0.04 : 0.85;
+    led.intensity = night ? 2.4 : 0;
+    signMat.emissiveIntensity = night ? 1.2 : 0.3;
+  }
+  function toggle(id, apply) {
+    const b = document.getElementById(id);
+    b.addEventListener("click", () => {
+      const on = b.getAttribute("aria-pressed") !== "true";
+      b.setAttribute("aria-pressed", String(on));
+      apply(on);
+    });
+  }
+  toggle("tCanopy", (on) => { canopy.visible = on; });
+  toggle("tColors", (on) => { sizeColors = on; doors.forEach(drawDoor); });
+  toggle("tPerson", (on) => { person.visible = on; });
+  toggle("tNight", (on) => { night = on; applyStage(); });
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyStage);
+  new MutationObserver(applyStage).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  applyStage();
+
+  // ---------------------------------------------------------------- sizing and the frame loop
+  function resize() {
+    const w = viewer.clientWidth, h = viewer.clientHeight;
+    if (!w || !h) return;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  resize();
+  goTo("angle", true);
+  new ResizeObserver(() => {
+    resize();
+    if (!playing && !camTween) controls.update();
+  }).observe(viewer);
+
+  function frame(now) {
+    requestAnimationFrame(frame);
+    if (frozen) return;
+    if (playing) {
+      const t = (now - startAt) / 1000;
+      storyAt(Math.min(t, END), follow);
+      if (t >= END) stop(false);
+    }
+    tweenDoors(now);
+    if (camTween) {
+      const k = ease(clamp01((now - camTween.t0) / camTween.dur));
+      camera.position.copy(camTween.from.pos).lerp(camTween.to.pos, k);
+      controls.target.copy(camTween.from.target).lerp(camTween.to.target, k);
+      if (k >= 1) camTween = null;
+    }
+    if (!(playing && follow)) controls.update();
+    renderer.render(scene, camera);
+  }
+  requestAnimationFrame(frame);
+
+  // ---------------------------------------------------------------- hooks for recording and export
+  function doorClip(numbers, name) {
+    const open = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), THREE.MathUtils.degToRad(OPEN_DEG));
+    const shut = new THREE.Quaternion();
+    const values = [...shut.toArray(), ...open.toArray(), ...open.toArray(), ...shut.toArray()];
+    const tracks = numbers.map((n) => new THREE.QuaternionKeyframeTrack(`door-${n}-hinge.quaternion`, [0, 1, 3, 4], values));
+    return new THREE.AnimationClip(name, 4, tracks);
+  }
+  window.LOCKER = {
+    duration: END,
+    videoMode(on) {
+      document.body.classList.toggle("video-mode", on);
+      resize();
+    },
+    renderAt(t) {
+      frozen = true;
+      playing = false;
+      stop(false);
+      controls.enabled = false;
+      storyAt(t, true);
+      renderer.render(scene, camera);
+    },
+    exportGLB() {
+      frozen = true;
+      doors.forEach((d) => setDoor(d, 0));
+      const clips = [doorClip([DEMO], "Door 15 opens and closes"), doorClip(doors.map((d) => d.n), "All doors open and close")];
+      return new Promise((resolve, reject) => {
+        new THREE.GLTFExporter().parse(model, resolve, reject, { binary: true, animations: clips, onlyVisible: true, maxTextureSize: 1024 });
+      });
+    },
+  };
+})();
+</script>
