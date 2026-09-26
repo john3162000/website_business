@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>UP Oval Locker System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f3f4f1;
+  --surface: #fcfcfb;
+  --box: #f0f0eb;
+  --person: #f6e9e9;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #6b6a65;
+  --grid: #e1e0d9;
+  --axis: #b3b2aa;
+  --line: rgba(11, 11, 11, 0.1);
+  --track: #ebeae4;
+  --accent: #7b1113;
+  --font-ui: "Public Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0f100f;
+    --surface: #1a1a19;
+    --box: #242423;
+    --person: #3a2627;
+    --ink: #ffffff;
+    --ink-2: #c3c2b7;
+    --muted: #a3a29b;
+    --grid: #2c2c2a;
+    --axis: #55544f;
+    --line: rgba(255, 255, 255, 0.1);
+    --track: #262625;
+    --accent: #f0a0a3;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0f100f;
+  --surface: #1a1a19;
+  --box: #242423;
+  --person: #3a2627;
+  --ink: #ffffff;
+  --ink-2: #c3c2b7;
+  --muted: #a3a29b;
+  --grid: #2c2c2a;
+  --axis: #55544f;
+  --line: rgba(255, 255, 255, 0.1);
+  --track: #262625;
+  --accent: #f0a0a3;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 15px/1.55 var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+[hidden] { display: none !important; }
+p { margin: 0; }
+a { color: inherit; text-underline-offset: 2px; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.9em; }
+.page {
+  max-width: 1120px;
+  margin-inline: auto;
+  padding-inline: 24px;
+  padding-block: 44px 72px;
+  display: grid;
+  gap: 60px;
+}
+.masthead { display: grid; gap: 14px; }
+.eyebrow {
+  font: 600 12px/1.4 var(--font-ui);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+h1 {
+  font: 700 clamp(40px, 7.5vw, 64px)/0.92 var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.005em;
+  margin: 0;
+  text-wrap: balance;
+}
+.lede { max-width: 70ch; color: var(--ink-2); font-size: 16px; }
+h2 { font: 600 30px/1.05 var(--font-display); letter-spacing: 0.005em; margin: 0; text-wrap: balance; }
+h3 { font: 600 15px/1.3 var(--font-ui); margin: 0; }
+.section { display: grid; gap: 18px; }
+.section-head { display: grid; gap: 6px; }
+.note { color: var(--ink-2); max-width: 72ch; }
+.small { font-size: 13px; color: var(--muted); max-width: 80ch; }
+
+.decisions {
+  margin: 0;
+  padding: 24px 0 0;
+  border-top: 1px solid var(--line);
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 36px;
+}
+.decisions li { display: grid; gap: 4px; align-content: start; color: var(--ink-2); }
+.decisions strong { color: var(--ink); font-weight: 600; font-size: 15.5px; }
+
+.sheet {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+figure.dia { margin: 0; display: grid; gap: 12px; min-width: 0; }
+.tb {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--grid);
+}
+.tb-no { font: 700 18px/1 var(--font-display); letter-spacing: 0.04em; color: var(--accent); }
+.tb-name { font-weight: 600; }
+.dia-scroll { overflow-x: auto; }
+.dia-scroll svg { display: block; width: 100%; height: auto; }
+.w-context svg { min-width: 1040px; }
+.w-rent svg { min-width: 900px; }
+.w-open svg { min-width: 760px; }
+.w-states svg { min-width: 900px; }
+figure.dia figcaption { font-size: 13.5px; color: var(--ink-2); max-width: 82ch; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--ink-2); }
+.legend li { display: inline-flex; align-items: center; gap: 8px; }
+.key-line { width: 26px; height: 0; border-top: 2px solid var(--ink-2); flex: none; }
+.key-pay { border-top: 3px solid var(--accent); }
+.key-dash { border-top: 2px dashed var(--ink-2); }
+
+.dia text { font-family: var(--font-ui); }
+.dia .zone { fill: none; stroke: var(--axis); stroke-width: 1.5; stroke-dasharray: 7 6; }
+.dia .zone-t { fill: var(--muted); font-weight: 700; letter-spacing: 1.5px; }
+.dia .box { fill: var(--box); stroke: var(--ink); stroke-width: 1.5; }
+.dia .box.key { stroke-width: 3; }
+.dia .box.person { fill: var(--person); }
+.dia .box-t { fill: var(--ink); font-weight: 700; }
+.dia .box-s { fill: var(--ink-2); }
+.dia .ln { fill: none; stroke: var(--ink-2); stroke-width: 1.6; }
+.dia .ln-dash { stroke-dasharray: 6 5; }
+.dia .ln-pay { stroke: var(--accent); stroke-width: 2.4; }
+.dia .ah { fill: var(--ink-2); }
+.dia .ah-pay { fill: var(--accent); }
+.dia .lbl, .dia .lbl-pay, .dia .frame-t {
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 5px;
+  stroke-linejoin: round;
+}
+.dia .lbl { fill: var(--ink-2); }
+.dia .lbl-pay { fill: var(--accent); font-weight: 600; }
+.dia .life { stroke: var(--axis); stroke-width: 1.2; stroke-dasharray: 4 5; }
+.dia .hdr { fill: var(--box); stroke: var(--ink); stroke-width: 1.5; }
+.dia .hdr.person { fill: var(--person); }
+.dia .hdr-t { fill: var(--ink); font-weight: 700; }
+.dia .hdr-s { fill: var(--muted); }
+.dia .frame { fill: none; stroke: var(--muted); stroke-width: 1.2; }
+.dia .frame-tab { fill: var(--track); stroke: var(--muted); stroke-width: 1.2; }
+.dia .frame-t { fill: var(--ink); font-weight: 600; }
+.dia .frame-sep { stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 6 5; }
+.dia .state { fill: var(--box); stroke: var(--ink); stroke-width: 1.5; }
+.dia .state.done { stroke-width: 3.5; }
+.dia .dot { fill: var(--ink); }
+
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+th { font-size: 13px; font-weight: 600; color: var(--ink-2); }
+td.nowrap { white-space: nowrap; }
+td code { white-space: nowrap; }
+tr.total td { font-weight: 600; }
+.pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; align-items: start; }
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.list { margin: 0; padding-left: 20px; display: grid; gap: 8px; color: var(--ink-2); max-width: 82ch; }
+.list strong { color: var(--ink); font-weight: 600; }
+.steps { margin: 0; padding-left: 22px; display: grid; gap: 14px; color: var(--ink-2); max-width: 82ch; }
+.steps strong { color: var(--ink); font-weight: 600; }
+.footer { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 6px; }
+.sources { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 13px; color: var(--ink-2); }
+
+@media (max-width: 900px) {
+  .decisions { grid-template-columns: 1fr; }
+  .pair { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .page { padding-inline: 16px; padding-block: 28px 56px; gap: 48px; }
+  .sheet, .card { padding: 14px; }
+  th, td { padding-inline: 8px; }
+}
+</style>
+
+</head>
+<body>
+<main class="page">
+  <header class="masthead">
+    <p class="eyebrow">Jogger locker kiosk · System architecture 1 · 26 Sep 2026</p>
+    <h1>UP Oval Locker System</h1>
+    <p class="lede">How a jogger rents and opens a locker with no staff on site. A small computer inside the kiosk runs the doors and checks PINs, even with no internet. A cloud app takes QR Ph payments through PayMongo and texts PINs through Semaphore. You watch and fix everything from your phone.</p>
+  </header>
+
+  <ul class="decisions" aria-label="Main decisions">
+    <li><strong>Pay by dynamic QR Ph, never by receipt.</strong><span>PayMongo tells the server when the money arrives, so nobody checks screenshots and a fake receipt opens nothing.</span></li>
+    <li><strong>The kiosk opens lockers on its own.</strong><span>It keeps the active rentals and PIN hashes locally, so people get their things back when the internet or server is down. Only renting needs the internet.</span></li>
+    <li><strong>Never hold belongings hostage.</strong><span>If the kiosk can't take an overtime payment, it opens the door anyway and records what is owed.</span></li>
+    <li><strong>One HTTPS connection, no message broker.</strong><span>The kiosk calls the server and keeps one request open to hear commands within a second. That is one less service to run and pay for. Add MQTT only past about 10 kiosks.</span></li>
+    <li><strong>Raspberry Pi, not an Android tablet.</strong><span>It drives the lock boards and the database directly, keeps time through outages, and has no battery to swell in the heat.</span></li>
+    <li><strong>Off-the-shelf lock boards.</strong><span>RS485 boards with door sensors are what commercial smart lockers use. An ESP32 with relays is fine for a bench test but harder to keep running for years.</span></li>
+    <li><strong>Reuse the stack you already have.</strong><span>Next.js, Prisma and Supabase Postgres, like <code>platform/</code> in this repo, hosted on Render in Singapore.</span></li>
+    <li><strong>Every remote action leaves a trail.</strong><span>Remote opens, refunds and disabled doors need a reason and go into a log you can check later.</span></li>
+  </ul>
+
+  <section class="section" aria-labelledby="sysTitle">
+    <div class="section-head">
+      <h2 id="sysTitle">The whole system</h2>
+    </div>
+    <div class="sheet">
+      <figure class="dia">
+        <div class="tb"><span class="tb-no">S-01</span><span class="tb-name">Parts and connections</span></div>
+        <div class="dia-scroll w-context"><svg viewBox="0 0 1310 720" role="img" aria-label="System parts. At the Oval: a touch screen, a Raspberry Pi kiosk computer that checks PINs and opens doors even offline, RS485 lock boards driving 30 locks with door sensors, a 12 volt UPS and a 4G router. The kiosk reaches a Next.js web app on Render over HTTPS; the web app uses PostgreSQL on Supabase and scheduled jobs. The web app asks PayMongo for QR codes and receives payment webhooks, and sends SMS through Semaphore. The jogger pays PayMongo from their own phone and receives the PIN by SMS." xmlns="http://www.w3.org/2000/svg"><defs><marker id="c-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker><marker id="c-ahp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah-pay"/></marker></defs><rect x="200" y="30" width="410" height="570" rx="14" class="zone"/><rect x="650" y="30" width="310" height="570" rx="14" class="zone"/><rect x="1025" y="30" width="255" height="320" rx="14" class="zone"/><text x="216" y="56" class="zone-t" text-anchor="start" font-size="13">AT THE OVAL</text><text x="666" y="56" class="zone-t" text-anchor="start" font-size="13">CLOUD</text><text x="1041" y="56" class="zone-t" text-anchor="start" font-size="13">OUTSIDE SERVICES</text><rect x="220" y="75" width="170" height="66" rx="8" class="box"/><text x="305" y="102.8" class="box-t" text-anchor="middle" font-size="16">12 V UPS</text><text x="305" y="122.8" class="box-s" text-anchor="middle" font-size="14">signals power loss</text><rect x="420" y="75" width="170" height="66" rx="8" class="box"/><text x="505" y="102.8" class="box-t" text-anchor="middle" font-size="16">4G router</text><text x="505" y="122.8" class="box-s" text-anchor="middle" font-size="14">venue Wi-Fi backup</text><rect x="220" y="185" width="370" height="170" rx="8" class="box key"/><text x="405" y="234.8" class="box-t" text-anchor="middle" font-size="16">Kiosk computer</text><text x="405" y="254.8" class="box-s" text-anchor="middle" font-size="14">Raspberry Pi 5, Python</text><text x="405" y="274.8" class="box-s" text-anchor="middle" font-size="14">SQLite: doors, rentals, PIN hashes</text><text x="405" y="294.8" class="box-s" text-anchor="middle" font-size="14">Checks PINs and opens doors offline</text><text x="405" y="314.8" class="box-s" text-anchor="middle" font-size="14">Queues events until online</text><rect x="220" y="400" width="170" height="66" rx="8" class="box"/><text x="305" y="427.8" class="box-t" text-anchor="middle" font-size="16">Touch screen</text><text x="305" y="447.8" class="box-s" text-anchor="middle" font-size="14">10.1-inch</text><rect x="420" y="400" width="170" height="66" rx="8" class="box"/><text x="505" y="427.8" class="box-t" text-anchor="middle" font-size="16">Lock boards</text><text x="505" y="447.8" class="box-s" text-anchor="middle" font-size="14">RS485, 32 channels</text><rect x="420" y="510" width="170" height="66" rx="8" class="box"/><text x="505" y="537.8" class="box-t" text-anchor="middle" font-size="16">30 locks</text><text x="505" y="557.8" class="box-s" text-anchor="middle" font-size="14">and door sensors</text><path d="M305,141 L305,185" class="ln" marker-end="url(#c-ah)"/><text x="313" y="168" class="lbl" text-anchor="start" font-size="13">power</text><path d="M505,141 L505,185" class="ln" marker-end="url(#c-ah)" marker-start="url(#c-ah)"/><text x="513" y="168" class="lbl" text-anchor="start" font-size="13">Ethernet</text><path d="M305,355 L305,400" class="ln" marker-end="url(#c-ah)" marker-start="url(#c-ah)"/><text x="313" y="383" class="lbl" text-anchor="start" font-size="13">HDMI, USB</text><path d="M505,355 L505,400" class="ln" marker-end="url(#c-ah)" marker-start="url(#c-ah)"/><text x="513" y="383" class="lbl" text-anchor="start" font-size="13">RS485</text><path d="M505,466 L505,510" class="ln" marker-end="url(#c-ah)" marker-start="url(#c-ah)"/><text x="513" y="493" class="lbl" text-anchor="start" font-size="13">12 V, sensors</text><rect x="670" y="75" width="270" height="270" rx="8" class="box"/><text x="805" y="164.8" class="box-t" text-anchor="middle" font-size="16">Web app</text><text x="805" y="184.8" class="box-s" text-anchor="middle" font-size="14">Next.js on Render</text><text x="805" y="204.8" class="box-s" text-anchor="middle" font-size="14">Kiosk API and command channel</text><text x="805" y="224.8" class="box-s" text-anchor="middle" font-size="14">PayMongo webhook</text><text x="805" y="244.8" class="box-s" text-anchor="middle" font-size="14">Owner dashboard, remote open</text><text x="805" y="264.8" class="box-s" text-anchor="middle" font-size="14">Jogger status page</text><rect x="670" y="385" width="270" height="80" rx="8" class="box"/><text x="805" y="419.8" class="box-t" text-anchor="middle" font-size="16">PostgreSQL</text><text x="805" y="439.8" class="box-s" text-anchor="middle" font-size="14">Supabase, Singapore</text><rect x="670" y="500" width="270" height="80" rx="8" class="box"/><text x="805" y="524.8" class="box-t" text-anchor="middle" font-size="16">Scheduled jobs</text><text x="805" y="544.8" class="box-s" text-anchor="middle" font-size="14">offline checks, reminders,</text><text x="805" y="564.8" class="box-s" text-anchor="middle" font-size="14">nightly payment match</text><path d="M805,345 L805,385" class="ln" marker-end="url(#c-ah)" marker-start="url(#c-ah)"/><text x="813" y="370" class="lbl" text-anchor="start" font-size="13">Prisma</text><path d="M805,500 L805,465" class="ln" marker-end="url(#c-ah)"/><text x="813" y="488" class="lbl" text-anchor="start" font-size="13">reads, writes</text><rect x="1040" y="75" width="225" height="90" rx="8" class="box"/><text x="1152.5" y="104.8" class="box-t" text-anchor="middle" font-size="16">PayMongo</text><text x="1152.5" y="124.8" class="box-s" text-anchor="middle" font-size="14">QR Ph payments</text><text x="1152.5" y="144.8" class="box-s" text-anchor="middle" font-size="14">and refunds</text><rect x="1040" y="225" width="225" height="90" rx="8" class="box"/><text x="1152.5" y="254.8" class="box-t" text-anchor="middle" font-size="16">Semaphore</text><text x="1152.5" y="274.8" class="box-s" text-anchor="middle" font-size="14">SMS: PINs and</text><text x="1152.5" y="294.8" class="box-s" text-anchor="middle" font-size="14">owner alerts</text><path d="M590,108 L670,108" class="ln" marker-end="url(#c-ah)" marker-start="url(#c-ah)"/><text x="630" y="98" class="lbl" text-anchor="middle" font-size="13">HTTPS, 4G</text><path d="M940,100 L1040,100" class="ln ln-pay" marker-end="url(#c-ahp)"/><text x="990" y="91" class="lbl-pay" text-anchor="middle" font-size="13">create QR</text><path d="M1040,140 L940,140" class="ln ln-pay" marker-end="url(#c-ahp)"/><text x="990" y="160" class="lbl-pay" text-anchor="middle" font-size="13">webhook</text><path d="M940,270 L1040,270" class="ln" marker-end="url(#c-ah)"/><text x="990" y="261" class="lbl" text-anchor="middle" font-size="13">send SMS</text><rect x="10" y="395" width="120" height="80" rx="8" class="box person"/><text x="70" y="429.8" class="box-t" text-anchor="middle" font-size="16">Jogger</text><text x="70" y="449.8" class="box-s" text-anchor="middle" font-size="14">with a phone</text><path d="M130,433 L220,433" class="ln" marker-end="url(#c-ah)"/><text x="175" y="424" class="lbl" text-anchor="middle" font-size="13">rent, PIN</text><path d="M55,475 L55,690 L1295,690 L1295,120 L1265,120" class="ln ln-pay" marker-end="url(#c-ahp)"/><text x="700" y="682" class="lbl-pay" text-anchor="middle" font-size="13">pays by scanning the QR in GCash, Maya or a bank app</text><path d="M1153,315 L1153,650 L85,650 L85,475" class="ln" marker-end="url(#c-ah)"/><text x="700" y="642" class="lbl" text-anchor="middle" font-size="13">SMS with the PIN</text></svg></div>
+        <figcaption>The kiosk computer is the only part that touches the doors. It reaches the server over one HTTPS connection through the 4G router. The maroon lines are the money path: the server asks PayMongo for a QR code, the jogger pays from their own phone, and PayMongo tells the server the payment arrived.</figcaption>
+      </figure>
+      <ul class="legend" aria-label="Legend">
+        <li><span class="key-line key-pay"></span>Money path</li>
+        <li><span class="key-line"></span>Data or power</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="rentTitle">
+    <div class="section-head">
+      <h2 id="rentTitle">Renting a locker</h2>
+    </div>
+    <div class="sheet">
+      <figure class="dia">
+        <div class="tb"><span class="tb-no">S-02</span><span class="tb-name">Rent: from choosing a size to a locked door</span></div>
+        <div class="dia-scroll w-rent"><svg viewBox="0 0 1150 870" role="img" aria-label="Rent sequence in 17 steps: the jogger picks a size and enters a mobile number; the kiosk asks the server, which holds door 12 and asks PayMongo for a 50 peso QR code; the kiosk shows it; the jogger pays in GCash or a bank app; PayMongo sends payment.paid to the server; the server starts the rental, makes a PIN and commands the kiosk; the kiosk opens door 12 and shows the PIN; the server texts the PIN through Semaphore; the door closes and the kiosk reports it." xmlns="http://www.w3.org/2000/svg"><defs><marker id="r-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker><marker id="r-ahp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah-pay"/></marker></defs><line x1="100" y1="76" x2="100" y2="866" class="life"/><rect x="19" y="14" width="162" height="62" rx="8" class="hdr person"/><text x="100" y="40" class="hdr-t" text-anchor="middle" font-size="16">Jogger</text><text x="100" y="62" class="hdr-s" text-anchor="middle" font-size="13">with a phone</text><line x1="290" y1="76" x2="290" y2="866" class="life"/><rect x="209" y="14" width="162" height="62" rx="8" class="hdr"/><text x="290" y="40" class="hdr-t" text-anchor="middle" font-size="16">Kiosk</text><text x="290" y="62" class="hdr-s" text-anchor="middle" font-size="13">screen and Pi</text><line x1="480" y1="76" x2="480" y2="866" class="life"/><rect x="399" y="14" width="162" height="62" rx="8" class="hdr"/><text x="480" y="40" class="hdr-t" text-anchor="middle" font-size="16">Lock board</text><text x="480" y="62" class="hdr-s" text-anchor="middle" font-size="13">RS485</text><line x1="670" y1="76" x2="670" y2="866" class="life"/><rect x="589" y="14" width="162" height="62" rx="8" class="hdr"/><text x="670" y="40" class="hdr-t" text-anchor="middle" font-size="16">Server</text><text x="670" y="62" class="hdr-s" text-anchor="middle" font-size="13">Next.js app</text><line x1="860" y1="76" x2="860" y2="866" class="life"/><rect x="779" y="14" width="162" height="62" rx="8" class="hdr"/><text x="860" y="40" class="hdr-t" text-anchor="middle" font-size="16">PayMongo</text><text x="860" y="62" class="hdr-s" text-anchor="middle" font-size="13">QR Ph</text><line x1="1050" y1="76" x2="1050" y2="866" class="life"/><rect x="969" y="14" width="162" height="62" rx="8" class="hdr"/><text x="1050" y="40" class="hdr-t" text-anchor="middle" font-size="16">Semaphore</text><text x="1050" y="62" class="hdr-s" text-anchor="middle" font-size="13">SMS</text><path d="M106,120 L284,120" class="ln" marker-end="url(#r-ah)"/><text x="195" y="112" class="lbl" text-anchor="middle" font-size="14">1. choose size, enter mobile number</text><path d="M296,164 L664,164" class="ln" marker-end="url(#r-ah)"/><text x="480" y="156" class="lbl" text-anchor="middle" font-size="14">2. POST /api/kiosk/rentals</text><path d="M670,200 L710,200 L710,224 L676,224" class="ln" marker-end="url(#r-ah)"/><text x="720" y="217" class="lbl" text-anchor="start" font-size="14">3. hold lowest free door for 5 min</text><path d="M676,258 L854,258" class="ln" marker-end="url(#r-ah)"/><text x="765" y="250" class="lbl" text-anchor="middle" font-size="14">4. create ₱50 QR Ph payment</text><path d="M854,302 L676,302" class="ln ln-dash" marker-end="url(#r-ah)"/><text x="765" y="294" class="lbl" text-anchor="middle" font-size="14">5. QR code</text><path d="M664,346 L296,346" class="ln ln-dash" marker-end="url(#r-ah)"/><text x="480" y="338" class="lbl" text-anchor="middle" font-size="14">6. door 12 and the QR</text><path d="M284,390 L106,390" class="ln ln-dash" marker-end="url(#r-ah)"/><text x="195" y="382" class="lbl" text-anchor="middle" font-size="14">7. show QR and a 5-minute timer</text><path d="M106,434 L854,434" class="ln ln-pay" marker-end="url(#r-ahp)"/><text x="480" y="426" class="lbl-pay" text-anchor="middle" font-size="14">8. scan and pay in GCash or a bank app</text><path d="M854,478 L676,478" class="ln ln-pay" marker-end="url(#r-ahp)"/><text x="765" y="470" class="lbl-pay" text-anchor="middle" font-size="14">9. webhook: payment.paid</text><path d="M670,514 L710,514 L710,538 L676,538" class="ln" marker-end="url(#r-ah)"/><text x="720" y="531" class="lbl" text-anchor="start" font-size="14">10. start rental, make PIN, ends in 4 h</text><path d="M664,572 L296,572" class="ln" marker-end="url(#r-ah)"/><text x="480" y="564" class="lbl" text-anchor="middle" font-size="14">11. command: start rental, door 12, PIN</text><path d="M296,616 L474,616" class="ln" marker-end="url(#r-ah)"/><text x="385" y="608" class="lbl" text-anchor="middle" font-size="14">12. open door 12</text><path d="M284,660 L106,660" class="ln ln-dash" marker-end="url(#r-ah)"/><text x="195" y="652" class="lbl" text-anchor="middle" font-size="14">13. Door 12 is open. PIN 482913</text><path d="M676,704 L1044,704" class="ln" marker-end="url(#r-ah)"/><text x="860" y="696" class="lbl" text-anchor="middle" font-size="14">14. send PIN</text><path d="M1044,748 L106,748" class="ln ln-dash" marker-end="url(#r-ah)"/><text x="575" y="740" class="lbl" text-anchor="middle" font-size="14">15. SMS: PIN, end time, help number</text><path d="M474,792 L296,792" class="ln ln-dash" marker-end="url(#r-ah)"/><text x="385" y="784" class="lbl" text-anchor="middle" font-size="14">16. door 12 closed</text><path d="M296,836 L664,836" class="ln" marker-end="url(#r-ah)"/><text x="480" y="828" class="lbl" text-anchor="middle" font-size="14">17. event: door 12 closed</text></svg></div>
+        <figcaption>The door opens only after PayMongo confirms the payment (step 9). The PIN appears once on screen and once by SMS, and the kiosk keeps only its hash. While the QR is up, the kiosk also checks the rental every 2 seconds, so a late command still opens the door. If nobody pays within 5 minutes, the QR expires and the door is freed.</figcaption>
+      </figure>
+      <ul class="legend" aria-label="Legend">
+        <li><span class="key-line"></span>Request or command</li>
+        <li><span class="key-line key-dash"></span>Reply or screen message</li>
+        <li><span class="key-line key-pay"></span>Money</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="openTitle">
+    <div class="section-head">
+      <h2 id="openTitle">Getting your things back</h2>
+    </div>
+    <div class="sheet">
+      <figure class="dia">
+        <div class="tb"><span class="tb-no">S-03</span><span class="tb-name">Open: on time, late, and late with no internet</span></div>
+        <div class="dia-scroll w-open"><svg viewBox="0 0 960 848" role="img" aria-label="Open sequence: the jogger enters door 12 and the PIN and the kiosk checks the PIN hash locally. On time, the kiosk opens the door and reports the rental ended. Late with internet, the kiosk shows a 40 peso overtime fee, gets a QR through the server and PayMongo, and opens after payment.paid. Late without internet, it opens anyway and records the 40 pesos owed." xmlns="http://www.w3.org/2000/svg"><defs><marker id="o-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker><marker id="o-ahp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah-pay"/></marker></defs><rect x="16" y="192" width="928" height="628" rx="6" class="frame"/><rect x="16" y="192" width="77.2" height="26" rx="6" class="frame-tab"/><text x="28" y="210" class="frame-t" text-anchor="start" font-size="13">On time</text><line x1="16" y1="310" x2="944" y2="310" class="frame-sep"/><text x="28" y="328" class="frame-t" text-anchor="start" font-size="13">Late, kiosk online</text><line x1="16" y1="692" x2="944" y2="692" class="frame-sep"/><text x="28" y="710" class="frame-t" text-anchor="start" font-size="13">Late, kiosk offline</text><line x1="100" y1="76" x2="100" y2="844" class="life"/><rect x="19" y="14" width="162" height="62" rx="8" class="hdr person"/><text x="100" y="40" class="hdr-t" text-anchor="middle" font-size="16">Jogger</text><text x="100" y="62" class="hdr-s" text-anchor="middle" font-size="13">with a phone</text><line x1="290" y1="76" x2="290" y2="844" class="life"/><rect x="209" y="14" width="162" height="62" rx="8" class="hdr"/><text x="290" y="40" class="hdr-t" text-anchor="middle" font-size="16">Kiosk</text><text x="290" y="62" class="hdr-s" text-anchor="middle" font-size="13">screen and Pi</text><line x1="480" y1="76" x2="480" y2="844" class="life"/><rect x="399" y="14" width="162" height="62" rx="8" class="hdr"/><text x="480" y="40" class="hdr-t" text-anchor="middle" font-size="16">Lock board</text><text x="480" y="62" class="hdr-s" text-anchor="middle" font-size="13">RS485</text><line x1="670" y1="76" x2="670" y2="844" class="life"/><rect x="589" y="14" width="162" height="62" rx="8" class="hdr"/><text x="670" y="40" class="hdr-t" text-anchor="middle" font-size="16">Server</text><text x="670" y="62" class="hdr-s" text-anchor="middle" font-size="13">Next.js app</text><line x1="860" y1="76" x2="860" y2="844" class="life"/><rect x="779" y="14" width="162" height="62" rx="8" class="hdr"/><text x="860" y="40" class="hdr-t" text-anchor="middle" font-size="16">PayMongo</text><text x="860" y="62" class="hdr-s" text-anchor="middle" font-size="13">QR Ph</text><path d="M106,120 L284,120" class="ln" marker-end="url(#o-ah)"/><text x="195" y="112" class="lbl" text-anchor="middle" font-size="14">1. door 12 and PIN</text><path d="M290,156 L330,156 L330,180 L296,180" class="ln" marker-end="url(#o-ah)"/><text x="340" y="173" class="lbl" text-anchor="start" font-size="14">2. check PIN hash, no internet needed</text><path d="M296,244 L474,244" class="ln" marker-end="url(#o-ah)"/><text x="385" y="236" class="lbl" text-anchor="middle" font-size="14">3. open door 12</text><path d="M296,288 L664,288" class="ln" marker-end="url(#o-ah)"/><text x="480" y="280" class="lbl" text-anchor="middle" font-size="14">4. event: rental ended (queued if offline)</text><path d="M284,362 L106,362" class="ln ln-dash" marker-end="url(#o-ah)"/><text x="195" y="354" class="lbl" text-anchor="middle" font-size="14">5. 1 h 20 min over: ₱40</text><path d="M296,406 L664,406" class="ln" marker-end="url(#o-ah)"/><text x="480" y="398" class="lbl" text-anchor="middle" font-size="14">6. ask for an overtime QR</text><path d="M676,450 L854,450" class="ln" marker-end="url(#o-ah)"/><text x="765" y="442" class="lbl" text-anchor="middle" font-size="14">7. create ₱40 QR Ph payment</text><path d="M664,494 L296,494" class="ln ln-dash" marker-end="url(#o-ah)"/><text x="480" y="486" class="lbl" text-anchor="middle" font-size="14">8. QR code</text><path d="M106,538 L854,538" class="ln ln-pay" marker-end="url(#o-ahp)"/><text x="480" y="530" class="lbl-pay" text-anchor="middle" font-size="14">9. pay ₱40</text><path d="M854,582 L676,582" class="ln ln-pay" marker-end="url(#o-ahp)"/><text x="765" y="574" class="lbl-pay" text-anchor="middle" font-size="14">10. webhook: payment.paid</text><path d="M664,626 L296,626" class="ln" marker-end="url(#o-ah)"/><text x="480" y="618" class="lbl" text-anchor="middle" font-size="14">11. command: open door 12</text><path d="M296,670 L474,670" class="ln" marker-end="url(#o-ah)"/><text x="385" y="662" class="lbl" text-anchor="middle" font-size="14">12. open door 12</text><path d="M296,744 L474,744" class="ln" marker-end="url(#o-ah)"/><text x="385" y="736" class="lbl" text-anchor="middle" font-size="14">13. open door 12 anyway</text><path d="M290,780 L330,780 L330,804 L296,804" class="ln" marker-end="url(#o-ah)"/><text x="340" y="797" class="lbl" text-anchor="start" font-size="14">14. record ₱40 owed, send it later</text></svg></div>
+        <figcaption>The PIN check happens on the kiosk (step 2), so opening works with no internet. Overtime is ₱20 for each started hour after a 10-minute grace period; ₱20 is also PayMongo's smallest allowed charge. When the kiosk is offline it opens anyway and sends the amount owed to the server later.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="stateTitle">
+    <div class="section-head">
+      <h2 id="stateTitle">Rental states</h2>
+    </div>
+    <div class="sheet">
+      <figure class="dia">
+        <div class="tb"><span class="tb-no">S-04</span><span class="tb-name">Every rental moves through these states</span></div>
+        <div class="dia-scroll w-states"><svg viewBox="0 0 1140 400" role="img" aria-label="Rental states. Holding a door becomes Active when paid, Released if the QR expires or is cancelled. Active becomes Ended when the PIN is entered in time, Late when time runs out, or Refunded if the door would not open. Late becomes Ended when overtime is paid or recorded as owed, or Abandoned if not collected in 24 hours." xmlns="http://www.w3.org/2000/svg"><defs><marker id="t-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker><marker id="t-ahp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah-pay"/></marker></defs><rect x="80" y="120" width="170" height="62" rx="8" class="state"/><text x="165" y="146.3" class="box-t" text-anchor="middle" font-size="16">Holding a door</text><text x="165" y="165.3" class="box-s" text-anchor="middle" font-size="13">5 minutes to pay</text><rect x="370" y="120" width="170" height="62" rx="8" class="state"/><text x="455" y="146.3" class="box-t" text-anchor="middle" font-size="16">Active</text><text x="455" y="165.3" class="box-s" text-anchor="middle" font-size="13">paid, 4-hour rental</text><rect x="660" y="120" width="170" height="62" rx="8" class="state"/><text x="745" y="146.3" class="box-t" text-anchor="middle" font-size="16">Late</text><text x="745" y="165.3" class="box-s" text-anchor="middle" font-size="13">10 min past end time</text><rect x="950" y="120" width="170" height="62" rx="8" class="state done"/><text x="1035" y="146.3" class="box-t" text-anchor="middle" font-size="16">Ended</text><text x="1035" y="165.3" class="box-s" text-anchor="middle" font-size="13">things collected</text><rect x="80" y="310" width="170" height="62" rx="8" class="state done"/><text x="165" y="336.3" class="box-t" text-anchor="middle" font-size="16">Released</text><text x="165" y="355.3" class="box-s" text-anchor="middle" font-size="13">door freed</text><rect x="370" y="310" width="170" height="62" rx="8" class="state done"/><text x="455" y="336.3" class="box-t" text-anchor="middle" font-size="16">Refunded</text><text x="455" y="355.3" class="box-s" text-anchor="middle" font-size="13">money returned</text><rect x="660" y="310" width="170" height="62" rx="8" class="state done"/><text x="745" y="336.3" class="box-t" text-anchor="middle" font-size="16">Abandoned</text><text x="745" y="355.3" class="box-s" text-anchor="middle" font-size="13">items kept 30 days</text><circle cx="40" cy="151" r="9" class="dot"/><path d="M49,151 L80,151" class="ln" marker-end="url(#t-ah)"/><path d="M250,151 L370,151" class="ln" marker-end="url(#t-ah)"/><text x="310" y="141" class="lbl" text-anchor="middle" font-size="13">paid</text><path d="M540,151 L660,151" class="ln" marker-end="url(#t-ah)"/><text x="600" y="141" class="lbl" text-anchor="middle" font-size="13">time runs out</text><path d="M830,151 L950,151" class="ln" marker-end="url(#t-ah)"/><text x="890" y="141" class="lbl" text-anchor="middle" font-size="13">overtime paid</text><text x="890" y="175" class="lbl" text-anchor="middle" font-size="13">or owed</text><path d="M455,120 L455,70 L1035,70 L1035,120" class="ln" marker-end="url(#t-ah)"/><text x="745" y="62" class="lbl" text-anchor="middle" font-size="13">PIN entered in time</text><path d="M165,182 L165,310" class="ln" marker-end="url(#t-ah)"/><text x="175" y="240" class="lbl" text-anchor="start" font-size="13">QR expired</text><text x="175" y="258" class="lbl" text-anchor="start" font-size="13">or cancelled</text><path d="M455,182 L455,310" class="ln" marker-end="url(#t-ah)"/><text x="465" y="240" class="lbl" text-anchor="start" font-size="13">door would</text><text x="465" y="258" class="lbl" text-anchor="start" font-size="13">not open</text><path d="M745,182 L745,310" class="ln" marker-end="url(#t-ah)"/><text x="755" y="240" class="lbl" text-anchor="start" font-size="13">not collected</text><text x="755" y="258" class="lbl" text-anchor="start" font-size="13">in 24 hours</text></svg></div>
+        <figcaption>A door becomes free again when its rental is Ended or Released and the door sensor reads closed. A Refunded door stays marked faulty until someone checks it. An Abandoned door waits for staff to empty it.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="failTitle">
+    <div class="section-head">
+      <h2 id="failTitle">When something breaks</h2>
+      <p class="note">With no staff on site, every failure needs a planned answer. Wherever a row says alert, you get an SMS.</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>What fails</th><th>What the jogger sees</th><th>What the system does</th></tr></thead>
+        <tbody>
+          <tr><td>Internet or server down</td><td>"Renting is paused. Opening your locker still works."</td><td>Checks PINs on the kiosk and queues events. The server sends you an alert after 3 minutes without a heartbeat; an outside uptime monitor watches the server itself.</td></tr>
+          <tr><td>Power cut</td><td>Nothing, for several hours</td><td>The UPS runs everything; alert sent. Below 20% battery, renting pauses. If the battery runs out, doors stay locked until someone uses the override key.</td></tr>
+          <tr><td>Paid, but the door won't open</td><td>"Door 12 failed. We moved you to door 14."</td><td>Tries another free door of the same size. If none is free, refunds through PayMongo, texts the jogger and marks the door faulty; alert sent.</td></tr>
+          <tr><td>Door left open</td><td>A beep and "Please close door 12"</td><td>Alert after 5 minutes. The rental stays active.</td></tr>
+          <tr><td>Door forced open</td><td>—</td><td>Alarm and alert; check the CCTV.</td></tr>
+          <tr><td>Forgot the PIN</td><td>"Resend PIN" button</td><td>Texts the PIN again to the same number, up to 3 times.</td></tr>
+          <tr><td>Dead or lost phone</td><td>Hotline number on the kiosk</td><td>You check the details and the CCTV, then open the door from the dashboard with a logged reason.</td></tr>
+          <tr><td>Someone guessing PINs</td><td>Door locked for 15 minutes after 5 wrong tries</td><td>Alert sent.</td></tr>
+          <tr><td>Things left over 24 hours</td><td>SMS reminders</td><td>Staff empty the locker, photograph the items and keep them for 30 days.</td></tr>
+          <tr><td>Kiosk computer freezes</td><td>Blank screen for about a minute</td><td>A hardware watchdog restarts it. If it is dead, open doors with the override key and swap in the spare memory card.</td></tr>
+          <tr><td>Payment confirmation arrives late</td><td>The QR screen keeps waiting</td><td>The kiosk also asks the server directly, and a nightly check matches every PayMongo payment to a rental.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="partsTitle">
+    <div class="section-head">
+      <h2 id="partsTitle">Parts and services</h2>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Part</th><th>Choice</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>Kiosk computer</td><td>Raspberry Pi 5 (4 GB) with an NVMe drive or a high-endurance card, plus the RTC battery</td><td>Runs everything offline, keeps the time through outages, no battery to swell</td></tr>
+          <tr><td>Screen</td><td>10.1-inch HDMI touch monitor, Chromium in kiosk mode</td><td>Shows only the kiosk app</td></tr>
+          <tr><td>Lock control</td><td>12 V RS485 lock boards with door-sensor inputs, 32+ channels, USB-to-RS485 adapter</td><td>The standard parts inside commercial smart lockers</td></tr>
+          <tr><td>Locks</td><td>12 V fail-secure cabinet locks with a door switch</td><td>Stay locked without power and report open or closed</td></tr>
+          <tr><td>Power</td><td>12 V UPS with a LiFePO4 battery and a mains-lost signal</td><td>About 7 hours from a 20 Ah battery at the kiosk's roughly 35 W; tells the Pi when power drops</td></tr>
+          <tr><td>Network</td><td>4G LTE router with a data SIM; venue Wi-Fi as backup</td><td>Doesn't depend on the venue's network</td></tr>
+          <tr><td>Kiosk software</td><td>Python: FastAPI, SQLite and pyserial; the screen app in HTML and JavaScript</td><td>Python, which you already use in this repo</td></tr>
+          <tr><td>Server</td><td>Next.js 16, Prisma and TypeScript on Render, Singapore region</td><td>The same stack as <code>platform/</code></td></tr>
+          <tr><td>Database</td><td>PostgreSQL on Supabase, Singapore region</td><td>Already in use in this repo</td></tr>
+          <tr><td>Payments</td><td>PayMongo QR Ph</td><td>A single-use code per payment, 1.5% fee, ₱20 minimum, webhook when paid</td></tr>
+          <tr><td>SMS</td><td>Semaphore</td><td>Philippine networks, ₱0.50–₱0.56 a text; priority route for PINs</td></tr>
+          <tr><td>Remote access</td><td>Tailscale</td><td>Reach the kiosk's command line without opening any ports</td></tr>
+          <tr><td>Monitoring</td><td>Heartbeat check on the server plus an outside uptime monitor</td><td>An SMS when anything goes quiet</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="dataTitle">
+    <div class="section-head">
+      <h2 id="dataTitle">What the system stores</h2>
+    </div>
+    <div class="pair">
+      <div class="card">
+        <h3>Server database (PostgreSQL)</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Table</th><th>Main fields</th></tr></thead>
+            <tbody>
+              <tr><td><code>doors</code></td><td>number, size, board, channel, enabled</td></tr>
+              <tr><td><code>rentals</code></td><td>door, size, mobile number, state, PIN hash, held until, started, ends, ended, overtime owed</td></tr>
+              <tr><td><code>payments</code></td><td>rental, kind (rental or overtime), amount, PayMongo ID, status, paid at</td></tr>
+              <tr><td><code>events</code></td><td>door, type (opened, closed, forced, wrong PIN, power lost, heartbeat), time, details</td></tr>
+              <tr><td><code>messages</code></td><td>rental, number, kind (PIN, reminder, alert), delivery status</td></tr>
+              <tr><td><code>owner_actions</code></td><td>who, action (remote open, refund, disable door), reason, time</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Kiosk (SQLite)</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Table</th><th>Main fields</th></tr></thead>
+            <tbody>
+              <tr><td><code>doors</code></td><td>number, size, board, channel, open or closed, fault</td></tr>
+              <tr><td><code>active_rentals</code></td><td>rental, door, PIN hash, ends, reopen allowed until</td></tr>
+              <tr><td><code>outbox</code></td><td>events not yet sent to the server</td></tr>
+              <tr><td><code>settings</code></td><td>prices, grace time, overtime rate, hotline number</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small">No mobile numbers are stored on the kiosk.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="apiTitle">
+    <div class="section-head">
+      <h2 id="apiTitle">Kiosk and server API</h2>
+      <p class="note">Everything goes over HTTPS. The kiosk sends its own secret token with every call.</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Caller</th><th>Endpoint</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td>Kiosk</td><td><code>POST /api/kiosk/rentals</code></td><td>Hold a door and get a QR (size, mobile number)</td></tr>
+          <tr><td>Kiosk</td><td><code>GET /api/kiosk/rentals/{id}</code></td><td>Check payment every 2 seconds while the QR is up</td></tr>
+          <tr><td>Kiosk</td><td><code>POST /api/kiosk/rentals/{id}/cancel</code></td><td>Free the held door</td></tr>
+          <tr><td>Kiosk</td><td><code>POST /api/kiosk/rentals/{id}/overtime</code></td><td>Get a QR for an overtime fee</td></tr>
+          <tr><td>Kiosk</td><td><code>GET /api/kiosk/commands?wait=25</code></td><td>Long-poll for commands: start rental, open door, update settings</td></tr>
+          <tr><td>Kiosk</td><td><code>POST /api/kiosk/commands/{id}/done</code></td><td>Report whether a command worked</td></tr>
+          <tr><td>Kiosk</td><td><code>POST /api/kiosk/events</code></td><td>Send queued door, PIN and power events</td></tr>
+          <tr><td>Kiosk</td><td><code>POST /api/kiosk/heartbeat</code></td><td>Every 60 seconds: power, battery, signal, door states</td></tr>
+          <tr><td>PayMongo</td><td><code>POST /api/webhooks/paymongo</code></td><td><code>payment.paid</code>, <code>payment.failed</code>, <code>qrph.expired</code></td></tr>
+          <tr><td>You</td><td><code>/admin</code></td><td>Door grid, rentals, refunds, remote open, alerts</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="secTitle">
+    <div class="section-head">
+      <h2 id="secTitle">Security and privacy</h2>
+    </div>
+    <ul class="list">
+      <li><strong>Payments:</strong> only PayMongo's signed webhook, or the server asking PayMongo directly, can mark a rental paid. Each webhook is handled once, even if PayMongo sends it twice.</li>
+      <li><strong>PINs:</strong> 6 random digits. The server sends a PIN once to the kiosk and once by SMS, and both keep only a salted hash. Five wrong tries lock that door for 15 minutes and alert you.</li>
+      <li><strong>Commands:</strong> the kiosk has its own secret. Every command is signed and expires after 60 seconds, so a copied or replayed command cannot open a door.</li>
+      <li><strong>Your dashboard:</strong> a strong password and two-factor login. Every remote open asks for a reason and is logged.</li>
+      <li><strong>The kiosk:</strong> kiosk mode, a read-only system disk and no open ports. You reach it through Tailscale. The service cabinet has a tamper switch.</li>
+      <li><strong>Secrets:</strong> database, PayMongo and Semaphore keys live in Render's environment settings, never in the repo.</li>
+      <li><strong>Data Privacy Act of 2012:</strong> show a short privacy notice at the kiosk, ask consent for the mobile number, delete numbers after 90 days, and never show a full number on screen.</li>
+    </ul>
+  </section>
+
+  <section class="section" aria-labelledby="costTitle">
+    <div class="section-head">
+      <h2 id="costTitle">Running costs</h2>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Item</th><th>Per month</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Server on Render</td><td class="nowrap">about ₱400</td><td>US$7 Starter plan, always on for webhooks and the kiosk connection</td></tr>
+          <tr><td>Database on Supabase</td><td class="nowrap">₱0, later about ₱1,450</td><td>Free while building; the US$25 Pro plan adds daily backups once real money flows</td></tr>
+          <tr><td>4G data SIM</td><td class="nowrap">₱300–₱1,000</td><td>The kiosk alone uses well under 1 GB a month</td></tr>
+          <tr><td>Domain name</td><td class="nowrap">about ₱60</td><td>About ₱700 a year</td></tr>
+          <tr><td>Tailscale, uptime monitor</td><td class="nowrap">₱0</td><td>Free plans</td></tr>
+          <tr><td>SMS</td><td class="nowrap">about ₱1 a rental</td><td>About ₱550 a month at the weather page's 6,560 rentals a year</td></tr>
+          <tr><td>PayMongo</td><td class="nowrap">1.5% of sales</td><td>About ₱0.75 on a ₱50 rental</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small">The fixed tech costs come to ₱800–₱3,000 a month, inside the ₱6,000 of other monthly costs used on the weather page.</p>
+  </section>
+
+  <section class="section" aria-labelledby="planTitle">
+    <div class="section-head">
+      <h2 id="planTitle">Build plan</h2>
+      <p class="note">Durations are rough guesses for one person working part time.</p>
+    </div>
+    <ol class="steps">
+      <li><strong>Bench prototype, 2–3 weeks.</strong> A Pi, the screen, one lock board and 4 locks on a table, with a fake "paid" button. Done when renting, opening by PIN and opening with the network unplugged all work.</li>
+      <li><strong>Payments and SMS, 2–3 weeks.</strong> The server on Render, the database, PayMongo in test mode, the webhook and Semaphore. Done when a real ₱20 QR payment opens a door and the PIN arrives by SMS within 10 seconds.</li>
+      <li><strong>Owner tools, 1–2 weeks.</strong> Door grid, rentals, refunds, remote open with a reason, alerts and a daily summary. Done when you can run a whole day from your phone.</li>
+      <li><strong>Install and test on site, 2–4 weeks.</strong> Wire all 30 doors, the UPS and the 4G router. Test for a week by cycling doors, cutting power and unplugging the network. Then open with someone on site for the first two weekends. Done when a week passes with no manual fixes.</li>
+    </ol>
+  </section>
+
+  <footer class="footer">
+    <h3>Sources</h3>
+    <ul class="sources">
+      <li>PayMongo: <a href="https://docs.paymongo.com/docs/payment-acceptance-qr-ph-api" rel="noopener">QR Ph API</a>, <a href="https://developers.paymongo.com/docs/statuses-messages-webhook-events" rel="noopener">webhook events</a>, <a href="https://developers.paymongo.com/reference/the-payment-intent-object" rel="noopener">Payment Intent (₱20 minimum)</a>, <a href="https://www.paymongo.com/products/accept-payments/qr-ph" rel="noopener">QR Ph pricing</a></li>
+      <li>SMS: <a href="https://www.semaphore.co/" rel="noopener">Semaphore</a>, <a href="https://www.sent.dm/resources/philippines-sms-pricing" rel="noopener">Philippine SMS pricing comparison</a></li>
+      <li>Message brokers considered: <a href="https://www.hivemq.com/blog/hivemq-cloud-serverless-vs-starter-mqtt-iot-or-iiot/" rel="noopener">HiveMQ Cloud plans</a></li>
+    </ul>
+    <p>System architecture 1. Companion pages: UP Oval Jogging Weather and UP Oval Locker Bank. Source files: <code>jogger-locker/architecture/</code> on branch <code>claude/jogger-locker-kiosk-r03nh0</code>.</p>
+  </footer>
+</main>
+
+</body>
+</html>

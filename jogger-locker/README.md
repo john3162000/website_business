@@ -58,4 +58,19 @@ in front. The page also estimates rent at DiliMall and Gyud Food.
 
 Rerun with `python3 design/build_locker_bank.py` after changing the layout.
 
+## System architecture
+
+`architecture/` describes how the unstaffed kiosk works: a Raspberry Pi in the
+kiosk drives RS485 lock boards and checks PINs offline, a Next.js + Prisma app
+on Render takes PayMongo QR Ph payments by webhook and sends PINs through
+Semaphore, and the kiosk talks to the server over one HTTPS connection with a
+long-poll for commands. The page covers the rent and open sequences, rental
+states, failure handling, data, API, security, running costs and a build plan.
+
+- `architecture/build_architecture.py`: draws the diagrams (the sequences
+  live in `RENT_STEPS` and `OPEN_STEPS`) and fills them into the template
+- `architecture/architecture_template.html`: page text and styling
+- `architecture/system-architecture.html`: the finished page, as published
+- `architecture/up-oval-locker-system.html`: stand-alone copy to save and open
+
 Weather data: [Open-Meteo.com](https://open-meteo.com/), CC BY 4.0.
