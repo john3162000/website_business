@@ -73,4 +73,17 @@ states, failure handling, data, API, security, running costs and a build plan.
 - `architecture/system-architecture.html`: the finished page, as published
 - `architecture/up-oval-locker-system.html`: stand-alone copy to save and open
 
+## Door locks
+
+`locks/` explains the lock on each door: a 12 V fail-secure electronic cabinet
+lock with a built-in door switch and a key override. A short pulse opens it,
+pushing the door shut relocks it, and two 24-channel RS485 lock boards drive
+all 30 locks from the Pi. The page compares lock types, shows the wiring,
+lists what to ask suppliers with a parts budget, and gives a bench test.
+
+- `locks/build_locks.py`: draws the latch mechanism and wiring diagrams
+- `locks/locks_template.html`: page text and styling
+- `locks/locker-locks.html`: the finished page, as published
+- `locks/up-oval-locker-locks.html`: stand-alone copy to save and open
+
 Weather data: [Open-Meteo.com](https://open-meteo.com/), CC BY 4.0.

@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>UP Oval Locker Locks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f3f4f1;
+  --surface: #fcfcfb;
+  --box: #f0f0eb;
+  --panel: #f5f5f1;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #6b6a65;
+  --grid: #e1e0d9;
+  --axis: #b3b2aa;
+  --line: rgba(11, 11, 11, 0.1);
+  --track: #ebeae4;
+  --accent: #7b1113;
+  --on-accent: #ffffff;
+  --housing: #e4e3dd;
+  --steel: #b8c1cb;
+  --hook: #cdd2d8;
+  --coil: #d9a066;
+  --door: #9a9992;
+  --font-ui: "Public Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0f100f;
+    --surface: #1a1a19;
+    --box: #242423;
+    --panel: #20201f;
+    --ink: #ffffff;
+    --ink-2: #c3c2b7;
+    --muted: #a3a29b;
+    --grid: #2c2c2a;
+    --axis: #55544f;
+    --line: rgba(255, 255, 255, 0.1);
+    --track: #262625;
+    --accent: #f0a0a3;
+    --on-accent: #111111;
+    --housing: #2e2e2c;
+    --steel: #5d6875;
+    --hook: #4a525c;
+    --coil: #8a5a2b;
+    --door: #6b6a65;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0f100f;
+  --surface: #1a1a19;
+  --box: #242423;
+  --panel: #20201f;
+  --ink: #ffffff;
+  --ink-2: #c3c2b7;
+  --muted: #a3a29b;
+  --grid: #2c2c2a;
+  --axis: #55544f;
+  --line: rgba(255, 255, 255, 0.1);
+  --track: #262625;
+  --accent: #f0a0a3;
+  --on-accent: #111111;
+  --housing: #2e2e2c;
+  --steel: #5d6875;
+  --hook: #4a525c;
+  --coil: #8a5a2b;
+  --door: #6b6a65;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 15px/1.55 var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+[hidden] { display: none !important; }
+p { margin: 0; }
+a { color: inherit; text-underline-offset: 2px; }
+.page {
+  max-width: 1120px;
+  margin-inline: auto;
+  padding-inline: 24px;
+  padding-block: 44px 72px;
+  display: grid;
+  gap: 60px;
+}
+.masthead { display: grid; gap: 14px; }
+.eyebrow {
+  font: 600 12px/1.4 var(--font-ui);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+h1 {
+  font: 700 clamp(40px, 7.5vw, 64px)/0.92 var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.005em;
+  margin: 0;
+  text-wrap: balance;
+}
+.lede { max-width: 70ch; color: var(--ink-2); font-size: 16px; }
+h2 { font: 600 30px/1.05 var(--font-display); letter-spacing: 0.005em; margin: 0; text-wrap: balance; }
+h3 { font: 600 15px/1.3 var(--font-ui); margin: 0; }
+.section { display: grid; gap: 18px; }
+.section-head { display: grid; gap: 6px; }
+.note { color: var(--ink-2); max-width: 72ch; }
+.small { font-size: 13px; color: var(--muted); max-width: 80ch; }
+
+.figures {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+  margin: 0;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+.figure-tile { display: grid; gap: 4px; align-content: start; }
+.figure-tile dt { font-size: 13px; color: var(--ink-2); }
+.figure-tile dd { margin: 0; font: 600 26px/1.15 var(--font-ui); letter-spacing: -0.01em; }
+.figure-tile dd small { display: block; margin-top: 4px; font: 400 13px/1.4 var(--font-ui); color: var(--muted); letter-spacing: 0; }
+
+.sheet {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+figure.dia { margin: 0; display: grid; gap: 12px; min-width: 0; }
+.tb {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--grid);
+}
+.tb-no { font: 700 18px/1 var(--font-display); letter-spacing: 0.04em; color: var(--accent); }
+.tb-name { font-weight: 600; }
+.dia-scroll { overflow-x: auto; }
+.dia-scroll svg { display: block; width: 100%; height: auto; }
+.w-mech svg { min-width: 940px; }
+.w-wire svg { min-width: 820px; }
+figure.dia figcaption { font-size: 13.5px; color: var(--ink-2); max-width: 82ch; }
+
+.dia text { font-family: var(--font-ui); }
+.dia .panel { fill: var(--panel); stroke: var(--grid); stroke-width: 1.5; }
+.dia .panel-t { fill: var(--ink); font-weight: 700; }
+.dia .part { fill: var(--ink-2); }
+.dia .readout { fill: var(--ink); font-weight: 600; }
+.dia .housing { fill: var(--housing); }
+.dia .outline { fill: none; stroke: var(--ink); stroke-width: 2.5; }
+.dia .bolt { fill: var(--steel); stroke: var(--ink); stroke-width: 2; }
+.dia .coil { fill: var(--coil); stroke: var(--ink); stroke-width: 2; }
+.dia .coil.on { fill: var(--accent); }
+.dia .coil-t { fill: var(--ink); font-weight: 600; }
+.dia .coil-t.on { fill: var(--on-accent); }
+.dia .hook { fill: var(--hook); stroke: var(--ink); stroke-width: 2; }
+.dia .door { fill: var(--door); stroke: var(--ink); stroke-width: 2; }
+.dia .switch { fill: var(--surface); stroke: var(--ink); stroke-width: 2; }
+.dia .lever { stroke: var(--ink); stroke-width: 3; stroke-linecap: round; }
+.dia .spring { fill: none; stroke: var(--ink-2); stroke-width: 2; stroke-linejoin: round; }
+.dia .box { fill: var(--box); stroke: var(--ink); stroke-width: 1.5; }
+.dia .box-t { fill: var(--ink); font-weight: 700; }
+.dia .box-s { fill: var(--ink-2); }
+.dia .bus { fill: none; stroke: var(--ink); stroke-width: 5; stroke-linejoin: round; }
+.dia .tap { fill: none; stroke: var(--ink); stroke-width: 3.5; }
+.dia .strip { fill: var(--track); stroke: var(--ink); stroke-width: 1.5; }
+.dia .ln { fill: none; stroke: var(--ink-2); stroke-width: 1.6; }
+.dia .ah { fill: var(--ink-2); }
+.dia .lbl {
+  fill: var(--ink-2);
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 5px;
+  stroke-linejoin: round;
+}
+
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+th { font-size: 13px; font-weight: 600; color: var(--ink-2); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr.pick td { background: var(--track); }
+tr.pick td:first-child { font-weight: 600; }
+tr.total td { font-weight: 600; }
+.pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; align-items: start; }
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.list { margin: 0; padding-left: 20px; display: grid; gap: 8px; color: var(--ink-2); max-width: 82ch; }
+.list strong { color: var(--ink); font-weight: 600; }
+.steps { margin: 0; padding-left: 22px; display: grid; gap: 10px; color: var(--ink-2); max-width: 82ch; }
+.steps strong { color: var(--ink); font-weight: 600; }
+.footer { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 6px; }
+.sources { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 13px; color: var(--ink-2); }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.9em; }
+
+@media (max-width: 900px) {
+  .figures { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pair { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .page { padding-inline: 16px; padding-block: 28px 56px; gap: 48px; }
+  .sheet, .card { padding: 14px; }
+  .figure-tile dd { font-size: 22px; }
+  th, td { padding-inline: 8px; }
+}
+</style>
+
+</head>
+<body>
+<main class="page">
+  <header class="masthead">
+    <p class="eyebrow">Jogger locker kiosk · Lock mechanism 1 · 26 Sep 2026</p>
+    <h1>UP Oval Locker Locks</h1>
+    <p class="lede">Each door gets a 12 V electronic cabinet lock, the same part used in parcel lockers. It stays locked with no power, springs open on a pulse shorter than a second, locks again when the door is pushed shut, and reports whether the door is closed. The lock itself is not smart. The kiosk computer decides when to open it.</p>
+  </header>
+
+  <dl class="figures" aria-label="Key figures">
+    <div class="figure-tile"><dt>Lock</dt><dd>12 V cabinet lock<small>fail-secure, built-in door switch, key override</small></dd></div>
+    <div class="figure-tile"><dt>To open</dt><dd>Under 1 s<small>a 0.8–2 A pulse; no power at all while locked</small></dd></div>
+    <div class="figure-tile"><dt>Controller</dt><dd>2 × 24 channels<small>RS485 lock boards with an open protocol</small></dd></div>
+    <div class="figure-tile"><dt>Parts budget</dt><dd>₱12k–₱43k<small>locks, boards and wiring, before shipping and duties</small></dd></div>
+  </dl>
+
+  <section class="section" aria-labelledby="howTitle">
+    <div class="section-head">
+      <h2 id="howTitle">How the lock works</h2>
+    </div>
+    <div class="sheet">
+      <figure class="dia">
+        <div class="tb"><span class="tb-no">L-01</span><span class="tb-name">Pulse to open, push to lock</span></div>
+        <div class="dia-scroll w-mech"><svg viewBox="0 0 1200 390" role="img" aria-label="How the lock works, in three panels. Locked: a spring holds the bolt in the notch of the door&#x27;s hook, the coil has no power and the door switch reads locked. Opening: a 12 volt pulse through the coil pulls the bolt up and the pop-out spring pushes the door open. Closing: pushing the door slides the hook under the bolt&#x27;s slanted tip until the bolt drops into the notch and the door is locked again without power." xmlns="http://www.w3.org/2000/svg"><defs><marker id="m-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs><rect x="0" y="0" width="390" height="390" rx="10" class="panel"/><text x="195" y="26" class="panel-t" text-anchor="middle" font-size="15">1. Locked, no power</text><rect x="20" y="60" width="220" height="230" rx="10" class="housing"/><path d="M240,224 V60 H20 V290 H240 V262" class="outline"/><text x="130" y="52" class="part" text-anchor="middle" font-size="13">lock body</text><polygon class="bolt" points="130,135 160,135 160,222 142,240 130,240"/><text x="122" y="190" class="part" text-anchor="end" font-size="13">bolt</text><rect x="100" y="75" width="90" height="60" rx="6" class="coil"/><text x="145" y="110" class="coil-t" text-anchor="middle" font-size="13">coil</text><path class="hook" d="M70,228 H128 V242 H162 V228 H300 V258 H70 Z"/><text x="270" y="218" class="part" text-anchor="middle" font-size="13">hook</text><rect x="300" y="30" width="25" height="300" rx="3" class="door"/><text x="312" y="348" class="part" text-anchor="middle" font-size="13">door</text><rect x="30" y="233" width="22" height="20" rx="3" class="switch"/><line x1="52" y1="238" x2="70" y2="240" class="lever"/><text x="60" y="282" class="part" text-anchor="start" font-size="12">door switch</text><line x1="250" y1="295" x2="250" y2="315" class="outline"/><path d="M250,305 L255,312 L260,298 L265,312 L270,298 L275,312 L280,298 L285,312 L290,298 L295,312 L300,305" class="spring"/><text x="244" y="322" class="part" text-anchor="end" font-size="12">pop-out spring</text><text x="195" y="376" class="readout" text-anchor="middle" font-size="14">Switch reads: locked</text><rect x="405" y="0" width="390" height="390" rx="10" class="panel"/><text x="600" y="26" class="panel-t" text-anchor="middle" font-size="15">2. A 12 V pulse opens it</text><rect x="425" y="60" width="220" height="230" rx="10" class="housing"/><path d="M645,224 V60 H425 V290 H645 V262" class="outline"/><text x="535" y="52" class="part" text-anchor="middle" font-size="13">lock body</text><polygon class="bolt" points="535,105 565,105 565,192 547,210 535,210"/><text x="527" y="160" class="part" text-anchor="end" font-size="13">bolt</text><rect x="505" y="75" width="90" height="60" rx="6" class="coil on"/><text x="550" y="110" class="coil-t on" text-anchor="middle" font-size="13">12 V</text><path class="hook" d="M520,228 H578 V242 H612 V228 H750 V258 H520 Z"/><text x="720" y="218" class="part" text-anchor="middle" font-size="13">hook</text><rect x="750" y="30" width="25" height="300" rx="3" class="door"/><text x="762" y="348" class="part" text-anchor="middle" font-size="13">door</text><rect x="435" y="233" width="22" height="20" rx="3" class="switch"/><line x1="457" y1="238" x2="471" y2="226" class="lever"/><text x="465" y="282" class="part" text-anchor="start" font-size="12">door switch</text><line x1="655" y1="295" x2="655" y2="315" class="outline"/><path d="M655,305 L661.786,312 L668.571,298 L675.357,312 L682.143,298 L688.929,312 L695.714,298 L702.5,312 L709.286,298 L716.071,312 L722.857,298 L729.643,312 L736.429,298 L743.214,312 L750,305" class="spring"/><text x="649" y="322" class="part" text-anchor="end" font-size="12">pop-out spring</text><path d="M657,196 L697,196" class="ln" marker-end="url(#m-ah)"/><path d="M581,212 L581,170" class="ln" marker-end="url(#m-ah)"/><text x="600" y="376" class="readout" text-anchor="middle" font-size="14">12 V for under a second</text><rect x="810" y="0" width="390" height="390" rx="10" class="panel"/><text x="1005" y="26" class="panel-t" text-anchor="middle" font-size="15">3. Push the door shut</text><rect x="830" y="60" width="220" height="230" rx="10" class="housing"/><path d="M1050,224 V60 H830 V290 H1050 V262" class="outline"/><text x="940" y="52" class="part" text-anchor="middle" font-size="13">lock body</text><polygon class="bolt" points="940,123 970,123 970,210 952,228 940,228"/><text x="932" y="178" class="part" text-anchor="end" font-size="13">bolt</text><rect x="910" y="75" width="90" height="60" rx="6" class="coil"/><text x="955" y="110" class="coil-t" text-anchor="middle" font-size="13">coil</text><path class="hook" d="M920,228 H978 V242 H1012 V228 H1150 V258 H920 Z"/><text x="1120" y="218" class="part" text-anchor="middle" font-size="13">hook</text><rect x="1150" y="30" width="25" height="300" rx="3" class="door"/><text x="1162" y="348" class="part" text-anchor="middle" font-size="13">door</text><rect x="840" y="233" width="22" height="20" rx="3" class="switch"/><line x1="862" y1="238" x2="876" y2="226" class="lever"/><text x="870" y="282" class="part" text-anchor="start" font-size="12">door switch</text><line x1="1060" y1="295" x2="1060" y2="315" class="outline"/><path d="M1060,305 L1066.43,312 L1072.86,298 L1079.29,312 L1085.71,298 L1092.14,312 L1098.57,298 L1105,312 L1111.43,298 L1117.86,312 L1124.29,298 L1130.71,312 L1137.14,298 L1143.57,312 L1150,305" class="spring"/><text x="1054" y="322" class="part" text-anchor="end" font-size="12">pop-out spring</text><path d="M1145,196 L1100,196" class="ln" marker-end="url(#m-ah)"/><text x="1005" y="376" class="readout" text-anchor="middle" font-size="14">Relocks by itself, no power</text></svg></div>
+        <figcaption>A spring holds the bolt down in the notch of a steel hook fixed to the door, so the lock needs no power to stay shut. A short 12 V pulse through the coil pulls the bolt up, and a small spring pushes the door open 1–2 cm so the jogger sees which door it is. Pushing the door shut slides the hook under the bolt's slanted tip until the bolt drops into the notch again. The switch at the end of the slot tells the kiosk whether the door is locked. Real models use a sliding bolt or a rotating catch, but they all work this way.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="whyTitle">
+    <div class="section-head">
+      <h2 id="whyTitle">Why this kind of lock</h2>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Lock type</th><th>How it opens</th><th>If the power fails</th><th>Door sensor</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr class="pick"><td>12 V cabinet lock with feedback</td><td>A short pulse releases a spring latch; pushing the door relocks it</td><td>Stays locked; key or cable override</td><td>Built in</td><td>Use this. It is made for smart lockers and costs US$2–16 each.</td></tr>
+          <tr><td>Hobby solenoid lock</td><td>Holds its slanted bolt back while powered (about 650 mA)</td><td>Stays locked</td><td>None; add a magnetic reed switch</td><td>Fine for the first bench test. Weaker, and it reports nothing.</td></tr>
+          <tr><td>Magnetic lock</td><td>Holds while powered; cutting power releases it</td><td>Every door opens</td><td>Usually none</td><td>No. A power cut would open all 30 lockers.</td></tr>
+          <tr><td>Battery keypad or Bluetooth lock</td><td>Each lock checks its own code, card or phone</td><td>Stays locked until its battery dies</td><td>Varies</td><td>No. That is 30 batteries to change, and it is hard to tie to payments.</td></tr>
+          <tr><td>Motor-driven latch</td><td>A small motor turns the latch</td><td>Stays locked</td><td>Built in</td><td>Works, but costs more and opens slower, with nothing gained here.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small">Fail-secure means the lock stays locked without power. That is what you want for belongings: a blackout never opens a door, and the UPS or the terminal strip below still lets you open doors on purpose.</p>
+  </section>
+
+  <section class="section" aria-labelledby="wireTitle">
+    <div class="section-head">
+      <h2 id="wireTitle">How the locks are wired</h2>
+    </div>
+    <div class="sheet">
+      <figure class="dia">
+        <div class="tb"><span class="tb-no">L-02</span><span class="tb-name">Power and control for 30 doors</span></div>
+        <div class="dia-scroll w-wire"><svg viewBox="0 0 1060 460" role="img" aria-label="Wiring: the wall outlet feeds a 12 volt 10 amp power supply and a 12 volt UPS with a LiFePO4 battery. A 12 volt bus powers a 5 volt converter for the Raspberry Pi and both 24-channel lock boards. The Pi talks to lock board 1 through a USB to RS485 adapter, and board 1 passes the RS485 line on to board 2. Board 1 drives doors 1 to 24 and board 2 drives doors 25 to 30, four wires per door, through a terminal strip in the service cabinet." xmlns="http://www.w3.org/2000/svg"><defs><marker id="w-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs><rect x="20" y="30" width="170" height="56" rx="8" class="box"/><text x="105" y="53" class="box-t" text-anchor="middle" font-size="15">Wall outlet</text><text x="105" y="72" class="box-s" text-anchor="middle" font-size="13">220 V</text><rect x="20" y="130" width="170" height="56" rx="8" class="box"/><text x="105" y="153" class="box-t" text-anchor="middle" font-size="15">Power supply</text><text x="105" y="172" class="box-s" text-anchor="middle" font-size="13">12 V, 10 A</text><rect x="20" y="230" width="170" height="70" rx="8" class="box"/><text x="105" y="260" class="box-t" text-anchor="middle" font-size="15">12 V UPS</text><text x="105" y="279" class="box-s" text-anchor="middle" font-size="13">LiFePO4 battery</text><path d="M105,86 L105,130" class="ln" marker-end="url(#w-ah)"/><text x="113" y="112" class="lbl" text-anchor="start" font-size="13">AC</text><path d="M105,186 L105,230" class="ln" marker-end="url(#w-ah)"/><text x="113" y="212" class="lbl" text-anchor="start" font-size="13">12 V</text><path d="M190,265 H250 V45 H520 V385" class="bus"/><text x="385" y="36" class="lbl" text-anchor="middle" font-size="13">12 V bus</text><path d="M375,45 V75" class="tap"/><path d="M520,160 H580" class="tap"/><path d="M520,330 H580" class="tap"/><rect x="290" y="75" width="170" height="56" rx="8" class="box"/><text x="375" y="98" class="box-t" text-anchor="middle" font-size="15">5 V converter</text><text x="375" y="117" class="box-s" text-anchor="middle" font-size="13">5 A for the Pi</text><rect x="290" y="165" width="170" height="70" rx="8" class="box"/><text x="375" y="195" class="box-t" text-anchor="middle" font-size="15">Raspberry Pi 5</text><text x="375" y="214" class="box-s" text-anchor="middle" font-size="13">kiosk software</text><rect x="290" y="275" width="170" height="56" rx="8" class="box"/><text x="375" y="298" class="box-t" text-anchor="middle" font-size="15">USB to RS485</text><text x="375" y="317" class="box-s" text-anchor="middle" font-size="13">adapter</text><path d="M375,131 L375,165" class="ln" marker-end="url(#w-ah)"/><text x="383" y="152" class="lbl" text-anchor="start" font-size="13">5 V</text><path d="M375,235 L375,275" class="ln" marker-end="url(#w-ah)" marker-start="url(#w-ah)"/><text x="383" y="259" class="lbl" text-anchor="start" font-size="13">USB</text><rect x="580" y="130" width="200" height="100" rx="8" class="box"/><text x="680" y="165.5" class="box-t" text-anchor="middle" font-size="15">Lock board 1</text><text x="680" y="184.5" class="box-s" text-anchor="middle" font-size="13">24 channels</text><text x="680" y="203.5" class="box-s" text-anchor="middle" font-size="13">address 1</text><rect x="580" y="300" width="200" height="100" rx="8" class="box"/><text x="680" y="335.5" class="box-t" text-anchor="middle" font-size="15">Lock board 2</text><text x="680" y="354.5" class="box-s" text-anchor="middle" font-size="13">24 channels</text><text x="680" y="373.5" class="box-s" text-anchor="middle" font-size="13">address 2</text><path d="M460,303 L490,303 L490,200 L580,200" class="ln" marker-end="url(#w-ah)" marker-start="url(#w-ah)"/><text x="482" y="258" class="lbl" text-anchor="end" font-size="13">RS485</text><path d="M680,230 L680,300" class="ln" marker-end="url(#w-ah)" marker-start="url(#w-ah)"/><text x="688" y="270" class="lbl" text-anchor="start" font-size="13">RS485</text><path d="M780,150 L860,130" class="ln" marker-end="url(#w-ah)"/><path d="M780,170 L860,180" class="ln" marker-end="url(#w-ah)"/><path d="M780,210 L860,260" class="ln" marker-end="url(#w-ah)"/><path d="M780,320 L860,320" class="ln" marker-end="url(#w-ah)"/><path d="M780,380 L860,405" class="ln" marker-end="url(#w-ah)"/><rect x="812" y="105" width="16" height="320" rx="3" class="strip"/><rect x="860" y="110" width="160" height="40" rx="8" class="box"/><text x="940" y="134.2" class="box-t" text-anchor="middle" font-size="14">Door 1</text><rect x="860" y="160" width="160" height="40" rx="8" class="box"/><text x="940" y="184.2" class="box-t" text-anchor="middle" font-size="14">Door 2</text><rect x="860" y="240" width="160" height="40" rx="8" class="box"/><text x="940" y="264.2" class="box-t" text-anchor="middle" font-size="14">Door 24</text><rect x="860" y="300" width="160" height="40" rx="8" class="box"/><text x="940" y="324.2" class="box-t" text-anchor="middle" font-size="14">Door 25</text><rect x="860" y="385" width="160" height="40" rx="8" class="box"/><text x="940" y="409.2" class="box-t" text-anchor="middle" font-size="14">Door 30</text><text x="940" y="228" class="lbl" text-anchor="middle" font-size="18">⋮</text><text x="940" y="368" class="lbl" text-anchor="middle" font-size="18">⋮</text><text x="940" y="96" class="lbl" text-anchor="middle" font-size="13">4 wires per door</text><text x="820" y="446" class="lbl" text-anchor="middle" font-size="13">terminal strip</text></svg></div>
+        <figcaption>The Pi sends "open door 12" over RS485 to the lock board, which switches 12 V to that lock for a fraction of a second and reads every door switch. The two boards share one RS485 cable and are told apart by their address switches. The door's board and channel are stored in the <code>doors</code> table. Each lock's four wires pass through a numbered terminal strip in the service cabinet, so you can open any door by hand with a 12 V battery if a board or the Pi dies.</figcaption>
+      </figure>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Wire at each lock</th><th>Goes to</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td>Coil +</td><td>12 V from the board</td><td>Power for the coil</td></tr>
+          <tr><td>Coil −</td><td>The board's output for that door</td><td>The board connects it to ground for the pulse</td></tr>
+          <tr><td>Switch</td><td>The board's input for that door</td><td>Closed means the door is locked</td></tr>
+          <tr><td>Switch common</td><td>Board ground</td><td>Return for the switch</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small">Wire colors differ between models; follow the supplier's diagram. The boards open one door at a time, so the 12 V supply only has to cover one pulse of up to 2 A on top of the Pi, screen and router.</p>
+  </section>
+
+  <section class="section" aria-labelledby="buyTitle">
+    <div class="section-head">
+      <h2 id="buyTitle">What to buy</h2>
+    </div>
+    <div class="pair">
+      <div class="card">
+        <h3>Ask the supplier for a lock that has</h3>
+        <ul class="list">
+          <li>12 V DC and <strong>fail-secure</strong> operation: locked with no power</li>
+          <li>Opening on a pulse, and <strong>relocking by itself</strong> when the door is pushed shut</li>
+          <li>A <strong>built-in feedback switch</strong> that reports the door or latch state</li>
+          <li>2 A or less, rated for pulses (some allow up to 5 seconds on)</li>
+          <li>About 150 kg holding force, in zinc alloy or stainless steel</li>
+          <li>A <strong>mechanical override</strong>, key or pull cable, for emergencies</li>
+          <li>A stated cycle rating. Sellers quote up to 1,000,000; each door here opens about 450 times a year</li>
+          <li>A working temperature of 50 °C or more, since a steel box in the sun gets hot</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>And a control board that has</h3>
+        <ul class="list">
+          <li>The same supplier as the locks, so voltage, current and feedback match</li>
+          <li>24 or 48 channels, RS485, and a 12 V input</li>
+          <li>A <strong>published command protocol</strong>, so we can write our own driver</li>
+          <li>Door-status reading for every channel</li>
+          <li>Address switches, so two boards can share one cable</li>
+        </ul>
+        <p class="small">Order 4 locks and 1 board first. Buy the other 28 locks after the bench test passes.</p>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Part</th><th class="num">Qty</th><th class="num">Each</th><th class="num">Total</th></tr></thead>
+        <tbody>
+          <tr><td>12 V cabinet lock with feedback and override (2 spares)</td><td class="num">32</td><td class="num">US$2–16</td><td class="num">₱3,600–₱29,200</td></tr>
+          <tr><td>24-channel RS485 lock board, open protocol</td><td class="num">2</td><td class="num">US$48–70</td><td class="num">₱5,500–₱8,000</td></tr>
+          <tr><td>USB-to-RS485 adapter, terminal strips, wire, fuses (estimate)</td><td class="num">1 set</td><td class="num">—</td><td class="num">₱2,000–₱4,000</td></tr>
+          <tr><td>12 V 10 A power supply (estimate)</td><td class="num">1</td><td class="num">—</td><td class="num">₱1,000–₱2,000</td></tr>
+          <tr class="total"><td>Total</td><td class="num"></td><td class="num"></td><td class="num">₱12,000–₱43,000</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small">Supplier listing prices converted at ₱57 to the US dollar, before shipping and import duties. The battery backup is counted with the kiosk power on the architecture page.</p>
+  </section>
+
+  <section class="section" aria-labelledby="safeTitle">
+    <div class="section-head">
+      <h2 id="safeTitle">Emergencies and security</h2>
+    </div>
+    <div class="pair">
+      <div class="card">
+        <h3>Getting a door open when something fails</h3>
+        <ul class="list">
+          <li><strong>Power cut:</strong> nothing changes. The locks draw power only while opening, so the UPS keeps them working for hours.</li>
+          <li><strong>Pi or board dead:</strong> at the terminal strip, touch a 12 V battery to that door's coil terminals for under a second.</li>
+          <li><strong>Lock jammed:</strong> use its key or pull-cable override from inside the service cabinet.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Keeping it hard to break into</h3>
+        <ul class="list">
+          <li>Lock and wires sit inside the steel frame; nothing is reachable from the front.</li>
+          <li>A folded lip on each door covers the gap where a screwdriver would go.</li>
+          <li>The switch reports every opening. A door that opens without a command sets off an alarm.</li>
+          <li>Five wrong PINs lock that door for 15 minutes (see the architecture page).</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="testTitle">
+    <div class="section-head">
+      <h2 id="testTitle">Bench test before buying 30</h2>
+      <p class="note">If you want to start with parts you already know, an ESP32 can drive the first 4 locks. Use a logic-level MOSFET or relay per lock and a diode across each coil. Common driver chips such as the ULN2803 cannot handle 2 A. For 30 doors, switch to the RS485 boards.</p>
+    </div>
+    <ol class="steps">
+      <li><strong>Cycle test:</strong> open and relock each lock 1,000 times with a script. The switch must match every time.</li>
+      <li><strong>Heat test:</strong> run the cycle test with the unit in the afternoon sun.</li>
+      <li><strong>Power test:</strong> pull the plug during a rental. The doors must stay locked, run on the UPS, and open by battery at the terminal strip.</li>
+      <li><strong>Pry test:</strong> try a flat screwdriver at every door gap.</li>
+      <li><strong>Coil test:</strong> hold one lock open for 5 seconds and check that it does not overheat. The software should never hold it that long.</li>
+    </ol>
+  </section>
+
+  <footer class="footer">
+    <h3>Sources</h3>
+    <ul class="sources">
+      <li>Lock specs: <a href="https://www.electronicpro.co.za/products/k02-12v-dc-2a-electric-magnetic-lock-intelligent-cabinet-door-lock-fail-secure-with-feedback-signal" rel="noopener">K02 12 V 2 A fail-secure cabinet lock with feedback</a>; <a href="https://learn.escaperoomtechs.com/cabinet-mag-lock/" rel="noopener">Escape Room Techs, pulsing a cabinet lock</a>; <a href="https://eboxlock.en.made-in-china.com/product/LKCEXDeHZTci/China-Electric-Cabinet-Lock-with-Reporting-for-Smart-Electronic-Lockers-MA1208S-.html" rel="noopener">electric cabinet lock with reporting</a></li>
+      <li>Prices: <a href="https://eboxlock.en.made-in-china.com/product-group/JbPnplVHOUhN/Electric-Cabinet-Lock-catalog-1.html" rel="noopener">cabinet lock listings</a>; <a href="https://eboxlock.en.made-in-china.com/product/kFhTcSwgEHpY/China-CE-Certified-24CH-Smart-Locker-Controller-with-RS485-for-Parcel-Delivery-Locker-System.html" rel="noopener">24-channel RS485 locker controller</a>; <a href="https://www.eboxlock.com/Products/Smart-locker-controller.htm" rel="noopener">controller with open protocol</a></li>
+      <li>Control boards: <a href="https://www.kerong.hk/locker-control-board" rel="noopener">Kerong locker control board</a>, <a href="https://www.kerongtech.com/electric-locker-solution/locker-system-solution/locker-control-board-kr-cu8" rel="noopener">KR-CU boards</a></li>
+      <li>Local hobby parts: <a href="https://www.makerlab.ph/products/12v-solenoid-lock" rel="noopener">Makerlab 12 V solenoid lock</a>, <a href="https://www.lazada.com.ph/products/solenoid-lock-12vdc-i109883946.html" rel="noopener">Lazada 12 V solenoid lock</a></li>
+    </ul>
+    <p>Lock mechanism 1. Companion pages: UP Oval Locker Bank and UP Oval Locker System. Source files: <code>jogger-locker/locks/</code> on branch <code>claude/jogger-locker-kiosk-r03nh0</code>.</p>
+  </footer>
+</main>
+
+</body>
+</html>
