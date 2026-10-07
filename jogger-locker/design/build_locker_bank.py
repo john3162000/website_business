@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
-Draws the 30-door jogger locker bank as inline SVG (front elevation, side
-section, floor plan) and fills the drawings into locker_bank_template.html:
+Draws the 30-door jogger locker bank as inline SVG (unfolded front elevation,
+side section, floor plan) and fills the drawings into locker_bank_template.html:
 
   locker-bank.html           the page as published to Claude
   up-oval-locker-bank.html   stand-alone copy to save and open in a browser
 
-The door layout lives in COLUMNS; change it and rerun. Units are millimetres.
-Standard library only:  python3 build_locker_bank.py
+The bank is an L that fits a 2 x 2 m spot: two wings of three columns joined
+by a corner block. The door layout lives in COLUMNS and FOLD; change them and
+rerun. Units are millimetres. Standard library only:  python3 build_locker_bank.py
 """
 
 from html import escape
@@ -23,18 +24,35 @@ SIGN_TOP = 1850       # top of the lit sign band
 CANOPY = 50           # canopy slab, outdoor sites only
 CANOPY_REACH = 300    # canopy projection past the door face
 USER_ZONE = 1000      # clear floor in front of the doors
-SIDE_CLEAR = 100      # clear floor at each end
 DOOR_SWING = 360      # door leaf width
+LOT = 2000            # side of the square floor spot
 PITCH = {"S": 160, "M": 320, "L": 640}
 
-# Columns left to right, doors top to bottom. None is the control column.
-COLUMNS = ["MMMMM", "MMMMM", "SSSSML", None, "SSLL", "MMMMM", "MMMMM"]
-WIDTH = MODULE * len(COLUMNS)
+# Columns in reading order as you face the doors, doors top to bottom; None is
+# the control column. The first FOLD columns form the left wing, the rest the
+# right wing, and the wings meet at a DEPTH x DEPTH corner block. Doors hinge on
+# the side away from the corner.
+COLUMNS = ["MMMMM", "SSMMMM", "SSSSMMM", None, "SSSSMMM", "MMMMM"]
+FOLD = 3
+WIDTH = MODULE * len(COLUMNS)            # both wings laid flat
+WING_A = MODULE * FOLD                   # left wing door face
+WING_B = MODULE * (len(COLUMNS) - FOLD)  # right wing door face
 FLOOR = 2000          # SVG y of the floor line in the elevation and section
 
 for col in COLUMNS:
     assert col is None or sum(PITCH[s] for s in col) == DOOR_TOP - PLINTH, col
 assert sum(len(c) for c in COLUMNS if c) == 30
+assert None in COLUMNS[FOLD:], "the control column belongs on the right wing"
+assert DEPTH + max(WING_A, WING_B) <= LOT, "a wing is longer than the spot"
+assert LOT - DEPTH - DOOR_SWING >= USER_ZONE, "not enough room to stand past an open door"
+
+
+def door_counts():
+    counts = {}
+    for col in COLUMNS:
+        for size in col or "":
+            counts[size] = counts.get(size, 0) + 1
+    return counts
 
 
 def Y(height):
@@ -147,11 +165,14 @@ def control_column(x0):
 
 def elevation():
     out = [hatch("hatchA")]
+    fold_x = FOLD * MODULE
     out.append(rect(-100, Y(SIGN_TOP + CANOPY), WIDTH + 200, CANOPY, "opt"))
-    out.append(text(WIDTH / 2, Y(SIGN_TOP + CANOPY) - 24, "Canopy, outdoor sites only", 52, "t", "middle"))
+    out.append(text(fold_x / 2, Y(SIGN_TOP + CANOPY) - 24, "Canopy, outdoor sites only", 52, "t", "middle"))
     out.append(rect(0, Y(SIGN_TOP), WIDTH, SIGN_TOP - PLINTH, "body"))
     out.append(rect(0, Y(SIGN_TOP), WIDTH, SIGN_TOP - DOOR_TOP, "sign"))
-    out.append(text(WIDTH / 2, Y((SIGN_TOP + DOOR_TOP) / 2) + 23, "LOCKERS  ·  4 HOURS  ·  PAY BY QR", 64, "sign-t", "middle"))
+    sign_y = Y((SIGN_TOP + DOOR_TOP) / 2) + 23
+    out.append(text(fold_x / 2, sign_y, "LOCKERS  ·  4 HOURS", 64, "sign-t", "middle"))
+    out.append(text((fold_x + WIDTH) / 2, sign_y, "PAY BY QR", 64, "sign-t", "middle"))
     out.append(rect(50, Y(PLINTH), WIDTH - 100, PLINTH, "plinth"))
 
     number = 0
@@ -166,18 +187,21 @@ def elevation():
             h = PITCH[size]
             k = size.lower()
             out.append(rect(x0 + 10, Y(top) + 5, MODULE - 20, h - 10, f"door door-{k}", rx=6))
-            out.append(text(x0 + 38, Y(top) + 72, str(number), 62, f"door-t-{k} b"))
-            out.append(text(x0 + MODULE - 38, Y(top) + 72, size, 52, f"door-t-{k}", "end"))
+            out.append(text(x0 + 38, Y(top) + 72 if h > 200 else Y(top) + h / 2 + 22, str(number), 62 if h > 200 else 56, f"door-t-{k} b"))
+            out.append(text(x0 + MODULE - 38, Y(top) + 72 if h > 200 else Y(top) + h / 2 + 19, size, 52 if h > 200 else 48, f"door-t-{k}", "end"))
             top -= h
     for c in range(1, len(COLUMNS)):
         out.append(line(c * MODULE, Y(DOOR_TOP), c * MODULE, Y(PLINTH), "frame"))
     out.append(rect(0, Y(SIGN_TOP), WIDTH, SIGN_TOP - PLINTH, "outline"))
+    out.append(line(fold_x, Y(SIGN_TOP + CANOPY) - 70, fold_x, FLOOR + 40, "fold"))
+    out.append(text(fold_x, Y(SIGN_TOP + CANOPY) - 90, "Inner corner", 50, "t-strong", "middle"))
     out.append(rect(-200, FLOOR, WIDTH + 400, 45, fill="url(#hatchA)"))
     out.append(line(-200, FLOOR, WIDTH + 200, FLOOR, "floor"))
 
     for c in range(len(COLUMNS)):
         out += hdim(c * MODULE, (c + 1) * MODULE, FLOOR + 95, "400", size=46)
-    out += hdim(0, WIDTH, FLOOR + 215, f"{WIDTH:,}", ext_from=FLOOR, size=56)
+    out += hdim(0, fold_x, FLOOR + 215, f"Left wing {WING_A:,}", ext_from=FLOOR, size=52)
+    out += hdim(fold_x, WIDTH, FLOOR + 215, f"Right wing {WING_B:,}", ext_from=FLOOR, size=52)
     out += vdim(Y(PLINTH), Y(0), -150, "100", ext_from=0, size=46, side="right")
     out += vdim(Y(DOOR_TOP), Y(PLINTH), -150, "1,600", ext_from=0)
     out += vdim(Y(SIGN_TOP), Y(DOOR_TOP), -150, "150", ext_from=0, size=46, side="right")
@@ -186,11 +210,12 @@ def elevation():
     for lo, hi in zip(marks, marks[1:]):
         out += vdim(Y(hi), Y(lo), WIDTH + 110, "320", ext_from=WIDTH, size=46, side="right")
 
-    label = ("Front elevation of the locker bank: seven 400 mm columns, 2,800 mm wide and 1,850 mm tall. "
-             "Doors 1 to 10 and 21 to 30 are backpack doors; column 3 holds four small doors, one backpack "
-             "and one large door; column 5 holds two small and two large doors; the middle column holds the "
-             "touch screen, QR payment plate and service cabinet.")
-    return svg(f"-440 -60 {WIDTH + 740} 2330", label, out)
+    counts = door_counts()
+    label = (f"Unfolded front elevation of the L-shaped locker bank: six 400 mm columns, three on each wing, "
+             f"1,850 mm tall. {counts.get('S', 0)} small doors sit high in the columns on either side of the "
+             f"inner corner, {counts.get('M', 0)} backpack doors fill the rest, and the first column of the right "
+             f"wing holds the touch screen, QR payment plate and service cabinet.")
+    return svg(f"-440 -160 {WIDTH + 740} 2430", label, out)
 
 
 def section():
@@ -238,50 +263,92 @@ def section():
 
 
 def plan():
-    out = [hatch("hatchC")]
+    """Top view of the L in the square spot. The back of the right wing is at the
+    top (y = 0) and the back of the left wing on the left (x = 0)."""
+    out = []
     ctrl = COLUMNS.index(None)
-    out.append(rect(-100, -100, WIDTH + 200, 100, fill="url(#hatchC)"))
-    out.append(line(-100, 0, WIDTH + 100, 0, "wall-face"))
-    out.append(rect(-SIDE_CLEAR, DEPTH, WIDTH + 2 * SIDE_CLEAR, USER_ZONE, "zone"))
-    out.append(rect(-100, 0, WIDTH + 200, DEPTH + CANOPY_REACH, "opt"))
-    out.append(rect(0, 0, WIDTH, DEPTH, "body"))
-    out.append(rect(ctrl * MODULE, 0, MODULE, DEPTH, "panel"))
-    for c in range(1, len(COLUMNS)):
-        out.append(line(c * MODULE, 0, c * MODULE, DEPTH, "frame"))
-    out.append(rect(0, 0, WIDTH, DEPTH, "outline"))
-    names = {"MMMMM": "5 M", "SSSSML": "4 S, M, L", "SSLL": "2 S, 2 L", None: "Control"}
-    for c, col in enumerate(COLUMNS):
-        out.append(text(c * MODULE + MODULE / 2, DEPTH / 2 + 18, names[col], 50, "t-strong", "middle"))
-    for c, col in enumerate(COLUMNS):
-        hx = c * MODULE + 20
-        out.append(line(hx, DEPTH, hx, DEPTH + DOOR_SWING, "leaf" if col else "swing-opt"))
-        out.append(tag("path", cls="swing" if col else "swing-opt",
-                       d=f"M{num(hx + DOOR_SWING)},{num(DEPTH)} A{DOOR_SWING},{DOOR_SWING} 0 0 1 "
-                         f"{num(hx)},{num(DEPTH + DOOR_SWING)}"))
-    area = (WIDTH + 2 * SIDE_CLEAR) / 1000 * (DEPTH + USER_ZONE) / 1000
-    out.append(text(WIDTH / 2, DEPTH + 640, f"Clear strip: keep {USER_ZONE:,} mm free", 56, "t-strong", "middle"))
-    out.append(text(WIDTH / 2, DEPTH + 720,
-                    f"Planning area {(WIDTH + 2 * SIDE_CLEAR) / 1000:.2f} × {(DEPTH + USER_ZONE) / 1000:.2f} m = {area:.2f} m²",
-                    52, "t", "middle"))
+    far = LOT - DEPTH                      # clear floor from a door face to the open side
+    out.append(rect(0, 0, LOT, LOT, "lot"))
+    out.append(rect(DEPTH, DEPTH, far, far, "zone"))
+    reach = DEPTH + CANOPY_REACH
+    out.append(tag("path", cls="opt",
+                   d=f"M0,0 H{num(DEPTH + WING_B + 100)} V{num(reach)} H{num(reach)} "
+                     f"V{num(DEPTH + WING_A + 100)} H0 Z"))
+    out.append(rect(0, 0, DEPTH, DEPTH, "body"))
+    out.append(rect(0, DEPTH, DEPTH, WING_A, "body"))
+    out.append(rect(DEPTH, 0, WING_B, DEPTH, "body"))
+    out.append(rect(DEPTH + (ctrl - FOLD) * MODULE, 0, MODULE, DEPTH, "panel"))
+    for k in range(1, FOLD):
+        out.append(line(0, DEPTH + k * MODULE, DEPTH, DEPTH + k * MODULE, "frame"))
+    for k in range(1, len(COLUMNS) - FOLD):
+        out.append(line(DEPTH + k * MODULE, 0, DEPTH + k * MODULE, DEPTH, "frame"))
+    out.append(line(DEPTH, 0, DEPTH, DEPTH, "frame"))
+    out.append(line(0, DEPTH, DEPTH, DEPTH, "frame"))
+    out.append(tag("path", cls="outline",
+                   d=f"M0,0 H{num(DEPTH + WING_B)} V{num(DEPTH)} H{num(DEPTH)} V{num(DEPTH + WING_A)} H0 Z"))
 
-    out += hdim(0, WIDTH, -175, f"{WIDTH:,}", ext_from=0, size=54)
-    out += hdim(-SIDE_CLEAR, WIDTH + SIDE_CLEAR, DEPTH + USER_ZONE + 140,
-                f"{WIDTH + 2 * SIDE_CLEAR:,}", ext_from=DEPTH + USER_ZONE, size=54)
-    out += vdim(0, DEPTH, -200, f"{DEPTH}", ext_from=0)
-    out += vdim(DEPTH, DEPTH + USER_ZONE, -200, f"{USER_ZONE:,}", ext_from=-SIDE_CLEAR)
-    out += vdim(0, DEPTH + USER_ZONE, -350, f"{DEPTH + USER_ZONE:,}")
+    def name(col):
+        if col is None:
+            return ["Control", "screen"]
+        counts = [f"{col.count(sz)} {sz}" if col.count(sz) > 1 else sz for sz in "SML" if sz in col]
+        return [", ".join(counts)]
 
-    label = (f"Floor plan: the locker bank is 2,800 by 620 mm against a wall. Each door swings 360 mm into a "
-             f"1,000 mm clear strip in front, and 100 mm is kept free at each end, for a planning area of "
-             f"{area:.2f} square metres.")
-    return svg(f"-460 -260 {WIDTH + 600} {DEPTH + USER_ZONE + 470}", label, out)
+    out.append(text(DEPTH / 2, DEPTH / 2 - 8, "Corner", 46, "t", "middle"))
+    out.append(text(DEPTH / 2, DEPTH / 2 + 50, "block", 46, "t", "middle"))
+    for c, col in enumerate(COLUMNS):
+        if c < FOLD:                       # left wing, reading order runs toward the corner
+            y0 = DEPTH + (FOLD - 1 - c) * MODULE
+            cx, cy = DEPTH / 2, y0 + MODULE / 2
+            hinge = y0 + MODULE - 20       # hinge on the side away from the corner
+            out.append(line(DEPTH, hinge, DEPTH + DOOR_SWING, hinge, "leaf"))
+            out.append(tag("path", cls="swing",
+                           d=f"M{num(DEPTH)},{num(hinge - DOOR_SWING)} A{DOOR_SWING},{DOOR_SWING} 0 0 1 "
+                             f"{num(DEPTH + DOOR_SWING)},{num(hinge)}"))
+        else:                              # right wing, reading order runs away from the corner
+            x0 = DEPTH + (c - FOLD) * MODULE
+            cx, cy = x0 + MODULE / 2, DEPTH / 2
+            hinge = x0 + MODULE - 20
+            cls = "leaf" if col else "swing-opt"
+            out.append(line(hinge, DEPTH, hinge, DEPTH + DOOR_SWING, cls))
+            out.append(tag("path", cls="swing" if col else "swing-opt",
+                           d=f"M{num(hinge - DOOR_SWING)},{num(DEPTH)} A{DOOR_SWING},{DOOR_SWING} 0 0 0 "
+                             f"{num(hinge)},{num(DEPTH + DOOR_SWING)}"))
+        rows = name(col)
+        for i, row in enumerate(rows):
+            out.append(text(cx, cy + 18 + (i - (len(rows) - 1) / 2) * 58, row, 48, "t-strong", "middle"))
+
+    mid = DEPTH + far / 2
+    out.append(text(mid + 110, mid - 30, "Standing area", 58, "t-strong", "middle"))
+    out.append(text(mid + 110, mid + 45, f"{far / 1000:.2f} × {far / 1000:.2f} m", 52, "t", "middle"))
+    out.append(text(mid + 110, mid + 115, f"{far - DOOR_SWING:,} mm clear past an open door", 44, "t", "middle"))
+    out.append(text(LOT / 2 + DEPTH / 2, LOT + 95, "Open side", 46, "t", "middle"))
+    out.append(text(LOT + 95, LOT / 2 + DEPTH / 2, "Open side", 46, "t", "middle", rotate=True))
+
+    out += hdim(0, LOT, -250, f"{LOT:,} spot", ext_from=0, size=54)
+    out += hdim(0, DEPTH, -110, f"{DEPTH}", ext_from=0, size=46)
+    out += hdim(DEPTH, DEPTH + WING_B, -110, f"{WING_B:,}", ext_from=0, size=46)
+    out += hdim(DEPTH + WING_B, LOT, -110, f"{LOT - DEPTH - WING_B}", ext_from=0, size=46)
+    out += vdim(0, LOT, -380, f"{LOT:,} spot", ext_from=0)
+    out += vdim(0, DEPTH, -200, f"{DEPTH}", ext_from=0, size=46)
+    out += vdim(DEPTH, DEPTH + WING_A, -200, f"{WING_A:,}", ext_from=0, size=46)
+    out += vdim(DEPTH + WING_A, LOT, -200, f"{LOT - DEPTH - WING_A}", ext_from=0, size=46)
+    out += hdim(DEPTH, LOT, LOT + 230, f"{far:,}", ext_from=LOT, size=50)
+
+    unit = (DEPTH * DEPTH + DEPTH * (WING_A + WING_B)) / 1e6
+    label = (f"Floor plan of the {LOT / 1000:.0f} by {LOT / 1000:.0f} metre spot. The locker bank is an L along two "
+             f"sides: a corner block, a left wing of three columns facing right and a right wing of three columns "
+             f"facing down, covering {unit:.2f} square metres. Doors hinge on the side away from the corner and "
+             f"swing {DOOR_SWING} mm into a {far / 1000:.2f} metre square standing area that opens onto the walkway "
+             f"on the two open sides. The control column with the screen is next to the inner corner.")
+    return svg(f"-520 -380 {LOT + 760} {LOT + 760}", label, out)
 
 
 def main():
     template = (HERE / "locker_bank_template.html").read_text(encoding="utf-8")
     page = (template.replace("{{ELEVATION}}", elevation())
                     .replace("{{SECTION}}", section())
-                    .replace("{{PLAN}}", plan()))
+                    .replace("{{PLAN}}", plan())
+                    .replace("{{ELEV_W}}", str(WIDTH + 740)))
     assert "{{" not in page
     (HERE / "locker-bank.html").write_text(page, encoding="utf-8")
     body_start = page.index('<main class="page">')

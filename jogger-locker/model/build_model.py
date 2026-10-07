@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Builds the 3D locker page from locker_3d_template.html, using the same door
-layout and measurements as design/build_locker_bank.py:
+Builds the 3D locker page from locker_3d_template.html, using the same L-shaped
+door layout and measurements as design/build_locker_bank.py:
 
   locker-3d.html           the page as published to Claude (three.js from a CDN)
   up-oval-locker-3d.html   stand-alone copy; with --three-dir it carries three.js
@@ -26,6 +26,22 @@ CDN = f"https://cdn.jsdelivr.net/npm/three@{THREE_VERSION}"
 SCRIPTS = ["build/three.min.js", "examples/js/controls/OrbitControls.js"]
 
 
+def demo_door():
+    """The first backpack door in the column right after the control column,
+    which sits beside the screen at waist height: the door the story uses."""
+    number = 0
+    after_control = False
+    for col in design.COLUMNS:
+        if col is None:
+            after_control = True
+            continue
+        for size in col:
+            number += 1
+            if after_control and size == "M":
+                return number
+    raise ValueError("no backpack door after the control column")
+
+
 def params():
     return {
         "module": design.MODULE,
@@ -37,6 +53,9 @@ def params():
         "canopyReach": design.CANOPY_REACH,
         "pitch": design.PITCH,
         "columns": design.COLUMNS,
+        "fold": design.FOLD,
+        "lot": design.LOT,
+        "demo": demo_door(),
     }
 
 
@@ -46,7 +65,7 @@ def main():
     args = parser.parse_args()
 
     template = (HERE / "locker_3d_template.html").read_text(encoding="utf-8")
-    page = template.replace("__PARAMS__", json.dumps(params()))
+    page = template.replace("__PARAMS__", json.dumps(params())).replace("__DEMO__", str(demo_door()))
     cdn_tags = "\n".join(f'<script src="{CDN}/{path}"></script>' for path in SCRIPTS)
     (HERE / "locker-3d.html").write_text(page.replace("<!--THREE-->", cdn_tags), encoding="utf-8")
 

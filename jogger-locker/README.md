@@ -45,13 +45,16 @@ calculator.
 
 ## Locker design
 
-`design/` holds the proposed 30-door locker bank: 6 small doors with USB
-charging, 21 backpack doors and 3 large doors around a control column.
-It is 2.80 x 0.62 x 1.85 m and needs about 4.9 m2 of floor with a clear strip
-in front. The page also estimates rent at DiliMall and Gyud Food.
+`design/` holds the proposed 30-door locker bank for a 2 x 2 m spot: an L
+of two wings, three 400 mm columns each, joined by a corner block, with 10
+small doors with USB charging, 20 backpack doors and a control column next
+to the inner corner. Each wing is 1.82 x 0.62 m and 1.85 m tall, leaving a
+1.38 m square to stand in. The page also estimates rent for the spot at
+DiliMall and Gyud Food. (Proposal 1 was a 2.80 m straight bank.)
 
-- `design/build_locker_bank.py`: draws the elevation, section and floor plan
-  from the door layout in `COLUMNS` and fills them into the template
+- `design/build_locker_bank.py`: draws the unfolded elevation, section and
+  floor plan from the door layout in `COLUMNS` and `FOLD` (columns on the
+  left wing) and fills them into the template
 - `design/locker_bank_template.html`: page text and styling
 - `design/locker-bank.html`: the finished page, as published to Claude
 - `design/up-oval-locker-bank.html`: stand-alone copy to save and open
@@ -89,9 +92,10 @@ lists what to ask suppliers with a parts budget, and gives a bench test.
 ## 3D model
 
 `model/` builds an interactive three.js model of the locker bank from the
-same door layout as `design/`, with a scripted rental at door 15 (pay by QR,
-store a backpack, collect it with the PIN), tap-to-open doors, a canopy,
-size colors, a 1.60 m figure for scale and 5 AM lighting.
+same L-shaped door layout as `design/`, standing in a taped 2 x 2 m spot, with
+a scripted rental at door 23 (pay by QR, store a backpack, collect it with the
+PIN), tap-to-open doors, a canopy, size colors, a 1.60 m figure for scale and
+5 AM lighting.
 
 - `model/build_model.py`: fills the template with the design measurements;
   `--three-dir node_modules/three` (three@0.147.0) inlines three.js into the

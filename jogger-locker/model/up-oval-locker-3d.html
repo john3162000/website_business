@@ -220,18 +220,18 @@ select {
 <body>
 <main class="page">
   <header class="masthead">
-    <p class="eyebrow">Jogger locker kiosk · 3D model 1 · 26 Sep 2026</p>
+    <p class="eyebrow">Jogger locker kiosk · 3D model 2, for a 2 × 2 m spot · 7 Oct 2026</p>
     <h1>UP Oval Locker 3D</h1>
-    <p class="lede">The 30-door locker bank from the drawings, built to the same measurements. Drag to turn it, pinch or scroll to zoom, and tap any door to open it. Press play to watch a jogger pay by QR, leave a backpack in door 15 and collect it after the run.</p>
+    <p class="lede">The 30-door L-shaped locker bank from the drawings, built to the same measurements and standing in a 2 × 2 m spot. Drag to turn it, pinch or scroll to zoom, and tap any door to open it. Press play to watch a jogger pay by QR, leave a backpack in door 23 and collect it after the run.</p>
   </header>
 
   <section class="stage" aria-label="3D model">
     <div class="viewer" id="viewer">
-      <canvas id="scene" role="img" aria-label="3D model of the 30-door locker bank with its touch-screen control column. Use the buttons below to play the rental, change the view or open doors."></canvas>
+      <canvas id="scene" role="img" aria-label="3D model of the 30-door L-shaped locker bank in a 2 by 2 metre spot, with its touch-screen control column. Use the buttons below to play the rental, change the view or open doors."></canvas>
       <p class="video-title">UP Oval Locker · a rental</p>
       <div class="caption" id="caption" aria-live="polite">
         <span class="caption-no" id="captionNo">Ready</span>
-        <span class="caption-text" id="captionText">Press play to watch a rental at door 15.</span>
+        <span class="caption-text" id="captionText">Press play to watch a rental at door 23.</span>
       </div>
       <p class="fallback" id="fallback" hidden>The 3D view could not load. It needs the three.js library from the internet the first time you open it.</p>
     </div>
@@ -243,8 +243,8 @@ select {
       <div class="group" role="group" aria-label="View">
         <span class="group-label">View</span>
         <button class="btn" type="button" data-view="angle">Angle</button>
-        <button class="btn" type="button" data-view="front">Front</button>
-        <button class="btn" type="button" data-view="side">Side</button>
+        <button class="btn" type="button" data-view="side">Left wing</button>
+        <button class="btn" type="button" data-view="front">Right wing</button>
         <button class="btn" type="button" data-view="screen">Screen</button>
       </div>
       <div class="group" role="group" aria-label="Show">
@@ -274,8 +274,8 @@ select {
   <section class="section" aria-labelledby="specTitle">
     <h2 id="specTitle">What's in the model</h2>
     <dl class="specs">
-      <div><dt>Size</dt><dd>2.80 m wide, 0.62 m deep, 1.85 m tall, in seven 400 mm columns</dd></div>
-      <div><dt>Doors</dt><dd>6 small, 21 backpack and 3 large, numbered column by column</dd></div>
+      <div><dt>Size</dt><dd>An L of two 1.82 m wings, 0.62 m deep and 1.85 m tall, in six 400 mm columns; it fits a 2 × 2 m spot, marked by the floor tape</dd></div>
+      <div><dt>Doors</dt><dd>10 small and 20 backpack, numbered column by column from the open end of the left wing; each hinges on the side away from the corner</dd></div>
       <div><dt>Control column</dt><dd>10-inch touch screen, instruction plate and a locked service cabinet</dd></div>
       <div><dt>Outdoors</dt><dd>Turn on the canopy for a site without a roof; the lit sign band covers 5 AM</dd></div>
       <div><dt>3D file</dt><dd><code>up-oval-locker.glb</code>, openable in 3D viewer apps, with door animations</dd></div>
@@ -1404,7 +1404,7 @@ select {
 <script>
 (function () {
   "use strict";
-  const P = {"module": 400, "depth": 620, "plinth": 100, "doorTop": 1700, "signTop": 1850, "canopy": 50, "canopyReach": 300, "pitch": {"S": 160, "M": 320, "L": 640}, "columns": ["MMMMM", "MMMMM", "SSSSML", null, "SSLL", "MMMMM", "MMMMM"]};
+  const P = {"module": 400, "depth": 620, "plinth": 100, "doorTop": 1700, "signTop": 1850, "canopy": 50, "canopyReach": 300, "pitch": {"S": 160, "M": 320, "L": 640}, "columns": ["MMMMM", "SSMMMM", "SSSSMMM", null, "SSSSMMM", "MMMMM"], "fold": 3, "lot": 2000, "demo": 23};
   const viewer = document.getElementById("viewer");
   const canvas = document.getElementById("scene");
   const captionNo = document.getElementById("captionNo");
@@ -1419,8 +1419,15 @@ select {
   const COLS = P.columns;
   const MOD = mm(P.module), DEPTH = mm(P.depth), PLINTH = mm(P.plinth);
   const DOOR_TOP = mm(P.doorTop), SIGN_TOP = mm(P.signTop);
-  const WIDTH = MOD * COLS.length, X0 = -WIDTH / 2, T = 0.02;
-  const DEMO = 15;
+  const T = 0.02;
+  // The bank is an L. The first P.fold columns form the left wing, whose doors
+  // face +x along x = CX; the rest form the right wing, whose doors face +z
+  // along z = 0. A corner block fills the square behind the inner corner (CX, 0).
+  const WINGS = [COLS.slice(0, P.fold), COLS.slice(P.fold)];
+  const WA = MOD * WINGS[0].length, WB = MOD * WINGS[1].length;
+  const CX = -(Math.max(WINGS[1].indexOf(null), 0) + 0.5) * MOD;
+  const LOT = mm(P.lot);
+  const DEMO = P.demo;
   const OPEN_DEG = -100;
   const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   const clamp01 = (v) => Math.min(1, Math.max(0, v));
@@ -1457,8 +1464,8 @@ select {
   sun.shadow.bias = -0.0004;
   sun.shadow.normalBias = 0.02;
   const led = new THREE.SpotLight(0xfff1dc, 0, 5, 1.1, 0.7, 1.4);
-  led.position.set(0, SIGN_TOP - 0.16, 0.35);
-  led.target.position.set(0, 0.4, 0.7);
+  led.position.set(CX + 0.45, SIGN_TOP - 0.16, 0.45);
+  led.target.position.set(CX + 0.75, 0.3, 0.75);
   scene.add(hemi, sun, led, led.target);
 
   const std = (hex, roughness = 0.6, metalness = 0.15) =>
@@ -1513,27 +1520,52 @@ select {
   }
 
   const zone = DOOR_TOP - PLINTH;
-  box(WIDTH, SIGN_TOP - PLINTH, T, M.inside, 0, PLINTH + (SIGN_TOP - PLINTH) / 2, -DEPTH + T / 2);
-  box(WIDTH - 0.1, PLINTH, DEPTH - 0.05, M.plinth, 0, PLINTH / 2, -DEPTH / 2 - 0.025);
-  for (let k = 0; k <= COLS.length; k++) {
-    const x = X0 + k * MOD + (k === 0 ? T / 2 : k === COLS.length ? -T / 2 : 0);
-    box(T, zone, DEPTH, M.carcass, x, PLINTH + zone / 2, -DEPTH / 2);
+  // Each wing is built in its own frame: x runs along the door face in reading
+  // order from 0 to the wing's width, doors face +z, the back is at z = -DEPTH.
+  const wingA = new THREE.Group();
+  wingA.name = "left-wing";
+  wingA.position.set(CX, 0, WA);
+  wingA.rotation.y = Math.PI / 2;
+  const wingB = new THREE.Group();
+  wingB.name = "right-wing";
+  wingB.position.set(CX, 0, 0);
+  model.add(wingA, wingB);
+  const signs = [];
+  function carcass(group, width, words) {
+    box(width, SIGN_TOP - PLINTH, T, M.inside, width / 2, PLINTH + (SIGN_TOP - PLINTH) / 2, -DEPTH + T / 2, group);
+    box(width - 0.05, PLINTH, DEPTH - 0.05, M.plinth, width / 2, PLINTH / 2, -DEPTH / 2 - 0.025, group);
+    const n = Math.round(width / MOD);
+    for (let k = 0; k <= n; k++) {
+      const x = k * MOD + (k === 0 ? T / 2 : k === n ? -T / 2 : 0);
+      box(T, zone, DEPTH, M.carcass, x, PLINTH + zone / 2, -DEPTH / 2, group);
+    }
+    const art = canvasTexture(1024, Math.round((1024 * (SIGN_TOP - DOOR_TOP)) / width));
+    const mat = new THREE.MeshStandardMaterial({
+      map: art.tex, emissive: 0xffffff, emissiveMap: art.tex, emissiveIntensity: 0.3, roughness: 0.4,
+    });
+    const signBox = new THREE.Mesh(new THREE.BoxGeometry(width, SIGN_TOP - DOOR_TOP, DEPTH),
+      [M.carcass, M.carcass, M.carcass, M.carcass, mat, M.carcass]);
+    signBox.position.set(width / 2, (SIGN_TOP + DOOR_TOP) / 2, -DEPTH / 2);
+    signBox.castShadow = signBox.receiveShadow = true;
+    group.add(signBox);
+    signs.push({ art, words, mat });
   }
+  carcass(wingA, WA, "LOCKERS  ·  4 HOURS");
+  carcass(wingB, WB, "PAY BY QR");
+  const cornerBlock = box(DEPTH, SIGN_TOP - PLINTH, DEPTH, M.carcass, CX - DEPTH / 2, PLINTH + (SIGN_TOP - PLINTH) / 2, -DEPTH / 2);
+  cornerBlock.name = "corner-block";
+  box(DEPTH - 0.05, PLINTH, DEPTH - 0.05, M.plinth, CX - DEPTH / 2 - 0.025, PLINTH / 2, -DEPTH / 2 - 0.025);
 
-  const sign = canvasTexture(2048, 110);
-  const signMat = new THREE.MeshStandardMaterial({
-    map: sign.tex, emissive: 0xffffff, emissiveMap: sign.tex, emissiveIntensity: 0.3, roughness: 0.4,
-  });
-  const signBox = new THREE.Mesh(new THREE.BoxGeometry(WIDTH, SIGN_TOP - DOOR_TOP, DEPTH),
-    [M.carcass, M.carcass, M.carcass, M.carcass, signMat, M.carcass]);
-  signBox.position.set(0, (SIGN_TOP + DOOR_TOP) / 2, -DEPTH / 2);
-  signBox.castShadow = signBox.receiveShadow = true;
-  model.add(signBox);
-
-  const canopy = box(WIDTH + 0.2, mm(P.canopy), DEPTH + mm(P.canopyReach), M.canopy,
-    0, SIGN_TOP + mm(P.canopy) / 2, (mm(P.canopyReach) - DEPTH) / 2);
+  const canopy = new THREE.Group();
   canopy.name = "canopy";
   canopy.visible = false;
+  model.add(canopy);
+  {
+    const reach = mm(P.canopyReach), th = mm(P.canopy), y = SIGN_TOP + th / 2;
+    const backW = DEPTH + WB + 0.1, sideL = WA + 0.1 - reach;
+    box(backW, th, DEPTH + reach, M.canopy, CX - DEPTH + backW / 2, y, -DEPTH + (DEPTH + reach) / 2, canopy);
+    box(DEPTH + reach, th, sideL, M.canopy, CX - DEPTH + (DEPTH + reach) / 2, y, reach + sideL / 2, canopy);
+  }
 
   const SIZE_FILL = { S: "#86b6ef", M: "#3987e5", L: "#1c5cab" };
   const SIZE_INK = { S: "#0b0b0b", M: "#0b0b0b", L: "#ffffff" };
@@ -1541,8 +1573,8 @@ select {
   const doors = [];
   let screen = null, plate = null;
 
-  function shelf(left, y) {
-    box(MOD - T, T, DEPTH - T - 0.004, M.carcass, left + MOD / 2, y + T / 2, -DEPTH / 2 + T / 2 - 0.002);
+  function shelf(left, y, group) {
+    box(MOD - T, T, DEPTH - T - 0.004, M.carcass, left + MOD / 2, y + T / 2, -DEPTH / 2 + T / 2 - 0.002, group);
   }
   function drawDoor(d) {
     const { g, c } = d.art;
@@ -1571,68 +1603,74 @@ select {
     g.fillText(d.size, c.width - 0.022 * px, c.height / 2);
     d.art.tex.needsUpdate = true;
   }
-  function makeDoor(n, size, left, bottom, h) {
+  function makeDoor(n, size, left, bottom, h, group, hingeRight) {
     const w = MOD - 0.024, dh = h - 0.008, t = 0.012;
+    const side = hingeRight ? -1 : 1;
     const art = canvasTexture(256, Math.round((256 * dh) / w));
     const front = new THREE.MeshStandardMaterial({ map: art.tex, roughness: 0.45, metalness: 0.15 });
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, dh, t), [M.edge, M.edge, M.edge, M.edge, front, M.edge]);
-    mesh.position.set(w / 2, 0, t / 2);
+    mesh.position.set((side * w) / 2, 0, t / 2);
     mesh.castShadow = mesh.receiveShadow = true;
     mesh.userData.door = n;
     mesh.name = `door-${n}`;
     const hinge = new THREE.Group();
     hinge.name = `door-${n}-hinge`;
-    hinge.position.set(left + 0.012, bottom + h / 2, 0.001);
+    hinge.position.set(hingeRight ? left + MOD - 0.012 : left + 0.012, bottom + h / 2, 0.001);
     hinge.add(mesh);
-    model.add(hinge);
-    const door = { n, size, w, hinge, mesh, art, angle: 0, from: 0, to: 0, t0: 0, dur: 0 };
+    group.add(hinge);
+    const door = { n, size, w, side, hinge, mesh, art, angle: 0, from: 0, to: 0, t0: 0, dur: 0 };
     drawDoor(door);
     return door;
   }
-  function buildControl(left) {
+  function buildControl(left, group) {
     const cx = left + MOD / 2;
-    box(MOD - T, zone, 0.012, M.panel, cx, PLINTH + zone / 2, -0.006);
-    box(0.31, 0.35, 0.022, M.housing, cx, 1.325, 0.011);
+    box(MOD - T, zone, 0.012, M.panel, cx, PLINTH + zone / 2, -0.006, group);
+    box(0.31, 0.35, 0.022, M.housing, cx, 1.325, 0.011, group);
     screen = canvasTexture(512, 591);
     const scr = new THREE.Mesh(new THREE.PlaneGeometry(0.26, 0.3),
       new THREE.MeshBasicMaterial({ map: screen.tex, toneMapped: false }));
     scr.name = "touch-screen";
     scr.position.set(cx, 1.325, 0.0225);
-    model.add(scr);
+    group.add(scr);
     plate = canvasTexture(310, 200);
     const plateMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.31, 0.2),
       new THREE.MeshStandardMaterial({ map: plate.tex, roughness: 0.6 }));
     plateMesh.name = "instruction-plate";
     plateMesh.position.set(cx, 1.0, 0.0015);
     plateMesh.receiveShadow = true;
-    model.add(plateMesh);
-    box(MOD - 0.024, 0.745, 0.012, M.service, cx, PLINTH + 0.005 + 0.745 / 2, 0.006).name = "service-cabinet";
+    group.add(plateMesh);
+    box(MOD - 0.024, 0.745, 0.012, M.service, cx, PLINTH + 0.005 + 0.745 / 2, 0.006, group).name = "service-cabinet";
     const key = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.012, 20), M.key);
     key.rotation.x = Math.PI / 2;
     key.position.set(cx + 0.14, 0.48, 0.016);
-    model.add(key);
+    group.add(key);
   }
 
   let number = 0;
-  COLS.forEach((col, c) => {
-    const left = X0 + c * MOD;
-    if (col === null) {
-      buildControl(left);
-      return;
-    }
-    let top = DOOR_TOP;
-    shelf(left, top - T);
-    for (const size of col) {
-      const h = mm(P.pitch[size]);
-      number += 1;
-      doors.push(makeDoor(number, size, left, top - h, h));
-      shelf(left, top - h);
-      top -= h;
-    }
+  [[wingA, WINGS[0], false], [wingB, WINGS[1], true]].forEach(([group, cols, hingeRight]) => {
+    cols.forEach((col, c) => {
+      const left = c * MOD;
+      if (col === null) {
+        buildControl(left, group);
+        return;
+      }
+      let top = DOOR_TOP;
+      shelf(left, top - T, group);
+      for (const size of col) {
+        const h = mm(P.pitch[size]);
+        number += 1;
+        doors.push(makeDoor(number, size, left, top - h, h, group, hingeRight));
+        shelf(left, top - h, group);
+        top -= h;
+      }
+    });
   });
   const doorMeshes = doors.map((d) => d.mesh);
   const demo = doors[DEMO - 1];
-  const demoX = demo.hinge.position.x + demo.w / 2;
+  model.updateMatrixWorld(true);
+  // The story's bag moves along z, so the demo door must be on the right wing.
+  const demoX = demo.mesh.getWorldPosition(new THREE.Vector3()).x;
+  const screenX = CX + (Math.max(WINGS[1].indexOf(null), 0) + 0.5) * MOD;
 
   // ---------------------------------------------------------------- surroundings
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(16, 16), M.floor);
@@ -1641,7 +1679,16 @@ select {
   const wall = new THREE.Mesh(new THREE.PlaneGeometry(12, 5), M.wall);
   wall.position.set(0, 2.5, -DEPTH - 0.01);
   wall.receiveShadow = true;
-  scene.add(floor, wall);
+  const sideWall = new THREE.Mesh(new THREE.PlaneGeometry(12, 5), M.wall);
+  sideWall.rotation.y = Math.PI / 2;
+  sideWall.position.set(CX - DEPTH - 0.01, 2.5, 0);
+  sideWall.receiveShadow = true;
+  scene.add(floor, wall, sideWall);
+  // Floor tape marking the open sides of the 2 x 2 m spot.
+  const tape = std("#8f8b80", 0.9, 0);
+  const lotX = CX - DEPTH, lotZ = -DEPTH, tw = 0.03;
+  box(LOT, 0.002, tw, tape, lotX + LOT / 2, 0.001, lotZ + LOT - tw / 2, scene).castShadow = false;
+  box(tw, 0.002, LOT, tape, lotX + LOT - tw / 2, 0.001, lotZ + LOT / 2, scene).castShadow = false;
 
   const person = new THREE.Group();
   person.name = "person-1.6m";
@@ -1661,7 +1708,8 @@ select {
   head.position.set(0, 1.49, 0);
   head.castShadow = true;
   person.add(head);
-  person.position.set(X0 - 0.55, 0, 0.55);
+  // Off to the side of the right wing's open end, clear of every camera view.
+  person.position.set(CX + WB + 0.45, 0, -0.5);
   person.rotation.y = 0.75;
   scene.add(person);
 
@@ -1677,16 +1725,18 @@ select {
 
   // ---------------------------------------------------------------- printed and screen artwork
   function drawSign() {
-    const { g, c } = sign;
-    g.fillStyle = "#1d1d1b";
-    g.fillRect(0, 0, c.width, c.height);
-    g.fillStyle = "#f5f5f2";
-    g.font = `700 64px ${FONT_D}`;
-    g.textAlign = "center";
-    g.textBaseline = "middle";
-    if ("letterSpacing" in g) g.letterSpacing = "10px";
-    g.fillText("LOCKERS  ·  4 HOURS  ·  PAY BY QR", c.width / 2, c.height / 2 + 3);
-    sign.tex.needsUpdate = true;
+    for (const { art, words } of signs) {
+      const { g, c } = art;
+      g.fillStyle = "#1d1d1b";
+      g.fillRect(0, 0, c.width, c.height);
+      g.fillStyle = "#f5f5f2";
+      g.font = `700 ${Math.round(c.height * 0.58)}px ${FONT_D}`;
+      g.textAlign = "center";
+      g.textBaseline = "middle";
+      if ("letterSpacing" in g) g.letterSpacing = "10px";
+      g.fillText(words, c.width / 2, c.height / 2 + 3);
+      art.tex.needsUpdate = true;
+    }
   }
   function drawPlate() {
     const { g, c } = plate;
@@ -1766,8 +1816,11 @@ select {
     const soft = "#c9d4e0", dim = "#8a99aa";
     if (state === "home") {
       text("Rent a locker", 122, 40, 700);
-      [["S", "₱30", "phone, keys"], ["M", "₱50", "backpack"], ["L", "₱80", "two bags"]].forEach(([s, price, what], i) => {
-        const y = 170 + i * 104, sel = s === "M";
+      const menu = [["S", "₱30", "phone, keys"], ["M", "₱50", "backpack"], ["L", "₱80", "two bags"]]
+        .filter(([s]) => COLS.some((col) => col && col.includes(s)));
+      const gap = menu.length > 2 ? 104 : 124, y0 = menu.length > 2 ? 170 : 196;
+      menu.forEach(([s, price, what], i) => {
+        const y = y0 + i * gap, sel = s === "M";
         g.fillStyle = sel ? "#3987e5" : "#1e2530";
         roundRect(g, 40, y, W - 80, 86, 14);
         g.fill();
@@ -1784,7 +1837,7 @@ select {
       });
       text("Open my locker", 524, 26, 600, soft);
     } else if (state === "pay") {
-      text("Door 15 · backpack · 4 hours", 110, 26, 600, soft);
+      text(`Door ${DEMO} · backpack · 4 hours`, 110, 26, 600, soft);
       drawQR(g, W / 2 - 125, 150, 250, 11);
       text("Scan to pay ₱50", 462, 36, 700);
       text("GCash, Maya or any bank app", 504, 22, 500, soft);
@@ -1804,9 +1857,9 @@ select {
       g.lineTo(W / 2 + 46, 222);
       g.stroke();
       text("Paid", 400, 46, 700);
-      text("Door 15 is opening", 450, 28, 600, soft);
+      text(`Door ${DEMO} is opening`, 450, 28, 600, soft);
     } else if (state === "pin") {
-      text("Door 15 is locked", 128, 34, 700);
+      text(`Door ${DEMO} is locked`, 128, 34, 700);
       text("Your PIN", 212, 24, 500, soft);
       text("482 913", 288, 76, 700);
       text("Ends 9:40 AM", 380, 30, 600);
@@ -1814,7 +1867,7 @@ select {
       text("to 09•• ••• 4417", 474, 24, 500, soft);
     } else if (state === "back") {
       text("Open my locker", 118, 36, 700);
-      text("Door 15", 170, 28, 600, soft);
+      text(`Door ${DEMO}`, 170, 28, 600, soft);
       for (let i = 0; i < 6; i++) {
         g.fillStyle = "#ffffff";
         g.beginPath();
@@ -1832,12 +1885,12 @@ select {
         g.fillText(k, x + 48, y + 32);
       });
     } else if (state === "open") {
-      text("Door 15 is open", 230, 42, 700);
+      text(`Door ${DEMO} is open`, 230, 42, 700);
       text("Take your things,", 300, 28, 500, soft);
       text("then close the door", 338, 28, 500, soft);
     } else if (state === "free") {
       text("Thank you!", 236, 50, 700);
-      text("Door 15 is free again", 304, 28, 600, soft);
+      text(`Door ${DEMO} is free again`, 304, 28, 600, soft);
       text("See you at the Oval", 360, 26, 500, dim);
     }
     screen.tex.needsUpdate = true;
@@ -1858,20 +1911,25 @@ select {
     const fitW = (w) => w / 2 / Math.tan(hfov / 2);
     const fitH = (h) => h / 2 / Math.tan(vfov / 2);
     const V = (x, y, z) => new THREE.Vector3(x, y, z);
+    // Each wing seen slightly from its open end, so the other wing stays out of the way.
     if (name === "front") {
-      return { pos: V(0, 1.05, Math.max(fitW(WIDTH + 0.6), fitH(2.3))), target: V(0, 0.98, 0) };
+      const x = CX + WB / 2, d = Math.max(fitW(WB + 1.2), fitH(2.4));
+      return { pos: V(x + 0.33 * d, 1.1, 0.94 * d), target: V(x, 0.98, 0) };
     }
     if (name === "side") {
-      return { pos: V(Math.max(fitW(2.4), fitH(2.4)), 1.2, 0.35), target: V(0, 0.98, -0.15) };
+      const z = WA / 2, d = Math.max(fitW(WA + 1.2), fitH(2.4));
+      return { pos: V(CX + 0.94 * d, 1.1, z + 0.33 * d), target: V(CX, 0.98, z) };
     }
     if (name === "screen") {
-      return { pos: V(0.1, 1.28, Math.max(fitW(1.1), fitH(0.9))), target: V(-0.1, 1.15, 0) };
+      return { pos: V(screenX + 0.1, 1.28, Math.max(fitW(1.1), fitH(0.9))), target: V(screenX - 0.1, 1.15, 0) };
     }
     if (name === "door") {
-      return { pos: V(-0.05, 1.2, Math.max(fitW(1.5), fitH(1.1))), target: V(-0.3, 0.98, 0) };
+      const dir = Math.sign(screenX - demoX) || -1;
+      return { pos: V(demoX + 0.35 * dir, 1.2, Math.max(fitW(1.5), fitH(1.1))), target: V(demoX + 0.1 * dir, 0.98, 0) };
     }
-    const d = Math.max(fitW(WIDTH + 1.4), fitH(2.5)) * 1.12;
-    return { pos: V(0.5, 0.3, 0.81).normalize().multiplyScalar(d).add(V(-0.2, 0.95, 0)), target: V(-0.25, 0.9, 0) };
+    const d = Math.max(fitW(DEPTH + Math.max(WA, WB) + 1.3), fitH(2.5)) * 1.12;
+    const target = V(CX + 0.4, 0.92, 0.4);
+    return { pos: V(0.66, 0.3, 0.69).normalize().multiplyScalar(d).add(target), target };
   }
   let camTween = null;
   function goTo(name, instant) {
@@ -1888,7 +1946,7 @@ select {
   // ---------------------------------------------------------------- doors
   function setDoor(d, deg) {
     d.angle = deg;
-    d.hinge.rotation.y = THREE.MathUtils.degToRad(deg);
+    d.hinge.rotation.y = THREE.MathUtils.degToRad(deg * d.side);
   }
   function swing(d, deg, delay = 0) {
     d.from = d.angle;
@@ -1908,14 +1966,14 @@ select {
   // ---------------------------------------------------------------- the rental story
   const STEPS = [
     { t: 0, screen: "home", text: "5:40 AM. Pick a size on the screen." },
-    { t: 3.2, screen: "pay", text: "Door 15 is held. Scan the QR and pay ₱50 in GCash." },
-    { t: 6.6, screen: "paid", text: "PayMongo confirms the payment. Door 15 pops open." },
+    { t: 3.2, screen: "pay", text: `Door ${DEMO} is held. Scan the QR and pay ₱50 in GCash.` },
+    { t: 6.6, screen: "paid", text: `PayMongo confirms the payment. Door ${DEMO} pops open.` },
     { t: 9.2, text: "Put the backpack in." },
     { t: 11.6, text: "Push the door shut. It locks with no power." },
     { t: 13.8, screen: "pin", text: "The PIN shows on screen and arrives by SMS." },
-    { t: 17.4, screen: "back", text: "7:05 AM, back from the Oval. Enter door 15 and the PIN." },
-    { t: 20.6, screen: "open", text: "Door 15 opens. Take the backpack." },
-    { t: 24.8, screen: "free", text: "Close the door. Door 15 is free again." },
+    { t: 17.4, screen: "back", text: `7:05 AM, back from the Oval. Enter door ${DEMO} and the PIN.` },
+    { t: 20.6, screen: "open", text: `Door ${DEMO} opens. Take the backpack.` },
+    { t: 24.8, screen: "free", text: `Close the door. Door ${DEMO} is free again.` },
   ];
   const END = 29;
   const CAM_KEYS = [[0, "screen"], [6.6, "door"], [13.8, "screen"], [20.6, "door"], [26.4, "angle"]];
@@ -1949,7 +2007,7 @@ select {
     stepButtons.forEach((b, j) => b.classList.toggle("is-now", j === i));
     if (i < 0) {
       captionNo.textContent = "Ready";
-      captionText.textContent = "Press play to watch a rental at door 15.";
+      captionText.textContent = `Press play to watch a rental at door ${DEMO}.`;
       return;
     }
     captionNo.textContent = `Step ${i + 1} of ${STEPS.length}`;
@@ -2088,7 +2146,7 @@ select {
     hemi.intensity = night ? 0.12 : 0.8;
     sun.intensity = night ? 0.04 : 0.85;
     led.intensity = night ? 2.4 : 0;
-    signMat.emissiveIntensity = night ? 1.2 : 0.3;
+    signs.forEach((sg) => { sg.mat.emissiveIntensity = night ? 1.2 : 0.3; });
   }
   function toggle(id, apply) {
     const b = document.getElementById(id);
@@ -2143,10 +2201,13 @@ select {
 
   // ---------------------------------------------------------------- hooks for recording and export
   function doorClip(numbers, name) {
-    const open = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), THREE.MathUtils.degToRad(OPEN_DEG));
     const shut = new THREE.Quaternion();
-    const values = [...shut.toArray(), ...open.toArray(), ...open.toArray(), ...shut.toArray()];
-    const tracks = numbers.map((n) => new THREE.QuaternionKeyframeTrack(`door-${n}-hinge.quaternion`, [0, 1, 3, 4], values));
+    const tracks = numbers.map((n) => {
+      const open = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0),
+        THREE.MathUtils.degToRad(OPEN_DEG * doors[n - 1].side));
+      const values = [...shut.toArray(), ...open.toArray(), ...open.toArray(), ...shut.toArray()];
+      return new THREE.QuaternionKeyframeTrack(`door-${n}-hinge.quaternion`, [0, 1, 3, 4], values);
+    });
     return new THREE.AnimationClip(name, 4, tracks);
   }
   window.LOCKER = {
@@ -2166,7 +2227,7 @@ select {
     exportGLB() {
       frozen = true;
       doors.forEach((d) => setDoor(d, 0));
-      const clips = [doorClip([DEMO], "Door 15 opens and closes"), doorClip(doors.map((d) => d.n), "All doors open and close")];
+      const clips = [doorClip([DEMO], `Door ${DEMO} opens and closes`), doorClip(doors.map((d) => d.n), "All doors open and close")];
       return new Promise((resolve, reject) => {
         new THREE.GLTFExporter().parse(model, resolve, reject, { binary: true, animations: clips, onlyVisible: true, maxTextureSize: 1024 });
       });
