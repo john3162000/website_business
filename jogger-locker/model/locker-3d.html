@@ -213,18 +213,18 @@ select {
 
 <main class="page">
   <header class="masthead">
-    <p class="eyebrow">Jogger locker kiosk · 3D model 2, for a 2 × 2 m spot · 7 Oct 2026</p>
+    <p class="eyebrow">Jogger locker kiosk · 3D model 3, a U for a 2 × 2 m spot · 7 Oct 2026</p>
     <h1>UP Oval Locker 3D</h1>
-    <p class="lede">The 30-door L-shaped locker bank from the drawings, built to the same measurements and standing in a 2 × 2 m spot. Drag to turn it, pinch or scroll to zoom, and tap any door to open it. Press play to watch a jogger pay by QR, leave a backpack in door 23 and collect it after the run.</p>
+    <p class="lede">The 30-door U-shaped locker bank from the drawings, built to the same measurements and filling a 2 × 2 m spot. Drag to turn it, pinch or scroll to zoom, and tap any door to open it. Press play to watch a jogger pay by QR, leave a backpack in door 15 and collect it after the run.</p>
   </header>
 
   <section class="stage" aria-label="3D model">
     <div class="viewer" id="viewer">
-      <canvas id="scene" role="img" aria-label="3D model of the 30-door L-shaped locker bank in a 2 by 2 metre spot, with its touch-screen control column. Use the buttons below to play the rental, change the view or open doors."></canvas>
+      <canvas id="scene" role="img" aria-label="3D model of the 30-door U-shaped locker bank in a 2 by 2 metre spot, with its touch-screen control column. Use the buttons below to play the rental, change the view or open doors."></canvas>
       <p class="video-title">UP Oval Locker · a rental</p>
       <div class="caption" id="caption" aria-live="polite">
         <span class="caption-no" id="captionNo">Ready</span>
-        <span class="caption-text" id="captionText">Press play to watch a rental at door 23.</span>
+        <span class="caption-text" id="captionText">Press play to watch a rental at door 15.</span>
       </div>
       <p class="fallback" id="fallback" hidden>The 3D view could not load. It needs the three.js library from the internet the first time you open it.</p>
     </div>
@@ -236,13 +236,13 @@ select {
       <div class="group" role="group" aria-label="View">
         <span class="group-label">View</span>
         <button class="btn" type="button" data-view="angle">Angle</button>
-        <button class="btn" type="button" data-view="side">Left wing</button>
-        <button class="btn" type="button" data-view="front">Right wing</button>
+        <button class="btn" type="button" data-view="front">Entrance</button>
+        <button class="btn" type="button" data-view="side">Top</button>
         <button class="btn" type="button" data-view="screen">Screen</button>
       </div>
       <div class="group" role="group" aria-label="Show">
         <span class="group-label">Show</span>
-        <button class="btn" type="button" id="tCanopy" aria-pressed="false">Canopy</button>
+        <button class="btn" type="button" id="tCanopy" aria-pressed="false">Roof</button>
         <button class="btn" type="button" id="tColors" aria-pressed="false">Size colors</button>
         <button class="btn" type="button" id="tPerson" aria-pressed="true">Person, 1.60 m</button>
         <button class="btn" type="button" id="tNight" aria-pressed="false">5 AM light</button>
@@ -267,10 +267,10 @@ select {
   <section class="section" aria-labelledby="specTitle">
     <h2 id="specTitle">What's in the model</h2>
     <dl class="specs">
-      <div><dt>Size</dt><dd>An L of two 1.82 m wings, 0.62 m deep and 1.85 m tall, in six 400 mm columns; it fits a 2 × 2 m spot, marked by the floor tape</dd></div>
-      <div><dt>Doors</dt><dd>10 small and 20 backpack, numbered column by column from the open end of the left wing; each hinges on the side away from the corner</dd></div>
+      <div><dt>Size</dt><dd>A U 2.00 m wide and 1.82 m deep, 0.62 m thick and 1.85 m tall, around a 0.76 m aisle; it fills a 2 × 2 m spot, marked by the floor tape</dd></div>
+      <div><dt>Doors</dt><dd>6 small, 21 backpack and 3 large, numbered from the entrance end of the left leg around to the right leg; each hinges on the entrance side</dd></div>
       <div><dt>Control column</dt><dd>10-inch touch screen, instruction plate and a locked service cabinet</dd></div>
-      <div><dt>Outdoors</dt><dd>Turn on the canopy for a site without a roof; the lit sign band covers 5 AM</dd></div>
+      <div><dt>Outdoors</dt><dd>Turn on the roof for a site without one; the lit sign band lights the aisle at 5 AM</dd></div>
       <div><dt>3D file</dt><dd><code>up-oval-locker.glb</code>, openable in 3D viewer apps, with door animations</dd></div>
       <div><dt>Screen and QR</dt><dd>Sample screens and a sample QR code that cannot be paid</dd></div>
     </dl>
@@ -286,7 +286,7 @@ select {
 <script>
 (function () {
   "use strict";
-  const P = {"module": 400, "depth": 620, "plinth": 100, "doorTop": 1700, "signTop": 1850, "canopy": 50, "canopyReach": 300, "pitch": {"S": 160, "M": 320, "L": 640}, "columns": ["MMMMM", "SSMMMM", "SSSSMMM", null, "SSSSMMM", "MMMMM"], "fold": 3, "lot": 2000, "demo": 23};
+  const P = {"module": 400, "depth": 620, "plinth": 100, "doorTop": 1700, "signTop": 1850, "canopy": 50, "canopyReach": 380, "pitch": {"S": 160, "M": 320, "L": 640}, "columns": ["MMMMM", "MMMMM", "SSSSML", null, "SSLL", "MMMMM", "MMMMM"], "faces": [["MMMMM", "MMMMM", "SSSSML"], [null], ["SSLL", "MMMMM", "MMMMM"]], "lot": 2000, "demo": 15};
   const viewer = document.getElementById("viewer");
   const canvas = document.getElementById("scene");
   const captionNo = document.getElementById("captionNo");
@@ -302,13 +302,14 @@ select {
   const MOD = mm(P.module), DEPTH = mm(P.depth), PLINTH = mm(P.plinth);
   const DOOR_TOP = mm(P.doorTop), SIGN_TOP = mm(P.signTop);
   const T = 0.02;
-  // The bank is an L. The first P.fold columns form the left wing, whose doors
-  // face +x along x = CX; the rest form the right wing, whose doors face +z
-  // along z = 0. A corner block fills the square behind the inner corner (CX, 0).
-  const WINGS = [COLS.slice(0, P.fold), COLS.slice(P.fold)];
-  const WA = MOD * WINGS[0].length, WB = MOD * WINGS[1].length;
-  const CX = -(Math.max(WINGS[1].indexOf(null), 0) + 0.5) * MOD;
+  // The bank is a U around an aisle that runs from the back face (z = 0)
+  // toward the entrance (+z), between x = XL and x = XR. P.faces lists the
+  // left leg (doors face +x), the back (doors face +z) and the right leg
+  // (doors face -x), each in reading order as you walk in.
+  const FACES = P.faces;
   const LOT = mm(P.lot);
+  const AISLE = LOT - 2 * DEPTH, LEG = MOD * FACES[0].length;
+  const XL = -AISLE / 2, XR = AISLE / 2;
   const DEMO = P.demo;
   const OPEN_DEG = -100;
   const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -346,8 +347,8 @@ select {
   sun.shadow.bias = -0.0004;
   sun.shadow.normalBias = 0.02;
   const led = new THREE.SpotLight(0xfff1dc, 0, 5, 1.1, 0.7, 1.4);
-  led.position.set(CX + 0.45, SIGN_TOP - 0.16, 0.45);
-  led.target.position.set(CX + 0.75, 0.3, 0.75);
+  led.position.set(0, SIGN_TOP - 0.16, 0.3);
+  led.target.position.set(0, 0.3, 0.9);
   scene.add(hemi, sun, led, led.target);
 
   const std = (hex, roughness = 0.6, metalness = 0.15) =>
@@ -402,24 +403,42 @@ select {
   }
 
   const zone = DOOR_TOP - PLINTH;
-  // Each wing is built in its own frame: x runs along the door face in reading
-  // order from 0 to the wing's width, doors face +z, the back is at z = -DEPTH.
-  const wingA = new THREE.Group();
-  wingA.name = "left-wing";
-  wingA.position.set(CX, 0, WA);
-  wingA.rotation.y = Math.PI / 2;
-  const wingB = new THREE.Group();
-  wingB.name = "right-wing";
-  wingB.position.set(CX, 0, 0);
-  model.add(wingA, wingB);
+  // Each face is built in its own frame: x runs along the door face in reading
+  // order from 0 to the face's width, doors face +z, the back is at z = -DEPTH.
+  const legL = new THREE.Group();
+  legL.name = "left-leg";
+  legL.position.set(XL, 0, LEG);
+  legL.rotation.y = Math.PI / 2;
+  const backFace = new THREE.Group();
+  backFace.name = "back";
+  backFace.position.set(XL, 0, 0);
+  const legR = new THREE.Group();
+  legR.name = "right-leg";
+  legR.position.set(XR, 0, 0);
+  legR.rotation.y = -Math.PI / 2;
+  model.add(legL, backFace, legR);
+  // Doors hinge on the side toward the entrance: the left leg reads toward the
+  // back, so its hinges are on the left; the right leg reads toward the entrance.
+  const FRAMES = [
+    { group: legL, cols: FACES[0], width: LEG, words: "LOCKERS  ·  4 HOURS", hingeRight: false },
+    { group: backFace, cols: FACES[1], width: AISLE, words: "PAY BY QR", hingeRight: true },
+    { group: legR, cols: FACES[2], width: LEG, words: "OVAL LOCKERS", hingeRight: true },
+  ];
+  FRAMES.forEach((f) => { f.offset = (f.width - MOD * f.cols.length) / 2; });
   const signs = [];
-  function carcass(group, width, words) {
+  function carcass({ group, cols, width, offset, words }) {
     box(width, SIGN_TOP - PLINTH, T, M.inside, width / 2, PLINTH + (SIGN_TOP - PLINTH) / 2, -DEPTH + T / 2, group);
     box(width - 0.05, PLINTH, DEPTH - 0.05, M.plinth, width / 2, PLINTH / 2, -DEPTH / 2 - 0.025, group);
-    const n = Math.round(width / MOD);
-    for (let k = 0; k <= n; k++) {
-      const x = k * MOD + (k === 0 ? T / 2 : k === n ? -T / 2 : 0);
+    const edges = [0, width];
+    for (let k = 0; k <= cols.length; k++) edges.push(offset + k * MOD);
+    const xs = [...new Set(edges.map((x) => Math.round(x * 1000) / 1000))];
+    for (const x0 of xs) {
+      const x = x0 + (x0 <= 0 ? T / 2 : x0 >= width - 0.001 ? -T / 2 : 0);
       box(T, zone, DEPTH, M.carcass, x, PLINTH + zone / 2, -DEPTH / 2, group);
+    }
+    // Plain panels either side of columns that do not fill the face.
+    for (const [a, b] of [[0, offset], [offset + cols.length * MOD, width]]) {
+      if (b - a > 0.005) box(b - a - T, zone, 0.012, M.panel, (a + b) / 2, PLINTH + zone / 2, -0.006, group);
     }
     const art = canvasTexture(1024, Math.round((1024 * (SIGN_TOP - DOOR_TOP)) / width));
     const mat = new THREE.MeshStandardMaterial({
@@ -432,21 +451,20 @@ select {
     group.add(signBox);
     signs.push({ art, words, mat });
   }
-  carcass(wingA, WA, "LOCKERS  ·  4 HOURS");
-  carcass(wingB, WB, "PAY BY QR");
-  const cornerBlock = box(DEPTH, SIGN_TOP - PLINTH, DEPTH, M.carcass, CX - DEPTH / 2, PLINTH + (SIGN_TOP - PLINTH) / 2, -DEPTH / 2);
-  cornerBlock.name = "corner-block";
-  box(DEPTH - 0.05, PLINTH, DEPTH - 0.05, M.plinth, CX - DEPTH / 2 - 0.025, PLINTH / 2, -DEPTH / 2 - 0.025);
+  FRAMES.forEach(carcass);
+  for (const x of [XL - DEPTH / 2, XR + DEPTH / 2]) {
+    box(DEPTH, SIGN_TOP - PLINTH, DEPTH, M.carcass, x, PLINTH + (SIGN_TOP - PLINTH) / 2, -DEPTH / 2).name = "corner-block";
+    box(DEPTH - 0.05, PLINTH, DEPTH - 0.05, M.plinth, x, PLINTH / 2, -DEPTH / 2 - 0.025);
+  }
 
+  // One roof over the whole spot, aisle included, for sites without one.
   const canopy = new THREE.Group();
   canopy.name = "canopy";
   canopy.visible = false;
   model.add(canopy);
   {
-    const reach = mm(P.canopyReach), th = mm(P.canopy), y = SIGN_TOP + th / 2;
-    const backW = DEPTH + WB + 0.1, sideL = WA + 0.1 - reach;
-    box(backW, th, DEPTH + reach, M.canopy, CX - DEPTH + backW / 2, y, -DEPTH + (DEPTH + reach) / 2, canopy);
-    box(DEPTH + reach, th, sideL, M.canopy, CX - DEPTH + (DEPTH + reach) / 2, y, reach + sideL / 2, canopy);
+    const th = mm(P.canopy), len = DEPTH + LEG + 0.1;
+    box(LOT, th, len, M.canopy, 0, SIGN_TOP + th / 2, -DEPTH + len / 2, canopy);
   }
 
   const SIZE_FILL = { S: "#86b6ef", M: "#3987e5", L: "#1c5cab" };
@@ -529,9 +547,9 @@ select {
   }
 
   let number = 0;
-  [[wingA, WINGS[0], false], [wingB, WINGS[1], true]].forEach(([group, cols, hingeRight]) => {
+  FRAMES.forEach(({ group, cols, offset, hingeRight }) => {
     cols.forEach((col, c) => {
-      const left = c * MOD;
+      const left = offset + c * MOD;
       if (col === null) {
         buildControl(left, group);
         return;
@@ -550,9 +568,12 @@ select {
   const doorMeshes = doors.map((d) => d.mesh);
   const demo = doors[DEMO - 1];
   model.updateMatrixWorld(true);
-  // The story's bag moves along z, so the demo door must be on the right wing.
-  const demoX = demo.mesh.getWorldPosition(new THREE.Vector3()).x;
-  const screenX = CX + (Math.max(WINGS[1].indexOf(null), 0) + 0.5) * MOD;
+  // The story works in the demo door's own frame, so it suits any face.
+  const demoGroup = demo.hinge.parent;
+  const demoX = demo.hinge.position.x + demo.mesh.position.x;
+  const screenWorld = model.getObjectByName("touch-screen").getWorldPosition(new THREE.Vector3());
+  const toScreen = Math.sign(demoGroup.worldToLocal(screenWorld.clone()).x - demoX) || -1;
+  const roomOut = Math.min(0.95, AISLE - 0.3);
 
   // ---------------------------------------------------------------- surroundings
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(16, 16), M.floor);
@@ -561,16 +582,14 @@ select {
   const wall = new THREE.Mesh(new THREE.PlaneGeometry(12, 5), M.wall);
   wall.position.set(0, 2.5, -DEPTH - 0.01);
   wall.receiveShadow = true;
-  const sideWall = new THREE.Mesh(new THREE.PlaneGeometry(12, 5), M.wall);
-  sideWall.rotation.y = Math.PI / 2;
-  sideWall.position.set(CX - DEPTH - 0.01, 2.5, 0);
-  sideWall.receiveShadow = true;
-  scene.add(floor, wall, sideWall);
-  // Floor tape marking the open sides of the 2 x 2 m spot.
+  scene.add(floor, wall);
+  // Floor tape marking the three open sides of the 2 x 2 m spot.
   const tape = std("#8f8b80", 0.9, 0);
-  const lotX = CX - DEPTH, lotZ = -DEPTH, tw = 0.03;
-  box(LOT, 0.002, tw, tape, lotX + LOT / 2, 0.001, lotZ + LOT - tw / 2, scene).castShadow = false;
-  box(tw, 0.002, LOT, tape, lotX + LOT - tw / 2, 0.001, lotZ + LOT / 2, scene).castShadow = false;
+  const lotZ = -DEPTH, tw = 0.03;
+  box(LOT, 0.002, tw, tape, 0, 0.001, lotZ + LOT - tw / 2, scene).castShadow = false;
+  for (const x of [-LOT / 2 + tw / 2, LOT / 2 - tw / 2]) {
+    box(tw, 0.002, LOT, tape, x, 0.001, lotZ + LOT / 2, scene).castShadow = false;
+  }
 
   const person = new THREE.Group();
   person.name = "person-1.6m";
@@ -591,8 +610,9 @@ select {
   head.castShadow = true;
   person.add(head);
   // Off to the side of the right wing's open end, clear of every camera view.
-  person.position.set(CX + WB + 0.45, 0, -0.5);
-  person.rotation.y = 0.75;
+  // Beside the spot, clear of every camera view.
+  person.position.set(LOT / 2 + 0.55, 0, LEG - 0.45);
+  person.rotation.y = -0.5;
   scene.add(person);
 
   const bag = new THREE.Group();
@@ -603,7 +623,7 @@ select {
   handle.position.set(0, 0.02, 0.235);
   bag.add(handle);
   bag.visible = false;
-  scene.add(bag);
+  demoGroup.add(bag);
 
   // ---------------------------------------------------------------- printed and screen artwork
   function drawSign() {
@@ -793,25 +813,31 @@ select {
     const fitW = (w) => w / 2 / Math.tan(hfov / 2);
     const fitH = (h) => h / 2 / Math.tan(vfov / 2);
     const V = (x, y, z) => new THREE.Vector3(x, y, z);
-    // Each wing seen slightly from its open end, so the other wing stays out of the way.
+    const local = (x, y, z) => demoGroup.localToWorld(V(x, y, z));
     if (name === "front") {
-      const x = CX + WB / 2, d = Math.max(fitW(WB + 1.2), fitH(2.4));
-      return { pos: V(x + 0.33 * d, 1.1, 0.94 * d), target: V(x, 0.98, 0) };
+      // From the walkway, looking down the aisle at the screen.
+      const d = Math.max(fitW(LOT + 0.4), fitH(2.3));
+      return { pos: V(0, 1.35, LEG + d * 0.75), target: V(0, 0.95, 0.15) };
     }
     if (name === "side") {
-      const z = WA / 2, d = Math.max(fitW(WA + 1.2), fitH(2.4));
-      return { pos: V(CX + 0.94 * d, 1.1, z + 0.33 * d), target: V(CX, 0.98, z) };
+      // Straight down, with the back at the top like the floor plan.
+      const cz = LOT / 2 - DEPTH, h = SIGN_TOP + Math.max(fitW(LOT + 0.6), fitH(LOT + 0.6));
+      return { pos: V(0, h, cz + 0.001), target: V(0, 0, cz) };
     }
     if (name === "screen") {
-      return { pos: V(screenX + 0.1, 1.28, Math.max(fitW(1.1), fitH(0.9))), target: V(screenX - 0.1, 1.15, 0) };
+      return { pos: V(screenWorld.x, 1.3, Math.max(fitW(1.0), fitH(0.95))), target: V(screenWorld.x, 1.2, 0) };
     }
     if (name === "door") {
-      const dir = Math.sign(screenX - demoX) || -1;
-      return { pos: V(demoX + 0.35 * dir, 1.2, Math.max(fitW(1.5), fitH(1.1))), target: V(demoX + 0.1 * dir, 0.98, 0) };
+      // From high across the aisle, on the screen side of the door, so the open leaf stays out of view.
+      const faceW = FRAMES.find((f) => f.group === demoGroup).width;
+      const room = toScreen > 0 ? faceW - demoX : demoX;
+      const step = Math.max(0.05, Math.min(0.3, room - 0.08));
+      return { pos: local(demoX + step * toScreen, 1.75, AISLE - 0.12), target: local(demoX - 0.05 * toScreen, 0.85, 0.05) };
     }
-    const d = Math.max(fitW(DEPTH + Math.max(WA, WB) + 1.3), fitH(2.5)) * 1.12;
-    const target = V(CX + 0.4, 0.92, 0.4);
-    return { pos: V(0.66, 0.3, 0.69).normalize().multiplyScalar(d).add(target), target };
+    // From the walkway and above, so you can see into the aisle.
+    const d = Math.max(fitW(LOT + 1.0), fitH(2.8)) * 1.08;
+    const target = V(0, 0.8, 0.3);
+    return { pos: V(0.22, 0.62, 1).normalize().multiplyScalar(d).add(target), target };
   }
   let camTween = null;
   function goTo(name, instant) {
@@ -861,7 +887,7 @@ select {
   const CAM_KEYS = [[0, "screen"], [6.6, "door"], [13.8, "screen"], [20.6, "door"], [26.4, "angle"]];
   const DOOR_KEYS = [[0, 0], [7.0, 0], [7.15, -5], [8.4, -105], [11.7, -105], [12.8, 0],
                      [21.0, 0], [21.15, -5], [22.4, -105], [25.0, -105], [26.1, 0]];
-  const BAG_Z = [[0, 0.95], [9.0, 0.95], [10.9, -0.31], [22.5, -0.31], [23.9, 0.95]];
+  const BAG_Z = [[0, roomOut], [9.0, roomOut], [10.9, -0.31], [22.5, -0.31], [23.9, roomOut]];
   const BAG_S = [[0, 0], [8.5, 0], [8.9, 1], [23.7, 1], [24.1, 0]];
 
   function keyed(keys, t) {
@@ -906,7 +932,7 @@ select {
     const s = keyed(BAG_S, t), z = keyed(BAG_Z, t);
     bag.visible = s > 0.002;
     bag.scale.setScalar(Math.max(s, 0.002));
-    bag.position.set(demoX, 0.86 + 0.09 * clamp01((z + 0.31) / 1.26), z);
+    bag.position.set(demoX, 0.86 + 0.09 * clamp01((z + 0.31) / (roomOut + 0.31)), z);
     let i = 0;
     while (i + 1 < STEPS.length && t >= STEPS[i + 1].t) i++;
     showStep(i);
@@ -1109,6 +1135,7 @@ select {
     exportGLB() {
       frozen = true;
       doors.forEach((d) => setDoor(d, 0));
+      bag.visible = false;
       const clips = [doorClip([DEMO], `Door ${DEMO} opens and closes`), doorClip(doors.map((d) => d.n), "All doors open and close")];
       return new Promise((resolve, reject) => {
         new THREE.GLTFExporter().parse(model, resolve, reject, { binary: true, animations: clips, onlyVisible: true, maxTextureSize: 1024 });

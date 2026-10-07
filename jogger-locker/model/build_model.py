@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Builds the 3D locker page from locker_3d_template.html, using the same L-shaped
+Builds the 3D locker page from locker_3d_template.html, using the same U-shaped
 door layout and measurements as design/build_locker_bank.py:
 
   locker-3d.html           the page as published to Claude (three.js from a CDN)
@@ -27,19 +27,21 @@ SCRIPTS = ["build/three.min.js", "examples/js/controls/OrbitControls.js"]
 
 
 def demo_door():
-    """The first backpack door in the column right after the control column,
-    which sits beside the screen at waist height: the door the story uses."""
-    number = 0
-    after_control = False
-    for col in design.COLUMNS:
-        if col is None:
-            after_control = True
-            continue
-        for size in col:
+    """The backpack door the story uses: the one nearest the control column,
+    at about waist height, so the screen and the door share the camera."""
+    number, best = 0, None
+    control = design.COLUMNS.index(None)
+    for c, col in enumerate(design.COLUMNS):
+        top = design.DOOR_TOP
+        for size in col or "":
             number += 1
-            if after_control and size == "M":
-                return number
-    raise ValueError("no backpack door after the control column")
+            centre = top - design.PITCH[size] / 2
+            top -= design.PITCH[size]
+            if size == "M":
+                key = (abs(c - control), abs(centre - 900))
+                if best is None or key < best[0]:
+                    best = (key, number)
+    return best[1]
 
 
 def params():
@@ -53,7 +55,7 @@ def params():
         "canopyReach": design.CANOPY_REACH,
         "pitch": design.PITCH,
         "columns": design.COLUMNS,
-        "fold": design.FOLD,
+        "faces": [cols for _, cols in design.FACES],
         "lot": design.LOT,
         "demo": demo_door(),
     }
