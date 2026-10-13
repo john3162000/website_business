@@ -84,7 +84,9 @@ function extractRows($: ReturnType<typeof cheerio.load>, sourceUrl: string): Nut
     const id = $(el).attr("id") ?? "";
     const foodCode = id.replace(/_data$/, "");
     const foodName = $(el).find("h3").first().text().trim();
-    if (!foodCode || !foodName) return;
+    // Guard against mis-parsed markup: a real entry has a descriptive name,
+    // never just its own code (the legacy bug stored "A001" as the name).
+    if (!foodCode || !foodName || foodName.toLowerCase() === foodCode.toLowerCase()) return;
 
     const row: NutritionRow = {
       foodName,
