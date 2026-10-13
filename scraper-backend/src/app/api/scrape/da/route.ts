@@ -6,6 +6,10 @@ export const maxDuration = 60;
 
 const TYPE = "DA";
 
+// The backfill window is "the last 30 days" relative to when a run starts, so
+// an old interrupted run's cursor points at stale dates. Don't resume one this old.
+const STALE_MS = 6 * 60 * 60 * 1000;
+
 /**
  * Backfills the last 30 days of DA Daily Price Index data, one report day per
  * request (each PDF fetch+parse is heavy). The client should keep calling POST
@@ -23,12 +27,19 @@ export async function POST() {
       where: { type: TYPE },
       orderBy: { id: "desc" },
     });
-    if (last && last.status !== "DONE" && last.cursor) {
+    if (last && last.status !== "DONE" && last.cursor && Date.now() - last.startedAt.getTime() < STALE_MS) {
       log = await prisma.scrapingLog.update({
         where: { id: last.id },
         data: { status: "RUNNING", message: "Resuming...", finishedAt: null },
       });
     }
+  } else if (Date.now() - log.startedAt.getTime() >= STALE_MS) {
+    // A RUNNING row left over from an abandoned run: close it and start fresh.
+    await prisma.scrapingLog.update({
+      where: { id: log.id },
+      data: { status: "ERROR", message: "Abandoned: stale run (dates out of window), restarted fresh", cursor: null, finishedAt: new Date() },
+    });
+    log = null;
   }
 
   let cursor: DACursor;
