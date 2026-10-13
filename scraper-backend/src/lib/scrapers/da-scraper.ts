@@ -273,13 +273,20 @@ export async function scrapeDAChunk(
   }
 
   onProgress?.(`Saving ${rows.length} commodity rows for ${label}...`);
-  for (const row of rows) {
-    await prisma.commodity.upsert({
-      where: { name_region_sourceDate: { name: row.name, region: "NCR", sourceDate: row.sourceDate } },
-      create: { category: row.category, name: row.name, price: row.price, region: "NCR", sourceDate: row.sourceDate },
-      update: { category: row.category, price: row.price },
-    });
-  }
+  // Replace the whole day in one transaction (2 round trips) rather than one
+  // upsert per row: the DB is far from the serverless region, and ~200
+  // sequential upserts can run past the 60s function limit, which kills the
+  // request before the cursor advances and stalls the backfill on that day.
+  // De-dupe by name (last wins, matching the old upsert behaviour) so the
+  // bulk insert can't violate the (name, region, sourceDate) unique key.
+  const byName = new Map(rows.map((r) => [r.name, r]));
+  const data = [...byName.values()].map((r) => ({
+    category: r.category, name: r.name, price: r.price, region: "NCR", sourceDate: r.sourceDate,
+  }));
+  await prisma.$transaction([
+    prisma.commodity.deleteMany({ where: { region: "NCR", sourceDate } }),
+    prisma.commodity.createMany({ data }),
+  ]);
 
-  return { saved: rows.length, cursor: { queue: rest }, done: rest.length === 0 };
+  return { saved: data.length, cursor: { queue: rest }, done: rest.length === 0 };
 }
