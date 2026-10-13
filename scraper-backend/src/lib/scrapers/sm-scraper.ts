@@ -125,6 +125,146 @@ export async function probeSMProduct(sku: string): Promise<unknown> {
   return { sku, results };
 }
 
+// ─────────────────────────── Nutrition scan ───────────────────────────
+
+const NUTRITION_WORDS = /nutri|calor|energy|kcal|protein|carbo|sodium|serving|fat\b|total fat|sugar|ingredient/i;
+
+interface ScanOption { label?: string | null; value?: string | null }
+interface ScanItem {
+  sku: string;
+  name: string;
+  custom_attributes?: {
+    attribute_metadata?: { code?: string; label?: string | null } | null;
+    entered_attribute_value?: { value?: string | null } | null;
+    selected_attribute_options?: { attribute_option?: (ScanOption | null)[] | null } | null;
+  }[] | null;
+  custom_attributesV2?: { items?: ({ code?: string; value?: string | null; selected_options?: ScanOption[] | null } | null)[] } | null;
+  description?: { html?: string | null } | null;
+  short_description?: { html?: string | null } | null;
+  meta_description?: string | null;
+  media_gallery?: unknown[] | null;
+}
+type ScanResponse = { data?: { products?: { items?: ScanItem[] } }; errors?: { message: string }[] };
+
+async function rawGql(query: string, variables: Record<string, unknown>): Promise<ScanResponse> {
+  try {
+    const res = await fetch(GRAPHQL_URL, {
+      method: "POST",
+      headers: FETCH_HEADERS,
+      body: JSON.stringify({ query, variables }),
+      signal: AbortSignal.timeout(30000),
+    });
+    return await res.json();
+  } catch (err) {
+    return { errors: [{ message: err instanceof Error ? err.message : String(err) }] };
+  }
+}
+
+/**
+ * Answers "does SM Markets expose nutrition facts?" in one call. Takes a batch
+ * of packaged-product SKUs, pulls every attribute and the description text for
+ * all of them, and reports which attribute codes exist (with how many products
+ * fill them) and any nutrition-looking words found. Non-throwing: each query's
+ * errors are returned alongside the summary.
+ */
+export async function scanSMNutrition(skus: string[]) {
+  const vars = { skus };
+  const [v1, v2, desc] = await Promise.all([
+    rawGql(`query Scan($skus: [String]) { products(filter: { sku: { in: $skus } }, pageSize: 100) { items {
+      sku name
+      custom_attributes {
+        attribute_metadata { code label }
+        entered_attribute_value { value }
+        selected_attribute_options { attribute_option { ... on AttributeOption { label } } }
+      } } } }`, vars),
+    rawGql(`query Scan($skus: [String]) { products(filter: { sku: { in: $skus } }, pageSize: 100) { items {
+      sku name
+      custom_attributesV2 { items {
+        ... on AttributeValue { code value }
+        ... on AttributeSelectedOptions { code selected_options { label value } }
+      } } } } }`, vars),
+    rawGql(`query Scan($skus: [String]) { products(filter: { sku: { in: $skus } }, pageSize: 100) { items {
+      sku name description { html } short_description { html } meta_description
+      media_gallery { url label }
+    } } }`, vars),
+  ]);
+
+  // code → { label, filled: number of products with a non-empty value, sample }
+  const attrs = new Map<string, { label: string | null; filled: number; sample: string | null }>();
+  const note = (code: string, label: string | null, value: string | null) => {
+    const e = attrs.get(code) ?? { label, filled: 0, sample: null };
+    if (value && value.trim()) {
+      e.filled++;
+      e.sample ??= value.slice(0, 160);
+    }
+    attrs.set(code, e);
+  };
+
+  for (const p of v1.data?.products?.items ?? []) {
+    for (const a of p.custom_attributes ?? []) {
+      const code = a.attribute_metadata?.code;
+      if (!code) continue;
+      const opts = (a.selected_attribute_options?.attribute_option ?? []).map((o) => o?.label).filter(Boolean);
+      note(code, a.attribute_metadata?.label ?? null, a.entered_attribute_value?.value ?? (opts.join(", ") || null));
+    }
+  }
+  for (const p of v2.data?.products?.items ?? []) {
+    for (const a of p.custom_attributesV2?.items ?? []) {
+      if (!a?.code) continue;
+      const value = a.value ?? (a.selected_options ?? []).map((o) => o?.label).join(", ");
+      note(a.code, null, value || null);
+    }
+  }
+
+  const descHits: { sku: string; name: string; snippet: string }[] = [];
+  let nonEmptyDescriptions = 0;
+  let totalImages = 0;
+  for (const p of desc.data?.products?.items ?? []) {
+    const text = [p.description?.html, p.short_description?.html, p.meta_description]
+      .filter(Boolean).join(" ").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    if (text) nonEmptyDescriptions++;
+    totalImages += (p.media_gallery ?? []).length;
+    const m = text.match(NUTRITION_WORDS);
+    if (m) {
+      const at = Math.max(0, (m.index ?? 0) - 60);
+      descHits.push({ sku: p.sku, name: p.name, snippet: text.slice(at, at + 220) });
+    }
+  }
+
+  const attributeList = [...attrs.entries()]
+    .map(([code, e]) => ({ code, ...e }))
+    .sort((a, b) => b.filled - a.filled);
+  const nutritionAttributes = attributeList.filter((a) => NUTRITION_WORDS.test(a.code) || NUTRITION_WORDS.test(a.label ?? ""));
+  const productsFound = (desc.data?.products?.items ?? []).length;
+
+  let verdict: string;
+  if (nutritionAttributes.some((a) => a.filled > 0)) {
+    verdict = "FOUND: SM stores nutrition as product attributes — can be scraped and tied to SKU.";
+  } else if (descHits.length > 0) {
+    verdict = "PARTIAL: nutrition-like text appears in some product descriptions — would need text parsing.";
+  } else if (productsFound === 0) {
+    verdict = "INCONCLUSIVE: none of the sampled SKUs were returned by SM's API.";
+  } else {
+    verdict = "NOT AVAILABLE: no nutrition attributes or description text. SM likely only shows nutrition in product photos.";
+  }
+
+  return {
+    verdict,
+    sampled: skus.length,
+    productsFound,
+    nonEmptyDescriptions,
+    imagesPerProduct: productsFound ? +(totalImages / productsFound).toFixed(1) : 0,
+    nutritionAttributes,
+    descriptionHits: descHits.slice(0, 10),
+    allAttributes: attributeList,
+    errors: {
+      custom_attributes: v1.errors ?? null,
+      custom_attributesV2: v2.errors ?? null,
+      description: desc.errors ?? null,
+    },
+  };
+}
+
 // ─────────────────────────── Category tree ───────────────────────────
 
 interface RawCategory {
