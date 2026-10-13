@@ -17,40 +17,50 @@ const PACKAGED_CATEGORY_WORDS = [
  * specific SKUs instead, or `?limit=` (default 40, max 100).
  */
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const limit = Math.min(Math.max(Number(searchParams.get("limit")) || 40, 1), 100);
-
-  const skus = (searchParams.get("skus") ?? "")
-    .split(",").map((s) => s.trim()).filter(Boolean);
-
-  if (skus.length === 0) {
-    const rows = await prisma.storeProduct.findMany({
-      where: { OR: PACKAGED_CATEGORY_WORDS.map((w) => ({ category: { contains: w, mode: "insensitive" as const } })) },
-      distinct: ["sku"],
-      orderBy: { sourceDate: "desc" },
-      select: { sku: true, category: true },
-      take: 2000,
-    });
-    // Round-robin across categories so the sample isn't all one aisle.
-    const byCat = new Map<string, string[]>();
-    for (const r of rows) {
-      const key = r.category ?? "";
-      if (!byCat.has(key)) byCat.set(key, []);
-      byCat.get(key)!.push(r.sku);
-    }
-    const lists = [...byCat.values()];
-    for (let i = 0; skus.length < limit && lists.some((l) => i < l.length); i++) {
-      for (const l of lists) if (i < l.length && skus.length < limit) skus.push(l[i]);
-    }
-  }
-
-  if (skus.length === 0) {
-    return Response.json({ error: "No packaged StoreProduct rows found to sample." }, { status: 400 });
-  }
-
+  // Everything (DB sampling included) is inside the try so failures come back
+  // as readable JSON instead of a blank 500 page.
+  let stage = "parse";
   try {
+    const { searchParams } = new URL(request.url);
+    const limit = Math.min(Math.max(Number(searchParams.get("limit")) || 40, 1), 100);
+
+    const skus = (searchParams.get("skus") ?? "")
+      .split(",").map((s) => s.trim()).filter(Boolean);
+
+    if (skus.length === 0) {
+      stage = "sample-db";
+      const rows = await prisma.storeProduct.findMany({
+        where: { OR: PACKAGED_CATEGORY_WORDS.map((w) => ({ category: { contains: w, mode: "insensitive" as const } })) },
+        orderBy: { id: "desc" },
+        select: { sku: true, category: true },
+        take: 3000,
+      });
+      // De-dupe by SKU, then round-robin across categories so the sample isn't all one aisle.
+      const seen = new Set<string>();
+      const byCat = new Map<string, string[]>();
+      for (const r of rows) {
+        if (seen.has(r.sku)) continue;
+        seen.add(r.sku);
+        const key = r.category ?? "";
+        if (!byCat.has(key)) byCat.set(key, []);
+        byCat.get(key)!.push(r.sku);
+      }
+      const lists = [...byCat.values()];
+      for (let i = 0; skus.length < limit && lists.some((l) => i < l.length); i++) {
+        for (const l of lists) if (i < l.length && skus.length < limit) skus.push(l[i]);
+      }
+    }
+
+    if (skus.length === 0) {
+      return Response.json({ error: "No packaged StoreProduct rows found to sample." }, { status: 400 });
+    }
+
+    stage = "scan-sm";
     return Response.json(await scanSMNutrition(skus.slice(0, 100)));
   } catch (err) {
-    return Response.json({ error: err instanceof Error ? err.message : String(err) }, { status: 500 });
+    return Response.json(
+      { error: err instanceof Error ? err.message : String(err), stage },
+      { status: 500 },
+    );
   }
 }
