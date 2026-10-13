@@ -51,17 +51,11 @@ export async function POST() {
     const itemsScraped = log.itemsScraped + result.saved;
 
     if (result.done) {
-      // The first scraper version mis-mapped FNRI's table columns and keyed rows
-      // as "<name>__<page>" (e.g. "a001__all", with foodName "A001"). Real FNRI
-      // codes never contain "__", so once a full run has re-saved every food
-      // under its real code, drop those leftover rows.
-      const purged = await prisma.nutritionFact.deleteMany({ where: { foodCode: { contains: "__" } } });
-      const purgedNote = purged.count > 0 ? `, removed ${purged.count} legacy mis-parsed rows` : "";
       await prisma.scrapingLog.update({
         where: { id: log.id },
-        data: { status: "DONE", itemsScraped, message: `Done — ${itemsScraped} nutrition entries saved${purgedNote}`, cursor: null, finishedAt: new Date() },
+        data: { status: "DONE", itemsScraped, message: `Done — ${itemsScraped} nutrition entries saved`, cursor: null, finishedAt: new Date() },
       });
-      return Response.json({ done: true, itemsScraped, purged: purged.count });
+      return Response.json({ done: true, itemsScraped });
     }
 
     await prisma.scrapingLog.update({
