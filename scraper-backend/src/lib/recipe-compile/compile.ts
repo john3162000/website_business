@@ -28,6 +28,8 @@ export interface DaPrice {
 export interface CompileContext {
   aliases: Record<string, Alias>;
   canonicals: Record<string, Canonical>;
+  /** Reference prices for items DA doesn't list (DTI SRP): ₱ per pack of packAmount g or ml. */
+  manualPrices?: Record<string, { price: number | null; packAmount: number | null; packUnit: string; source: string }>;
   /** Fallback per-100 g nutrients by slug, for items FNRI doesn't have (approximate). */
   extraNutrients?: Record<string, FnriFood & { source?: string }>;
   fnri: Map<string, FnriFood>;
@@ -58,6 +60,8 @@ export interface CompiledLine {
   /** Cost of what the recipe uses, ₱. Null when DA doesn't price this item. */
   cost: number | null;
   priced: boolean;
+  /** Where the price came from: "DA" (daily market prices) or e.g. "DTI SRP 11 May 2026". */
+  priceSource: string | null;
   flags: string[];
 }
 
@@ -229,7 +233,7 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
   for (const ing of r.ingredients) {
     const text = (ing.rawText || [ing.amount, ing.unit, ing.name].filter(Boolean).join(" ")).trim();
     const flags: string[] = [];
-    const base: CompiledLine = { ingredientId: ing.id, text, slug: null, label: null, status: "ok", gAP: null, gEaten: null, reason: null, nutrients: null, cost: null, priced: false, flags };
+    const base: CompiledLine = { ingredientId: ing.id, text, slug: null, label: null, status: "ok", gAP: null, gEaten: null, reason: null, nutrients: null, cost: null, priced: false, priceSource: null, flags };
 
     if (/:\s*$/.test(ing.name.trim())) { lines.push({ ...base, status: "skipped", reason: "section header" }); continue; }
     const alias = ctx.aliases[nameKey(ing.name)]
@@ -353,7 +357,15 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
     if (c.daName && line.gAP !== null) {
       const used = w === medium && absorbed ? (absorbed[0] + absorbed[1]) / 2 + (line.gAP - (absorbed[0] + absorbed[1]) / 2) / OIL_REUSES : line.gAP;
       const lc = lineCost(c, used, ctx.da.get(c.daName), c.role === "frying_oil_candidate");
-      if (lc !== null) { line.cost = lc; line.priced = true; priced++; cost += lc; }
+      if (lc !== null) { line.cost = lc; line.priced = true; line.priceSource = "DA"; priced++; cost += lc; }
+    } else if (line.gAP !== null && line.slug && ctx.manualPrices?.[line.slug]) {
+      const m = ctx.manualPrices[line.slug];
+      if (m.price != null && m.packAmount) {
+        // Packs sold by volume: grams → ml through the catalog's grams-per-cup.
+        const amount = m.packUnit === "ml" ? (c.gPerCup ? line.gAP / (c.gPerCup / CUP_ML) : line.gAP) : line.gAP;
+        line.cost = (m.price / m.packAmount) * amount;
+        line.priced = true; line.priceSource = m.source; priced++; cost += line.cost;
+      }
     }
   }
 
