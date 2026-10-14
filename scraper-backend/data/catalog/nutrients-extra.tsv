@@ -19,3 +19,11 @@ broth_chicken	6	0.6	0.2	0.4	343	USDA≈ soup, chicken broth, ready-to-serve
 broth_beef	7	1.1	0.2	0.04	372	USDA≈ soup, beef broth, ready-to-serve
 broth_vegetable	5	0.2	0.1	0.9	281	USDA≈ soup, vegetable broth, ready-to-serve
 garlic_toasted	500	12	30	50	20	≈ fried garlic bits (garlic + absorbed oil), rough
+parsley_dried	292	26.6	5.5	50.6	452	USDA≈ spices, parsley, dried
+wine_white	82	0.1	0	2.6	5	USDA≈ table wine, white
+wine_sherry	117	0.2	0	14	500	≈ cooking sherry (salted), rough
+cinnamon_ground	247	4	1.2	80.6	10	USDA≈ spices, cinnamon, ground
+cayenne_pepper	318	12	17.3	56.6	30	USDA≈ spices, pepper, red or cayenne
+annatto_powder	300	10	5	60	20	≈ achuete powder, rough (used in tiny amounts)
+mix_sinigang_tamarind	300	2	1	60	16000	≈ tamarind soup mix (mostly salt + sugar + tamarind), rough
+mix_ginataang_gulay	450	6	25	50	9000	≈ coconut-milk powder seasoning mix, rough
