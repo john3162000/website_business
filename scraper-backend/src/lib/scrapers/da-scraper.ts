@@ -40,6 +40,7 @@ const SKIP_PATTERNS: RegExp[] = [
   /^RETAIL PRICE PER$/i,
   /^UNIT \(P\/UNIT\)$/i,
   /^Note\(?s?\)?\s*:/i, // footnote ("Note(s): a) Prevailing price is defined as …")
+  /prevailing price is defined|arithmetic mean/i, // footnote text without the "Note(s):" prefix
 ];
 
 const PRICE_TOKEN = /^([\d,]+\.\d{2}|n\/a)$/i;
