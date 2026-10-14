@@ -70,3 +70,13 @@ Resume by re-running the design work with the facts below (SM store goods are ou
 6. Validation: scrape WPRM per-serving nutrition labels as a benchmark; sanity ranges; coverage metrics.
 7. Prereqs: fix DA merged-row bug; store FNRI alternate names + edible portion; store WPRM group headers
    and notes; handle null servings.
+
+## Status 2026-10-14 (paused at usage limit)
+- Phase 0 done and verified live (d2672d1 + DA follow-up fixes).
+- Decisions: AI-assisted catalog; frying oil reused 3x; show calorie RANGES for fried
+  dishes (lumpia ≈ 90–107 kcal/piece; oil absorption 8–15% and wrapper ≈ 8 g are the
+  key uncertainties).
+- Phase 1 in progress: quantity parser + tests (src/lib/recipe-compile/quantity.ts);
+  data/source/*.tsv snapshots; data/catalog/SPEC.md. NEXT: build data/catalog/aliases.tsv
+  (700 names → slugs) then canonicals.tsv (FNRI code, DA item, densities, piece weights),
+  each checked by a reviewer agent; then grams conversion, cooking rules, compile script.

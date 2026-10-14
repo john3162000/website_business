@@ -7,7 +7,8 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "test": "node --experimental-strip-types --test src/lib/recipe-compile/*.test.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
