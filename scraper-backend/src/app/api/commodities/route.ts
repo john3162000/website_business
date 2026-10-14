@@ -61,6 +61,14 @@ export async function GET() {
     if (r.category) e.category = r.category;
   }
 
+  // Drop names not seen in the last week of data: they were renamed (e.g. rice
+  // grades now suffixed with their category) or DA stopped listing them.
+  const cutoff = latestDate ? new Date(new Date(latestDate).getTime() - 7 * 86400000).toISOString() : null;
+  for (const [name, e] of byName) {
+    const lastSeen = e.history[e.history.length - 1]?.date;
+    if (cutoff && lastSeen && lastSeen < cutoff) byName.delete(name);
+  }
+
   for (const e of byName.values()) {
     const priced = e.history.filter((h) => h.price != null);
     if (priced.length > 0) {
