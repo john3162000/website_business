@@ -449,7 +449,12 @@ async function loadData() {
   COMMODITY_INDEX = buildIndex(DA_PRICES, "name");
 
 
-  RECIPES = (recRes.recipes || []).map((r) => enrichRecipe(r, COMPILED.get(r.id)));
+  // Skip articles (no ingredient list: "What is Broccoli?") and round-up posts that
+  // hold several recipes in one card ("Easy Sisig Recipes"), whose totals are combined.
+  RECIPES = (recRes.recipes || [])
+    .filter((r) => (r.ingredients || []).length > 0)
+    .filter((r) => { const c = COMPILED.get(r.id); return !(c && (c.isArticle || c.isCollection)); })
+    .map((r) => enrichRecipe(r, COMPILED.get(r.id)));
 }
 
 // ═══════════════ UTILITY ═══════════════

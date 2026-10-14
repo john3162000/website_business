@@ -69,6 +69,8 @@ export async function GET(request: Request) {
     count: compiled.length,
     recipes: compiled.map((c) => ({
       id: c.id,
+      isArticle: c.isArticle,
+      isCollection: c.isCollection,
       servings: c.servings,
       servingsAssumed: c.servingsAssumed,
       frying: c.method.frying,
