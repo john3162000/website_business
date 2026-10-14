@@ -514,7 +514,7 @@ function compiledRows(lines) {
         <p class="font-medium text-sm">${escapeHtml(l.text)}</p>
         <p class="text-xs text-gray-500">${escapeHtml(grams + kcal)}${note ? `<span class="block text-gray-400">${escapeHtml(note)}</span>` : ''}</p>
       </div>
-      <p class="text-sm font-semibold text-amber-700 whitespace-nowrap text-right">${l.cost != null ? '₱' + l.cost.toFixed(2) : ''}${l.cost != null && l.priceSource && l.priceSource !== 'DA' ? '<span class="block text-[10px] font-normal text-gray-400">DTI SRP</span>' : ''}</p>
+      <p class="text-sm font-semibold text-amber-700 whitespace-nowrap text-right">${l.cost != null ? '₱' + l.cost.toFixed(2) : ''}${l.cost != null && l.priceSource && l.priceSource !== 'DA' ? `<span class="block text-[10px] font-normal text-gray-400">${l.priceSource.startsWith('SM') ? 'SM Markets' : 'DTI SRP'}</span>` : ''}</p>
     </div>`;
   }).join('');
 }
