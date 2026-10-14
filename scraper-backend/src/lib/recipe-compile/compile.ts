@@ -25,6 +25,8 @@ export interface DaPrice {
 export interface CompileContext {
   aliases: Record<string, Alias>;
   canonicals: Record<string, Canonical>;
+  /** Fallback per-100 g nutrients by slug, for items FNRI doesn't have (approximate). */
+  extraNutrients?: Record<string, FnriFood & { source?: string }>;
   fnri: Map<string, FnriFood>;
   da: Map<string, DaPrice>;
 }
@@ -37,7 +39,7 @@ export interface RecipeInput {
 }
 
 export type LineStatus =
-  | "ok" | "to-taste" | "water" | "skipped" | "unmatched" | "no-weight" | "no-nutrition";
+  | "ok" | "to-taste" | "optional" | "water" | "skipped" | "unmatched" | "no-weight" | "no-nutrition";
 
 export interface CompiledLine {
   ingredientId?: number;
@@ -94,7 +96,7 @@ function lookupAlias(name: string, aliases: Record<string, Alias>): Alias | null
 }
 
 /** Grams as purchased for one line, or null when no weight is known. */
-function gramsAP(q: ParsedQuantity, c: Canonical, alias: Alias, flags: string[]): number | null {
+function gramsAP(q: ParsedQuantity, c: Canonical, alias: Alias, flags: string[], text = ""): number | null {
   const size = q.size ?? alias.size;
   const each = size === "small" ? c.gEachSmall ?? c.gEach : size === "large" ? c.gEachLarge ?? c.gEach : c.gEach;
   const noteUnit = alias.note?.match(/unit:(\w+)/)?.[1] ?? null;
@@ -112,12 +114,12 @@ function gramsAP(q: ParsedQuantity, c: Canonical, alias: Alias, flags: string[])
     if (q.unit === "pinch" || q.unit === "dash") return (n ?? 1) * PINCH_G;
     return null;
   }
-  if (n === null) return null;
-
   const unit = q.unit ?? noteUnit ?? "piece";
+  if (n === null) return unit === "pinch" || unit === "dash" ? PINCH_G : null;
+
   const byUnit: Record<string, number | null> = {
     clove: c.gClove, head: c.gHead, thumb: c.gThumb, bunch: c.gBunch, stalk: c.gStalk, slice: c.gSlice,
-    strip: c.gSlice ?? c.gEach, pinch: PINCH_G, dash: PINCH_G,
+    strip: c.gSlice ?? c.gEach, pinch: PINCH_G, dash: PINCH_G, knob: c.gThumb,
   };
   if (unit in byUnit) {
     const g = byUnit[unit];
@@ -125,7 +127,16 @@ function gramsAP(q: ParsedQuantity, c: Canonical, alias: Alias, flags: string[])
     if (each) { flags.push(`no-${unit}-weight:used-piece`); return n * each; }
     return null;
   }
-  if ((unit === "can" || unit === "pack" || unit === "bottle") && q.packageAmount) return n * q.packageAmount;
+  if (unit === "can" || unit === "pack" || unit === "bottle") {
+    if (q.packageAmount) return n * q.packageAmount;
+    // Package size only in the full line text: "1 can diced tomatoes 14 oz".
+    const m = text.match(/(\d+(?:\.\d+)?)\s*(oz|ounces?|g|grams?|ml)\b/i);
+    if (m) {
+      const per = /^o/i.test(m[2]) ? 28.3495 : 1;
+      flags.push("package-from-text");
+      return n * parseFloat(m[1]) * per;
+    }
+  }
   return each ? n * each : null;
 }
 
@@ -184,13 +195,16 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
     if (alias.lineClass === "WATER") { lines.push({ ...base, status: "water", gEaten: 0, reason: "water: 0 kcal, not priced" }); continue; }
     if (alias.lineClass === "TO_TASTE") { lines.push({ ...base, status: "to-taste", slug: alias.slugs[0] ?? null, reason: "to taste: not counted" }); continue; }
 
+    // Optional items are left out of nutrition and cost (proposal §5.3 E).
+    if (/\boptional\b/i.test(text)) { lines.push({ ...base, status: "optional", slug: alias.slugs[0] ?? null, reason: "optional: not counted" }); continue; }
+
     const slug = alias.slugs[0];
     const c = ctx.canonicals[slug] ?? null;
     if (!c) { lines.push({ ...base, status: "unmatched", reason: `no catalog entry for ${slug}` }); continue; }
     const q = parseQuantity(ing.amount, ing.unit, ing.name);
     flags.push(...q.flags);
     if (q.unit === "to-taste") { lines.push({ ...base, slug, label: c.label, status: "to-taste", reason: "to taste: not counted" }); continue; }
-    const gAP = gramsAP(q, c, alias, flags);
+    const gAP = gramsAP(q, c, alias, flags, text);
     // Edible portion applies to weighed and counted items; volume lines are already trimmed.
     const ep = q.kind === "volume" ? 1 : (c.epPct ?? 100) / 100;
     const line: CompiledLine = { ...base, slug, label: c.label, gAP };
@@ -262,7 +276,9 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
     const { line, c } = w;
     if (!c) continue;
     foodLines++;
-    const f = c.fnriCode ? ctx.fnri.get(c.fnriCode) : undefined;
+    const extra = !c.fnriCode && line.slug ? ctx.extraNutrients?.[line.slug] : undefined;
+    const f = c.fnriCode ? ctx.fnri.get(c.fnriCode) : extra;
+    if (extra) line.flags.push(`nutrition≈${extra.source ?? "approx"}`);
     if (line.gEaten !== null && f) {
       const n = scaled(f, line.gEaten, c.nutrScale ?? 1);
       if (fatFactor < 1 && /^pork_(belly|hock|skin|leg)/.test(line.slug ?? "")) {
@@ -277,6 +293,9 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
         kcalLow += (absorbed[0] * f.calories) / 100;
         kcalHigh += (absorbed[1] * f.calories) / 100;
       } else { kcalLow += n.kcal; kcalHigh += n.kcal; }
+    } else if (line.gEaten === 0) {
+      line.nutrients = { kcal: 0, protein: 0, fat: 0, carbs: 0, sodium: 0 };
+      withNutrition++;
     } else if (line.gEaten !== null && !f) {
       line.status = line.status === "ok" ? "no-nutrition" : line.status;
       if (!line.reason) line.reason = "no FNRI match yet";

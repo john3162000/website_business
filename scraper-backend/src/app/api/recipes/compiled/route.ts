@@ -2,7 +2,7 @@ import { prisma } from "@/lib/db";
 import { corsJson, corsPreflight } from "@/lib/cors";
 import { ensureNutritionColumns } from "@/lib/ensure-schema";
 import { isMalformedName, parsePriceBasis } from "@/lib/da-units";
-import { ALIASES, CANONICALS } from "@/lib/recipe-compile/catalog.generated.ts";
+import { ALIASES, CANONICALS, EXTRA_NUTRIENTS } from "@/lib/recipe-compile/catalog.generated.ts";
 import { compileRecipe, type CompileContext, type DaPrice, type FnriFood } from "@/lib/recipe-compile/compile.ts";
 
 export const dynamic = "force-dynamic";
@@ -51,7 +51,7 @@ export async function GET(request: Request) {
     const iso = p.sourceDate.toISOString();
     if (!priceDate || iso > priceDate) priceDate = iso;
   }
-  const ctx: CompileContext = { aliases: ALIASES, canonicals: CANONICALS, fnri, da };
+  const ctx: CompileContext = { aliases: ALIASES, canonicals: CANONICALS, extraNutrients: EXTRA_NUTRIENTS, fnri, da };
 
   const round = (v: number | null, d = 0) => (v == null ? null : Math.round(v * 10 ** d) / 10 ** d);
   const compiled = recipes.map((r) =>
