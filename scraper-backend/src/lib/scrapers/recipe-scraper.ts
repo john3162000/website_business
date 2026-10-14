@@ -87,7 +87,11 @@ async function scrapeRecipePage(url: string): Promise<ScrapedRecipe | null> {
       el.attr("data-lazy-src") || el.attr("data-src") || el.attr("src") || undefined;
     return candidate && !candidate.startsWith("data:") ? candidate : undefined;
   };
-  const imageUrl = pickImage(".wprm-recipe-image img") || pickImage("article img") || undefined;
+  const imageUrl =
+    pickImage(".wprm-recipe-image img") ||
+    $("meta[property='og:image']").attr("content") ||
+    pickImage("article img") ||
+    undefined;
 
   const servingsText = $(".wprm-recipe-servings").first().text().trim();
   const servings = servingsText ? parseInt(servingsText) || undefined : undefined;

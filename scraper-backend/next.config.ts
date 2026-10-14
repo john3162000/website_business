@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
   // Force it (and the rest of pdfjs's build dir) to be included.
   outputFileTracingIncludes: {
     "/api/scrape/da": ["./node_modules/pdfjs-dist/legacy/build/**"],
+    "/api/cron/da-daily": ["./node_modules/pdfjs-dist/legacy/build/**"],
   },
 };
 
