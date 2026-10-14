@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { corsJson, corsPreflight } from "@/lib/cors";
+import { ensureNutritionColumns } from "@/lib/ensure-schema";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +11,7 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const q = searchParams.get("q")?.trim();
+  await ensureNutritionColumns();
 
   const facts = await prisma.nutritionFact.findMany({
     where: q ? { foodName: { contains: q, mode: "insensitive" } } : undefined,
@@ -28,6 +30,10 @@ export async function GET(request: Request) {
       vitaminB1: true,
       vitaminB2: true,
       vitaminC: true,
+      sodium: true,
+      altNames: true,
+      scientificName: true,
+      ediblePortion: true,
     },
   });
 

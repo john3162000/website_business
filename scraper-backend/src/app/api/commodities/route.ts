@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { corsJson, corsPreflight } from "@/lib/cors";
+import { isMalformedName, parsePriceBasis, type PriceBasis } from "@/lib/da-units";
 
 export const dynamic = "force-dynamic";
 
@@ -28,12 +29,15 @@ export async function GET() {
     prevPrice: number | null;
     latestDate: string;
     history: { date: string; price: number | null }[];
+    unit: PriceBasis;
   }
 
   const byName = new Map<string, Entry>();
   let latestDate: string | null = null;
 
   for (const r of rows) {
+    // Skip rows saved before the merged-row parser fix (another row's price in the name).
+    if (isMalformedName(r.name)) continue;
     const iso = r.sourceDate.toISOString();
     if (!latestDate || iso > latestDate) latestDate = iso;
 
@@ -47,6 +51,7 @@ export async function GET() {
         prevPrice: null,
         latestDate: iso,
         history: [],
+        unit: parsePriceBasis(r.name),
       };
       byName.set(r.name, e);
     }

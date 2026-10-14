@@ -71,7 +71,6 @@
       <div><p class="text-2xl font-bold text-amber-300" id="stat-recipes">—</p><p class="text-green-200">Recipes Indexed</p></div>
       <div><p class="text-2xl font-bold text-amber-300" id="stat-foods">—</p><p class="text-green-200">Food Items (FNRI)</p></div>
       <div><p class="text-2xl font-bold text-amber-300" id="stat-commodities">—</p><p class="text-green-200">DA Commodities</p></div>
-      <div><p class="text-2xl font-bold text-amber-300" id="stat-sm-products">—</p><p class="text-green-200">SM Store Prices</p></div>
       <div><p class="text-2xl font-bold text-amber-300" id="stat-da-date">—</p><p class="text-green-200">Latest DA Data</p></div>
     </div>
   </div>
@@ -249,8 +248,6 @@ let DA_PRICES = [];        // [{ name, category, price, prevPrice, trend, latest
 let DA_CATEGORIES = [];    // distinct category strings, for filter chips
 let NUTRITION = [];        // FNRI facts
 let RECIPES = [];          // enriched scraped recipes
-let SM_PRODUCTS = [];      // [{ sku, name, category, uom, price, prevPrice, url, trend }]
-let SM_INDEX = null;       // inverted token index for SM product name matching
 let LATEST_DA_DATE = null;
 
 // ═══════════════ COMPUTATION CONSTANTS ═══════════════
@@ -315,17 +312,10 @@ function enrichRecipe(raw) {
     const com = (comM && comM.confidence >= CONFIDENCE.da) ? comM.item : null;
     const comConfidence = com ? comM.confidence : null;
     // SM price is per-package (not per kg), so we only use it when DA has no match.
-    const smM = (!nonPriceable && !com && SM_INDEX) ? rankMatch(ing.name, SM_PRODUCTS, SM_INDEX, "name", aliasTokens(ing.name)) : null;
-    const smProd = (smM && smM.confidence >= CONFIDENCE.sm) ? smM.item : null;
-    const smConfidence = smProd ? smM.confidence : null;
     let lineCost = null;
     if (com && com.price != null && grams) {
-      lineCost = (com.price / 1000) * grams; // ₱/kg → ₱/g × grams
-      totalCost += lineCost;
-    } else if (smProd && smProd.price != null) {
-      // Use SM package price as a flat per-ingredient estimate (no gram conversion — package price).
-      lineCost = smProd.price;
-      totalCost += lineCost;
+      lineCost = daLineCost(com, grams, ing.name);
+      if (lineCost != null) totalCost += lineCost;
     }
 
     ingredientRows.push({
@@ -334,10 +324,8 @@ function enrichRecipe(raw) {
       foodConfidence,
       matchedCommodity: com ? com.name : null,
       price: com && com.price != null ? com.price : null,
+      priceUnit: com ? unitSuffix(com) : null,
       comConfidence,
-      smProduct: smProd ? smProd.name : null,
-      smPrice: smProd && smProd.price != null ? smProd.price : null,
-      smConfidence,
       nonPriceable,
     });
   }
@@ -399,14 +387,27 @@ function enrichRecipe(raw) {
   };
 }
 
+// DA prices are per kg unless the commodity name says otherwise (per piece,
+// per bottle); the API reads that basis out of the name into `unit`.
+function daLineCost(com, grams, ingName) {
+  const u = com.unit || { per: "kg" };
+  if (u.per === "piece") return u.pieceGrams ? (com.price / u.pieceGrams) * grams : null;
+  if (u.per === "bottle") {
+    const isOil = /\boil\b/i.test(ingName) || /oil/i.test(com.name);
+    const ml = grams / (isOil ? 0.92 : 1);
+    return u.bottleMl ? (com.price / u.bottleMl) * ml : null;
+  }
+  return (com.price / 1000) * grams; // ₱/kg → ₱/g × grams
+}
+function unitSuffix(c) { return (c.unit && c.unit.label ? c.unit.label : "₱/kg").replace("₱", ""); }
+
 // ═══════════════ DATA LOADING ═══════════════
 
 async function loadData() {
-  const [comRes, nutRes, recRes, smRes] = await Promise.all([
+  const [comRes, nutRes, recRes] = await Promise.all([
     fetch(`${API_BASE}/api/commodities`).then((r) => r.json()),
     fetch(`${API_BASE}/api/nutrition`).then((r) => r.json()),
     fetch(`${API_BASE}/api/recipes`).then((r) => r.json()),
-    fetch(`${API_BASE}/api/store-prices`).then((r) => r.json()).catch(() => ({ products: [] })),
   ]);
 
   LATEST_DA_DATE = comRes.latestDate ? new Date(comRes.latestDate) : null;
@@ -416,7 +417,7 @@ async function loadData() {
       if (c.price > c.prevPrice) trend = "up";
       else if (c.price < c.prevPrice) trend = "down";
     }
-    return { name: c.name, category: c.category || "Other", price: c.price, prevPrice: c.prevPrice, trend };
+    return { name: c.name, category: c.category || "Other", price: c.price, prevPrice: c.prevPrice, trend, unit: c.unit || { per: "kg", label: "₱/kg" } };
   });
   DA_CATEGORIES = [...new Set(DA_PRICES.map((p) => p.category))].sort();
 
@@ -424,15 +425,6 @@ async function loadData() {
   NUTRITION_INDEX = buildIndex(NUTRITION, "foodName");
   COMMODITY_INDEX = buildIndex(DA_PRICES, "name");
 
-  SM_PRODUCTS = (smRes.products || []).map((p) => {
-    let trend = "stable";
-    if (p.price != null && p.prevPrice != null) {
-      if (p.price > p.prevPrice) trend = "up";
-      else if (p.price < p.prevPrice) trend = "down";
-    }
-    return { sku: p.sku, name: p.name, category: p.category || "Other", uom: p.uom, price: p.price, prevPrice: p.prevPrice, url: p.url, trend };
-  });
-  SM_INDEX = buildIndex(SM_PRODUCTS, "name");
 
   RECIPES = (recRes.recipes || []).map(enrichRecipe);
 }
@@ -476,7 +468,7 @@ function buildModal(r, instructions) {
     <div class="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3">
       <div>
         <p class="font-medium text-sm">${i.label}</p>
-        <p class="text-xs text-gray-400">${i.matchedCommodity ? `DA: ${i.matchedCommodity} — ₱${i.price}/kg` : i.smProduct ? `SM: ${i.smProduct} — ₱${i.smPrice}` : (i.nonPriceable ? '' : 'No price match')}${i.matchedFood ? ` · FNRI: ${i.matchedFood}` : ''}</p>
+        <p class="text-xs text-gray-400">${i.matchedCommodity ? `DA: ${i.matchedCommodity} — ₱${i.price}${i.priceUnit || '/kg'}` : (i.nonPriceable ? '' : 'No price match')}${i.matchedFood ? ` · FNRI: ${i.matchedFood}` : ''}</p>
       </div>
     </div>`).join('');
 
@@ -617,7 +609,7 @@ function renderPrices(cat) {
     <tr class="${i%2===0 ? 'bg-white' : 'bg-gray-50'} hover:bg-green-50 transition-colors">
       <td class="px-5 py-3 font-medium">${p.name}</td>
       <td class="px-3 py-3 text-gray-500 hidden sm:table-cell capitalize">${(p.category||'').toLowerCase()}</td>
-      <td class="px-5 py-3 text-right font-bold tabular-nums">${p.price != null ? '₱'+p.price.toFixed(2) : '<span class="text-gray-400 font-normal">n/a</span>'}</td>
+      <td class="px-5 py-3 text-right font-bold tabular-nums">${p.price != null ? '₱'+p.price.toFixed(2)+'<span class="text-xs text-gray-400 font-normal">'+unitSuffix(p)+'</span>' : '<span class="text-gray-400 font-normal">n/a</span>'}</td>
       <td class="px-3 py-3 text-center hidden md:table-cell">
         <span class="text-xs font-bold ${trendColor[p.trend]}" title="${trendLabel[p.trend]} than previous day">${trendIcon[p.trend]}</span>
       </td>
@@ -720,7 +712,7 @@ function renderCommodityCalculatorOptions() {
   const select = document.getElementById('calc-commodity');
   const priced = DA_PRICES.filter(c => c.price != null);
   select.innerHTML = priced.map((c) =>
-    `<option value="${c.name.replace(/"/g, '&quot;')}">${c.name} — ₱${c.price.toFixed(2)}/kg</option>`
+    `<option value="${c.name.replace(/"/g, '&quot;')}">${c.name} — ₱${c.price.toFixed(2)}${unitSuffix(c)}</option>`
   ).join('');
   updateCommodityCalculator();
 }
@@ -730,7 +722,9 @@ function updateCommodityCalculator() {
   const commodity = DA_PRICES.find(c => c.name === name);
   const qty = parseFloat(document.getElementById('calc-qty').value) || 0;
   const unitLabel = document.getElementById('calc-unit-label');
-  if (unitLabel) unitLabel.textContent = 'kg';
+  const per = commodity && commodity.unit ? commodity.unit.per : 'kg';
+  const perWord = per === 'piece' ? 'pc' : per;
+  if (unitLabel) unitLabel.textContent = perWord;
   if (!commodity || commodity.price == null) {
     document.getElementById('calc-avg').textContent = '₱0.00';
     document.getElementById('calc-breakdown').textContent = '';
@@ -739,7 +733,7 @@ function updateCommodityCalculator() {
   const total = commodity.price * qty;
   document.getElementById('calc-avg').textContent = `₱${total.toFixed(2)}`;
   document.getElementById('calc-breakdown').textContent =
-    `${qty} kg × ₱${commodity.price.toFixed(2)}/kg = ₱${total.toFixed(2)} for ${commodity.name}`;
+    `${qty} ${perWord} × ₱${commodity.price.toFixed(2)}${unitSuffix(commodity)} = ₱${total.toFixed(2)} for ${commodity.name}`;
 }
 
 // ═══════════════ NAVIGATION ═══════════════
@@ -768,7 +762,6 @@ function updateLabels() {
   set('stat-recipes', RECIPES.length);
   set('stat-foods', NUTRITION.length);
   set('stat-commodities', DA_PRICES.length);
-  set('stat-sm-products', SM_PRODUCTS.length);
   set('stat-da-date', dateStr);
 }
 

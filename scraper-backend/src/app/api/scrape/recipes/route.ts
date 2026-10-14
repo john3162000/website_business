@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { initialRecipeCursor, scrapeRecipeChunk, type RecipeCursor } from "@/lib/scrapers/recipe-scraper";
+import { requireAdmin } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -12,7 +13,9 @@ const TYPE = "RECIPES";
  * allowed to run. The client should keep calling POST while the response's
  * `done` is false.
  */
-export async function POST() {
+export async function POST(request: Request) {
+  const denied = requireAdmin(request);
+  if (denied) return denied;
   let log = await prisma.scrapingLog.findFirst({
     where: { type: TYPE, status: "RUNNING" },
   });

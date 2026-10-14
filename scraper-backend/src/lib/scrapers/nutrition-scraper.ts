@@ -46,6 +46,10 @@ interface NutritionRow {
   vitaminB1: number | null;
   vitaminB2: number | null;
   vitaminC: number | null;
+  sodium: number | null;
+  altNames: string | null;
+  scientificName: string | null;
+  ediblePortion: number | null;
   sourceUrl: string;
 }
 
@@ -53,7 +57,7 @@ interface NutritionRow {
 // to our NutritionFact fields. Labels come from the FNRI page verbatim,
 // e.g. `<div class="col-md-9">Protein (g)</div>` paired with
 // `<div class="col-md-3"><strong>8.3</strong></div>`.
-type NutrientField = Exclude<keyof NutritionRow, "foodName" | "foodCode" | "sourceUrl">;
+type NutrientField = Exclude<keyof NutritionRow, "foodName" | "foodCode" | "sourceUrl" | "altNames" | "scientificName" | "ediblePortion">;
 
 const NUTRIENT_LABELS: Record<string, NutrientField> = {
   "Energy, calculated (kcal)": "calories",
@@ -67,7 +71,41 @@ const NUTRIENT_LABELS: Record<string, NutrientField> = {
   "Thiamin, Vitamin B1 (mg)": "vitaminB1",
   "Riboflavin, Vitamin B2 (mg)": "vitaminB2",
   "Ascorbic Acid, Vitamin C (mg)": "vitaminC",
+  "Sodium, Na (mg)": "sodium",
 };
+
+interface DirectoryMeta {
+  scientificName: string | null;
+  altNames: string | null;
+  ediblePortion: number | null;
+}
+
+/**
+ * The directory table's rows carry fields the modals don't: scientific name,
+ * Alternate/Common (Filipino) names and Edible portion %. Columns are
+ * Food_ID | Food name | Scientific name | Alternate/Common name(s) | Edible portion | Option.
+ */
+function extractDirectoryMeta($: ReturnType<typeof cheerio.load>): Map<string, DirectoryMeta> {
+  const meta = new Map<string, DirectoryMeta>();
+  const clean = (t: string) => {
+    const v = t.replace(/\s+/g, " ").trim();
+    return !v || /^(n\/a|-)$/i.test(v) ? null : v;
+  };
+  $("table tr").each((_, tr) => {
+    const cells = $(tr).children("td").map((__, td) => $(td).text()).get();
+    if (cells.length < 5) return;
+    const code = cells[0].trim();
+    if (!/^[A-Z]\d{3,}$/i.test(code)) return;
+    const ep = clean(cells[4]);
+    const epNum = ep ? parseFloat(ep.replace(/[^0-9.]/g, "")) : NaN;
+    meta.set(code.toUpperCase(), {
+      scientificName: clean(cells[2]),
+      altNames: clean(cells[3]),
+      ediblePortion: Number.isFinite(epNum) && epNum > 0 && epNum <= 100 ? epNum : null,
+    });
+  });
+  return meta;
+}
 
 /**
  * The FNRI "/all" page's directory table only ever renders 10 rows (its
@@ -79,6 +117,7 @@ const NUTRIENT_LABELS: Record<string, NutrientField> = {
  */
 function extractRows($: ReturnType<typeof cheerio.load>, sourceUrl: string): NutritionRow[] {
   const rows: NutritionRow[] = [];
+  const meta = extractDirectoryMeta($);
 
   $("div[id$='_data']").each((_, el) => {
     const id = $(el).attr("id") ?? "";
@@ -102,6 +141,10 @@ function extractRows($: ReturnType<typeof cheerio.load>, sourceUrl: string): Nut
       vitaminB1: null,
       vitaminB2: null,
       vitaminC: null,
+      sodium: null,
+      altNames: meta.get(foodCode.toUpperCase())?.altNames ?? null,
+      scientificName: meta.get(foodCode.toUpperCase())?.scientificName ?? null,
+      ediblePortion: meta.get(foodCode.toUpperCase())?.ediblePortion ?? null,
       sourceUrl,
     };
 

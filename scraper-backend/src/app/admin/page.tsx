@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface LogEntry {
   id: number;
@@ -61,9 +61,13 @@ function Section({ type, label, desc, chunked }: { type: string; label: string; 
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 55000);
     try {
-      const res = await fetch(`/api/scrape/${type.toLowerCase()}`, { method: "POST", signal: controller.signal });
+      const res = await fetch(`/api/scrape/${type.toLowerCase()}`, {
+        method: "POST",
+        headers: { "x-admin-token": readAdminToken() },
+        signal: controller.signal,
+      });
       const data = await res.json();
-      return { ok: res.ok, data };
+      return { ok: res.ok, status: res.status, data };
     } finally {
       clearTimeout(timer);
     }
@@ -82,7 +86,11 @@ function Section({ type, label, desc, chunked }: { type: string; label: string; 
         while (true) {
           let transient = false;
           try {
-            const { ok, data } = await postScrape();
+            const { ok, status, data } = await postScrape();
+            if (status === 401) {
+              setError(data.error ?? "Admin token missing or wrong.");
+              break;
+            }
             if (ok) {
               failures = 0;
               setError(null);
@@ -178,15 +186,55 @@ function Section({ type, label, desc, chunked }: { type: string; label: string; 
   );
 }
 
+const TOKEN_KEY = "adminToken";
+
+function readAdminToken(): string {
+  try {
+    return localStorage.getItem(TOKEN_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+function AdminTokenField() {
+  // Uncontrolled input filled after mount: localStorage isn't available during SSR.
+  const ref = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (ref.current) ref.current.value = readAdminToken();
+  }, []);
+  return (
+    <label className="flex flex-wrap items-center gap-2 text-sm mb-8">
+      <span className="font-medium text-gray-700">Admin token</span>
+      <input
+        id="admin-token"
+        type="password"
+        ref={ref}
+        defaultValue=""
+        onChange={(e) => {
+          try {
+            localStorage.setItem(TOKEN_KEY, e.target.value);
+          } catch {
+            // storage blocked: the token still works for this page view only
+          }
+        }}
+        placeholder="Required once ADMIN_TOKEN is set in Vercel"
+        className="border rounded-lg px-3 py-1.5 min-w-0 flex-1"
+      />
+    </label>
+  );
+}
+
 export default function AdminPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-10">
       <h1 className="text-3xl font-bold mb-2">Scraper Admin Panel</h1>
       <p className="text-gray-500 mb-8 text-sm">
         Trigger full, uncapped scrapes that snapshot data into the database as static records.
-        Each scrape runs server-side after the button click, so you can navigate away —
-        progress is tracked in the log below and refreshes automatically while running.
+        Scrapes run in small steps driven by this page, so keep this tab open until a run says DONE.
+        If you close it, press Run again and it resumes where it stopped.
       </p>
+
+      <AdminTokenField />
 
       <div className="space-y-6">
         {TYPES.map((t) => (

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { initialSMCursor, scrapeSMChunk, type SMCursor } from "@/lib/scrapers/sm-scraper";
+import { requireAdmin } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -10,7 +11,9 @@ const TYPE = "SM";
  * Crawls the SM Markets catalog via its Magento GraphQL API, one category page
  * per request. The client should keep calling POST while `done` is false.
  */
-export async function POST() {
+export async function POST(request: Request) {
+  const denied = requireAdmin(request);
+  if (denied) return denied;
   let log = await prisma.scrapingLog.findFirst({
     where: { type: TYPE, status: "RUNNING" },
   });

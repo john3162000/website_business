@@ -164,18 +164,37 @@
   ];
 
   // Flavorings / non-grocery items that should not count as a missing price match.
-  const NON_PRICEABLE = ["water", "ice", "clove", "cloves", "leaf",
-    "pepper", "msg", "bouillon", "stock", "broth", "food coloring", "annatto",
-    "vetsin", "powder", "blossom", "puso", "flower", "peel", "zest", "rind",
-    "bay", "laurel", "pandan", "lemongrass", "tanglad",
+  // Matched as whole words / phrases (see isNonPriceable), never as substrings:
+  // substring matching made "rice" and "juice" non-priceable via "ice", "garlic
+  // cloves" via "clove", and "bell pepper" via "pepper".
+  const NON_PRICEABLE = ["water", "ice", "ice water", "msg", "vetsin", "bouillon", "stock", "broth",
+    "food coloring", "annatto", "atsuete", "achuete", "powder", "blossom", "puso", "flower",
+    "peel", "zest", "rind",
+    "bay leaf", "bay leaves", "laurel", "laurel leaves", "pandan", "lemongrass", "tanglad",
+    "black pepper", "white pepper", "ground pepper", "cracked pepper", "peppercorn", "peppercorns",
+    "salt and pepper", "pepper to taste",
     // spices / flavorings with no retail price match needed
-    "star anise", "anise", "vanilla extract",
+    "star anise", "anise", "vanilla", "vanilla extract", "whole cloves", "ground cloves",
     // cooking liquids / wine
-    "sherry", "mirin", "sake", "rice wine",
+    "sherry", "mirin", "sake", "rice wine", "cooking wine",
     // herbs (dried)
     "oregano", "rosemary", "thyme", "sage", "basil leaves", "italian seasoning",
-    // recipe noise — unit/packaging words parsed as ingredient names
+    // recipe noise — section headers parsed as ingredient names
     "cooking procedure", "marinade ingredients"];
+  // Phrases that contain a non-priceable word but are real produce.
+  const PRICEABLE_EXCEPTIONS = ["water spinach", "water chestnut", "watercress"];
+
+  function words(s) {
+    return String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z ]/g, " ").split(/\s+/).filter(Boolean);
+  }
+  function hasPhrase(ws, phrase) {
+    const p = phrase.split(" ");
+    for (let i = 0; i + p.length <= ws.length; i++) {
+      if (p.every((w, j) => ws[i + j] === w)) return true;
+    }
+    return false;
+  }
 
   function aliasTokens(name) {
     const lc = String(name || "").toLowerCase();
@@ -189,8 +208,11 @@
   }
 
   function isNonPriceable(name) {
-    const lc = String(name || "").toLowerCase();
-    return NON_PRICEABLE.some((w) => lc.includes(w));
+    const ws = words(name);
+    if (PRICEABLE_EXCEPTIONS.some((p) => hasPhrase(ws, p))) return false;
+    // A bare "pepper" line is the spice; "bell pepper", "long green pepper" are produce.
+    if (ws.length === 1 && ws[0] === "pepper") return true;
+    return NON_PRICEABLE.some((p) => hasPhrase(ws, p));
   }
 
   // ───────── Indexing & ranking ─────────
