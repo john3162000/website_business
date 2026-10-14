@@ -63,6 +63,10 @@ export interface CompiledLine {
 
 export interface CompiledRecipe {
   id: number;
+  /** No ingredient lines: an article or guide, not a recipe. */
+  isArticle: boolean;
+  /** Round-up post holding several recipes in one card ("Easy Sisig Recipes"): totals are combined. */
+  isCollection: boolean;
   servings: number;
   servingsAssumed: boolean;
   method: { frying: "deep" | "shallow" | null; absorbedOilG: [number, number] | null };
@@ -86,16 +90,49 @@ export function nameKey(s: string): string {
   return s.toLowerCase().replace(/\s+/g, " ").trim();
 }
 
+const HEAD_NOUNS = /^(broth|stock|juice|sauce|noodles?|powder|oil|cubes?|paste|flour|extract|flavou?ring|wine|vinegar|milk|cream|chips|mix|soup|rinds?|skin|bones?|fat|water|leaves|seeds?|spread|jam|syrup|balls?|sausages?|patties|burgers?|nuggets?|crackers?|cake|bread)$/;
+
+// Alias keys sorted longest first, for "find a known ingredient inside the line".
+let aliasKeysByLength: string[] | null = null;
+let aliasKeysSource: Record<string, Alias> | null = null;
+
+function containedAlias(text: string, aliases: Record<string, Alias>): Alias | null {
+  if (aliasKeysSource !== aliases) {
+    aliasKeysSource = aliases;
+    aliasKeysByLength = Object.keys(aliases)
+      .filter((k) => aliases[k].lineClass === "FOOD" && k.length >= 3 && !/\d/.test(k))
+      .sort((a, b) => b.length - a.length);
+  }
+  const t = ` ${text.replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim()} `;
+  for (const k of aliasKeysByLength!) {
+    const needle = ` ${k.replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim()} `;
+    const at = t.indexOf(needle);
+    if (at < 0) continue;
+    // English names are head-final: in "pork broth" or "rice noodles" the food is
+    // the last noun, so a match followed by a form-changing noun is not this food.
+    const next = t.slice(at + needle.length).trim().split(" ")[0] ?? "";
+    if (HEAD_NOUNS.test(next)) continue;
+    return aliases[k];
+  }
+  return null;
+}
+
 function lookupAlias(name: string, aliases: Record<string, Alias>): Alias | null {
   const k = nameKey(name);
   if (aliases[k]) return aliases[k];
+  // "olive or sesame oil", "balaw or bagoong alamang": try each option in order.
+  const options = k.split(/\s+or\s+/);
+  if (options.length > 1) for (const o of options) if (aliases[o.trim()]) return aliases[o.trim()];
   const stripped = k.replace(SIZE_WORDS, " ").replace(/\s+/g, " ").trim();
   if (aliases[stripped]) return aliases[stripped];
   const bare = stripped.replace(PREP_WORDS, " ").replace(/[,()]/g, " ").replace(/\s+/g, " ").trim();
   if (aliases[bare]) return aliases[bare];
   if (bare.endsWith("es") && aliases[bare.slice(0, -2)]) return aliases[bare.slice(0, -2)];
   if (bare.endsWith("s") && aliases[bare.slice(0, -1)]) return aliases[bare.slice(0, -1)];
-  return null;
+  if (aliases[`${bare}s`]) return aliases[`${bare}s`];
+  // Last resort: the longest known ingredient name inside the line
+  // ("slab 2 pounds pork belly" → pork belly, "grams of pasta" → pasta).
+  return containedAlias(k, aliases);
 }
 
 /** Grams as purchased for one line, or null when no weight is known. */
@@ -140,6 +177,8 @@ function gramsAP(q: ParsedQuantity, c: Canonical, alias: Alias, flags: string[],
       return n * parseFloat(m[1]) * per;
     }
   }
+  // A weight written in the name ("1 slab 2 pounds pork belly") beats a piece guess.
+  if (q.packageAmount && q.packageKind === "mass") return n * q.packageAmount;
   return each ? n * each : null;
 }
 
@@ -193,7 +232,9 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
     const base: CompiledLine = { ingredientId: ing.id, text, slug: null, label: null, status: "ok", gAP: null, gEaten: null, reason: null, nutrients: null, cost: null, priced: false, flags };
 
     if (/:\s*$/.test(ing.name.trim())) { lines.push({ ...base, status: "skipped", reason: "section header" }); continue; }
-    const alias = lookupAlias(ing.name, ctx.aliases);
+    const alias = ctx.aliases[nameKey(ing.name)]
+      ?? lookupAlias(parseQuantity(ing.amount, ing.unit, ing.name).name, ctx.aliases)
+      ?? lookupAlias(ing.name, ctx.aliases);
     if (!alias) { lines.push({ ...base, status: "unmatched", reason: "ingredient not in catalog yet" }); continue; }
     if (alias.lineClass === "HEADER" || alias.lineClass === "UNIT_ONLY" || alias.lineClass === "EQUIPMENT") {
       lines.push({ ...base, status: "skipped", reason: alias.lineClass.toLowerCase().replace("_", " ") }); continue;
@@ -204,7 +245,9 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
     // Optional items are left out of nutrition and cost (proposal §5.3 E).
     if (/\boptional\b/i.test(text)) { lines.push({ ...base, status: "optional", slug: alias.slugs[0] ?? null, reason: "optional: not counted" }); continue; }
 
-    const slug = alias.slugs[0];
+    let slug = alias.slugs[0];
+    // "1 cup rice cooked", "2 cups cooked jasmine rice": measured cooked, not raw.
+    if (slug === "rice_white_raw" && /\b(cooked|leftover|steamed)\b/i.test(text)) slug = "rice_white_cooked";
     const c = ctx.canonicals[slug] ?? null;
     if (!c) { lines.push({ ...base, status: "unmatched", reason: `no catalog entry for ${slug}` }); continue; }
     const q = parseQuantity(ing.amount, ing.unit, ing.name);
@@ -317,8 +360,14 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
   const servingsAssumed = !r.servings || r.servings < 1;
   const servings = servingsAssumed ? 4 : r.servings!;
   const per = (v: number) => v / servings;
+  const slugCounts = new Map<string, number>();
+  for (const l of lines) if (l.slug) slugCounts.set(l.slug, (slugCounts.get(l.slug) ?? 0) + 1);
+  const repeats = [...slugCounts.values()].filter((v) => v >= 3).length;
+  const isCollection = /\b(recipes|ways|variations)\b/i.test(r.title) || repeats >= 2;
   return {
     id: r.id,
+    isArticle: r.ingredients.length === 0,
+    isCollection,
     servings,
     servingsAssumed,
     method: { frying, absorbedOilG: absorbed },

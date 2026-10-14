@@ -149,7 +149,7 @@ daikon radish	FOOD	radish_daikon
 extra firm tofu	FOOD	tofu_firm		extra firm
 frozen green peas	FOOD	green_peas		frozen
 panko bread crumbs	FOOD	bread_crumbs_panko		
-salt and ground black pepper	TO_TASTE	salt|black_pepper		no "to taste" in name
+salt and ground black pepper	TO_TASTE	salt|black_pepper		"no ""to taste"" in name"
 calamansi	FOOD	calamansi		
 can	UNIT_ONLY			container only (food lost)
 chopped green onions	FOOD	green_onion		
@@ -183,7 +183,7 @@ long green peppers	FOOD	chili_long_green
 medium ripe tomato	FOOD	tomato	medium	ripe
 medium shrimp	FOOD	shrimp	medium	
 pineapple juice	FOOD	pineapple_juice		
-salt and pepper	TO_TASTE	salt|black_pepper		no "to taste" in name
+salt and pepper	TO_TASTE	salt|black_pepper		"no ""to taste"" in name"
 all-purpose cream	FOOD	cream_all_purpose		
 annatto powder	FOOD	annatto_powder		
 chicken liver	FOOD	chicken_liver		
@@ -454,7 +454,7 @@ diced tomato	FOOD	tomato_canned_diced
 dry sherry	FOOD	wine_sherry		dry
 dry white wine	FOOD	wine_white		dry
 filipino style spaghetti sauce	FOOD	spaghetti_sauce_filipino		
-fish sauce and ground black pepper	TO_TASTE	fish_sauce|black_pepper		no "to taste" in name
+fish sauce and ground black pepper	TO_TASTE	fish_sauce|black_pepper		"no ""to taste"" in name"
 fresh basil	FOOD	basil		
 fresh noodles	FOOD	noodles_miki		generic fresh noodles; assumed miki
 garlic crushed	FOOD	garlic		
@@ -699,3 +699,23 @@ kosher salt	FOOD	salt_kosher
 large baking potatoes	FOOD	potato	large	baking potato
 large potatoes	FOOD	potato	large	
 large tilapia	FOOD	tilapia	large	
+siling pansigang	FOOD	chili_long_green		siling haba
+siling haba	FOOD	chili_long_green		
+siling labuyo	FOOD	chili_bird		
+talong	FOOD	eggplant		
+bihon	FOOD	noodles_bihon		
+miki noodles	FOOD	noodles_miki		
+round miki noodles	FOOD	noodles_miki		
+ground turmeric	FOOD	turmeric_powder		
+oregano	FOOD	oregano_dried		
+table cream	FOOD	cream_all_purpose		
+tausi salted black beans	FOOD	black_beans_salted		
+lengua ox tongue	FOOD	beef_tongue		
+young coconut water	WATER			buko juice ≈ water
+pork broth	FOOD	broth_beef		meat broth ≈ beef broth
+pork stock	FOOD	broth_beef		meat broth ≈ beef broth
+shrimp broth	FOOD	broth_chicken		light broth ≈ chicken broth
+fish broth	FOOD	broth_chicken		light broth ≈ chicken broth
+rice noodles	FOOD	noodles_bihon		
+thick rice noodles	FOOD	noodles_bihon		pancit malabon/palabok noodles
+shrimp juice	FOOD	broth_chicken		shrimp-head extract ≈ light broth
