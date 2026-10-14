@@ -51,5 +51,6 @@ export function parsePriceBasis(name: string): PriceBasis {
  * Prevailing price is defined as …") can be parsed as a row.
  */
 export function isMalformedName(name: string): boolean {
-  return /(^|\s)([\d,]+\.\d{2}|n\/a)(\s|$)/i.test(name) || /^note\(?s?\)?\s*:/i.test(name.trim());
+  return /(^|\s)([\d,]+\.\d{2}|n\/a)(\s|$)/i.test(name) || /^note\(?s?\)?\s*:/i.test(name.trim())
+    || /prevailing price is defined|arithmetic mean/i.test(name);
 }

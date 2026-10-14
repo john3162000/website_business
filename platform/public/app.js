@@ -40,7 +40,8 @@ function formatDate(d) {
 function categoryFor(title) {
   const t = title.toLowerCase();
   if (/\b(sinigang|tinola|nilaga|bulalo|soup|sopas|molo|lomi|mami|goto|arroz caldo|lugaw|batchoy|pochero|cansi)\b/.test(t)) return "Soup";
-  if (/\b(cake|flan|halo|turon|biko|suman|puto|kakanin|ice cream|pie|cookies?|bibingka|maja|leche|dessert|brownies?|polvoron|pastillas|kutsinta|sapin|graham|buko pandan|champorado)\b/.test(t)) return "Dessert";
+  if (/\b(sauce|dip|dipping|dressing|gravy|marinade|vinaigrette|spread|salsa|chutney|syrup)\b/.test(t)) return "Sauce & Condiment";
+  if (/\b(cake|flan|halo|turon|biko|suman|puto|kakanin|ice cream|pie|cookies?|bibingka|maja|leche|dessert|brownies?|polvoron|pastillas|kutsinta|sapin|graham|buko pandan|champorado|yema|candy|tart|muffins?|cupcakes?|donuts?|doughnuts?|bread|ensaymada|silvanas|sans rival|macapuno|ube halaya|taho|gulaman)\b/.test(t)) return "Dessert";
   if (/\b(pancit|bihon|canton|sotanghon|spaghetti|pasta|noodles?|rice|sinangag|carbonara|lasagna|macaroni)\b/.test(t)) return "Rice & Noodles";
   if (/\b(gulay|pinakbet|pakbet|laing|chopsuey|chop suey|ginisang|monggo|munggo|ampalaya|kangkong|talong|okra|tofu|tokwa|vegetable|salad|lumpiang gulay)\b/.test(t)) return "Vegetable Dish";
   if (/\b(bangus|tilapia|fish|isda|galunggong|tuna|salmon|shrimp|hipon|prawn|squid|pusit|crab|alimango|mussels?|tahong|clams?|halaan|seafood|daing|tuyo|tinapa)\b/.test(t)) return "Fish & Seafood";
@@ -242,7 +243,7 @@ function buildModal(r, instructions, lines) {
     <div class="flex items-center justify-between mb-4">
       <div>
         <h2 class="text-2xl font-bold">${escapeHtml(r.title)}</h2>
-        <span class="text-sm text-gray-500">${r.category} · ${r.servings} servings${r.servingsAssumed ? " (assumed: the recipe doesn’t say)" : ""} · ${(r.prepTime || 0) + (r.cookTime || 0)} min</span>
+        <span class="text-sm text-gray-500">${r.category} · ${r.servings} servings${r.servingsAssumed ? " (assumed: the recipe doesn’t say)" : ""}${(r.prepTime || 0) + (r.cookTime || 0) > 0 ? ` · ${(r.prepTime || 0) + (r.cookTime || 0)} min` : ""}</span>
         ${r.url ? `<a href="${escapeHtml(r.url)}" target="_blank" rel="noopener" class="block text-xs text-green-700 hover:underline mt-1">View original on Panlasang Pinoy ↗</a>` : ""}
       </div>
       <button onclick="closeModalBtn()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">✕</button>
@@ -311,7 +312,8 @@ function buildModal(r, instructions, lines) {
 
 function renderTopRecipes() {
   const seen = new Set();
-  const sorted = RECIPES.filter((r) => r.ranked && r.nutritionScore >= TOP_MIN_NUTRITION_SCORE)
+  // "Top Value Dishes" are meals: sauces and desserts stay searchable but aren't ranked here.
+  const sorted = RECIPES.filter((r) => r.ranked && r.nutritionScore >= TOP_MIN_NUTRITION_SCORE && r.category !== "Dessert" && r.category !== "Sauce & Condiment")
     .sort((a, b) => b.valueScore - a.valueScore)
     .filter((r) => { const k = r.title.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; })
     .slice(0, 8);
