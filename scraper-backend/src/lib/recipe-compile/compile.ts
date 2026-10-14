@@ -363,7 +363,9 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
   const slugCounts = new Map<string, number>();
   for (const l of lines) if (l.slug) slugCounts.set(l.slug, (slugCounts.get(l.slug) ?? 0) + 1);
   const repeats = [...slugCounts.values()].filter((v) => v >= 3).length;
-  const isCollection = /\b(recipes|ways|variations)\b/i.test(r.title) || repeats >= 2;
+  // Recipes with a separate sauce or marinade list repeat salt/garlic/onion once
+  // or twice; a round-up of several dishes repeats many ingredients 3+ times.
+  const isCollection = /\b(recipes|ways|variations)\b/i.test(r.title) || repeats >= 3;
   return {
     id: r.id,
     isArticle: r.ingredients.length === 0,
