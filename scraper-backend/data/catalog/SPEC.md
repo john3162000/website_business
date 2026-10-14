@@ -65,3 +65,14 @@ Columns, tab-separated, header row first:
   pandan, star anise, cinnamon stick) | `water` | `garnish_typical`.
 - `confidence`: high|medium|low for the FNRI+DA choice; `notes`: anything a reviewer should check.
 - All numbers are approximate: mark doubtful ones with `?` in notes, never invent precision.
+
+## Added after review
+- `nutrScale`: multiply the FNRI nutrients by this when the closest FNRI row is a
+  denser form (coconut_milk 0.6 against the coconut-cream-like K002; cream_heavy 1.4).
+- `cookedPerRaw`: the slug is measured cooked but priced from a raw DA item; cost uses
+  grams ÷ cookedPerRaw at the raw price (rice_white_cooked 2.76).
+- `epPct` applies to mass and count lines only. Volume-measured lines (cups, tbsp) are
+  already the trimmed food, so their edible fraction is 100.
+- Review files: review-top.tsv (slugs 1–120) and review-rest.tsv (121–346). All
+  proposals were applied except the three bell pepper daName switches, because the DA
+  unit parser now reads "(151-250gm/pc)" as a per-kg price with a piece size.
