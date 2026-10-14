@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/db";
+import { ensureNutritionColumns } from "@/lib/ensure-schema";
 import { initialNutritionCursor, scrapeNutritionBatch, type NutritionCursor } from "@/lib/scrapers/nutrition-scraper";
+import { requireAdmin } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -11,7 +13,10 @@ const TYPE = "NUTRITION";
  * span far more pages than a serverless function is allowed to run for).
  * The client should keep calling POST while the response's `done` is false.
  */
-export async function POST() {
+export async function POST(request: Request) {
+  const denied = requireAdmin(request);
+  if (denied) return denied;
+  await ensureNutritionColumns();
   let log = await prisma.scrapingLog.findFirst({
     where: { type: TYPE, status: "RUNNING" },
   });

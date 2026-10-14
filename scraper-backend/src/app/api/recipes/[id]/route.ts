@@ -14,7 +14,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const recipe = await prisma.recipe.findUnique({
     where: { id: recipeId },
     include: {
-      ingredients: { select: { rawText: true, name: true, amount: true, unit: true } },
+      ingredients: { orderBy: { id: "asc" }, select: { id: true, rawText: true, name: true, amount: true, unit: true } },
       instructions: { orderBy: { stepNumber: "asc" }, select: { stepNumber: true, text: true } },
     },
   });

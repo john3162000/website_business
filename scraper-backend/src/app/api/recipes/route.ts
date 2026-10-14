@@ -20,7 +20,7 @@ export async function GET() {
       servings: true,
       prepTime: true,
       cookTime: true,
-      ingredients: { select: { name: true, amount: true, unit: true } },
+      ingredients: { orderBy: { id: "asc" }, select: { id: true, rawText: true, name: true, amount: true, unit: true } },
     },
   });
 
@@ -35,7 +35,9 @@ export async function GET() {
     cookTime: r.cookTime,
     ingredients: r.ingredients
       .filter((i) => i.name)
-      .map((i) => ({ name: i.name, amount: i.amount, unit: i.unit })),
+      // rawText keeps notes the name span drops ("(optional)", "for frying");
+      // id lets later stages attach per-line overrides. Order is recipe order.
+      .map((i) => ({ id: i.id, name: i.name, amount: i.amount, unit: i.unit, rawText: i.rawText.replace(/^▢\s*/, "") })),
   }));
 
   return corsJson({ count: list.length, recipes: list });

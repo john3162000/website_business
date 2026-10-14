@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { initialDACursor, scrapeDAChunk, type DACursor } from "@/lib/scrapers/da-scraper";
+import { requireAdmin } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -15,7 +16,9 @@ const STALE_MS = 6 * 60 * 60 * 1000;
  * request (each PDF fetch+parse is heavy). The client should keep calling POST
  * while the response's `done` is false.
  */
-export async function POST() {
+export async function POST(request: Request) {
+  const denied = requireAdmin(request);
+  if (denied) return denied;
   let log = await prisma.scrapingLog.findFirst({
     where: { type: TYPE, status: "RUNNING" },
   });

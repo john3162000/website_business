@@ -41,8 +41,7 @@ const SKIP_PATTERNS: RegExp[] = [
   /^UNIT \(P\/UNIT\)$/i,
 ];
 
-const PRICE_AT_END = /^(.*\S)\s+([\d,]+\.\d{2})$/;
-const NA_AT_END = /^(.*\S)\s+n\/a$/i;
+const PRICE_TOKEN = /^([\d,]+\.\d{2}|n\/a)$/i;
 
 /**
  * The DA "Daily Price Index" lists an ALL-CAPS category header, then one
@@ -50,7 +49,7 @@ const NA_AT_END = /^(.*\S)\s+n\/a$/i;
  * commodity names wrap onto a second line, so non-price/non-header lines are
  * buffered and prepended to the following line.
  */
-function extractCommodities(text: string, sourceDate: Date): CommodityRow[] {
+export function extractCommodities(text: string, sourceDate: Date): CommodityRow[] {
   const rows: CommodityRow[] = [];
   const lines = text
     .split("\n")
@@ -68,22 +67,34 @@ function extractCommodities(text: string, sourceDate: Date): CommodityRow[] {
       continue;
     }
 
-    const priceMatch = line.match(PRICE_AT_END);
-    if (priceMatch) {
-      const name = `${pendingName} ${priceMatch[1]}`.trim();
-      const price = parseFloat(priceMatch[2].replace(/,/g, ""));
-      if (name && !isNaN(price)) rows.push({ category, name, price, sourceDate });
-      pendingName = "";
-      lastWasCategory = false;
-      continue;
-    }
-
-    const naMatch = line.match(NA_AT_END);
-    if (naMatch) {
-      const name = `${pendingName} ${naMatch[1]}`.trim();
-      if (name) rows.push({ category, name, price: null, sourceDate });
-      pendingName = "";
-      lastWasCategory = false;
+    // A price token is "194.00" or "n/a". The PDF text layer sometimes puts
+    // two or three table rows on one line ("Ginger, Local … 199.50 Ginger,
+    // Imported … 147.00 Red Onion, Local 13-15 pcs/kg 123.46"), so split on
+    // every price token instead of only reading the last one. Names never
+    // contain a two-decimal number, so this is safe ("1,000 ml", "56-60 grams").
+    const tokens = line.split(" ");
+    if (tokens.some((t) => PRICE_TOKEN.test(t))) {
+      let buf = pendingName ? pendingName.split(" ") : [];
+      for (const t of tokens) {
+        if (!PRICE_TOKEN.test(t)) {
+          buf.push(t);
+          continue;
+        }
+        const name = buf.join(" ").trim();
+        const price = /^n\/a$/i.test(t) ? null : parseFloat(t.replace(/,/g, ""));
+        if (name && (price === null || !isNaN(price))) rows.push({ category, name, price, sourceDate });
+        buf = [];
+      }
+      // Text after the last price starts the next row (or is a category header).
+      const rest = buf.join(" ").trim();
+      if (rest && /[A-Z]/.test(rest) && rest === rest.toUpperCase()) {
+        category = rest;
+        pendingName = "";
+        lastWasCategory = true;
+      } else {
+        pendingName = rest;
+        lastWasCategory = false;
+      }
       continue;
     }
 
@@ -277,9 +288,21 @@ export async function scrapeDAChunk(
   // upsert per row: the DB is far from the serverless region, and ~200
   // sequential upserts can run past the 60s function limit, which kills the
   // request before the cursor advances and stalls the backfill on that day.
-  // De-dupe by name (last wins, matching the old upsert behaviour) so the
-  // bulk insert can't violate the (name, region, sourceDate) unique key.
-  const byName = new Map(rows.map((r) => [r.name, r]));
+  // The unique key is (name, region, sourceDate). The same name can appear
+  // under two categories (e.g. a rice grade under LOCAL and IMPORTED RICE):
+  // keep both by suffixing the category. Same name in the same category:
+  // last wins, matching the old upsert behaviour.
+  const cats = new Map<string, Set<string>>();
+  for (const r of rows) {
+    if (!cats.has(r.name)) cats.set(r.name, new Set());
+    cats.get(r.name)!.add(r.category ?? "");
+  }
+  const byName = new Map(
+    rows.map((r) => {
+      const key = cats.get(r.name)!.size > 1 && r.category ? `${r.name} (${r.category})` : r.name;
+      return [key, { ...r, name: key }];
+    })
+  );
   const data = [...byName.values()].map((r) => ({
     category: r.category, name: r.name, price: r.price, region: "NCR", sourceDate: r.sourceDate,
   }));

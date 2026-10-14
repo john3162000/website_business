@@ -72,6 +72,12 @@ model NutritionFact {
   vitaminB1     Float?
   vitaminB2     Float?
   vitaminC      Float?
+  sodium        Float?
+  /// Alternate/common (mostly Filipino) names from the FNRI directory, e.g. "Bigas, maputi, sinaing".
+  altNames       String?
+  scientificName String?
+  /// Edible portion as purchased, in percent (FNRI values are per 100 g E.P.).
+  ediblePortion  Float?
   sourceUrl     String?
   source        String   @default("FNRI")
   scrapedAt     DateTime @default(now())
