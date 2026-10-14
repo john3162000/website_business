@@ -99,7 +99,8 @@ export async function GET() {
     const code = codeByDa.get(e.name);
     const a = code ? altByCode.get(code) : null;
     e.localName = a ? a.split(/[,/;]/)[0].trim() : null;
-    const priced = e.history.map((h) => h.price).filter((p): p is number => p != null);
+    // DA sometimes reports 0 for an item it didn't survey that day: not a price.
+    const priced = e.history.map((h) => h.price).filter((p): p is number => p != null && p > 0);
     e.low = priced.length ? Math.min(...priced) : null;
     e.high = priced.length ? Math.max(...priced) : null;
   }
