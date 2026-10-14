@@ -79,6 +79,9 @@ export interface CompiledRecipe {
   /** Share of weighed food lines with FNRI nutrition / with a DA price (0–1). Condiments DA doesn't sell lower costCoverage. */
   nutritionCoverage: number;
   costCoverage: number;
+  /** Same, weighted by grams as bought: a priced pinch of salt can't hide an unpriced 1 kg fish. Unmatched lines count as unweighed. */
+  nutritionCoverageByWeight: number;
+  costCoverageByWeight: number;
   lines: CompiledLine[];
 }
 
@@ -323,6 +326,7 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
   let kcalLow = 0, kcalHigh = 0;
   const total: Nutrients = { ...ZERO };
   let foodLines = 0, withNutrition = 0, priceable = 0, priced = 0;
+  let gTotal = 0, gWithNutrition = 0, gPriced = 0;
   let cost = 0;
 
   for (const w of work) {
@@ -353,7 +357,8 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
       line.status = line.status === "ok" ? "no-nutrition" : line.status;
       if (!line.reason) line.reason = "no FNRI match yet";
     }
-    if (line.gAP !== null) priceable++;
+    if (line.gAP !== null) { priceable++; gTotal += line.gAP; }
+    const hadNutrition = line.nutrients !== null;
     if (c.daName && line.gAP !== null) {
       const used = w === medium && absorbed ? (absorbed[0] + absorbed[1]) / 2 + (line.gAP - (absorbed[0] + absorbed[1]) / 2) / OIL_REUSES : line.gAP;
       const lc = lineCost(c, used, ctx.da.get(c.daName), c.role === "frying_oil_candidate");
@@ -367,8 +372,13 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
         line.priced = true; line.priceSource = m.source; priced++; cost += line.cost;
       }
     }
+    if (line.gAP !== null) {
+      if (hadNutrition) gWithNutrition += line.gAP;
+      if (line.priced) gPriced += line.gAP;
+    }
   }
 
+  const unweighed = lines.filter((l) => l.status === "unmatched" || l.status === "no-weight").length;
   const servingsAssumed = !r.servings || r.servings < 1;
   const servings = servingsAssumed ? 4 : r.servings!;
   const per = (v: number) => v / servings;
@@ -392,6 +402,9 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
     costPerServing: priced ? per(cost) : null,
     nutritionCoverage: foodLines ? withNutrition / foodLines : 0,
     costCoverage: priceable ? priced / priceable : 0,
+    // Unmatched lines have no weight; count each as a typical 100 g so they still lower coverage.
+    nutritionCoverageByWeight: gTotal + unweighed * 100 ? gWithNutrition / (gTotal + unweighed * 100) : 0,
+    costCoverageByWeight: gTotal + unweighed * 100 ? gPriced / (gTotal + unweighed * 100) : 0,
     lines,
   };
 }

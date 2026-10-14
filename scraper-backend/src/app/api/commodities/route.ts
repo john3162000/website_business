@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/db";
 import { corsJson, corsPreflight } from "@/lib/cors";
 import { isMalformedName, parsePriceBasis, type PriceBasis } from "@/lib/da-units";
+import { CANONICALS } from "@/lib/recipe-compile/catalog.generated.ts";
+import { ensureNutritionColumns } from "@/lib/ensure-schema";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +32,9 @@ export async function GET() {
     latestDate: string;
     history: { date: string; price: number | null }[];
     unit: PriceBasis;
+    localName: string | null;
+    low: number | null;
+    high: number | null;
   }
 
   const byName = new Map<string, Entry>();
@@ -52,6 +57,9 @@ export async function GET() {
         latestDate: iso,
         history: [],
         unit: parsePriceBasis(r.name),
+        localName: null,
+        low: null,
+        high: null,
       };
       byName.set(r.name, e);
     }
@@ -76,6 +84,24 @@ export async function GET() {
       e.latestDate = priced[priced.length - 1].date;
       if (priced.length > 1) e.prevPrice = priced[priced.length - 2].price;
     }
+  }
+
+  // Filipino name: the FNRI alternate name of the catalog ingredient priced by this DA item.
+  const codeByDa = new Map<string, string>();
+  for (const c of Object.values(CANONICALS)) if (c.daName && c.fnriCode && !codeByDa.has(c.daName)) codeByDa.set(c.daName, c.fnriCode);
+  await ensureNutritionColumns().catch(() => {});
+  const alt = await prisma.nutritionFact.findMany({
+    where: { foodCode: { in: [...new Set(codeByDa.values())] } },
+    select: { foodCode: true, altNames: true },
+  }).catch(() => []);
+  const altByCode = new Map(alt.map((a) => [a.foodCode, a.altNames]));
+  for (const e of byName.values()) {
+    const code = codeByDa.get(e.name);
+    const a = code ? altByCode.get(code) : null;
+    e.localName = a ? a.split(/[,/;]/)[0].trim() : null;
+    const priced = e.history.map((h) => h.price).filter((p): p is number => p != null);
+    e.low = priced.length ? Math.min(...priced) : null;
+    e.high = priced.length ? Math.max(...priced) : null;
   }
 
   const commodities = [...byName.values()].sort((a, b) => a.name.localeCompare(b.name));

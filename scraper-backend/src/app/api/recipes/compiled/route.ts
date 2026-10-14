@@ -89,6 +89,8 @@ export async function GET(request: Request) {
       cost: round(c.costPerServing, 2),
       nutritionCoverage: round(c.nutritionCoverage, 2),
       costCoverage: round(c.costCoverage, 2),
+      nutritionCoverageByWeight: round(c.nutritionCoverageByWeight, 2),
+      costCoverageByWeight: round(c.costCoverageByWeight, 2),
     })),
   });
 }

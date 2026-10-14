@@ -33,7 +33,6 @@
       <button onclick="showSection('home')" id="nav-home" class="tab-btn active px-4 py-2 rounded-md transition-colors hover:bg-green-700 text-green-100">Home</button>
       <button onclick="showSection('browse')" id="nav-browse" class="tab-btn px-4 py-2 rounded-md transition-colors hover:bg-green-700 text-green-100">Browse Recipes</button>
       <button onclick="showSection('prices')" id="nav-prices" class="tab-btn px-4 py-2 rounded-md transition-colors hover:bg-green-700 text-green-100">DA Prices</button>
-      <button onclick="showSection('calculator')" id="nav-calculator" class="tab-btn px-4 py-2 rounded-md transition-colors hover:bg-green-700 text-green-100">Calculator</button>
     </nav>
   </div>
 </header>
@@ -45,7 +44,7 @@
   <div class="bg-gradient-to-br from-green-800 to-green-600 text-white py-20 px-4">
     <div class="max-w-3xl mx-auto text-center">
       <div class="inline-block bg-amber-400 text-green-900 text-xs font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-wide">
-        📄 DA Prices updated: <span data-da-date>loading…</span>
+        📄 DA Prices updated: <span data-da-date>…</span>
       </div>
       <h1 class="text-4xl sm:text-5xl font-extrabold leading-tight mb-4">
         Masarap, Masustansya,<br><span class="text-amber-300">Sulit!</span>
@@ -70,8 +69,8 @@
     <div class="max-w-6xl mx-auto px-4 flex flex-wrap justify-center gap-10 text-center text-sm">
       <div><p class="text-2xl font-bold text-amber-300" id="stat-recipes">—</p><p class="text-green-200">Recipes Indexed</p></div>
       <div><p class="text-2xl font-bold text-amber-300" id="stat-foods">—</p><p class="text-green-200">Food Items (FNRI)</p></div>
-      <div><p class="text-2xl font-bold text-amber-300" id="stat-commodities">—</p><p class="text-green-200">DA Commodities</p></div>
-      <div><p class="text-2xl font-bold text-amber-300" id="stat-da-date">—</p><p class="text-green-200">Latest DA Data</p></div>
+      <div><p class="text-2xl font-bold text-amber-300" id="stat-commodities">—</p><p class="text-green-200">Commodity Prices</p></div>
+      <div><p class="text-2xl font-bold text-amber-300"><span data-da-date>—</span></p><p class="text-green-200">Latest DA Data</p></div>
     </div>
   </div>
 
@@ -80,12 +79,12 @@
     <div class="flex items-center justify-between mb-6">
       <div>
         <h2 class="text-2xl font-bold">Top Value Dishes Today</h2>
-        <p class="text-sm text-gray-500 mt-1">Ranked by Sulit Score (nutrition ÷ cost per serving) · <span data-da-date>latest</span> DA prices · estimated</p>
+        <p class="text-sm text-gray-500 mt-1">Ranked by Sulit Score (nutrition ÷ cost per serving) · <span data-da-date>latest</span> DA prices</p>
       </div>
       <button onclick="showSection('browse')" class="text-green-700 hover:underline text-sm font-medium">View all →</button>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5" id="top-recipes-grid"></div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5" id="top-recipes-grid"><p class="col-span-4 text-center text-gray-400 py-10" data-loading>Loading recipes and today’s prices…</p></div>
   </div>
 
   <!-- How it works -->
@@ -96,7 +95,7 @@
         <div class="flex flex-col items-center gap-3 p-6 rounded-2xl bg-green-50">
           <span class="text-5xl">📄</span>
           <h3 class="font-bold text-lg">DA Price Index</h3>
-          <p class="text-gray-500 text-sm leading-relaxed">Daily commodity prices from the Department of Agriculture — vegetables, meat, fish, rice, and more from Kamuning, Nepa-Q Mart, and other markets.</p>
+          <p class="text-gray-500 text-sm leading-relaxed">Daily prevailing prices from the Department of Agriculture for Metro Manila markets — vegetables, meat, fish, rice, and more. Updated automatically every day.</p>
         </div>
         <div class="flex flex-col items-center gap-3 p-6 rounded-2xl bg-amber-50">
           <span class="text-5xl">🥘</span>
@@ -118,7 +117,7 @@
 <section id="section-browse" class="hidden flex-col flex-1">
   <div class="max-w-6xl mx-auto px-4 py-10 w-full">
     <h1 class="text-3xl font-bold mb-1">Browse Filipino Recipes</h1>
-    <p class="text-gray-500 mb-6 text-sm">Filter and sort by nutrition, price, or specific produce. Nutrition &amp; cost are estimated from <span data-da-date>latest</span> DA prices + FNRI data.</p>
+    <p class="text-gray-500 mb-6 text-sm">Filter and sort by nutrition, price, or specific produce. Prices based on <span data-da-date>the latest</span> DA data.</p>
 
     <!-- Filters -->
     <div class="bg-white rounded-2xl shadow p-5 mb-6 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -146,13 +145,6 @@
       </div>
     </div>
 
-    <!-- Dietary filter -->
-    <div class="bg-white rounded-2xl shadow p-5 mb-6">
-      <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-2">Dietary Filter</label>
-      <div id="diet-filter-options" class="flex flex-wrap gap-2"></div>
-      <p class="text-xs text-gray-400 mt-2">Tags are computed from each dish's actual ingredients and per-serving nutrition — not hand-labeled.</p>
-    </div>
-
     <div class="mb-5">
       <input type="text" id="search-input" placeholder="Search by dish name..." oninput="filterRecipes()"
         class="w-full sm:w-80 border border-gray-300 rounded-full px-5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"/>
@@ -168,11 +160,19 @@
   <div class="max-w-6xl mx-auto px-4 py-10 w-full">
     <div class="flex items-center justify-between mb-2">
       <h1 class="text-3xl font-bold">DA Daily Price Monitoring</h1>
-      <span class="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full" data-da-date>loading…</span>
+      <span class="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full"><span data-da-date>…</span></span>
     </div>
-    <p class="text-sm text-gray-500 mb-6">Source: Department of Agriculture — Daily Price Index, National Capital Region (NCR).</p>
+    <p class="text-sm text-gray-500 mb-6">Source: Department of Agriculture Daily Price Index, NCR prevailing retail prices · updated automatically every day</p>
 
-    <div id="price-cat-filters" class="flex gap-2 mb-5 flex-wrap"></div>
+    <div class="flex gap-2 mb-5 flex-wrap">
+      <button onclick="filterPrices('all')" id="cat-all" class="price-cat-btn bg-green-700 text-white text-xs px-4 py-1.5 rounded-full font-medium">All</button>
+      <button onclick="filterPrices('vegetables')" id="cat-vegetables" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50">Vegetables</button>
+      <button onclick="filterPrices('fish')" id="cat-fish" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50">Fish & Seafood</button>
+      <button onclick="filterPrices('meat')" id="cat-meat" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50">Meat & Poultry</button>
+      <button onclick="filterPrices('staple')" id="cat-staple" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50">Rice & Staples</button>
+      <button onclick="filterPrices('fruits')" id="cat-fruits" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50">Fruits</button>
+      <button onclick="filterPrices('condiments')" id="cat-condiments" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50">Sugar, Salt &amp; Oil</button>
+    </div>
 
     <div class="bg-white rounded-2xl shadow overflow-hidden">
       <div class="overflow-x-auto">
@@ -180,46 +180,19 @@
           <thead class="bg-green-700 text-white">
             <tr>
               <th class="text-left px-5 py-3 font-semibold">Commodity</th>
-              <th class="text-left px-3 py-3 font-semibold hidden sm:table-cell">Category</th>
-              <th class="text-right px-5 py-3 font-semibold">Prevailing Price (₱)</th>
-              <th class="text-center px-3 py-3 font-semibold hidden md:table-cell">vs. Prev. Day</th>
+              <th class="text-left px-3 py-3 font-semibold hidden sm:table-cell">Local Name</th>
+              <th class="text-left px-3 py-3 font-semibold">Unit</th>
+              <th class="text-right px-3 py-3 font-semibold">30-day Low (₱)</th>
+              <th class="text-right px-3 py-3 font-semibold">30-day High (₱)</th>
+              <th class="text-right px-5 py-3 font-semibold">Latest (₱)</th>
+              <th class="text-center px-3 py-3 font-semibold hidden md:table-cell">Trend</th>
             </tr>
           </thead>
           <tbody id="price-table-body" class="divide-y divide-gray-100"></tbody>
         </table>
       </div>
     </div>
-    <p class="text-xs text-gray-400 mt-3">* Prevailing retail prices, NCR, from the DA Daily Price Index. Trend compares the latest report to the previous available day.</p>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════ COMMODITY CALCULATOR ═══════════════════════════════════ -->
-<section id="section-calculator" class="hidden flex-col flex-1">
-  <div class="max-w-3xl mx-auto px-4 py-10 w-full">
-    <h1 class="text-3xl font-bold mb-1">Commodity Cost Calculator</h1>
-    <p class="text-gray-500 mb-6 text-sm">Estimate how much a commodity will cost based on the latest DA Price Monitoring averages — handy for budgeting your next ulam.</p>
-
-    <div class="bg-white rounded-2xl shadow p-5 mb-6 grid sm:grid-cols-2 gap-4">
-      <div>
-        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1">Commodity</label>
-        <select id="calc-commodity" onchange="updateCommodityCalculator()" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"></select>
-      </div>
-      <div>
-        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1">Quantity (<span id="calc-unit-label">kg</span>)</label>
-        <input type="number" id="calc-qty" value="1" min="0" step="0.1" oninput="updateCommodityCalculator()"
-          class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"/>
-      </div>
-    </div>
-
-    <div class="bg-white rounded-2xl shadow p-6">
-      <h3 class="font-bold text-gray-900 mb-4">Estimated Cost</h3>
-      <div class="bg-green-50 border border-green-200 rounded-xl px-3 py-6 text-center">
-        <p class="text-3xl font-bold text-green-700" id="calc-avg">₱0.00</p>
-        <p class="text-xs text-green-600 font-medium mt-1">Estimated Cost (prevailing price)</p>
-      </div>
-      <p class="text-xs text-gray-400 mt-4" id="calc-breakdown"></p>
-      <p class="text-xs text-gray-400 mt-1" id="calc-source">Based on the latest DA Daily Price Index — actual prices vary by market and supplier.</p>
-    </div>
+    <p class="text-xs text-gray-400 mt-3">* Prevailing retail prices in Metro Manila markets, from the DA Daily Price Index. Low and high are the range over the last 30 days.</p>
   </div>
 </section>
 
@@ -232,618 +205,10 @@
 
 <!-- FOOTER -->
 <footer class="bg-green-900 text-green-100 text-center py-6 text-sm mt-auto">
-  <p>Data sources: <strong>DA Daily Price Index (<span data-da-date>latest</span>)</strong> · <strong>Panlasang Pinoy</strong> · <strong>FNRI Food Composition Table</strong></p>
+  <p>Data sources: <strong>DA Price Monitoring (<span data-da-date>latest</span>)</strong> · <strong>Panlasang Pinoy</strong> · <strong>FNRI Food Composition Table</strong></p>
   <p class="mt-1 text-green-400">SarapSulit — Masarap, Masustansya, Sulit!</p>
 </footer>
 
-<script src="matcher.js"></script>
-<script>
-// ═══════════════ CONFIG ═══════════════
-// scraper-backend base URL — the SAME site as the /admin panel, WITHOUT the
-// trailing /admin. e.g. "https://scraper-backend-xxxx.vercel.app"
-const API_BASE = "https://website-business-beta.vercel.app";
-
-// ═══════════════ STATE (populated from the API) ═══════════════
-let DA_PRICES = [];        // [{ name, category, price, prevPrice, trend, latestDate }]
-let DA_CATEGORIES = [];    // distinct category strings, for filter chips
-let NUTRITION = [];        // FNRI facts
-let RECIPES = [];          // enriched scraped recipes
-let LATEST_DA_DATE = null;
-
-// ═══════════════ COMPUTATION CONSTANTS ═══════════════
-
-const DRV = { protein:50, carbs:275, fat:78, fiber:25, vitaminC:60, iron:18, calcium:1000, vitaminA:900 };
-const NUTR_KEYS = ["calories","protein","carbs","fat","fiber","vitaminA","vitaminC","iron","calcium"];
-
-const DIET_OPTIONS = [
-  { key:"vegetarian",    label:"Vegetarian" },
-  { key:"high-protein",  label:"High Protein (≥20g/serving)" },
-  { key:"low-carb",      label:"Low Carb (≤20g/serving)" },
-  { key:"high-fiber",    label:"High Fiber (≥5g/serving)" },
-  { key:"low-fat",       label:"Low Fat (≤10g/serving)" },
-  { key:"low-calorie",   label:"Low Calorie (≤200 kcal/serving)" },
-];
-
-function pct(val, key) {
-  return DRV[key] ? Math.min(100, Math.round((val / DRV[key]) * 100)) : 0;
-}
-function round1(n) { return Math.round(n * 10) / 10; }
-
-// ═══════════════ MATCHING ENGINE (shared with match-review.html via matcher.js) ═══════════════
-const { parseQuantity, tokenize, buildIndex, rankMatch, bestMatch, aliasTokens, isNonPriceable, ANIMAL_WORDS, CONFIDENCE } = window.SarapMatcher;
-
-let NUTRITION_INDEX = null;
-let COMMODITY_INDEX = null;
-
-// ═══════════════ RECIPE ENRICHMENT (estimated nutrition & cost) ═══════════════
-
-function enrichRecipe(raw, compiled) {
-  const totals = NUTR_KEYS.reduce((acc, k) => ({ ...acc, [k]: 0 }), {});
-  let totalCost = 0;
-  let usesAnimal = false;
-  const ingredientRows = [];
-
-  for (const ing of (raw.ingredients || [])) {
-    const grams = parseQuantity(ing.amount, ing.unit);
-    const nameLc = (ing.name || "").toLowerCase();
-    if (ANIMAL_WORDS.some((w) => nameLc.includes(w))) usesAnimal = true;
-
-    // Nutrition (FNRI is per 100g E.P.). rankMatch returns a confidence; gate
-    // on CONFIDENCE.fnri so loose single-token false matches are rejected.
-    const foodM = rankMatch(ing.name, NUTRITION, NUTRITION_INDEX, "foodName", aliasTokens(ing.name));
-    const food = (foodM && foodM.confidence >= CONFIDENCE.fnri) ? foodM.item : null;
-    const foodConfidence = food ? foodM.confidence : null;
-    if (food && grams) {
-      const f = grams / 100;
-      totals.calories += (food.calories || 0) * f;
-      totals.protein  += (food.protein || 0) * f;
-      totals.carbs    += (food.carbohydrates || 0) * f;
-      totals.fat      += (food.fat || 0) * f;
-      totals.fiber    += (food.fiber || 0) * f;
-      totals.vitaminA += (food.vitaminA || 0) * f;
-      totals.vitaminC += (food.vitaminC || 0) * f;
-      totals.iron     += (food.iron || 0) * f;
-      totals.calcium  += (food.calcium || 0) * f;
-    }
-
-    // Cost — DA prevailing price (per kg) first, then SM retail price as fallback.
-    const nonPriceable = isNonPriceable(ing.name);
-    const comM = nonPriceable ? null : rankMatch(ing.name, DA_PRICES, COMMODITY_INDEX, "name", aliasTokens(ing.name));
-    const com = (comM && comM.confidence >= CONFIDENCE.da) ? comM.item : null;
-    const comConfidence = com ? comM.confidence : null;
-    // SM price is per-package (not per kg), so we only use it when DA has no match.
-    let lineCost = null;
-    if (com && com.price != null && grams) {
-      lineCost = daLineCost(com, grams, ing.name);
-      if (lineCost != null) totalCost += lineCost;
-    }
-
-    ingredientRows.push({
-      label: [ing.amount, ing.unit, ing.name].filter(Boolean).join(" ").trim() || ing.name,
-      matchedFood: food ? food.foodName : null,
-      foodConfidence,
-      matchedCommodity: com ? com.name : null,
-      price: com && com.price != null ? com.price : null,
-      priceUnit: com ? unitSuffix(com) : null,
-      comConfidence,
-      nonPriceable,
-    });
-  }
-
-  let servings = raw.servings && raw.servings > 0 ? raw.servings : 4;
-  let perServing = {};
-  NUTR_KEYS.forEach((k) => { perServing[k] = round1(totals[k] / servings); });
-  let costPerServing = round1(totalCost / servings);
-
-  // Server-side engine (/api/recipes/compiled): per-food weights, edible
-  // portion, frying-oil absorption, removed aromatics. Preferred when available;
-  // the in-browser estimate above stays as the fallback.
-  if (compiled) {
-    servings = compiled.servings;
-    perServing = {
-      calories: compiled.kcal || 0, protein: compiled.protein || 0, carbs: compiled.carbs || 0, fat: compiled.fat || 0,
-      fiber: compiled.fiber || 0, vitaminA: compiled.vitaminA || 0, vitaminC: compiled.vitaminC || 0,
-      iron: compiled.iron || 0, calcium: compiled.calcium || 0,
-    };
-    costPerServing = round1(compiled.cost || 0);
-    totalCost = costPerServing * servings;
-  }
-
-  const nutritionScore = Math.round(
-    pct(perServing.protein, "protein") * 0.22 +
-    pct(perServing.fiber, "fiber") * 0.16 +
-    pct(perServing.vitaminA, "vitaminA") * 0.14 +
-    pct(perServing.vitaminC, "vitaminC") * 0.16 +
-    pct(perServing.iron, "iron") * 0.16 +
-    pct(perServing.calcium, "calcium") * 0.16
-  );
-  const valueScore = costPerServing > 0 ? round1((nutritionScore / costPerServing) * 3) : 0;
-
-  const dietTags = [];
-  if (!usesAnimal) dietTags.push("vegetarian");
-  if (perServing.carbs <= 20) dietTags.push("low-carb");
-  if (perServing.protein >= 20) dietTags.push("high-protein");
-  if (perServing.fiber >= 5) dietTags.push("high-fiber");
-  if (perServing.fat <= 10) dietTags.push("low-fat");
-  if (perServing.calories > 0 && perServing.calories <= 200) dietTags.push("low-calorie");
-
-  return {
-    id: raw.id,
-    title: raw.title,
-    url: raw.url,
-    category: raw.category || "Recipe",
-    servings,
-    prepTime: raw.prepTime,
-    cookTime: raw.cookTime,
-    description: raw.description,
-    img: raw.imageUrl,
-    ingredientNames: (raw.ingredients || []).map((i) => i.name).filter(Boolean),
-    ingredientRows,
-    dietTags,
-    nutrition: {
-      calories: Math.round(perServing.calories), protein: perServing.protein, carbs: perServing.carbs,
-      fat: perServing.fat, fiber: perServing.fiber, vitaminA: Math.round(perServing.vitaminA),
-      vitaminC: perServing.vitaminC, iron: perServing.iron, calcium: Math.round(perServing.calcium),
-    },
-    cost: { total: round1(totalCost), perServing: costPerServing },
-    calories: Math.round(perServing.calories),
-    protein: perServing.protein,
-    carbs: perServing.carbs,
-    fat: perServing.fat,
-    fiber: perServing.fiber,
-    vitaminC: perServing.vitaminC,
-    iron: perServing.iron,
-    calcium: Math.round(perServing.calcium),
-    nutritionScore,
-    costPerServing,
-    engine: compiled ? "v2" : "v1",
-    kcalLow: compiled ? Math.round(compiled.kcalLow) : null,
-    kcalHigh: compiled ? Math.round(compiled.kcalHigh) : null,
-    frying: compiled ? compiled.frying : null,
-    servingsAssumed: compiled ? compiled.servingsAssumed : !(raw.servings > 0),
-    costCoverage: compiled ? compiled.costCoverage : null,
-    sodium: compiled ? compiled.sodium : null,
-    valueScore,
-    estimated: true,
-  };
-}
-
-// DA prices are per kg unless the commodity name says otherwise (per piece,
-// per bottle); the API reads that basis out of the name into `unit`.
-function daLineCost(com, grams, ingName) {
-  const u = com.unit || { per: "kg" };
-  if (u.per === "piece") return u.pieceGrams ? (com.price / u.pieceGrams) * grams : null;
-  if (u.per === "bottle") {
-    const isOil = /\boil\b/i.test(ingName) || /oil/i.test(com.name);
-    const ml = grams / (isOil ? 0.92 : 1);
-    return u.bottleMl ? (com.price / u.bottleMl) * ml : null;
-  }
-  return (com.price / 1000) * grams; // ₱/kg → ₱/g × grams
-}
-function unitSuffix(c) { return (c.unit && c.unit.label ? c.unit.label : "₱/kg").replace("₱", ""); }
-
-// ═══════════════ DATA LOADING ═══════════════
-
-async function loadData() {
-  const [comRes, nutRes, recRes, compRes] = await Promise.all([
-    fetch(`${API_BASE}/api/commodities`).then((r) => r.json()),
-    fetch(`${API_BASE}/api/nutrition`).then((r) => r.json()),
-    fetch(`${API_BASE}/api/recipes`).then((r) => r.json()),
-    fetch(`${API_BASE}/api/recipes/compiled`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
-  ]);
-  const COMPILED = new Map(((compRes && compRes.recipes) || []).map((c) => [c.id, c]));
-
-  LATEST_DA_DATE = comRes.latestDate ? new Date(comRes.latestDate) : null;
-  DA_PRICES = (comRes.commodities || []).map((c) => {
-    let trend = "stable";
-    if (c.price != null && c.prevPrice != null) {
-      if (c.price > c.prevPrice) trend = "up";
-      else if (c.price < c.prevPrice) trend = "down";
-    }
-    return { name: c.name, category: c.category || "Other", price: c.price, prevPrice: c.prevPrice, trend, unit: c.unit || { per: "kg", label: "₱/kg" } };
-  });
-  DA_CATEGORIES = [...new Set(DA_PRICES.map((p) => p.category))].sort();
-
-  NUTRITION = nutRes.facts || [];
-  NUTRITION_INDEX = buildIndex(NUTRITION, "foodName");
-  COMMODITY_INDEX = buildIndex(DA_PRICES, "name");
-
-
-  // Skip articles (no ingredient list: "What is Broccoli?") and round-up posts that
-  // hold several recipes in one card ("Easy Sisig Recipes"), whose totals are combined.
-  RECIPES = (recRes.recipes || [])
-    .filter((r) => (r.ingredients || []).length > 0)
-    .filter((r) => { const c = COMPILED.get(r.id); return !(c && (c.isArticle || c.isCollection)); })
-    .map((r) => enrichRecipe(r, COMPILED.get(r.id)));
-}
-
-// ═══════════════ UTILITY ═══════════════
-
-function scoreColor(val) {
-  if (val >= 10) return "bg-green-100 text-green-800";
-  if (val >= 7) return "bg-lime-100 text-lime-700";
-  if (val >= 4) return "bg-yellow-100 text-yellow-700";
-  return "bg-red-100 text-red-700";
-}
-
-function buildRecipeCard(r) {
-  return `
-    <div class="recipe-card bg-white rounded-2xl overflow-hidden shadow hover:shadow-lg transition-shadow cursor-pointer flex flex-col group"
-         onclick="openModal(${r.id})">
-      <div class="relative h-44 bg-amber-100 overflow-hidden">
-        <img src="${r.img}" alt="${r.title}" class="recipe-img w-full h-full object-cover transition-transform duration-300"
-             onerror="this.parentElement.innerHTML='<div class=\\'flex items-center justify-center h-full text-5xl\\'>🍽️</div>'"/>
-        <div class="absolute top-2 right-2 bg-green-700 text-white text-xs font-bold px-2 py-1 rounded-full shadow">
-          ★ ${r.valueScore} sulit
-        </div>
-      </div>
-      <div class="p-4 flex flex-col gap-2 flex-1">
-        <h3 class="font-semibold text-gray-900 leading-snug group-hover:text-green-700 transition-colors">${r.title}</h3>
-        <span class="text-xs text-gray-400 uppercase tracking-wide">${r.category}</span>
-        ${r.dietTags.length > 0 ? `<div class="flex flex-wrap gap-1">${r.dietTags.map(t => `<span class="text-[10px] bg-green-50 text-green-700 border border-green-200 px-1.5 py-0.5 rounded-full font-medium">${DIET_OPTIONS.find(d=>d.key===t).label.replace(/\s*\(.*\)/, '')}</span>`).join('')}</div>` : ''}
-        <div class="flex flex-wrap gap-1 mt-auto pt-2">
-          <span class="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-medium">₱${r.costPerServing}/serving</span>
-          <span class="text-xs ${scoreColor(r.nutritionScore/10)} px-2 py-0.5 rounded-full font-semibold">Nutri: ${r.nutritionScore}</span>
-          <span class="text-xs text-gray-500">${r.protein}g protein</span>
-        </div>
-      </div>
-    </div>`;
-}
-
-function kcalText(r) {
-  if (r.kcalLow != null && r.kcalHigh != null && r.kcalHigh - r.kcalLow >= 10) return `${r.kcalLow.toLocaleString()}–${r.kcalHigh.toLocaleString()}`;
-  return `${r.calories}`;
-}
-
-function escapeHtml(t) {
-  return String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-}
-
-// Per-line rows from the server engine: what was counted as eaten, and why.
-function compiledRows(lines) {
-  return lines.map((l) => {
-    const grams = l.gEaten != null && l.gAP != null
-      ? (Math.round(l.gEaten) === Math.round(l.gAP) ? `≈${Math.round(l.gAP)} g` : `≈${Math.round(l.gAP)} g bought · ≈${Math.round(l.gEaten)} g eaten`)
-      : '';
-    const kcal = l.nutrients ? ` · ${Math.round(l.nutrients.kcal)} kcal` : '';
-    const muted = ['to-taste', 'optional', 'water', 'skipped'].includes(l.status);
-    const note = l.reason || (l.status === 'unmatched' ? 'not matched yet' : l.status === 'no-weight' ? 'amount unclear' : '');
-    return `
-    <div class="flex items-start justify-between gap-3 bg-gray-50 rounded-xl px-4 py-3 ${muted ? 'opacity-60' : ''}">
-      <div class="min-w-0">
-        <p class="font-medium text-sm">${escapeHtml(l.text)}</p>
-        <p class="text-xs text-gray-500">${escapeHtml(grams + kcal)}${note ? `<span class="block text-gray-400">${escapeHtml(note)}</span>` : ''}</p>
-      </div>
-      <p class="text-sm font-semibold text-amber-700 whitespace-nowrap text-right">${l.cost != null ? '₱' + l.cost.toFixed(2) : ''}${l.cost != null && l.priceSource && l.priceSource !== 'DA' ? `<span class="block text-[10px] font-normal text-gray-400">${l.priceSource.startsWith('SM') ? 'SM Markets' : 'DTI SRP'}</span>` : ''}</p>
-    </div>`;
-  }).join('');
-}
-
-function buildModal(r, instructions, lines) {
-  const nutr = r.nutrition;
-  const ingRows = lines && lines.length ? compiledRows(lines) : r.ingredientRows.map(i => `
-    <div class="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3">
-      <div>
-        <p class="font-medium text-sm">${i.label}</p>
-        <p class="text-xs text-gray-400">${i.matchedCommodity ? `DA: ${i.matchedCommodity} — ₱${i.price}${i.priceUnit || '/kg'}` : (i.nonPriceable ? '' : 'No price match')}${i.matchedFood ? ` · FNRI: ${i.matchedFood}` : ''}</p>
-      </div>
-    </div>`).join('');
-
-  const steps = (instructions && instructions.length ? instructions : ['Full instructions available on the original recipe page.'])
-    .map((s,i) => `
-    <li class="flex gap-4">
-      <span class="flex-shrink-0 w-8 h-8 bg-green-700 text-white rounded-full flex items-center justify-center text-sm font-bold">${i+1}</span>
-      <p class="text-gray-700 leading-relaxed pt-1">${s}</p>
-    </li>`).join('');
-
-  const nutriBars = [
-    { label:"Protein", val:nutr.protein, key:"protein", unit:"g" },
-    { label:"Carbs", val:nutr.carbs, key:"carbs", unit:"g" },
-    { label:"Fat", val:nutr.fat, key:"fat", unit:"g" },
-    { label:"Fiber", val:nutr.fiber, key:"fiber", unit:"g" },
-    { label:"Vitamin C", val:nutr.vitaminC, key:"vitaminC", unit:"mg" },
-    { label:"Iron", val:nutr.iron, key:"iron", unit:"mg" },
-    { label:"Calcium", val:nutr.calcium, key:"calcium", unit:"mg" },
-  ].map(n => {
-    const p = pct(n.val, n.key);
-    return `
-      <div>
-        <div class="flex justify-between text-xs mb-1">
-          <span class="text-gray-600">${n.label}</span>
-          <span class="font-medium">${n.val}${n.unit} <span class="text-gray-400">(${p}% DRV)</span></span>
-        </div>
-        <div class="bar"><div class="bar-fill" style="width:${p}%"></div></div>
-      </div>`;
-  }).join('');
-
-  return `
-    <div class="flex items-center justify-between mb-4">
-      <div>
-        <h2 class="text-2xl font-bold">${r.title}</h2>
-        <span class="text-sm text-gray-500">${r.category} · ${r.servings} servings${r.servingsAssumed ? ' (assumed: recipe doesn\'t say)' : ''} · ${(r.prepTime||0)+(r.cookTime||0)} min</span>
-        ${r.url ? `<a href="${r.url}" target="_blank" rel="noopener" class="block text-xs text-green-700 hover:underline mt-1">View original on Panlasang Pinoy ↗</a>` : ''}
-      </div>
-      <button onclick="closeModalBtn()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">✕</button>
-    </div>
-
-    <div class="grid md:grid-cols-3 gap-6">
-      <div class="md:col-span-2 space-y-6">
-
-        <!-- Scores -->
-        <div class="flex flex-wrap gap-3">
-          <div class="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-center">
-            <p class="text-2xl font-bold text-green-700">${r.valueScore}</p>
-            <p class="text-xs text-green-600 font-medium">Sulit Score</p>
-          </div>
-          <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-center">
-            <p class="text-2xl font-bold text-amber-700">₱${r.costPerServing}</p>
-            <p class="text-xs text-amber-600 font-medium">Per Serving</p>
-          </div>
-          <div class="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-center">
-            <p class="text-2xl font-bold text-blue-700">${r.nutritionScore}</p>
-            <p class="text-xs text-blue-600 font-medium">Nutrition Score</p>
-          </div>
-          <div class="bg-gray-50 border rounded-xl px-4 py-3 text-center">
-            <p class="text-2xl font-bold text-gray-700">${kcalText(r)}</p>
-            <p class="text-xs text-gray-500 font-medium">kcal/serving${r.frying ? ' · fried: oil absorption estimated' : ''}</p>
-          </div>
-        </div>
-
-        <!-- Ingredients -->
-        <div>
-          <h3 class="font-bold text-lg mb-3">Ingredients</h3>
-          <div class="space-y-2">${ingRows}</div>
-          <div class="mt-3 flex justify-between text-sm bg-amber-50 rounded-xl px-4 py-3">
-            <span class="text-gray-600">Estimated total cost</span>
-            <div class="text-right">
-              <p class="font-bold text-amber-700">₱${r.cost.total.toFixed(0)}</p>
-              <p class="text-xs text-gray-400">₱${r.costPerServing}/serving × ${r.servings} servings${r.costCoverage != null && r.costCoverage < 1 ? ` · ${Math.round(r.costCoverage * 100)}% of ingredients priced (DA doesn't list condiments, dairy or flour)` : ''}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Instructions -->
-        <div>
-          <h3 class="font-bold text-lg mb-3">Instructions</h3>
-          <ol class="space-y-4">${steps}</ol>
-        </div>
-      </div>
-
-      <!-- Nutrition sidebar -->
-      <div class="space-y-4">
-        <div class="border-2 border-gray-900 rounded-xl p-4">
-          <div class="border-b-8 border-gray-900 pb-1 mb-1">
-            <p class="text-xs font-bold uppercase">Nutrition Facts</p>
-            <p class="text-xs text-gray-500">${r.servings} servings per recipe</p>
-            <p class="text-sm font-bold">Per Serving</p>
-          </div>
-          <div class="border-b-4 border-gray-900 pb-2 mb-2">
-            <div class="flex justify-between items-center">
-              <span class="text-xs">Calories</span>
-              <span class="text-3xl font-black">${kcalText(r)}</span>
-            </div>
-          </div>
-          <div class="space-y-2">${nutriBars}</div>
-          ${r.sodium != null ? `<p class="text-xs text-gray-600 mt-2">Sodium ≈ ${Math.round(r.sodium).toLocaleString()} mg</p>` : ''}
-          <p class="text-xs text-gray-400 mt-3">Source: FNRI FCT · per serving estimate${r.engine === 'v2' ? ' · edible portion and cooking losses applied' : ''}</p>
-        </div>
-        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-700">
-          <p class="font-bold mb-1">⚠️ Estimated figures</p>
-          <p>Nutrition &amp; cost are auto-estimated by matching scraped ingredient text to FNRI nutrition data and DA prices, with approximate gram conversions. Treat as a guide, not exact values.</p>
-        </div>
-      </div>
-    </div>`;
-}
-
-// ═══════════════ RENDER ═══════════════
-
-function renderTopRecipes() {
-  const sorted = [...RECIPES].sort((a,b) => b.valueScore - a.valueScore).slice(0,8);
-  document.getElementById('top-recipes-grid').innerHTML = sorted.map(buildRecipeCard).join('');
-}
-
-let currentPriceCat = 'all';
-
-function catId(cat) { return 'cat-' + cat.replace(/[^a-zA-Z0-9]+/g, '_'); }
-
-function renderPriceCategories() {
-  const cats = ['all', ...DA_CATEGORIES];
-  document.getElementById('price-cat-filters').innerHTML = cats.map(c => {
-    const active = c === currentPriceCat;
-    const cls = active ? 'bg-green-700 text-white' : 'bg-white border text-gray-600 hover:bg-green-50';
-    const label = c === 'all' ? 'All' : c;
-    return `<button onclick="filterPrices('${c.replace(/'/g, "\\'")}')" id="${catId(c)}" class="price-cat-btn ${cls} text-xs px-4 py-1.5 rounded-full font-medium capitalize">${label}</button>`;
-  }).join('');
-}
-
-function renderPrices(cat) {
-  currentPriceCat = cat;
-  const filtered = cat === 'all' ? DA_PRICES : DA_PRICES.filter(p => p.category === cat);
-  const trendIcon = { up:'▲', down:'▼', stable:'–' };
-  const trendColor = { up:'price-up', down:'price-down', stable:'text-gray-400' };
-  const trendLabel = { up:'higher', down:'lower', stable:'no change' };
-
-  document.getElementById('price-table-body').innerHTML = filtered.length ? filtered.map((p,i) => `
-    <tr class="${i%2===0 ? 'bg-white' : 'bg-gray-50'} hover:bg-green-50 transition-colors">
-      <td class="px-5 py-3 font-medium">${p.name}</td>
-      <td class="px-3 py-3 text-gray-500 hidden sm:table-cell capitalize">${(p.category||'').toLowerCase()}</td>
-      <td class="px-5 py-3 text-right font-bold tabular-nums">${p.price != null ? '₱'+p.price.toFixed(2)+'<span class="text-xs text-gray-400 font-normal">'+unitSuffix(p)+'</span>' : '<span class="text-gray-400 font-normal">n/a</span>'}</td>
-      <td class="px-3 py-3 text-center hidden md:table-cell">
-        <span class="text-xs font-bold ${trendColor[p.trend]}" title="${trendLabel[p.trend]} than previous day">${trendIcon[p.trend]}</span>
-      </td>
-    </tr>`).join('') : `<tr><td colspan="4" class="text-center py-10 text-gray-400">No commodities in this category.</td></tr>`;
-
-  renderPriceCategories();
-}
-
-function filterPrices(cat) { renderPrices(cat); }
-
-// ═══════════════ DIETARY FILTER ═══════════════
-
-const selectedDietTags = new Set();
-
-function renderDietFilterOptions() {
-  document.getElementById('diet-filter-options').innerHTML = DIET_OPTIONS.map(d => `
-    <button type="button" onclick="toggleDietTag('${d.key}')" id="diet-${d.key}"
-      class="diet-chip border text-xs px-3 py-1.5 rounded-full font-medium transition-colors bg-white border-gray-200 text-gray-600 hover:bg-green-50">
-      ${d.label}
-    </button>`).join('');
-}
-
-function toggleDietTag(key) {
-  if (selectedDietTags.has(key)) selectedDietTags.delete(key);
-  else selectedDietTags.add(key);
-
-  const btn = document.getElementById(`diet-${key}`);
-  const active = selectedDietTags.has(key);
-  btn.classList.toggle('bg-green-700', active);
-  btn.classList.toggle('text-white', active);
-  btn.classList.toggle('border-green-700', active);
-  btn.classList.toggle('bg-white', !active);
-  btn.classList.toggle('border-gray-200', !active);
-  btn.classList.toggle('text-gray-600', !active);
-
-  filterRecipes();
-}
-
-function filterRecipes() {
-  const sort = document.getElementById('sort-select').value;
-  const minProt = parseFloat(document.getElementById('min-protein').value) || 0;
-  const maxCost = parseFloat(document.getElementById('max-cost').value) || Infinity;
-  const produce = document.getElementById('produce-filter').value.toLowerCase();
-  const search = document.getElementById('search-input').value.toLowerCase();
-
-  let filtered = RECIPES.filter(r => {
-    if (r.protein < minProt) return false;
-    if (r.costPerServing > maxCost) return false;
-    if (produce && !r.ingredientNames.some(n => n.toLowerCase().includes(produce))) return false;
-    if (search && !r.title.toLowerCase().includes(search)) return false;
-    if (selectedDietTags.size > 0 && ![...selectedDietTags].every(tag => r.dietTags.includes(tag))) return false;
-    return true;
-  });
-
-  filtered.sort((a,b) => {
-    const map = { valueScore:'valueScore', nutritionScore:'nutritionScore', costPerServing:'costPerServing', protein:'protein', calories:'calories' };
-    const key = map[sort];
-    return sort === 'costPerServing' ? a[key] - b[key] : b[key] - a[key];
-  });
-
-  document.getElementById('result-count').textContent = `${filtered.length} recipe${filtered.length !== 1 ? 's' : ''} found`;
-  document.getElementById('browse-grid').innerHTML = filtered.length > 0
-    ? filtered.map(buildRecipeCard).join('')
-    : `<div class="col-span-4 text-center py-16 text-gray-400">
-        <p class="text-4xl mb-3">🔍</p>
-        <p class="font-medium">No recipes match your filters</p>
-        <p class="text-sm mt-1">Try widening the criteria above.</p>
-       </div>`;
-}
-
-// ═══════════════ MODAL ═══════════════
-
-async function openModal(id) {
-  const r = RECIPES.find(r => r.id === id);
-  if (!r) return;
-  // Render immediately with a loading placeholder for steps, then fetch detail.
-  document.getElementById('modal-content').innerHTML = buildModal(r, ['Loading instructions…']);
-  document.getElementById('recipe-modal').classList.add('open');
-  document.body.style.overflow = 'hidden';
-  let instructions = [];
-  let lines = null;
-  const [detail, compiled] = await Promise.all([
-    fetch(`${API_BASE}/api/recipes/${id}`).then(res => res.json()).catch(() => null),
-    fetch(`${API_BASE}/api/recipes/compiled?id=${id}`).then(res => (res.ok ? res.json() : null)).catch(() => null),
-  ]);
-  if (detail) instructions = (detail.recipe?.instructions || []).map(s => s.text);
-  if (compiled && compiled.recipe) lines = compiled.recipe.lines;
-  document.getElementById('modal-content').innerHTML = buildModal(r, instructions, lines);
-  setTimeout(() => {
-    document.querySelectorAll('.bar-fill').forEach(b => { b.style.width = b.style.width; });
-  }, 100);
-}
-
-function closeModal(e) {
-  document.getElementById('recipe-modal').classList.remove('open');
-  document.body.style.overflow = '';
-}
-function closeModalBtn() { closeModal(); }
-
-// ═══════════════ COMMODITY CALCULATOR ═══════════════
-
-function renderCommodityCalculatorOptions() {
-  const select = document.getElementById('calc-commodity');
-  const priced = DA_PRICES.filter(c => c.price != null);
-  select.innerHTML = priced.map((c) =>
-    `<option value="${c.name.replace(/"/g, '&quot;')}">${c.name} — ₱${c.price.toFixed(2)}${unitSuffix(c)}</option>`
-  ).join('');
-  updateCommodityCalculator();
-}
-
-function updateCommodityCalculator() {
-  const name = document.getElementById('calc-commodity').value;
-  const commodity = DA_PRICES.find(c => c.name === name);
-  const qty = parseFloat(document.getElementById('calc-qty').value) || 0;
-  const unitLabel = document.getElementById('calc-unit-label');
-  const per = commodity && commodity.unit ? commodity.unit.per : 'kg';
-  const perWord = per === 'piece' ? 'pc' : per;
-  if (unitLabel) unitLabel.textContent = perWord;
-  if (!commodity || commodity.price == null) {
-    document.getElementById('calc-avg').textContent = '₱0.00';
-    document.getElementById('calc-breakdown').textContent = '';
-    return;
-  }
-  const total = commodity.price * qty;
-  document.getElementById('calc-avg').textContent = `₱${total.toFixed(2)}`;
-  document.getElementById('calc-breakdown').textContent =
-    `${qty} ${perWord} × ₱${commodity.price.toFixed(2)}${unitSuffix(commodity)} = ₱${total.toFixed(2)} for ${commodity.name}`;
-}
-
-// ═══════════════ NAVIGATION ═══════════════
-
-function showSection(name) {
-  ['home','browse','prices','calculator'].forEach(s => {
-    document.getElementById(`section-${s}`).classList.toggle('hidden', s !== name);
-    document.getElementById(`section-${s}`).classList.toggle('flex', s === name);
-    const btn = document.getElementById(`nav-${s}`);
-    if (btn) btn.classList.toggle('active', s === name);
-  });
-  window.scrollTo(0,0);
-  if (name === 'browse') filterRecipes();
-}
-
-// ═══════════════ DYNAMIC LABELS ═══════════════
-
-function fmtDate(d) {
-  return d ? d.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric', timeZone:'UTC' }) : '—';
-}
-
-function updateLabels() {
-  const dateStr = fmtDate(LATEST_DA_DATE);
-  document.querySelectorAll('[data-da-date]').forEach(el => { el.textContent = dateStr; });
-  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-  set('stat-recipes', RECIPES.length);
-  set('stat-foods', NUTRITION.length);
-  set('stat-commodities', DA_PRICES.length);
-  set('stat-da-date', dateStr);
-}
-
-// ═══════════════ INIT ═══════════════
-
-renderDietFilterOptions();
-
-(async function init() {
-  try {
-    await loadData();
-    updateLabels();
-    renderTopRecipes();
-    renderPrices('all');
-    renderCommodityCalculatorOptions();
-    filterRecipes();
-  } catch (e) {
-    console.error('Failed to load data from API', e);
-    const grid = document.getElementById('top-recipes-grid');
-    if (grid) grid.innerHTML = `<div class="col-span-4 text-center py-10 text-red-500 text-sm">Could not load live data. Check that API_BASE is set to your scraper-backend URL and that it is deployed.</div>`;
-  }
-})();
-</script>
+<script src="app.js"></script>
 </body>
 </html>
