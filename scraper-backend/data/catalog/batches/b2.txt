@@ -1,0 +1,87 @@
+wine_rice_cooking	35	cooking wine; shaoxing cooking wine; cooking rice wine; shaoxing wine
+pork_chop	33	pork chops; pork chop
+macaroni_elbow	32	elbow macaroni
+pork_liver	32	pork liver; pig liver; pig’s liver
+red_pepper_flakes	31	red pepper flakes; chili flakes; crushed red pepper
+star_anise	31	star anise
+stock_cube_shrimp	31	knorr shrimp cube
+ham	30	ham; cdo holiday ham
+ketchup_tomato	30	tomato ketchup; ketchup
+pineapple_canned	30	pineapple chunks; pineapple tidbits
+lime	29	lime; lime or calamansi
+sour_cream	29	sour cream
+liver_spread	28	liver spread
+basil	27	fresh basil leaves; basil; fresh basil; basil leaves
+beef_sirloin	27	beef sirloin
+broccoli	27	broccoli florets; broccoli
+hotdog	27	hotdogs; hotdog; hotdogs or beef franks
+lemongrass	27	lemongrass; bunch lemongrass; a bunch of lemongrass
+milk_condensed	27	condensed milk; 14 oz. can condensed milk
+mushroom_button	27	button mushroom; button mushrooms; white mushrooms; fresh mushroom
+bacon	26	bacon; bacon strips; strips bacon
+garlic_toasted	26	toasted garlic
+milk_evaporated	26	evaporated milk
+mussels	26	mussels
+thyme_dried	26	dried thyme; thyme
+coconut_cream	25	coconut cream
+honey	25	honey
+squash_kalabasa	25	kalabasa; calabaza squash; butternut squash
+banana_saba	23	saba banana; ripe saba banana; plantains
+chicharon_pork	23	chicharon; crushed chicharon; pork rinds
+radish_daikon	22	daikon radish
+rice_white_raw	22	rice; jasmine rice; calasparra rice
+soda_lemon_lime	22	lemon lime soda; 7-up
+calamansi	21	calamansi
+cheese_mozzarella	21	mozzarella cheese; shredded mozzarella cheese
+egg_quail	21	quail eggs; boiled quail eggs
+parsley_dried	21	dried parsley flakes; dried parsley
+chicken_ground	20	ground chicken
+chicken_liver	20	chicken liver; chopped chicken liver
+white_pepper	20	ground white pepper; ground white pepper to taste
+wine_sherry	20	sherry cooking wine; dry sherry; sherry
+mix_ginataang_gulay	19	knorr ginataang gulay mix; knorr ginataang gulay recipe mix
+mung_beans	19	mung beans
+mustard_dijon	19	dijon mustard
+oregano_dried	19	dried oregano
+sesame_seeds	19	sesame seeds; toasted sesame seeds; roasted sesame seeds
+squid	19	squid; large squid; medium squid
+turmeric_powder	19	turmeric powder
+mix_sinigang_tamarind	18	knorr sinigang sa sampaloc mix; sinigang mix; knorr sinigang sa sampaloc recipe mix
+pineapple_juice	18	pineapple juice
+soy_sauce_dark	18	dark soy sauce
+annatto_powder	17	annatto powder
+cabbage_napa	17	napa cabbage
+cayenne_pepper	17	cayenne pepper powder; cayenne pepper
+chinese_sausage	17	chinese sausage
+cream_all_purpose	17	all-purpose cream
+ampalaya	16	ampalaya; medium bitter gourd
+annatto_seeds	16	annatto seeds
+buttermilk	16	buttermilk
+chili_leaves	16	hot pepper leaves
+cinnamon_ground	16	cinnamon powder; ground cinnamon; cinnamon
+cream_cheese	16	cream cheese
+hoisin_sauce	16	hoisin sauce
+margarine	16	margarine
+noodles_egg	16	egg noodles; wide egg noodles
+papaya_green	16	green papaya; small green papaya; small unripe papaya
+peanut_butter	16	peanut butter
+pork_hock	16	pork hock; pork pata
+wine_white	16	white wine; dry white wine
+black_beans_salted	15	salted black beans
+chili_powder	15	chili powder
+chorizo_bilbao	15	chorizo de bilbao
+cilantro	15	cilantro; chopped cilantro; fresh cilantro
+egg_yolk	15	egg yolks
+flour_glutinous_rice	15	glutinous rice flour; sweet rice flour
+beef_shank	14	beef shank
+chayote	14	chayote; medium chayote
+cumin_ground	14	ground cumin; cumin
+curry_powder	14	curry powder
+rice_glutinous_raw	14	glutinous rice
+tilapia	14	tilapia; large tilapia
+vinegar_rice	14	rice vinegar
+cauliflower	13	cauliflower; cauliflower florets
+chicken_whole	13	whole chicken
+pork_ribs	13	pork ribs; pork spare ribs
+seasoning_beef_powder	13	beef powder; beef powder or 1 beef cube
+walnuts	13	chopped walnuts; walnuts

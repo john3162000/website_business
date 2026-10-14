@@ -1,0 +1,35 @@
+slug	field	current	proposed	severity	reason
+rice_white_cooked	notes	DA price is per kg RAW rice: cooked weight ~2.5-3x raw - pricing must convert?	DA price is per kg RAW well-milled rice; cost = cooked g / 2.76 x raw price (raw:cooked from FNRI A019 356 kcal / A020 129 kcal); do not price cooked grams at the raw per-kg price	high	Cooked-rice grams priced at the raw per-kg price overstate cost about 2.8x (4-5 cup lines = 630-790 g cooked, which is only about 230-290 g raw). The pipeline must apply the conversion; if it cannot, set daName empty rather than overprice
+bell_pepper_red	daName	Bell Pepper (Red), Local Medium (151-250gm/pc)	Bell Pepper (Red), Imported	high	The DA local row's unit label says per piece but the price is per kg. 286.93 per 200 g piece works out to 1,435/kg, about 4x the imported 380/kg. Priced per piece, one pepper would cost 287 pesos. Better fix: correct the da.tsv label to per kg and keep Local
+bell_pepper_green	daName	Bell Pepper (Green), Local Medium (151-250gm/pc)	Bell Pepper (Green), Imported	high	Same unit-label error: 346.36 per piece would be 1,727/kg against 250/kg imported, so the price is really per kg. Better fix: correct the da.tsv label to per kg and keep Local
+coconut_milk	notes	FNRI gata 343 kcal is thick first-press; canned/diluted ~200?	K002 is undiluted kakang gata (343 kcal, 34.8 g fat = coconut cream); for coconut milk scale K002 kcal/fat by 0.6 (USDA canned coconut milk 197 kcal/21 g fat, raw 230/24)	high	FNRI has no thinner gata row. K002 overstates coconut milk by 50-75%: about +300 kcal per cup, about +700 kcal on a typical 2-cup recipe (104 uses). The pipeline needs a scale factor. coconut_cream on K002 is correct (USDA coconut cream 330 kcal)
+coconut_milk	confidence	medium	low	high	FNRI row is a different concentration from what recipes mean; see the notes row above
+chicken_whole_cut	epPct	60	68	medium	F113 (215 kcal, 16.2 g fat) matches USDA broiler meat+skin raw (215 kcal), which has 32% refuse, so EP 68. FNRI EP 60 likely counts neck, giblets and feet in a dressed bird; recipe lines are "chicken cut into serving pieces". The 60 understates nutrition about 12% on 115 recipes
+tomato	gEach	120	60	medium	DA lists 15-18 pcs/kg, about 60 g each; 120 g is a US medium tomato. The current value doubles tomato grams and cost on piece lines (about 70 uses)
+onion_red	gEach	110	70	medium	DA local red onion is 13-15 pcs/kg, about 71 g each
+onion_red	gEachSmall	70	45	low	Scaled to the DA medium of 70 g
+onion_red	gEachLarge	150	110	low	Scaled to the DA medium of 70 g
+carrot	gEach	70	110	medium	DA local carrots are 8-10 pcs/kg, about 111 g each; 70 g undercounts carrot piece lines (about 80 uses)
+carrot	gEachLarge	100	150	low	The large size must exceed the DA medium of about 110 g
+carrot	epPct	79	89	low	FNRI EP 79 counts the tops, but DA and retail carrots are sold topped. USDA refuse for topped carrots is 11%. Cup lines are already trimmed
+potato	gEach	170	90	medium	DA local potato is 10-12 pcs/kg, about 91 g each; 170 g is a US size
+potato	gEachSmall	100	60	low	Scaled to the DA medium of about 90 g (gEachLarge 300 kept for "large baking potato" lines)
+bell_pepper_red	gEach	120	200	medium	DA medium class is 151-250 g/pc (pieceGrams 200.5); prefer the DA-implied weight over the US 120 g
+bell_pepper_red	gEachSmall	75	120	low	Must sit below the DA medium range of 151-250 g, not at a US small of 74 g
+bell_pepper_green	gEach	120	200	medium	DA medium class is 151-250 g/pc (pieceGrams 200.5)
+bell_pepper_green	gEachSmall	75	120	low	Must sit below the DA medium range of 151-250 g
+beef_ground	fnriCode	F006	F009	medium	F006 chuck (171 kcal, 10.5 g fat) understates ground beef by about 30%: USDA 80/20 is 254 kcal and 20 g fat, 85/15 is 215 kcal. F009 beef flank (camto: 231 kcal, 17 g fat, EP 100) is the closest FNRI row (46 uses, mostly 1 lb lines)
+ham	fnriCode	F228	F231	medium	F228 (421 kcal, 39.5 g fat) is a fatty whole holiday hamon, about 2.5x USDA cured ham (about 145-163 kcal). Recipe "ham" is chopped sandwich or sweet ham; F231 Ham, pork, sweet, chopped (117 kcal) is within about 20%
+oil_olive	role	frying_oil_candidate	normal	medium	SPEC lists frying_oil_candidate only for cooking, vegetable, canola, palm and coconut oil, lard and shortening. Olive oil lines are 1-4 tbsp for sauteing and dressings and are fully eaten, so an absorption discount would undercount them
+bread_crumbs	fnriCode		A047	medium	FNRI A047 Bread, toasted (349 kcal; dry state) is within about 12% of USDA dry bread crumbs (395 kcal); an empty code drops about 300 kcal per 3/4-cup line (55 uses)
+bread_crumbs_panko	fnriCode		A047	medium	Panko is about 370-390 kcal (USDA), so toasted bread (349) is a close dry-bread proxy; currently counted as 0
+sour_cream	fnriCode		J007	medium	J007 Cream (241 kcal, 23.9 g fat) is within about 20% of USDA sour cream (198 kcal, 19 g fat); empty drops about 230 kcal per 1/2-cup line (29 uses)
+cheese_parmesan	fnriCode		J001	medium	No hard cheese in FNRI; J001 processed cheddar (322 kcal) understates parmesan (USDA grated about 420) by about 25%, versus 100% when empty. 80 uses, mostly 1/4 to 1/2 cup
+seasoning_liquid_knorr	fnriCode		N023	medium	Soy-based liquid seasoning; N023 soy sauce (75 kcal, 2041 mg Na) is the nearest. Empty drops all sodium from 1-3 tbsp lines (73 uses)
+seasoning_magic_sarap	fnriCode		N003	medium	Granulated chicken and MSG salt seasoning; N003 chicken cube (23,606 mg Na/100 g) matches its sodium density. Empty drops about 1-2 g sodium per recipe (41 uses)
+stock_cube_shrimp	fnriCode		N003	medium	Same product type as the chicken and beef cubes (stock_cube_pork already uses the N002 proxy); empty drops about 2.4 g sodium per cube (31 uses)
+soda_lemon_lime	fnriCode		Q053	medium	Q053 cola (41 kcal) equals USDA lemon-lime soda (41 kcal); empty drops about 100 kcal per cup (22 uses)
+cream_heavy	notes	FNRI cream ~24% fat; heavy/whipping cream is ~36%	J007 is about 24% fat (PH all-purpose cream); heavy or whipping cream is 36% fat and 340 kcal; scale J007 kcal/fat by 1.4	medium	J007 understates heavy cream by about 29% (about 120 kcal per 1/2 cup). FNRI has no richer cream row; it needs a pipeline factor
+cabbage	epPct	63	80	low	FNRI EP 63 is for untrimmed heads with wrapper leaves; DA retail heads are trimmed. USDA refuse is 20% (core and outer leaves). Small kcal effect
+broccoli	fnriCode		D045	low	FNRI has no broccoli; D045 Cauliflower raw (32 kcal, 2.1 g protein) is within 6% of USDA broccoli (34 kcal); currently counted as 0
+milk_evaporated	fnriCode	J015	J016	low	PH evaporated milks (Alaska and others) are filled milk; J016 (120 kcal) matches them, consistent with milk_condensed using the filled J025 row

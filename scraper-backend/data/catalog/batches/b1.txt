@@ -1,0 +1,87 @@
+black_pepper	1245	ground black pepper; salt and ground black pepper to taste; salt and pepper to taste; ground black pepper to taste
+salt	1226	salt; salt and ground black pepper to taste; salt and pepper to taste; salt to taste
+oil_cooking	1112	cooking oil; vegetable oil; cooking oil spray; cooking oil or cooking oil spray
+garlic	1006	garlic; minced garlic; head garlic; crushed garlic
+onion_yellow	976	onion; medium yellow onion; medium onion; yellow onion
+soy_sauce	427	soy sauce; light soy sauce
+egg_chicken	388	eggs; egg; raw eggs; raw egg
+sugar_white	353	granulated white sugar; sugar; granulated sugar; white sugar
+fish_sauce	299	fish sauce; fish sauce and ground black pepper to taste; fish sauce to taste; patis
+carrot	273	carrot; carrots; medium carrot; medium carrots
+butter	265	butter; salted butter; melted butter
+flour_all_purpose	264	all-purpose flour; flour; all purpose flour; ap flour
+garlic_powder	264	garlic powder
+ginger	262	ginger; thumbs ginger; minced ginger; thumb ginger
+green_onion	227	green onions; green onion; chopped scallions; scallions
+tomato	227	tomato; tomatoes; medium tomato; medium ripe tomato
+vinegar_cane_white	217	white vinegar; vinegar; cane vinegar; cane or white vinegar
+oil_olive	196	olive oil; extra virgin olive oil; extra-virgin olive oil
+cornstarch	181	cornstarch; cornstarch diluted in 3 tablespoons water; cornstarch diluted in 2 tablespoons water
+sugar_brown	178	brown sugar; dark brown sugar; light brown sugar
+bay_leaf	176	dried bay leaves; bay leaves; laurel leaves; bay leaf
+bell_pepper_red	164	red bell pepper; small red bell pepper; medium red bell pepper; chopped red bell pepper
+peppercorn_whole	150	whole peppercorn; crushed peppercorn; peppercorn; whole pepper corn
+oyster_sauce	133	oyster sauce
+potato	131	potato; potatoes; large baking potato; large potato
+bell_pepper_green	128	green bell pepper; bell pepper; small green bell pepper; medium green bell pepper
+chili_bird	127	thai chili pepper; thai chili; chili pepper; chili peppers
+pork_shoulder	126	pork; pork shoulder
+shrimp	125	shrimp; medium shrimp; large shrimp; fresh shrimp
+sitaw	122	string beans; long green beans; snake beans; sitaw
+pork_belly	116	pork belly
+chicken_whole_cut	115	chicken
+broth_chicken	111	chicken broth; chicken stock
+cheese_cheddar	109	cheddar cheese; shredded cheddar cheese; sharp cheddar cheese; shredded sharp cheddar cheese
+parsley	109	parsley; chopped parsley; chopped flat leaf parsley; flat leaf parsley
+coconut_milk	104	coconut milk
+chili_long_green	101	long green pepper; long green peppers; long green chili; long green chili pepper
+broth_beef	100	beef broth; beef stock; beef or pork broth
+pork_ground	99	ground pork
+mayonnaise	98	mayonnaise; lady’s choice mayonnaise
+milk_fresh	96	fresh milk; milk; whole milk
+oil_sesame	96	sesame oil
+onion_red	95	medium red onion; red onion; small red onion; red onions
+stock_cube_chicken	91	knorr chicken cube; maggi magic chicken cube; chicken bouillon; maggi magic chicken cubes
+cabbage	85	cabbage; small cabbage; head cabbage; chopped cabbage
+eggplant	83	chinese eggplant; indian eggplant
+tomato_sauce	82	tomato sauce; 8 oz. can tomato sauce
+cheese_parmesan	80	parmesan cheese; grated parmesan cheese; shredded parmesan cheese
+onion_powder	80	onion powder
+stock_cube_pork	79	knorr pork cube
+seasoning_liquid_knorr	73	knorr liquid seasoning
+vanilla_extract	69	vanilla extract
+green_peas	68	green peas; frozen green peas
+okra	68	okra
+salt_sea	68	sea salt; coarse sea salt; fine sea salt
+shrimp_paste	68	shrimp paste; bagoong alamang; bagoong
+spinach	68	spinach; baby spinach; bunch fresh spinach; fresh spinach
+stock_cube_beef	68	knorr beef cube; beef cube; beef bouillon; beef or pork cube
+baking_powder	67	baking powder
+chicken_breast_boneless	64	boneless chicken breast; boneless chicken breasts; boneless; boneless skinless chicken breast
+pechay	64	bok choy; baby bok choy; pechay; bunch baby bok choy
+lemon	62	lemon
+paprika	62	paprika; smoked paprika
+lemon_juice	56	lemon juice; juice of 1 lemon; juice from 1 lemon
+bread_crumbs	55	bread crumbs; breadcrumbs; good life breadcrumbs
+celery	55	celery; minced celery; stalks celery; celery stalk
+rice_white_cooked	48	cooked white rice; leftover rice; leftover white rice; cooked rice
+beef_ground	46	ground beef
+chicken_breast	45	chicken breast; chicken breasts
+cream_heavy	45	heavy whipping cream; heavy cream; whipping cream
+banana_ketchup	42	banana ketchup
+malunggay	42	malunggay leaves; malunggay
+worcestershire_sauce	42	worcestershire sauce
+seasoning_magic_sarap	41	maggi magic sarap
+snow_peas	40	snow peas; snap peas
+tofu_firm	40	extra firm tofu; tofu; firm tofu
+raisins	39	raisins
+spaghetti	39	spaghetti; spaghetti noodles
+egg_hard_boiled	38	hard boiled eggs; boiled eggs; hard-boiled eggs
+tomato_paste	38	tomato paste
+butter_unsalted	37	unsalted butter
+kangkong	37	kangkong; water spinach; kangkong leaves
+oil_canola	37	canola oil; canola or vegetable oil
+baking_soda	36	baking soda
+bread_crumbs_panko	36	panko bread crumbs; panko breadcrumbs
+beef_chuck	35	beef chuck; beef
+pickle_relish_sweet	35	sweet pickle relish; sweet relish

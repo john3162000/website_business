@@ -1,0 +1,87 @@
+beef_tripe	12	ox tripe; beef tripe
+cheese_ricotta	12	ricotta cheese
+ginger_powder	12	ginger powder; ground ginger
+italian_seasoning	12	italian seasoning
+mustard_powder	12	mustard powder
+noodles_sotanghon	12	sotanghon noodles; sotanghon
+rosemary	12	fresh rosemary; rosemary
+tomato_cherry	12	grape tomatoes; cherry tomatoes; grape tomato
+cheese_processed	11	cheese
+chicken_thigh	11	chicken thigh; chicken thighs
+chicken_wings	11	chicken wings
+noodles_miki	11	fresh miki noodles; fresh noodles
+rice_garlic_fried	11	garlic fried rice; sinangag
+salmon_fillet	11	salmon fillet
+seasoning_chicken_powder	11	chicken powder
+tomato_canned_diced	11	diced tomatoes; diced tomato
+vinegar_coconut	11	coconut vinegar
+baby_corn	10	baby corn; young corn
+crab	10	crab; crabs
+five_spice_powder	10	five spice powder; 5 spice powder
+garlic_salt	10	garlic salt
+lumpia_wrapper	10	lumpia wrapper
+milkfish	10	bangus; milkfish
+mix_cream_of_mushroom	10	knorr cream of mushroom; knorr cream of mushroom soup
+pork_blood	10	pork blood
+wine_red	10	red wine
+zucchini	10	medium zucchini; zucchini
+annatto_oil	9	annatto oil
+bread_white	9	bread slices; bread
+broth_vegetable	9	vegetable broth
+chili_dried	9	dried chilies; dried red chili; dried thai chili
+cocoa_powder	9	cocoa powder; unsweetened cocoa powder
+fish_fillet	9	fish fillet
+lime_juice	9	lime juice
+marinara_sauce	9	marinara sauce
+tinapa	9	tinapa flakes
+vinegar_white_wine	9	white wine vinegar
+banana_blossom	8	banana blossoms
+barbecue_sauce	8	barbecue sauce
+chicken_gizzard	8	chicken gizzard
+chili_serrano	8	serrano pepper
+fettuccine	8	fettuccine
+fish_whole	8	fish
+flour_cake	8	cake flour
+jicama	8	jicama
+mayonnaise_light	8	light mayonnaise
+mung_bean_sprouts	8	mung bean sprouts
+mushroom_shiitake	8	shiitake mushroom; shiitake mushrooms
+mustard_greens	8	mustard leaves; bunch mustard leaves
+noodles_bihon	8	pancit bihon; vermicelli
+peanut_roasted	8	roasted peanuts; crushed peanuts
+shortening	8	shortening; vegetable shortening
+soy_sauce_low_sodium	8	low sodium soy sauce
+squid_balls	8	squid balls
+taro	8	taro
+beef_neck_bone	7	beef neck bone; beef neck bones
+cassava	7	grated cassava; cassava
+cheese_swiss	7	swiss cheese
+cloves_ground	7	cloves; ground cloves
+corn_kernel_canned	7	whole kernel corn
+corn_sweet	7	sweet corn
+corned_beef	7	corned beef
+egg_fried	7	fried eggs
+lasagna_noodles	7	lasagna
+linguine	7	linguine
+misua	7	misua
+mixed_vegetables	7	mixed vegetables; frozen mixed vegetables
+olives_green	7	green olives
+peanut_raw	7	peanuts
+pig_ears	7	pig ears
+pork_tenderloin	7	pork tenderloin
+sriracha	7	sriracha sauce
+thyme_fresh	7	fresh thyme
+tuna_canned	7	tuna
+vinegar_red_wine	7	red wine vinegar
+anchovies_dried	6	dried anchovies
+basil_dried	6	dried basil
+chickpeas	6	chickpeas; garbanzos
+graham_cracker	6	graham cracker crumbs; graham crackers
+hot_sauce	6	hot sauce
+jackfruit_unripe	6	unripe jackfruit
+lechon_sauce	6	lechon sauce
+noodles_pancit_canton	6	pancit canton
+pork_fat	6	pork fat
+sardines_tomato_sauce	6	sardines in tomato sauce
+seasoning_liquid_savorrich_chicken	6	knorr savorrich chicken liquid seasoning
+sweet_potato	6	sweet potato

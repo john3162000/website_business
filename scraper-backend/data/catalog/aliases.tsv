@@ -1,0 +1,701 @@
+nameKey	lineClass	slugs	size	note
+cooking oil	FOOD	oil_cooking		
+water	WATER			
+garlic	FOOD	garlic		
+salt	FOOD	salt		
+ground black pepper	FOOD	black_pepper		
+onion	FOOD	onion_yellow		
+soy sauce	FOOD	soy_sauce		
+garlic powder	FOOD	garlic_powder		
+butter	FOOD	butter		
+salt and ground black pepper to taste	TO_TASTE	salt|black_pepper		
+all-purpose flour	FOOD	flour_all_purpose		
+fish sauce	FOOD	fish_sauce		
+salt and pepper to taste	TO_TASTE	salt|black_pepper		
+eggs	FOOD	egg_chicken		
+medium yellow onion	FOOD	onion_yellow	medium	
+cornstarch	FOOD	cornstarch		
+brown sugar	FOOD	sugar_brown		
+granulated white sugar	FOOD	sugar_white		
+ginger	FOOD	ginger		
+white vinegar	FOOD	vinegar_cane_white		
+oyster sauce	FOOD	oyster_sauce		
+sugar	FOOD	sugar_white		
+dried bay leaves	FOOD	bay_leaf		
+carrot	FOOD	carrot		
+olive oil	FOOD	oil_olive		
+whole peppercorn	FOOD	peppercorn_whole		
+minced garlic	FOOD	garlic		
+pork belly	FOOD	pork_belly		
+chicken	FOOD	chicken_whole_cut		
+medium onion	FOOD	onion_yellow	medium	
+egg	FOOD	egg_chicken		
+red bell pepper	FOOD	bell_pepper_red		
+coconut milk	FOOD	coconut_milk		
+ground pork	FOOD	pork_ground		
+sesame oil	FOOD	oil_sesame		
+chicken broth	FOOD	broth_chicken		
+beef broth	FOOD	broth_beef		
+shrimp	FOOD	shrimp		
+salt to taste	TO_TASTE	salt		
+pork	FOOD	pork_shoulder		generic pork; assumed kasim
+onion powder	FOOD	onion_powder		
+chinese eggplant	FOOD	eggplant		
+knorr pork cube	FOOD	stock_cube_pork		
+carrots	FOOD	carrot		
+tomato	FOOD	tomato		
+knorr chicken cube	FOOD	stock_cube_chicken		
+knorr liquid seasoning	FOOD	seasoning_liquid_knorr		
+thai chili pepper	FOOD	chili_bird		
+vanilla extract	FOOD	vanilla_extract		
+extra virgin olive oil	FOOD	oil_olive		extra virgin
+okra	FOOD	okra		
+baking powder	FOOD	baking_powder		
+tomato sauce	FOOD	tomato_sauce		
+yellow onion	FOOD	onion_yellow		
+vinegar	FOOD	vinegar_cane_white		
+green bell pepper	FOOD	bell_pepper_green		
+lemon	FOOD	lemon		
+fresh milk	FOOD	milk_fresh		
+green onions	FOOD	green_onion		
+green onion	FOOD	green_onion		
+paprika	FOOD	paprika		
+parmesan cheese	FOOD	cheese_parmesan		
+thumbs ginger	FOOD	ginger		unit:thumb
+ground black pepper to taste	TO_TASTE	black_pepper		
+parsley	FOOD	parsley		
+tomatoes	FOOD	tomato		
+fish sauce and ground black pepper to taste	TO_TASTE	fish_sauce|black_pepper		
+mayonnaise	FOOD	mayonnaise		
+lemon juice	FOOD	lemon_juice		
+long green pepper	FOOD	chili_long_green		
+string beans	FOOD	sitaw		
+boneless chicken breast	FOOD	chicken_breast_boneless		
+lady’s choice mayonnaise	FOOD	mayonnaise		brand: Lady's Choice
+cabbage	FOOD	cabbage		
+green peas	FOOD	green_peas		
+ground beef	FOOD	beef_ground		
+knorr beef cube	FOOD	stock_cube_beef		
+pork shoulder	FOOD	pork_shoulder		
+chopped scallions	FOOD	green_onion		
+shrimp paste	FOOD	shrimp_paste		
+banana ketchup	FOOD	banana_ketchup		
+medium red onion	FOOD	onion_red	medium	
+worcestershire sauce	FOOD	worcestershire_sauce		
+maggi magic sarap	FOOD	seasoning_magic_sarap		
+cheddar cheese	FOOD	cheese_cheddar		
+raisins	FOOD	raisins		
+sea salt	FOOD	salt_sea		
+small red bell pepper	FOOD	bell_pepper_red	small	
+malunggay leaves	FOOD	malunggay		
+potato	FOOD	potato		
+raw eggs	FOOD	egg_chicken		
+tomato paste	FOOD	tomato_paste		
+chicken breast	FOOD	chicken_breast		bone-in assumed
+unsalted butter	FOOD	butter_unsalted		
+baking soda	FOOD	baking_soda		
+bread crumbs	FOOD	bread_crumbs		
+onions	FOOD	onion_yellow		
+small yellow onion	FOOD	onion_yellow	small	
+canola oil	FOOD	oil_canola		
+long green beans	FOOD	sitaw		
+medium tomato	FOOD	tomato	medium	
+raw egg	FOOD	egg_chicken		
+elbow macaroni	FOOD	macaroni_elbow		
+head garlic	FOOD	garlic		unit:head
+knorr shrimp cube	FOOD	stock_cube_shrimp		
+shredded cheddar cheese	FOOD	cheese_cheddar		
+star anise	FOOD	star_anise		
+bay leaves	FOOD	bay_leaf		
+milk	FOOD	milk_fresh		
+minced ginger	FOOD	ginger		
+celery	FOOD	celery		
+granulated sugar	FOOD	sugar_white		
+sour cream	FOOD	sour_cream		
+white sugar	FOOD	sugar_white		
+light soy sauce	FOOD	soy_sauce		light
+liver spread	FOOD	liver_spread		
+medium carrot	FOOD	carrot	medium	
+potatoes	FOOD	potato		
+scallions	FOOD	green_onion		
+beef sirloin	FOOD	beef_sirloin		
+crushed garlic	FOOD	garlic		
+ham	FOOD	ham		
+heavy whipping cream	FOOD	cream_heavy		
+pork chops	FOOD	pork_chop		
+red onion	FOOD	onion_red		
+snake beans	FOOD	sitaw		
+sweet pickle relish	FOOD	pickle_relish_sweet		
+tomato ketchup	FOOD	ketchup_tomato		
+bell pepper	FOOD	bell_pepper_green		color unspecified; assumed green
+evaporated milk	FOOD	milk_evaporated		
+mussels	FOOD	mussels		
+snow peas	FOOD	snow_peas		
+spinach	FOOD	spinach		
+toasted garlic	FOOD	garlic_toasted		
+coarse sea salt	FOOD	salt_sea		coarse
+coconut cream	FOOD	coconut_cream		
+honey	FOOD	honey		
+lime	FOOD	lime		
+small green bell pepper	FOOD	bell_pepper_green	small	
+vegetable oil	FOOD	oil_cooking		vegetable oil
+chopped parsley	FOOD	parsley		
+condensed milk	FOOD	milk_condensed		
+kangkong	FOOD	kangkong		
+thai chili	FOOD	chili_bird		
+bagoong alamang	FOOD	shrimp_paste		bagoong alamang
+beef chuck	FOOD	beef_chuck		
+daikon radish	FOOD	radish_daikon		
+extra firm tofu	FOOD	tofu_firm		extra firm
+frozen green peas	FOOD	green_peas		frozen
+panko bread crumbs	FOOD	bread_crumbs_panko		
+salt and ground black pepper	TO_TASTE	salt|black_pepper		no "to taste" in name
+calamansi	FOOD	calamansi		
+can	UNIT_ONLY			container only (food lost)
+chopped green onions	FOOD	green_onion		
+flour	FOOD	flour_all_purpose		
+pineapple chunks	FOOD	pineapple_canned		chunks
+sharp cheddar cheese	FOOD	cheese_cheddar		sharp
+thumb ginger	FOOD	ginger		unit:thumb
+a pinch of salt	FOOD	salt		unit:pinch
+all purpose flour	FOOD	flour_all_purpose		
+bok choy	FOOD	pechay		bok choy
+dried thyme	FOOD	thyme_dried		
+ground chicken	FOOD	chicken_ground		
+spaghetti	FOOD	spaghetti		
+dijon mustard	FOOD	mustard_dijon		
+dried oregano	FOOD	oregano_dried		
+grated parmesan cheese	FOOD	cheese_parmesan		
+hard boiled eggs	FOOD	egg_hard_boiled		
+large yellow onion	FOOD	onion_yellow	large	
+mung beans	FOOD	mung_beans		
+pork liver	FOOD	pork_liver		
+small onion	FOOD	onion_yellow	small	
+spaghetti noodles	FOOD	spaghetti		
+turmeric powder	FOOD	turmeric_powder		
+baby bok choy	FOOD	pechay		baby bok choy
+broccoli florets	FOOD	broccoli		florets
+cooked white rice	FOOD	rice_white_cooked		
+dark soy sauce	FOOD	soy_sauce_dark		
+lemon lime soda	FOOD	soda_lemon_lime		
+lemongrass	FOOD	lemongrass		
+long green peppers	FOOD	chili_long_green		
+medium ripe tomato	FOOD	tomato	medium	ripe
+medium shrimp	FOOD	shrimp	medium	
+pineapple juice	FOOD	pineapple_juice		
+salt and pepper	TO_TASTE	salt|black_pepper		no "to taste" in name
+all-purpose cream	FOOD	cream_all_purpose		
+annatto powder	FOOD	annatto_powder		
+chicken liver	FOOD	chicken_liver		
+chicken stock	FOOD	broth_chicken		stock
+chinese sausage	FOOD	chinese_sausage		
+ground white pepper	FOOD	white_pepper		
+napa cabbage	FOOD	cabbage_napa		
+quail eggs	FOOD	egg_quail		
+annatto seeds	FOOD	annatto_seeds		
+baby spinach	FOOD	spinach		baby
+beef cube	FOOD	stock_cube_beef		
+boiled eggs	FOOD	egg_hard_boiled		
+breadcrumbs	FOOD	bread_crumbs		
+buttermilk	FOOD	buttermilk		
+chopped flat leaf parsley	FOOD	parsley		flat leaf
+cooking wine	FOOD	wine_rice_cooking		assumed Chinese rice cooking wine
+cream cheese	FOOD	cream_cheese		
+fish sauce to taste	TO_TASTE	fish_sauce		
+hoisin sauce	FOOD	hoisin_sauce		
+hot pepper leaves	FOOD	chili_leaves		dahon ng sili
+hotdogs	FOOD	hotdog		
+ice cubes	WATER			ice
+margarine	FOOD	margarine		
+medium tomatoes	FOOD	tomato	medium	
+mozzarella cheese	FOOD	cheese_mozzarella		
+patis	FOOD	fish_sauce		patis
+peanut butter	FOOD	peanut_butter		
+salted butter	FOOD	butter		salted
+8 oz. can tomato sauce	FOOD	tomato_sauce		package:8 oz can
+a dash of ground black pepper	FOOD	black_pepper		unit:dash
+ap flour	FOOD	flour_all_purpose		
+chili powder	FOOD	chili_powder		
+chorizo de bilbao	FOOD	chorizo_bilbao		
+egg yolks	FOOD	egg_yolk		
+medium plum tomato	FOOD	tomato	medium	plum
+medium red bell pepper	FOOD	bell_pepper_red	medium	
+red pepper flakes	FOOD	red_pepper_flakes		
+salted black beans	FOOD	black_beans_salted		tausi
+beef shank	FOOD	beef_shank		
+cayenne pepper powder	FOOD	cayenne_pepper		
+curry powder	FOOD	curry_powder		
+glutinous rice	FOOD	rice_glutinous_raw		
+large baking potato	FOOD	potato	large	baking potato
+long green chili	FOOD	chili_long_green		
+long green chili pepper	FOOD	chili_long_green		
+panko breadcrumbs	FOOD	bread_crumbs_panko		
+rice vinegar	FOOD	vinegar_rice		
+saba banana	FOOD	banana_saba		
+snap peas	FOOD	snow_peas		snap peas
+bacon	FOOD	bacon		
+beef	FOOD	beef_chuck		generic beef; assumed stewing cut
+chili pepper	FOOD	chili_bird		generic chili; assumed siling labuyo
+cooking procedure	HEADER			
+dark brown sugar	FOOD	sugar_brown		dark
+knorr ginataang gulay mix	FOOD	mix_ginataang_gulay		
+melted butter	FOOD	butter		melted
+shredded sharp cheddar cheese	FOOD	cheese_cheddar		sharp
+whole chicken	FOOD	chicken_whole		
+ampalaya	FOOD	ampalaya		
+chicharon	FOOD	chicharon_pork		
+chili flakes	FOOD	red_pepper_flakes		
+cooking oil spray	FOOD	oil_cooking		spray
+dried parsley flakes	FOOD	parsley_dried		
+italian seasoning	FOOD	italian_seasoning		
+large onion	FOOD	onion_yellow	large	
+leftover rice	FOOD	rice_white_cooked		leftover
+medium carrots	FOOD	carrot	medium	
+mustard powder	FOOD	mustard_powder		
+rice	FOOD	rice_white_raw		
+ricotta cheese	FOOD	cheese_ricotta		
+sitaw	FOOD	sitaw		
+small red onion	FOOD	onion_red	small	
+tofu	FOOD	tofu_firm		assumed tokwa
+bunch fresh spinach	FOOD	spinach		unit:bunch
+button mushroom	FOOD	mushroom_button		
+cheese	FOOD	cheese_processed		generic; assumed processed cheddar
+chicken powder	FOOD	seasoning_chicken_powder		
+chicken wings	FOOD	chicken_wings		
+coconut vinegar	FOOD	vinegar_coconut		
+glutinous rice flour	FOOD	flour_glutinous_rice		
+heavy cream	FOOD	cream_heavy		
+medium sized onion	FOOD	onion_yellow	medium	
+pechay	FOOD	pechay		pechay
+salmon fillet	FOOD	salmon_fillet		
+small cabbage	FOOD	cabbage	small	
+squid	FOOD	squid		
+tilapia	FOOD	tilapia		
+white wine	FOOD	wine_white		
+beef powder	FOOD	seasoning_beef_powder		
+boneless chicken breasts	FOOD	chicken_breast_boneless		
+chayote	FOOD	chayote		
+egg noodles	FOOD	noodles_egg		
+fresh basil leaves	FOOD	basil		
+garlic salt	FOOD	garlic_salt		
+ground cumin	FOOD	cumin_ground		
+kalabasa	FOOD	squash_kalabasa		
+large potato	FOOD	potato	large	
+lumpia wrapper	FOOD	lumpia_wrapper		
+medium potatoes	FOOD	potato	medium	
+pork blood	FOOD	pork_blood		
+red wine	FOOD	wine_red		
+sherry cooking wine	FOOD	wine_sherry		cooking sherry
+annatto oil	FOOD	annatto_oil		
+broccoli	FOOD	broccoli		
+calabaza squash	FOOD	squash_kalabasa		
+cans	UNIT_ONLY			container only (food lost)
+cauliflower	FOOD	cauliflower		
+cilantro	FOOD	cilantro		
+cold water	WATER			
+crushed peppercorn	FOOD	peppercorn_whole		crushed
+dried parsley	FOOD	parsley_dried		
+fish fillet	FOOD	fish_fillet		
+head cabbage	FOOD	cabbage		unit:head
+knorr sinigang sa sampaloc mix	FOOD	mix_sinigang_tamarind		
+large carrot	FOOD	carrot	large	
+laurel leaves	FOOD	bay_leaf		laurel
+lime juice	FOOD	lime_juice		
+marinara sauce	FOOD	marinara_sauce		
+peppercorn	FOOD	peppercorn_whole		
+pineapple tidbits	FOOD	pineapple_canned		tidbits
+pork hock	FOOD	pork_hock		
+tinapa flakes	FOOD	tinapa		flakes
+vegetable broth	FOOD	broth_vegetable		
+water spinach	FOOD	kangkong		water spinach
+white wine vinegar	FOOD	vinegar_white_wine		
+banana blossoms	FOOD	banana_blossom		
+barbecue sauce	FOOD	barbecue_sauce		
+bunch baby bok choy	FOOD	pechay		unit:bunch; baby bok choy
+cake flour	FOOD	flour_cake		
+chicken breasts	FOOD	chicken_breast		bone-in assumed
+chicken gizzard	FOOD	chicken_gizzard		
+chopped cabbage	FOOD	cabbage		
+chopped walnuts	FOOD	walnuts		
+fettuccine	FOOD	fettuccine		
+fish	FOOD	fish_whole		generic fish
+flat leaf parsley	FOOD	parsley		flat leaf
+fresh rosemary	FOOD	rosemary		
+ginger powder	FOOD	ginger_powder		
+hotdog	FOOD	hotdog		
+jicama	FOOD	jicama		singkamas
+large shrimp	FOOD	shrimp	large	
+leftover white rice	FOOD	rice_white_cooked		leftover
+light mayonnaise	FOOD	mayonnaise_light		
+low sodium soy sauce	FOOD	soy_sauce_low_sodium		
+medium green bell pepper	FOOD	bell_pepper_green	medium	
+medium potato	FOOD	potato	medium	
+mung bean sprouts	FOOD	mung_bean_sprouts		
+ox tripe	FOOD	beef_tripe		
+patis and ground black pepper to taste	TO_TASTE	fish_sauce|black_pepper		patis
+red onions	FOOD	onion_red		
+serrano pepper	FOOD	chili_serrano		
+sesame seeds	FOOD	sesame_seeds		
+shaoxing cooking wine	FOOD	wine_rice_cooking		shaoxing
+sotanghon noodles	FOOD	noodles_sotanghon		
+squid balls	FOOD	squid_balls		
+sweet relish	FOOD	pickle_relish_sweet		
+taro	FOOD	taro		
+water for boiling	WATER			for boiling
+bacon strips	FOOD	bacon		unit:strip
+baking potatoes	FOOD	potato		baking potato
+bell peppers	FOOD	bell_pepper_green		color unspecified; assumed green
+bunch scallions	FOOD	green_onion		unit:bunch
+chicken thigh	FOOD	chicken_thigh		
+cinnamon powder	FOOD	cinnamon_ground		
+cooking rice wine	FOOD	wine_rice_cooking		
+corned beef	FOOD	corned_beef		
+extra-virgin olive oil	FOOD	oil_olive		extra virgin
+five spice powder	FOOD	five_spice_powder		
+fresh parsley	FOOD	parsley		
+fresh spinach	FOOD	spinach		
+fresh thyme	FOOD	thyme_fresh		
+fried eggs	FOOD	egg_fried		
+garlic fried rice	FOOD	rice_garlic_fried		
+green olives	FOOD	olives_green		
+green papaya	FOOD	papaya_green		
+jasmine rice	FOOD	rice_white_raw		jasmine
+knob ginger	FOOD	ginger		unit:knob
+large eggs	FOOD	egg_chicken	large	
+lasagna	FOOD	lasagna_noodles		
+linguine	FOOD	linguine		
+maggi magic chicken cube	FOOD	stock_cube_chicken		brand: Maggi
+medium yellow onions	FOOD	onion_yellow	medium	
+misua	FOOD	misua		
+pack	UNIT_ONLY			container only (food lost)
+peanuts	FOOD	peanut_raw		
+pig ears	FOOD	pig_ears		
+pig liver	FOOD	pork_liver		
+pork pata	FOOD	pork_hock		pata
+pork ribs	FOOD	pork_ribs		
+pork tenderloin	FOOD	pork_tenderloin		
+red wine vinegar	FOOD	vinegar_red_wine		
+shredded parmesan cheese	FOOD	cheese_parmesan		
+sriracha sauce	FOOD	sriracha		
+sweet corn	FOOD	corn_sweet		
+swiss cheese	FOOD	cheese_swiss		
+toasted sesame seeds	FOOD	sesame_seeds		toasted
+tuna	FOOD	tuna_canned		rawText says canned
+whipping cream	FOOD	cream_heavy		whipping
+whole kernel corn	FOOD	corn_kernel_canned		
+a pinch of ground black pepper	FOOD	black_pepper		unit:pinch
+annatto water	WATER			annatto-steeped water
+baby corn	FOOD	baby_corn		
+baking potato	FOOD	potato		baking potato
+bangus	FOOD	milkfish		bangus
+bunch lemongrass	FOOD	lemongrass		unit:bunch
+butternut squash	FOOD	squash_kalabasa		butternut squash
+cane vinegar	FOOD	vinegar_cane_white		
+chili peppers	FOOD	chili_bird		generic chili; assumed siling labuyo
+cooked rice	FOOD	rice_white_cooked		
+crab	FOOD	crab		
+crushed chicharon	FOOD	chicharon_pork		crushed
+diced tomatoes	FOOD	tomato_canned_diced		
+dried anchovies	FOOD	anchovies_dried		dilis
+dried basil	FOOD	basil_dried		
+firm tofu	FOOD	tofu_firm		
+fresh miki noodles	FOOD	noodles_miki		
+ground cinnamon	FOOD	cinnamon_ground		
+head small cabbage	FOOD	cabbage	small	unit:head
+hot sauce	FOOD	hot_sauce		
+knorr ginataang gulay recipe mix	FOOD	mix_ginataang_gulay		
+knorr savorrich chicken liquid seasoning	FOOD	seasoning_liquid_savorrich_chicken		
+large red onion	FOOD	onion_red	large	
+lechon sauce	FOOD	lechon_sauce		
+medium sweet onion	FOOD	onion_yellow	medium	sweet onion
+medium-sized onion	FOOD	onion_yellow	medium	
+minced carrot	FOOD	carrot		
+minced celery	FOOD	celery		
+pancit canton	FOOD	noodles_pancit_canton		
+pepper	FOOD	black_pepper		
+pig’s liver	FOOD	pork_liver		
+pork chop	FOOD	pork_chop		
+pork fat	FOOD	pork_fat		
+pork spare ribs	FOOD	pork_ribs		spare ribs
+rice washing	WATER			rice water (hugas bigas)
+sardines in tomato sauce	FOOD	sardines_tomato_sauce		
+sinigang mix	FOOD	mix_sinigang_tamarind		
+small carrot	FOOD	carrot	small	
+smoked paprika	FOOD	paprika		smoked
+stalks celery	FOOD	celery		unit:stalk
+strips bacon	FOOD	bacon		unit:strip
+sweet potato	FOOD	sweet_potato		
+thyme	FOOD	thyme_dried		teaspoon measures; assumed dried
+unripe jackfruit	FOOD	jackfruit_unripe		
+whole eggs	FOOD	egg_chicken		
+whole pepper corn	FOOD	peppercorn_whole		
+wide egg noodles	FOOD	noodles_egg		wide
+a pinch of salt and pepper	TO_TASTE	salt|black_pepper		unit:pinch
+ampalaya leaves	FOOD	ampalaya_leaves		
+basil	FOOD	basil		
+bay leaf	FOOD	bay_leaf		
+beef stock	FOOD	broth_beef		stock
+beef tenderloin	FOOD	beef_tenderloin		
+beer	FOOD	beer		
+birds eye chili	FOOD	chili_bird		
+black olives	FOOD	olives_black		
+black pepper	FOOD	black_pepper		
+bread slices	FOOD	bread_white		unit:slice
+button mushrooms	FOOD	mushroom_button		
+calamansi juice	FOOD	calamansi_juice		
+chili	FOOD	chili_bird		generic chili; assumed siling labuyo
+chopped spinach	FOOD	spinach		
+clam juice	FOOD	clam_juice		
+cocoa powder	FOOD	cocoa_powder		
+confectioners sugar	FOOD	sugar_powdered		
+cornstarch diluted in 3 tablespoons water	FOOD	cornstarch		slurry: diluted in 3 tbsp water
+cream of tartar	FOOD	cream_of_tartar		
+diced tomato	FOOD	tomato_canned_diced		
+dry sherry	FOOD	wine_sherry		dry
+dry white wine	FOOD	wine_white		dry
+filipino style spaghetti sauce	FOOD	spaghetti_sauce_filipino		
+fish sauce and ground black pepper	TO_TASTE	fish_sauce|black_pepper		no "to taste" in name
+fresh basil	FOOD	basil		
+fresh noodles	FOOD	noodles_miki		generic fresh noodles; assumed miki
+garlic crushed	FOOD	garlic		
+goat meat	FOOD	goat_meat		
+grape tomatoes	FOOD	tomato_cherry		grape
+green beans	FOOD	beans_baguio		
+ground nutmeg	FOOD	nutmeg_ground		
+jalapeno pepper	FOOD	chili_jalapeno		
+kangkong leaves	FOOD	kangkong		leaves
+knorr cream of mushroom	FOOD	mix_cream_of_mushroom		
+knorr cream of mushroom soup	FOOD	mix_cream_of_mushroom		
+lechon	FOOD	lechon		cooked roast pork
+lechon kawali	FOOD	lechon_kawali		cooked fried pork belly
+medium onions	FOOD	onion_yellow	medium	
+medium plum tomatoes	FOOD	tomato	medium	plum
+medium zucchini	FOOD	zucchini	medium	
+minced carrots	FOOD	carrot		
+mirin	FOOD	mirin		
+miso paste	FOOD	miso_paste		
+mustard leaves	FOOD	mustard_greens		
+nata de coco	FOOD	nata_de_coco		
+of salt	FOOD	salt		
+pico de gallo	FOOD	pico_de_gallo		
+pork adobo	FOOD	pork_adobo		cooked dish
+pork rinds	FOOD	chicharon_pork		
+rice wash	WATER			rice water (hugas bigas)
+ripe saba banana	FOOD	banana_saba		ripe
+roasted garlic	FOOD	garlic_roasted		
+roasted peanuts	FOOD	peanut_roasted		
+sherry	FOOD	wine_sherry		
+shredded cabbage	FOOD	cabbage		
+shredded mozzarella cheese	FOOD	cheese_mozzarella		
+small green papaya	FOOD	papaya_green	small	
+walnuts	FOOD	walnuts		
+white mushrooms	FOOD	mushroom_button		white
+whole egg	FOOD	egg_chicken		
+whole milk	FOOD	milk_fresh		whole
+whole peppercorns	FOOD	peppercorn_whole		
+winged bean	FOOD	winged_bean		sigarilyas
+wonton wrapper	FOOD	wonton_wrapper		
+zucchini	FOOD	zucchini		
+14 oz. can condensed milk	FOOD	milk_condensed		package:14 oz can
+7-up	FOOD	soda_lemon_lime		brand: 7-Up
+a dash of salt	FOOD	salt		unit:dash
+apple cider vinegar	FOOD	vinegar_apple_cider		
+bagoong isda	FOOD	bagoong_isda		
+basil leaves	FOOD	basil		
+beef heart	FOOD	beef_heart		
+beef neck bone	FOOD	beef_neck_bone		
+beef or pork broth	FOOD	broth_beef		or pork broth
+beef tripe	FOOD	beef_tripe		
+boiled quail eggs	FOOD	egg_quail		boiled
+bottle gourd	FOOD	bottle_gourd		upo
+bread	FOOD	bread_white		
+bunches bok choy	FOOD	pechay		unit:bunch; bok choy
+cane or white vinegar	FOOD	vinegar_cane_white		
+carnation everyday creamer	FOOD	creamer_evaporated		brand: Carnation Everyday
+cauliflower florets	FOOD	cauliflower		florets
+celery stalk	FOOD	celery		unit:stalk
+cherry tomatoes	FOOD	tomato_cherry		
+chicken bouillon	FOOD	stock_cube_chicken		bouillon
+chicken leg quarters	FOOD	chicken_leg_quarter		
+chicken thighs	FOOD	chicken_thigh		
+chopped celery stalk	FOOD	celery		unit:stalk
+chopped green onion	FOOD	green_onion		
+cloves	FOOD	cloves_ground		rawText says ground
+cooking oil or cooking oil spray	FOOD	oil_cooking		or spray
+cornstarch diluted in 2 tablespoons water	FOOD	cornstarch		slurry: diluted in 2 tbsp water
+crabs	FOOD	crab		
+crushed red pepper	FOOD	red_pepper_flakes		
+cucumber	FOOD	cucumber		
+cumin	FOOD	cumin_ground		
+dried banana blossoms	FOOD	banana_blossom_dried		
+dried fish	FOOD	fish_dried		daing
+fine sea salt	FOOD	salt_sea		fine
+flank steak	FOOD	beef_flank		
+flour tortilla	FOOD	tortilla_flour		
+fresh blueberries	FOOD	blueberries		
+fresh shrimp	FOOD	shrimp		
+freshly ground black pepper	FOOD	black_pepper		
+fruit cocktail	FOOD	fruit_cocktail		
+good life breadcrumbs	FOOD	bread_crumbs		brand: Good Life
+grated cassava	FOOD	cassava		grated
+grated cheddar cheese	FOOD	cheese_cheddar		
+grated coconut	FOOD	coconut_grated		
+ground black pepper and fish sauce to taste	TO_TASTE	black_pepper|fish_sauce		
+ground ginger	FOOD	ginger_powder		
+half and half	FOOD	half_and_half		
+hot water	WATER			hot
+ice water	WATER			ice water
+indian eggplant	FOOD	eggplant		indian (round)
+juice of 1 lemon	FOOD	lemon_juice		from 1 lemon
+kamias	FOOD	kamias		
+knorr crab and corn soup	FOOD	mix_crab_corn_soup		
+large egg	FOOD	egg_chicken	large	
+large plum tomato	FOOD	tomato	large	plum
+large squid	FOOD	squid	large	
+light brown sugar	FOOD	sugar_brown		light
+lime or calamansi	FOOD	lime		or calamansi
+luncheon meat	FOOD	luncheon_meat		
+lye water	FOOD	lye_water		lihia (not drinking water)
+maggi magic chicken cubes	FOOD	stock_cube_chicken		brand: Maggi
+malunggay	FOOD	malunggay		
+medium bitter gourd	FOOD	ampalaya	medium	
+medium chayote	FOOD	chayote	medium	
+medium eggs	FOOD	egg_chicken	medium	
+medium sized tomatoes	FOOD	tomato	medium	
+medium squid	FOOD	squid	medium	
+medium yellow onion sliced	FOOD	onion_yellow	medium	sliced
+milkfish	FOOD	milkfish		
+minced parsley	FOOD	parsley		
+minced yellow onion	FOOD	onion_yellow		
+mixed vegetables	FOOD	mixed_vegetables		
+oil	FOOD	oil_cooking		
+onion minced	FOOD	onion_yellow		
+orange juice	FOOD	orange_juice		
+ox tongue	FOOD	beef_tongue		
+oxtail	FOOD	oxtail		
+pancit bihon	FOOD	noodles_bihon		
+penne pasta	FOOD	penne		
+pimiento	FOOD	pimiento		
+plantains	FOOD	banana_saba		plantain
+plum tomatoes	FOOD	tomato		plum
+pork loin	FOOD	pork_loin		
+prague powder #1	FOOD	curing_salt_prague		
+red chilies	FOOD	chili_bird		red chili; assumed siling labuyo
+red food coloring	FOOD	food_coloring_red		
+red potatoes	FOOD	potato		red
+roasted sesame seeds	FOOD	sesame_seeds		roasted
+romaine lettuce	FOOD	lettuce_romaine		
+rosemary	FOOD	rosemary		
+saffron	FOOD	saffron		
+salt and pepper to taste.	TO_TASTE	salt|black_pepper		
+shaoxing wine	FOOD	wine_rice_cooking		shaoxing
+shiitake mushroom	FOOD	mushroom_shiitake		
+shiitake mushrooms	FOOD	mushroom_shiitake		
+shortening	FOOD	shortening		
+shrimps	FOOD	shrimp		
+sinangag	FOOD	rice_garlic_fried		sinangag
+sliced ginger	FOOD	ginger		
+small unripe papaya	FOOD	papaya_green	small	
+sotanghon	FOOD	noodles_sotanghon		
+spring onions	FOOD	green_onion		
+stalks scallions	FOOD	green_onion		unit:stalk
+sweet chili sauce	FOOD	sweet_chili_sauce		
+sweet rice flour	FOOD	flour_glutinous_rice		
+tamarind	FOOD	tamarind		
+tuna jaw	FOOD	tuna_jaw		
+unsweetened cocoa powder	FOOD	cocoa_powder		unsweetened
+vegetable shortening	FOOD	shortening		
+vermicelli	FOOD	noodles_bihon		vermicelli; assumed rice noodle
+white or cane vinegar	FOOD	vinegar_cane_white		
+white rice	FOOD	rice_white_cooked		rawText: preferably leftovers
+yellow bell pepper	FOOD	bell_pepper_yellow		
+yellow onions	FOOD	onion_yellow		
+young corn	FOOD	baby_corn		young corn
+5 spice powder	FOOD	five_spice_powder		
+>>cake:	HEADER			
+a bunch of lemongrass	FOOD	lemongrass		unit:bunch
+alfredo sauce	FOOD	alfredo_sauce		
+american cheese	FOOD	cheese_american		
+anisette liquor	FOOD	anisette_liquor		
+apple juice	FOOD	apple_juice		
+apples	FOOD	apple		
+asparagus	FOOD	asparagus		
+baby carrots	FOOD	carrot		baby
+bacon bits	FOOD	bacon_bits		
+bagnet	FOOD	bagnet		cooked
+bagoong	FOOD	shrimp_paste		generic bagoong; rawText says shrimp paste
+balsamic vinegar	FOOD	vinegar_balsamic		
+bamboo shoots	FOOD	bamboo_shoots		
+banana	FOOD	banana_lakatan		generic banana
+banana pepper	FOOD	chili_long_green		banana pepper
+beef bouillon	FOOD	stock_cube_beef		bouillon
+beef brisket	FOOD	beef_brisket		
+beef neck bones	FOOD	beef_neck_bone		
+beef or pork cube	FOOD	stock_cube_beef		or pork cube
+beef powder or 1 beef cube	FOOD	seasoning_beef_powder		or 1 beef cube
+beef short ribs	FOOD	beef_short_ribs		
+boneless	FOOD	chicken_breast_boneless		truncated name; rawText: boneless chicken breasts
+boneless skinless chicken breast	FOOD	chicken_breast_boneless		skinless
+bunch mustard leaves	FOOD	mustard_greens		unit:bunch
+bunch spinach	FOOD	spinach		unit:bunch
+bunches baby bok choy	FOOD	pechay		unit:bunch; baby bok choy
+calasparra rice	FOOD	rice_white_raw		calasparra (paella rice)
+canola or vegetable oil	FOOD	oil_canola		or vegetable oil
+cassava	FOOD	cassava		
+caster sugar	FOOD	sugar_white		caster
+cayenne pepper	FOOD	cayenne_pepper		
+cdo holiday ham	FOOD	ham		brand: CDO Holiday
+celery leaves	FOOD	celery		leaves
+celery stalks	FOOD	celery		unit:stalk
+chicken cube	FOOD	stock_cube_chicken		
+chicken feet	FOOD	chicken_feet		
+chicken heart	FOOD	chicken_heart		
+chickpeas	FOOD	chickpeas		
+chili garlic oil	FOOD	chili_garlic_oil		
+chopped chicken liver	FOOD	chicken_liver		
+chopped cilantro	FOOD	cilantro		
+chopped fresh basil	FOOD	basil		
+chopped red bell pepper	FOOD	bell_pepper_red		
+chopped scallion	FOOD	green_onion		
+cinnamon	FOOD	cinnamon_ground		tbsp/tsp measures
+clams	FOOD	clams		
+cornmeal	FOOD	cornmeal		
+crab meat	FOOD	crab_meat		
+crushed peanuts	FOOD	peanut_roasted		crushed
+cup	UNIT_ONLY			unit only
+dried chilies	FOOD	chili_dried		
+dried red chili	FOOD	chili_dried		
+dried rosemary	FOOD	rosemary_dried		
+dried shrimp	FOOD	shrimp_dried		
+dried thai chili	FOOD	chili_dried		thai
+finger chili	FOOD	chili_long_green		finger chili
+french fried onion	FOOD	onion_fried		
+fresh cilantro	FOOD	cilantro		
+fresh ginger	FOOD	ginger		
+fresh mushroom	FOOD	mushroom_button		generic fresh mushroom
+fresh white mushrooms	FOOD	mushroom_button		white
+frozen mixed vegetables	FOOD	mixed_vegetables		frozen
+garbanzos	FOOD	chickpeas		garbanzos
+garlic cloves	FOOD	garlic		unit:clove
+graham cracker crumbs	FOOD	graham_cracker		crumbs
+graham crackers	FOOD	graham_cracker		
+grape tomato	FOOD	tomato_cherry		grape
+grated ginger	FOOD	ginger		
+grated purple yam	FOOD	ube		grated
+ground cloves	FOOD	cloves_ground		
+ground white pepper to taste	TO_TASTE	white_pepper		
+grouper	FOOD	grouper		lapu-lapu
+guacamole	FOOD	guacamole		
+hard-boiled eggs	FOOD	egg_hard_boiled		
+hotdogs or beef franks	FOOD	hotdog		or beef franks
+ice cold water	WATER			ice cold
+juice from 1 lemon	FOOD	lemon_juice		from 1 lemon
+kani	FOOD	crab_stick		kani (imitation crab)
+ketchup	FOOD	ketchup_tomato		
+knorr savorrich pork liquid seasoning	FOOD	seasoning_liquid_savorrich_pork		
+knorr sinigang sa sampaloc recipe mix	FOOD	mix_sinigang_tamarind		
+knorr sinigang sa sampaloc with miso	FOOD	mix_sinigang_tamarind_miso		
+kosher salt	FOOD	salt_kosher		
+large baking potatoes	FOOD	potato	large	baking potato
+large potatoes	FOOD	potato	large	
+large tilapia	FOOD	tilapia	large	

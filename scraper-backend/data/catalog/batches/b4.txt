@@ -1,0 +1,85 @@
+ampalaya_leaves	5	ampalaya leaves
+beans_baguio	5	green beans
+beef_tenderloin	5	beef tenderloin
+beer	5	beer
+calamansi_juice	5	calamansi juice
+chili_jalapeno	5	jalapeno pepper
+clam_juice	5	clam juice
+cream_of_tartar	5	cream of tartar
+garlic_roasted	5	roasted garlic
+goat_meat	5	goat meat
+lechon	5	lechon
+lechon_kawali	5	lechon kawali
+mirin	5	mirin
+miso_paste	5	miso paste
+nata_de_coco	5	nata de coco
+nutmeg_ground	5	ground nutmeg
+olives_black	5	black olives
+pico_de_gallo	5	pico de gallo
+pork_adobo	5	pork adobo
+spaghetti_sauce_filipino	5	filipino style spaghetti sauce
+sugar_powdered	5	confectioners sugar
+winged_bean	5	winged bean
+wonton_wrapper	5	wonton wrapper
+bagoong_isda	4	bagoong isda
+banana_blossom_dried	4	dried banana blossoms
+beef_flank	4	flank steak
+beef_heart	4	beef heart
+beef_tongue	4	ox tongue
+bell_pepper_yellow	4	yellow bell pepper
+blueberries	4	fresh blueberries
+bottle_gourd	4	bottle gourd
+chicken_leg_quarter	4	chicken leg quarters
+coconut_grated	4	grated coconut
+creamer_evaporated	4	carnation everyday creamer
+cucumber	4	cucumber
+curing_salt_prague	4	prague powder #1
+fish_dried	4	dried fish
+food_coloring_red	4	red food coloring
+fruit_cocktail	4	fruit cocktail
+half_and_half	4	half and half
+kamias	4	kamias
+lettuce_romaine	4	romaine lettuce
+luncheon_meat	4	luncheon meat
+lye_water	4	lye water
+mix_crab_corn_soup	4	knorr crab and corn soup
+orange_juice	4	orange juice
+oxtail	4	oxtail
+penne	4	penne pasta
+pimiento	4	pimiento
+pork_loin	4	pork loin
+saffron	4	saffron
+sweet_chili_sauce	4	sweet chili sauce
+tamarind	4	tamarind
+tortilla_flour	4	flour tortilla
+tuna_jaw	4	tuna jaw
+vinegar_apple_cider	4	apple cider vinegar
+alfredo_sauce	3	alfredo sauce
+anisette_liquor	3	anisette liquor
+apple	3	apples
+apple_juice	3	apple juice
+asparagus	3	asparagus
+bacon_bits	3	bacon bits
+bagnet	3	bagnet
+bamboo_shoots	3	bamboo shoots
+banana_lakatan	3	banana
+beef_brisket	3	beef brisket
+beef_short_ribs	3	beef short ribs
+cheese_american	3	american cheese
+chicken_feet	3	chicken feet
+chicken_heart	3	chicken heart
+chili_garlic_oil	3	chili garlic oil
+clams	3	clams
+cornmeal	3	cornmeal
+crab_meat	3	crab meat
+crab_stick	3	kani
+grouper	3	grouper
+guacamole	3	guacamole
+mix_sinigang_tamarind_miso	3	knorr sinigang sa sampaloc with miso
+onion_fried	3	french fried onion
+rosemary_dried	3	dried rosemary
+salt_kosher	3	kosher salt
+seasoning_liquid_savorrich_pork	3	knorr savorrich pork liquid seasoning
+shrimp_dried	3	dried shrimp
+ube	3	grated purple yam
+vinegar_balsamic	3	balsamic vinegar

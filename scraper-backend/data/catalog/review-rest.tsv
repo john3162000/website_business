@@ -1,0 +1,29 @@
+slug	field	current	proposed	severity	reason
+noodles_miki	fnriCode	A141	A147	high	A141 "mami, fresh" at 73 kcal/100 g is far too low (-55%). PH fresh miki is sold parboiled and oiled, like Hokkien yellow noodles (~150-170 kcal). A147 (miki dry, boiled, 110 kcal) is the same noodle in a cooked state and the closest row; A146 dry (472) would be ~3x too high
+noodles_egg	fnriCode		A153	high	Empty, so 16 uses get 0 kcal ("800 grams egg noodles", "6 ounces wide egg noodles"). Dry egg noodles are ~384 kcal (USDA); A153 spaghetti (361 kcal) is within 6%. A146 miki dry (472, 22 g fat) looks like a fried noodle and is worse
+corn_sweet	fnriCode	A004	A109	high	A004 is starchy yellow field corn (173 kcal, 35 g carb), about 2x sweet corn (USDA raw 86 kcal). A109 canned whole-kernel corn (70 kcal) is sweet corn, within ~20%; sodium is slightly higher than fresh
+corn_sweet	epPct	100	39	medium	4 of 7 uses are pieces/blank (whole cobs, gEach 200 g as purchased, matching the DA per-kg cob price). FNRI A004 EP 39 and USDA refuse ~64% for an ear. At 100, cob lines count 2.5x the edible kernels. Caveat: the 2 cup (kernel) lines would then be under-counted if epPct is applied to volume units
+salmon_fillet	fnriCode		G012	high	Empty means 0 kcal for 11 recipes where salmon is the main protein. G099 "Salmon" is rainbow runner (85 kcal, wrong species). Farmed Atlantic salmon is ~208 kcal / 13.4 g fat (USDA). G012 Carp (185 kcal, 12.6 g fat, 17.8 g protein) is the closest macro profile (-11%). Mark it as a stand-in, low confidence
+cheese_mozzarella	fnriCode		J004	medium	Empty, 21 uses. Whole-milk mozzarella is ~300 kcal / 22 g fat. J004 kesong puti, a fresh white cheese (299 kcal, 25 g fat, Na 865), matches closely and is closer than J001 processed cheese (Na 1337)
+cream_cheese	fnriCode		J004	medium	Empty, 16 uses, often 1/2 cup (~116 g = ~400 kcal lost). Cream cheese is ~342 kcal / 34 g fat. J004 kesong puti (299 kcal / 25 g fat) is within ~13% on kcal; J006 cheese spread (210) is too low
+walnuts	fnriCode		C002	medium	Empty, 13 uses (cup-measured). Walnuts are ~654 kcal / 65 g fat. C002 cashew roasted (603 kcal / 47 g fat) is within ~8% on kcal. Keep epPct 100 (shelled)
+garlic_salt	fnriCode		N019	medium	Empty, so sodium from tsp lines is 0. Garlic salt is ~75% salt (~30% Na); N019 (34.8% Na) is a close sodium proxy (+~15-20%), and kcal are negligible either way
+barbecue_sauce	fnriCode		N005	medium	Empty, 8 uses, mostly cups (3/4 cup ~210 g, ~360 kcal lost). BBQ sauce is ~170 kcal (USDA) and ketchup-based; N005 catsup (131 kcal, Na 1021) is within ~24%
+tuna_jaw	daName		Tambakol (Yellow-Fin Tuna), Local Medium, Fresh or Chilled	medium	The FNRI row is already G147 yellow-fin tuna. The DA yellow-fin price (296/kg) is a reasonable proxy for panga ng tuna (~250-350/kg in NCR markets); currently uncosted
+mix_ginataang_gulay	dietClass	PLANT	ANIMAL_CONDIMENT	medium	Knorr ginataang gulay mix is built on coconut-milk powder, which usually contains sodium caseinate (milk), and the dish is traditionally seasoned with shrimp/bagoong. Verify the label; PLANT is likely wrong for vegetarian filtering
+mix_sinigang_tamarind	dietClass	PLANT	ANIMAL_CONDIMENT	low	Knorr sinigang mixes may list shrimp/fish flavoring (the notes already flag this); verify the label. If it is confirmed fish-free, keep PLANT
+mix_sinigang_tamarind_miso	dietClass	PLANT	ANIMAL_CONDIMENT	low	Same Knorr sinigang base as mix_sinigang_tamarind; verify the label for shrimp/fish
+half_and_half	fnriCode		J015	low	Empty. Half-and-half is ~131 kcal / 11.5 g fat (USDA). J015 evaporated milk (148 kcal / 7.8 g fat) is within ~13% on kcal; J007 cream (241, +84%) and J014 milk (65, -50%) are both outside 25%
+cheese_swiss	fnriCode		J004	low	Empty; "8 slices Swiss cheese" gets 0 kcal. Swiss is ~380 kcal; J004 (299) is -21% and its sodium is closer than J001 processed cheese (1337 mg vs Swiss ~190)
+tortilla_flour	fnriCode		A048	low	Empty. Flour tortilla is ~310 kcal / 8 g fat; A048 white bread (329 kcal / 5 g fat) is within ~6%
+zucchini	fnriCode		D229	low	Empty. D229 "Squash, summer fruit" (21 kcal) is the same food group as zucchini (USDA 17 kcal)
+egg_fried	fnriCode	H003	H004	low	A fried egg is ~196 kcal (USDA). Raw H003 (139) is -29%; cooked H004 (166) is -15% and in the cooked state
+egg_fried	daName		Chicken Egg (White, Medium) 56-60 grams/pc	low	One fried egg is one purchased egg; this is the same DA item as egg_chicken. Currently uncosted
+shortening	fnriCode	K003	K009	low	K003 is pork lard on a PLANT item, which is misleading if diet or allergen checks ever read the FNRI row. K009 corn oil (896 kcal, 99.6 g fat) is a nutritionally identical plant fat
+chili_garlic_oil	fnriCode		K008	low	Empty, but the product is mostly oil (~600-800 kcal/100 g); one recipe uses 1 cup. K008 (same oil row as oil_cooking) is a stand-in; it overstates kcal somewhat but is far closer than 0
+curing_salt_prague	fnriCode		N019	low	Prague powder #1 is ~94% NaCl; N019 gives its sodium (tsp amounts)
+annatto_seeds	role	normal	removed_aromatic	low	Seeds are steeped in water or oil and strained out, not eaten (the notes already say so)
+pig_ears	daName		Pork Head, Local	low	DA has no ears; Pork Head (246/kg) is the closest part and is what sisig cooks buy; currently uncosted
+bell_pepper_yellow	daName		Bell Pepper (Red), Local Medium (151-250gm/pc)	low	Same price tier as yellow (the FNRI row is already the red round pepper); currently uncosted. Use Imported red if per-kg pricing is preferred
+cornmeal	daName		Corn Grits (Yellow, Food Grade)	low	Yellow food-grade corn grits are the closest DA corn product to cornmeal (same milled yellow corn, coarser grind)
+chicken_liver	gPerCup	140	220	low	140 g is the USDA cup for cooked, diced liver. Raw chopped liver packs like ground meat (~1.0 g/ml, ~220-230 g/cup); used in 3 "1/2 cup chopped chicken liver" lines
