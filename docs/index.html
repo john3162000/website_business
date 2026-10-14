@@ -277,7 +277,7 @@ let COMMODITY_INDEX = null;
 
 // ═══════════════ RECIPE ENRICHMENT (estimated nutrition & cost) ═══════════════
 
-function enrichRecipe(raw) {
+function enrichRecipe(raw, compiled) {
   const totals = NUTR_KEYS.reduce((acc, k) => ({ ...acc, [k]: 0 }), {});
   let totalCost = 0;
   let usesAnimal = false;
@@ -330,10 +330,24 @@ function enrichRecipe(raw) {
     });
   }
 
-  const servings = raw.servings && raw.servings > 0 ? raw.servings : 4;
-  const perServing = {};
+  let servings = raw.servings && raw.servings > 0 ? raw.servings : 4;
+  let perServing = {};
   NUTR_KEYS.forEach((k) => { perServing[k] = round1(totals[k] / servings); });
-  const costPerServing = round1(totalCost / servings);
+  let costPerServing = round1(totalCost / servings);
+
+  // Server-side engine (/api/recipes/compiled): per-food weights, edible
+  // portion, frying-oil absorption, removed aromatics. Preferred when available;
+  // the in-browser estimate above stays as the fallback.
+  if (compiled) {
+    servings = compiled.servings;
+    perServing = {
+      calories: compiled.kcal || 0, protein: compiled.protein || 0, carbs: compiled.carbs || 0, fat: compiled.fat || 0,
+      fiber: compiled.fiber || 0, vitaminA: compiled.vitaminA || 0, vitaminC: compiled.vitaminC || 0,
+      iron: compiled.iron || 0, calcium: compiled.calcium || 0,
+    };
+    costPerServing = round1(compiled.cost || 0);
+    totalCost = costPerServing * servings;
+  }
 
   const nutritionScore = Math.round(
     pct(perServing.protein, "protein") * 0.22 +
@@ -382,6 +396,13 @@ function enrichRecipe(raw) {
     calcium: Math.round(perServing.calcium),
     nutritionScore,
     costPerServing,
+    engine: compiled ? "v2" : "v1",
+    kcalLow: compiled ? Math.round(compiled.kcalLow) : null,
+    kcalHigh: compiled ? Math.round(compiled.kcalHigh) : null,
+    frying: compiled ? compiled.frying : null,
+    servingsAssumed: compiled ? compiled.servingsAssumed : !(raw.servings > 0),
+    costCoverage: compiled ? compiled.costCoverage : null,
+    sodium: compiled ? compiled.sodium : null,
     valueScore,
     estimated: true,
   };
@@ -404,11 +425,13 @@ function unitSuffix(c) { return (c.unit && c.unit.label ? c.unit.label : "₱/kg
 // ═══════════════ DATA LOADING ═══════════════
 
 async function loadData() {
-  const [comRes, nutRes, recRes] = await Promise.all([
+  const [comRes, nutRes, recRes, compRes] = await Promise.all([
     fetch(`${API_BASE}/api/commodities`).then((r) => r.json()),
     fetch(`${API_BASE}/api/nutrition`).then((r) => r.json()),
     fetch(`${API_BASE}/api/recipes`).then((r) => r.json()),
+    fetch(`${API_BASE}/api/recipes/compiled`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
   ]);
+  const COMPILED = new Map(((compRes && compRes.recipes) || []).map((c) => [c.id, c]));
 
   LATEST_DA_DATE = comRes.latestDate ? new Date(comRes.latestDate) : null;
   DA_PRICES = (comRes.commodities || []).map((c) => {
@@ -426,7 +449,7 @@ async function loadData() {
   COMMODITY_INDEX = buildIndex(DA_PRICES, "name");
 
 
-  RECIPES = (recRes.recipes || []).map(enrichRecipe);
+  RECIPES = (recRes.recipes || []).map((r) => enrichRecipe(r, COMPILED.get(r.id)));
 }
 
 // ═══════════════ UTILITY ═══════════════
@@ -462,9 +485,38 @@ function buildRecipeCard(r) {
     </div>`;
 }
 
-function buildModal(r, instructions) {
+function kcalText(r) {
+  if (r.kcalLow != null && r.kcalHigh != null && r.kcalHigh - r.kcalLow >= 10) return `${r.kcalLow.toLocaleString()}–${r.kcalHigh.toLocaleString()}`;
+  return `${r.calories}`;
+}
+
+function escapeHtml(t) {
+  return String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
+// Per-line rows from the server engine: what was counted as eaten, and why.
+function compiledRows(lines) {
+  return lines.map((l) => {
+    const grams = l.gEaten != null && l.gAP != null
+      ? (Math.round(l.gEaten) === Math.round(l.gAP) ? `≈${Math.round(l.gAP)} g` : `≈${Math.round(l.gAP)} g bought · ≈${Math.round(l.gEaten)} g eaten`)
+      : '';
+    const kcal = l.nutrients ? ` · ${Math.round(l.nutrients.kcal)} kcal` : '';
+    const muted = ['to-taste', 'optional', 'water', 'skipped'].includes(l.status);
+    const note = l.reason || (l.status === 'unmatched' ? 'not matched yet' : l.status === 'no-weight' ? 'amount unclear' : '');
+    return `
+    <div class="flex items-start justify-between gap-3 bg-gray-50 rounded-xl px-4 py-3 ${muted ? 'opacity-60' : ''}">
+      <div class="min-w-0">
+        <p class="font-medium text-sm">${escapeHtml(l.text)}</p>
+        <p class="text-xs text-gray-500">${escapeHtml(grams + kcal)}${note ? `<span class="block text-gray-400">${escapeHtml(note)}</span>` : ''}</p>
+      </div>
+      <p class="text-sm font-semibold text-amber-700 whitespace-nowrap">${l.cost != null ? '₱' + l.cost.toFixed(2) : ''}</p>
+    </div>`;
+  }).join('');
+}
+
+function buildModal(r, instructions, lines) {
   const nutr = r.nutrition;
-  const ingRows = r.ingredientRows.map(i => `
+  const ingRows = lines && lines.length ? compiledRows(lines) : r.ingredientRows.map(i => `
     <div class="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3">
       <div>
         <p class="font-medium text-sm">${i.label}</p>
@@ -503,7 +555,7 @@ function buildModal(r, instructions) {
     <div class="flex items-center justify-between mb-4">
       <div>
         <h2 class="text-2xl font-bold">${r.title}</h2>
-        <span class="text-sm text-gray-500">${r.category} · ${r.servings} servings · ${(r.prepTime||0)+(r.cookTime||0)} min</span>
+        <span class="text-sm text-gray-500">${r.category} · ${r.servings} servings${r.servingsAssumed ? ' (assumed: recipe doesn\'t say)' : ''} · ${(r.prepTime||0)+(r.cookTime||0)} min</span>
         ${r.url ? `<a href="${r.url}" target="_blank" rel="noopener" class="block text-xs text-green-700 hover:underline mt-1">View original on Panlasang Pinoy ↗</a>` : ''}
       </div>
       <button onclick="closeModalBtn()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">✕</button>
@@ -527,8 +579,8 @@ function buildModal(r, instructions) {
             <p class="text-xs text-blue-600 font-medium">Nutrition Score</p>
           </div>
           <div class="bg-gray-50 border rounded-xl px-4 py-3 text-center">
-            <p class="text-2xl font-bold text-gray-700">${r.calories}</p>
-            <p class="text-xs text-gray-500 font-medium">kcal/serving</p>
+            <p class="text-2xl font-bold text-gray-700">${kcalText(r)}</p>
+            <p class="text-xs text-gray-500 font-medium">kcal/serving${r.frying ? ' · fried: oil absorption estimated' : ''}</p>
           </div>
         </div>
 
@@ -540,7 +592,7 @@ function buildModal(r, instructions) {
             <span class="text-gray-600">Estimated total cost</span>
             <div class="text-right">
               <p class="font-bold text-amber-700">₱${r.cost.total.toFixed(0)}</p>
-              <p class="text-xs text-gray-400">₱${r.costPerServing}/serving × ${r.servings} servings</p>
+              <p class="text-xs text-gray-400">₱${r.costPerServing}/serving × ${r.servings} servings${r.costCoverage != null && r.costCoverage < 1 ? ` · ${Math.round(r.costCoverage * 100)}% of ingredients priced (DA doesn't list condiments, dairy or flour)` : ''}</p>
             </div>
           </div>
         </div>
@@ -563,11 +615,12 @@ function buildModal(r, instructions) {
           <div class="border-b-4 border-gray-900 pb-2 mb-2">
             <div class="flex justify-between items-center">
               <span class="text-xs">Calories</span>
-              <span class="text-3xl font-black">${nutr.calories}</span>
+              <span class="text-3xl font-black">${kcalText(r)}</span>
             </div>
           </div>
           <div class="space-y-2">${nutriBars}</div>
-          <p class="text-xs text-gray-400 mt-3">Source: FNRI FCT · per serving estimate</p>
+          ${r.sodium != null ? `<p class="text-xs text-gray-600 mt-2">Sodium ≈ ${Math.round(r.sodium).toLocaleString()} mg</p>` : ''}
+          <p class="text-xs text-gray-400 mt-3">Source: FNRI FCT · per serving estimate${r.engine === 'v2' ? ' · edible portion and cooking losses applied' : ''}</p>
         </div>
         <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-700">
           <p class="font-bold mb-1">⚠️ Estimated figures</p>
@@ -690,11 +743,14 @@ async function openModal(id) {
   document.getElementById('recipe-modal').classList.add('open');
   document.body.style.overflow = 'hidden';
   let instructions = [];
-  try {
-    const detail = await fetch(`${API_BASE}/api/recipes/${id}`).then(res => res.json());
-    instructions = (detail.recipe?.instructions || []).map(s => s.text);
-  } catch { /* leave empty -> fallback message */ }
-  document.getElementById('modal-content').innerHTML = buildModal(r, instructions);
+  let lines = null;
+  const [detail, compiled] = await Promise.all([
+    fetch(`${API_BASE}/api/recipes/${id}`).then(res => res.json()).catch(() => null),
+    fetch(`${API_BASE}/api/recipes/compiled?id=${id}`).then(res => (res.ok ? res.json() : null)).catch(() => null),
+  ]);
+  if (detail) instructions = (detail.recipe?.instructions || []).map(s => s.text);
+  if (compiled && compiled.recipe) lines = compiled.recipe.lines;
+  document.getElementById('modal-content').innerHTML = buildModal(r, instructions, lines);
   setTimeout(() => {
     document.querySelectorAll('.bar-fill').forEach(b => { b.style.width = b.style.width; });
   }, 100);

@@ -13,11 +13,14 @@ import type { Alias, Canonical } from "./types.ts";
 
 export interface Nutrients {
   kcal: number; protein: number; fat: number; carbs: number; sodium: number;
+  fiber: number; calcium: number; iron: number; vitaminA: number; vitaminC: number;
 }
 export interface FnriFood {
   calories: number | null; protein: number | null; fat: number | null;
   carbohydrates: number | null; sodium: number | null;
+  fiber?: number | null; calcium?: number | null; iron?: number | null; vitaminA?: number | null; vitaminC?: number | null;
 }
+const ZERO: Nutrients = { kcal: 0, protein: 0, fat: 0, carbs: 0, sodium: 0, fiber: 0, calcium: 0, iron: 0, vitaminA: 0, vitaminC: 0 };
 export interface DaPrice {
   price: number | null;
   unit: { per: "kg" | "piece" | "bottle"; pieceGrams: number | null; bottleMl: number | null };
@@ -141,8 +144,11 @@ function gramsAP(q: ParsedQuantity, c: Canonical, alias: Alias, flags: string[],
 }
 
 function scaled(f: FnriFood, g: number, k: number): Nutrients {
-  const m = (v: number | null) => ((v ?? 0) * g * k) / 100;
-  return { kcal: m(f.calories), protein: m(f.protein), fat: m(f.fat), carbs: m(f.carbohydrates), sodium: m(f.sodium) };
+  const m = (v: number | null | undefined) => ((v ?? 0) * g * k) / 100;
+  return {
+    kcal: m(f.calories), protein: m(f.protein), fat: m(f.fat), carbs: m(f.carbohydrates), sodium: m(f.sodium),
+    fiber: m(f.fiber), calcium: m(f.calcium), iron: m(f.iron), vitaminA: m(f.vitaminA), vitaminC: m(f.vitaminC),
+  };
 }
 
 function lineCost(c: Canonical, gUsed: number, da: DaPrice | undefined, isOil: boolean): number | null {
@@ -268,7 +274,7 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
   const fatFactor = frying && FATTY_PORK.test(r.title) ? 0.7 : 1;
 
   let kcalLow = 0, kcalHigh = 0;
-  const total: Nutrients = { kcal: 0, protein: 0, fat: 0, carbs: 0, sodium: 0 };
+  const total: Nutrients = { ...ZERO };
   let foodLines = 0, withNutrition = 0, priceable = 0, priced = 0;
   let cost = 0;
 
@@ -294,7 +300,7 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
         kcalHigh += (absorbed[1] * f.calories) / 100;
       } else { kcalLow += n.kcal; kcalHigh += n.kcal; }
     } else if (line.gEaten === 0) {
-      line.nutrients = { kcal: 0, protein: 0, fat: 0, carbs: 0, sodium: 0 };
+      line.nutrients = { ...ZERO };
       withNutrition++;
     } else if (line.gEaten !== null && !f) {
       line.status = line.status === "ok" ? "no-nutrition" : line.status;
@@ -317,7 +323,7 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
     servingsAssumed,
     method: { frying, absorbedOilG: absorbed },
     perServing: {
-      kcal: per(total.kcal), protein: per(total.protein), fat: per(total.fat), carbs: per(total.carbs), sodium: per(total.sodium),
+      ...(Object.fromEntries(Object.entries(total).map(([k, v]) => [k, per(v)])) as unknown as Nutrients),
       kcalLow: per(kcalLow), kcalHigh: per(kcalHigh),
     },
     costPerServing: priced ? per(cost) : null,

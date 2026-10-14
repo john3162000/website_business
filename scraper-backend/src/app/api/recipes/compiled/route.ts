@@ -23,7 +23,7 @@ export async function GET(request: Request) {
 
   const [foods, priceRows, recipes] = await Promise.all([
     prisma.nutritionFact.findMany({
-      select: { foodCode: true, calories: true, protein: true, fat: true, carbohydrates: true, sodium: true },
+      select: { foodCode: true, calories: true, protein: true, fat: true, carbohydrates: true, sodium: true, fiber: true, calcium: true, iron: true, vitaminA: true, vitaminC: true },
     }),
     prisma.commodity.findMany({
       where: { sourceDate: { gte: new Date(Date.now() - 14 * 86400000) }, price: { not: null } },
@@ -79,6 +79,11 @@ export async function GET(request: Request) {
       fat: round(c.perServing.fat, 1),
       carbs: round(c.perServing.carbs, 1),
       sodium: round(c.perServing.sodium),
+      fiber: round(c.perServing.fiber, 1),
+      calcium: round(c.perServing.calcium),
+      iron: round(c.perServing.iron, 1),
+      vitaminA: round(c.perServing.vitaminA),
+      vitaminC: round(c.perServing.vitaminC, 1),
       cost: round(c.costPerServing, 2),
       nutritionCoverage: round(c.nutritionCoverage, 2),
       costCoverage: round(c.costCoverage, 2),
