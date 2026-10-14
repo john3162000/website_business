@@ -64,7 +64,7 @@ const UNITS: Record<string, UnitDef> = {
   piece: C("piece"), pieces: C("piece"), pc: C("piece"), pcs: C("piece"), whole: C("piece"),
   clove: C("clove"), cloves: C("clove"),
   head: C("head"), heads: C("head"),
-  thumb: C("thumb"), thumbs: C("thumb"),
+  thumb: C("thumb"), thumbs: C("thumb"), knob: C("knob"), knobs: C("knob"),
   stalk: C("stalk"), stalks: C("stalk"), stem: C("stalk"), stems: C("stalk"),
   bunch: C("bunch"), bunches: C("bunch"), bundle: C("bunch"), bundles: C("bunch"),
   slice: C("slice"), slices: C("slice"), strip: C("strip"), strips: C("strip"),
@@ -198,6 +198,11 @@ export function parseQuantity(amountIn: string | null | undefined, unitIn: strin
         flags.push("quantity-in-name");
       }
     }
+  } else if (/\s(\d+(?:\.\d+)?)\s*(oz|ounces?|g|grams?|ml)\.?$/i.test(name) && /\bcans?\b|^can$/i.test(`${unitRaw} ${name}`)) {
+    // "1 can diced tomatoes 14 oz": package size written after the name.
+    const t = name.match(/\s(\d+(?:\.\d+)?)\s*(oz|ounces?|g|grams?|ml)\.?$/i)!;
+    const pkg = packageFrom(`${t[1]} ${t[2]}`);
+    if (pkg) { packageAmount = pkg.amount; packageKind = pkg.kind; flags.push("package"); name = name.slice(0, t.index).trim(); }
   } else {
     const inner = name.match(/\(([^)]*\d[^)]*)\)/);
     const pkg = inner ? packageFrom(inner[1]) : null;
