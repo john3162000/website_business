@@ -23,7 +23,7 @@ for (const a of readTsv("data/catalog/aliases.tsv")) {
 const canonicals = {};
 for (const c of readTsv("data/catalog/canonicals.tsv")) {
   canonicals[c.slug] = {
-    label: c.label, fnriCode: c.fnriCode || null, daName: c.daName || null, dietClass: c.dietClass || null,
+    label: c.label, fnriCode: c.fnriCode || null, daName: c.daName || null, psaName: c.psaName || null, dietClass: c.dietClass || null,
     gPerCup: num(c.gPerCup), gEach: num(c.gEach), gEachSmall: num(c.gEachSmall), gEachLarge: num(c.gEachLarge),
     gClove: num(c.gClove), gHead: num(c.gHead), gThumb: num(c.gThumb), gBunch: num(c.gBunch),
     gStalk: num(c.gStalk), gSlice: num(c.gSlice), epPct: num(c.epPct), role: c.role || "normal",

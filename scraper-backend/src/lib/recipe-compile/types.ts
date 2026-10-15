@@ -12,6 +12,8 @@ export interface Canonical {
   label: string;
   fnriCode: string | null;
   daName: string | null;
+  /** PSA OpenSTAT commodity (monthly NCR retail price), used when DA has no price. */
+  psaName: string | null;
   dietClass: string | null;
   gPerCup: number | null;
   gEach: number | null;

@@ -216,7 +216,8 @@ function ingredientRows(lines) {
     const kcal = l.nutrients ? ` · ${Math.round(l.nutrients.kcal)} kcal` : "";
     const muted = ["to-taste", "optional", "water", "skipped"].includes(l.status);
     const note = l.reason || (l.status === "unmatched" ? "not matched to FNRI/DA yet" : l.status === "no-weight" ? "amount unclear" : "");
-    const source = l.cost != null ? (l.priceSource === "DA" ? "DA" : l.priceSource && l.priceSource.startsWith("SM") ? "SM Markets" : "DTI SRP") : "";
+    const ps = l.priceSource || "";
+    const source = l.cost != null ? (ps === "DA" ? "DA" : ps.startsWith("PSA") ? `${ps} (palengke)` : ps.startsWith("SM") ? "SM Markets" : "DTI SRP") : "";
     return `${heading}
     <div class="flex items-start justify-between gap-3 bg-gray-50 rounded-xl px-4 py-3 ${muted ? "opacity-60" : ""}">
       <div class="min-w-0">

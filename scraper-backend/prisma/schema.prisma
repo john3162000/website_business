@@ -121,3 +121,22 @@ model ScrapingLog {
   startedAt     DateTime  @default(now())
   finishedAt    DateTime?
 }
+
+/// PSA OpenSTAT monthly retail (palengke) prices, Metro Manila. One row per commodity per month.
+model PsaPrice {
+  id        Int      @id @default(autoincrement())
+  /// PSA commodity text exactly as published ("FRESH SHELLS, TAHONG, 1 KG").
+  commodity String
+  /// PSA table it came from ("Fish", "Leafy Vegetables").
+  category  String?
+  /// "kg" or "piece", from the commodity text.
+  unit      String
+  price     Float
+  /// First day of the month the price is for.
+  period    DateTime
+  region    String   @default("NCR")
+  createdAt DateTime @default(now())
+
+  @@unique([commodity, region, period])
+  @@index([period])
+}

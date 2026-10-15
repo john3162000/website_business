@@ -34,6 +34,14 @@ export interface CompileContext {
   extraNutrients?: Record<string, FnriFood & { source?: string }>;
   fnri: Map<string, FnriFood>;
   da: Map<string, DaPrice>;
+  /** PSA monthly NCR retail prices by PSA commodity name; used when DA has no price. */
+  psa?: Map<string, PsaPrice>;
+}
+export interface PsaPrice {
+  price: number;
+  per: "kg" | "piece";
+  /** First day of the month, ISO; shown as "PSA Sep 2026". */
+  period: string;
 }
 export interface RecipeInput {
   id: number;
@@ -331,7 +339,7 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
     if (!c) { lines.push({ ...base, status: "unmatched", reason: `no catalog entry for ${slug}` }); continue; }
     const q = parseQuantity(ing.amount, ing.unit, ing.name);
     flags.push(...q.flags);
-    if (q.unit === "to-taste") { lines.push({ ...base, slug, label: c.label, status: "to-taste", reason: "to taste: not counted" }); continue; }
+    if (q.unit === "to-taste" || (q.value === null && /\bto taste\b|\bas needed\b/i.test(text))) { lines.push({ ...base, slug, label: c.label, status: "to-taste", reason: "to taste: not counted" }); continue; }
     const gAP = gramsAP(q, c, alias, flags, text);
     // Edible portion applies to weighed and counted items; volume lines are already trimmed.
     const ep = q.kind === "volume" ? 1 : (c.epPct ?? 100) / 100;
@@ -442,17 +450,21 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
     }
     if (line.gAP !== null) { priceable++; gTotal += line.gAP; }
     const hadNutrition = line.nutrients !== null;
-    if (c.daName && line.gAP !== null) {
+    // Price sources in order: DA (daily), PSA (monthly palengke), then the SM / DTI reference prices.
+    const setCost = (lc: number, source: string) => { line.cost = lc; line.priced = true; line.priceSource = source; priced++; cost += lc; };
+    if (line.gAP !== null) {
       const used = w === medium && absorbed ? (absorbed[0] + absorbed[1]) / 2 + (line.gAP - (absorbed[0] + absorbed[1]) / 2) / OIL_REUSES : line.gAP;
-      const lc = lineCost(c, used, ctx.da.get(c.daName), c.role === "frying_oil_candidate");
-      if (lc !== null) { line.cost = lc; line.priced = true; line.priceSource = "DA"; priced++; cost += lc; }
-    } else if (line.gAP !== null && line.slug && ctx.manualPrices?.[line.slug]) {
-      const m = ctx.manualPrices[line.slug];
-      if (m.price != null && m.packAmount) {
+      const da = c.daName ? lineCost(c, used, ctx.da.get(c.daName), c.role === "frying_oil_candidate") : null;
+      const p = c.psaName ? ctx.psa?.get(c.psaName) : undefined;
+      const g = c.cookedPerRaw ? used / c.cookedPerRaw : used;
+      const psa = p ? (p.per === "kg" ? (p.price / 1000) * g : c.gEach ? (p.price / c.gEach) * g : null) : null;
+      const m = line.slug ? ctx.manualPrices?.[line.slug] : undefined;
+      if (da !== null) setCost(da, "DA");
+      else if (psa !== null && p) setCost(psa, `PSA ${new Date(p.period).toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "UTC" })}`);
+      else if (m && m.price != null && m.packAmount) {
         // Packs sold by volume: grams → ml through the catalog's grams-per-cup.
         const amount = m.packUnit === "ml" ? (c.gPerCup ? line.gAP / (c.gPerCup / CUP_ML) : line.gAP) : line.gAP;
-        line.cost = (m.price / m.packAmount) * amount;
-        line.priced = true; line.priceSource = m.source; priced++; cost += line.cost;
+        setCost((m.price / m.packAmount) * amount, m.source);
       }
     }
     if (line.gAP !== null) {

@@ -1,10 +1,10 @@
 import { prisma } from "@/lib/db";
-import { ensureNutritionColumns, ensureRecipeColumns } from "@/lib/ensure-schema";
+import { ensureNutritionColumns, ensurePsaTable, ensureRecipeColumns } from "@/lib/ensure-schema";
 import { isMalformedName, parsePriceBasis } from "@/lib/da-units";
 import { compareDate } from "@/lib/price-history";
 import { yieldCount, type RefNutrition } from "@/lib/scrapers/recipe-structured";
 import { ALIASES, CANONICALS, EXTRA_NUTRIENTS, MANUAL_PRICES } from "./catalog.generated.ts";
-import { compileRecipe, type CompileContext, type CompiledRecipe, type DaPrice, type FnriFood } from "./compile.ts";
+import { compileRecipe, type CompileContext, type CompiledRecipe, type DaPrice, type FnriFood, type PsaPrice } from "./compile.ts";
 
 const DAY = 86400000;
 /** A DA price older than this (before the snapshot day) is too stale to use. */
@@ -70,8 +70,34 @@ function daSnapshot(rows: PriceRow[], asOf?: string): { da: Map<string, DaPrice>
   return { da, priceDate };
 }
 
-function compileAll(recipes: Recipes, fnri: Map<string, FnriFood>, da: Map<string, DaPrice>): CompiledFromDb[] {
-  const ctx: CompileContext = { aliases: ALIASES, canonicals: CANONICALS, extraNutrients: EXTRA_NUTRIENTS, manualPrices: MANUAL_PRICES, fnri, da };
+/** PSA prices are monthly and about a month behind: one older than this (before the snapshot day) isn't used. */
+const PSA_MAX_AGE_DAYS = 120;
+type PsaRow = { commodity: string; unit: string; price: number; period: Date };
+
+/** PSA monthly NCR rows from ~6 months back; empty until the first PSA import. */
+async function loadPsa(): Promise<PsaRow[]> {
+  await ensurePsaTable();
+  return prisma.psaPrice.findMany({
+    where: { region: "NCR", period: { gte: new Date(Date.now() - 200 * DAY) } },
+    orderBy: { period: "asc" },
+    select: { commodity: true, unit: true, price: true, period: true },
+  });
+}
+
+/** The latest PSA price per commodity for months on or before `asOf` (default: now), within PSA_MAX_AGE_DAYS. */
+function psaSnapshot(rows: PsaRow[], asOf?: string): Map<string, PsaPrice> {
+  const until = asOf ? new Date(asOf).getTime() : Date.now();
+  const psa = new Map<string, PsaPrice>();
+  for (const r of rows) {
+    const t = r.period.getTime();
+    if (t > until || t < until - PSA_MAX_AGE_DAYS * DAY) continue;
+    psa.set(r.commodity, { price: r.price, per: r.unit === "piece" ? "piece" : "kg", period: r.period.toISOString() });
+  }
+  return psa;
+}
+
+function compileAll(recipes: Recipes, fnri: Map<string, FnriFood>, da: Map<string, DaPrice>, psa: Map<string, PsaPrice>): CompiledFromDb[] {
+  const ctx: CompileContext = { aliases: ALIASES, canonicals: CANONICALS, extraNutrients: EXTRA_NUTRIENTS, manualPrices: MANUAL_PRICES, fnri, da, psa };
   return recipes.map((r): CompiledFromDb => {
     const c = compileRecipe({
       id: r.id, title: r.title, servings: r.servings,
@@ -94,7 +120,7 @@ function compileAll(recipes: Recipes, fnri: Map<string, FnriFood>, da: Map<strin
 export async function compileFromDb(onlyId: number | null): Promise<{ priceDate: string | null; recipes: CompiledFromDb[] }> {
   const { fnri, priceRows, recipes } = await loadInputs(onlyId, new Date(Date.now() - PRICE_WINDOW_DAYS * DAY));
   const { da, priceDate } = daSnapshot(priceRows);
-  return { priceDate, recipes: compileAll(recipes, fnri, da) };
+  return { priceDate, recipes: compileAll(recipes, fnri, da, psaSnapshot(await loadPsa())) };
 }
 
 /**
@@ -109,8 +135,9 @@ export async function compileNowAndMonthAgo(): Promise<{
   const dates = priceRows.filter((p) => p.price != null && p.price > 0).map((p) => p.sourceDate.toISOString());
   const latestDate = dates.length ? dates[dates.length - 1] : null;
   const compare = latestDate ? compareDate(dates, latestDate) : null;
-  const now = compileAll(recipes, fnri, daSnapshot(priceRows, latestDate ?? undefined).da);
-  const then = compare ? compileAll(recipes, fnri, daSnapshot(priceRows, compare).da) : [];
+  const psaRows = await loadPsa();
+  const now = compileAll(recipes, fnri, daSnapshot(priceRows, latestDate ?? undefined).da, psaSnapshot(psaRows, latestDate ?? undefined));
+  const then = compare ? compileAll(recipes, fnri, daSnapshot(priceRows, compare).da, psaSnapshot(psaRows, compare)) : [];
   return { latestDate, compareDate: compare, now, then };
 }
 
@@ -156,6 +183,7 @@ export async function ingredientList() {
   const since = new Date(Date.now() - PRICE_WINDOW_DAYS * DAY);
   const rows = await prisma.commodity.findMany({ where: { sourceDate: { gte: since }, price: { not: null } }, orderBy: { sourceDate: "asc" }, select: { name: true, price: true, sourceDate: true } });
   const { da } = daSnapshot(rows);
+  const psa = psaSnapshot(await loadPsa());
   return Object.entries(CANONICALS)
     .filter(([, c]) => c.role !== "water")
     .map(([slug, c]) => ({
@@ -168,7 +196,7 @@ export async function ingredientList() {
         ...(c.gClove ? ["clove"] : []), ...(c.gHead ? ["head"] : []), ...(c.gBunch ? ["bunch"] : []),
         ...(c.gStalk ? ["stalk"] : []), ...(c.gSlice ? ["slice"] : []), ...(c.gThumb ? ["thumb"] : []),
       ],
-      priceSource: c.daName && da.get(c.daName) ? "DA" : MANUAL_PRICES[slug]?.price != null ? MANUAL_PRICES[slug].source : null,
+      priceSource: c.daName && da.get(c.daName) ? "DA" : c.psaName && psa.get(c.psaName) ? "PSA" : MANUAL_PRICES[slug]?.price != null ? MANUAL_PRICES[slug].source : null,
     }))
     .sort((a, b) => a.label.localeCompare(b.label));
 }
@@ -192,13 +220,14 @@ export async function compileDish(dish: DishInput) {
     }),
   ]);
   const fnri = new Map<string, FnriFood>(foods.map((f) => [f.foodCode, f]));
-  const ctx = (da: Map<string, DaPrice>): CompileContext => ({ aliases: ALIASES, canonicals: CANONICALS, extraNutrients: EXTRA_NUTRIENTS, manualPrices: MANUAL_PRICES, fnri, da });
+  const psaRows = await loadPsa();
+  const ctx = (da: Map<string, DaPrice>, psa: Map<string, PsaPrice>): CompileContext => ({ aliases: ALIASES, canonicals: CANONICALS, extraNutrients: EXTRA_NUTRIENTS, manualPrices: MANUAL_PRICES, fnri, da, psa });
   const input = { id: 0, ...dish };
   const now = daSnapshot(priceRows);
-  const compiled = compileRecipe(input, ctx(now.da));
+  const compiled = compileRecipe(input, ctx(now.da, psaSnapshot(psaRows)));
   const days = [...new Set(priceRows.filter((p) => p.price != null && p.price > 0).map((p) => p.sourceDate.toISOString()))];
   const history = days.map((date) => {
-    const c = compileRecipe(input, ctx(daSnapshot(priceRows, date).da));
+    const c = compileRecipe(input, ctx(daSnapshot(priceRows, date).da, psaSnapshot(psaRows, date)));
     return { date, cost: round(c.costPerServing, 2), costCoverage: round(c.costCoverageByWeight, 2) };
   });
   return { priceDate: now.priceDate, summary: summarize(compiled), lines: compiled.lines, history };
