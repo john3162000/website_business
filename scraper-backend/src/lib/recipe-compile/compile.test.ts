@@ -213,3 +213,59 @@ test("price order: DA, then PSA, then SM; 'to taste' in the text alone is not co
   assert.equal(tilapia.priceSource, "DA"); // DA still first
   assert.equal(r.lines[2].status, "to-taste");
 });
+
+// ── Scraper leftovers: lines that aren't ingredients, or whose name span lost the food ──
+const raw = (amount: string | null, unit: string | null, name: string, rawText: string) => ({ amount, unit, name, rawText });
+
+test("water phrases are water, whatever the adjectives or purpose; water chestnuts are not", () => {
+  const r = compileRecipe({
+    id: 50, title: "Siopao", servings: 4,
+    ingredients: [ing("3/4", "cup", "lukewarm water"), ing(null, null, "Additional water for boiling"), ing("4", "cups", "of ice cold water placed in a large bowl"),
+      ing(null, null, "water enough to cover the leg"), ing("1", "quart", "rice water"), ing("4", "ounces", "chopped water chestnuts")],
+  }, ctx);
+  assert.deepEqual(r.lines.slice(0, 5).map((l) => l.status), ["water", "water", "water", "water", "water"]);
+  assert.notEqual(r.lines[5].status, "water");
+});
+
+test("a name that is only a unit or size word is re-read from the whole line", () => {
+  const r = compileRecipe({
+    id: 51, title: "Liempo", servings: 4,
+    ingredients: [raw("1", null, "slab", "1 slab 2 pounds pork belly"), raw("3", null, "tablespoons", "3 tablespoons butter"),
+      raw("1", null, "kilo", "1 kilo 2.2 pounds small squid"), raw("1", null, "large", "1 large 15 oz. can spicy sardines in tomato sauce"),
+      raw("1", null, "serving", "1 serving 3 1/2 cups marinara sauce (see recipe here)"), raw("1", null, "package", "1 package")],
+  }, ctx);
+  const [belly, butter, squid, sardines, marinara, pkg] = r.lines;
+  assert.equal(belly.slug, "pork_belly");
+  assert.ok(Math.abs(belly.gAP! - 2 * 453.592) < 1);
+  assert.equal(butter.slug, "butter");
+  assert.equal(squid.slug, "squid");
+  assert.equal(squid.gAP, 1000);
+  assert.equal(sardines.slug, "sardines_tomato_sauce");
+  assert.ok(Math.abs(sardines.gAP! - 15 * 28.3495) < 1);
+  assert.equal(marinara.slug, "marinara_sauce");
+  assert.equal(pkg.status, "skipped"); // nothing left: a unit only
+});
+
+test("'a pinch of', 'juice of 2 lemons', 'bunch leeks': the unit and count come out of the name", () => {
+  const r = compileRecipe({
+    id: 52, title: "Soup", servings: 4,
+    ingredients: [ing(null, null, "a pinch of dried oregano"), ing(null, null, "Juice of 2 lemons"), ing(null, null, "juice from 3 limes"),
+      ing("1", null, "bunch green onions"), ing(null, null, "* mushrooms"), ing(null, null, "chives for garnish"), ing("1", null, "small bottle gourd")],
+  }, ctx);
+  const [oregano, lemon, lime, onions] = r.lines;
+  assert.equal(oregano.slug, "oregano_dried");
+  assert.equal(oregano.status, "ok");
+  assert.equal(lemon.slug, "lemon_juice");
+  assert.equal(lemon.gAP, 2 * ctx.canonicals.lemon_juice.gEach!);
+  assert.equal(lime.gAP, 3 * ctx.canonicals.lime_juice.gEach!);
+  assert.equal(onions.gAP, ctx.canonicals.green_onion.gBunch);
+  assert.equal(r.lines[6].slug, "bottle_gourd"); // a size word alone is not a leftover
+});
+
+test("equipment and headings found in ingredient lists are skipped, not unknown", () => {
+  const r = compileRecipe({
+    id: 53, title: "Grilled Fish", servings: 4,
+    ingredients: [ing(null, null, "Aluminum foil"), ing(null, null, "Ingredients"), ing(null, null, "Banana leaves for wrapping"), ing("1", "cup", "ice")],
+  }, ctx);
+  assert.deepEqual(r.lines.map((l) => l.status), ["skipped", "skipped", "skipped", "water"]);
+});
