@@ -719,3 +719,46 @@ fish broth	FOOD	broth_chicken		light broth ≈ chicken broth
 rice noodles	FOOD	noodles_bihon		
 thick rice noodles	FOOD	noodles_bihon		pancit malabon/palabok noodles
 shrimp juice	FOOD	broth_chicken		shrimp-head extract ≈ light broth
+celery salt	FOOD	salt		celery salt counted as salt
+ribs celery	FOOD	celery		unit:stalk
+celery ribs	FOOD	celery		unit:stalk
+celery rib	FOOD	celery		unit:stalk
+chopped celery ribs	FOOD	celery		unit:stalk
+salmon	FOOD	salmon_fillet		
+salmon steak	FOOD	salmon_fillet		
+salmon steaks	FOOD	salmon_fillet		
+salmon fillets	FOOD	salmon_fillet		
+salmon head	FOOD	salmon_head		
+salmon heads	FOOD	salmon_head		
+salmon belly	FOOD	salmon_belly		
+smoked salmon	FOOD	salmon_smoked		
+liempo	FOOD	pork_belly		
+pork liempo	FOOD	pork_belly		
+pata	FOOD	pork_hock		
+sirloin	FOOD	beef_sirloin		
+patola	FOOD	patola		
+medium patola	FOOD	patola		
+loofah	FOOD	patola		
+luffa	FOOD	patola		
+upo	FOOD	upo		
+opo	FOOD	upo		
+opo squash	FOOD	upo		
+small opo squash	FOOD	upo		
+squash	FOOD	squash_kalabasa		
+longanisa	FOOD	longganisa		
+longganisa	FOOD	longganisa		
+longganisa sausage	FOOD	longganisa		
+miswa	FOOD	miswa		
+round scad	FOOD	galunggong		
+galunggong	FOOD	galunggong		
+tulingan	FOOD	tulingan		
+singkamas	FOOD	singkamas		
+sweet potato leaves	FOOD	camote_tops		
+camote tops	FOOD	camote_tops		
+talbos ng kamote	FOOD	camote_tops		
+mango	FOOD	mango_ripe		
+ripe mango	FOOD	mango_ripe		
+ripe mangoes	FOOD	mango_ripe		
+red snapper	FOOD	red_snapper		
+tapioca pearls	FOOD	tapioca_pearls		
+sago	FOOD	tapioca_pearls		

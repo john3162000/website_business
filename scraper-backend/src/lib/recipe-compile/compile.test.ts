@@ -149,3 +149,41 @@ test("marinating steps are not mistaken for cooking with the marinade", () => {
   assert.equal(soyKept(["Marinate overnight.", "Grill, basting with the marinade."]), 0.5);
   assert.equal(soyKept(["Marinate overnight.", "Cook everything in a pot for an hour."], "Pork Stew"), 1);
 });
+
+// ── Catalog gaps (celery, salmon, SM prices, Filipino names) ──
+test("celery: ribs weigh like stalks, celery salt is salt", () => {
+  const r = compileRecipe({
+    id: 20, title: "Chicken Soup", servings: 4,
+    ingredients: [ing("4", null, "ribs celery"), ing("2", "ribs", "celery"), ing("1/2", "teaspoon", "celery salt")],
+  }, ctx);
+  assert.equal(r.lines[0].slug, "celery");
+  assert.ok(Math.abs(r.lines[0].gAP! - 4 * ctx.canonicals.celery.gStalk!) < 1e-9);
+  assert.ok(Math.abs(r.lines[1].gAP! - 2 * ctx.canonicals.celery.gStalk!) < 1e-9);
+  assert.equal(r.lines[2].slug, "salt");
+});
+
+test("salmon: Atlantic salmon nutrition, priced; heads and belly resolve", () => {
+  const r = compileRecipe({
+    id: 21, title: "Salmon Sinigang", servings: 4,
+    ingredients: [ing("1", "lb", "salmon fillet"), ing("2", null, "salmon heads"), ing("1/2", "lb", "salmon belly"), ing("1", "lb", "liempo")],
+  }, ctx);
+  const fillet = line(r, "salmon_fillet");
+  // 208 kcal / 100 g (USDA), not carp's ~130
+  assert.ok(Math.abs(fillet.nutrients!.kcal / fillet.gEaten! * 100 - 208) < 0.5);
+  assert.equal(fillet.priced, true);
+  assert.equal(line(r, "salmon_head").slug, "salmon_head");
+  assert.equal(line(r, "salmon_belly").slug, "salmon_belly");
+  assert.equal(line(r, "pork_belly").status, "ok");
+});
+
+test("broth from cubes and shrimp are priced from SM Markets", () => {
+  const r = compileRecipe({
+    id: 22, title: "Sinigang na Hipon", servings: 4,
+    ingredients: [ing("4", "cups", "chicken broth"), ing("1", "lb", "shrimp")],
+  }, ctx);
+  const broth = line(r, "broth_chicken"), shrimp = line(r, "shrimp");
+  assert.equal(broth.priced, true);
+  assert.match(broth.priceSource!, /SM Markets/);
+  assert.ok(broth.cost! > 5 && broth.cost! < 20, `4 cups broth ₱${broth.cost}`);
+  assert.equal(shrimp.priced, true);
+});

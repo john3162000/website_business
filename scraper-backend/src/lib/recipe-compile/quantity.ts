@@ -65,7 +65,7 @@ const UNITS: Record<string, UnitDef> = {
   clove: C("clove"), cloves: C("clove"),
   head: C("head"), heads: C("head"),
   thumb: C("thumb"), thumbs: C("thumb"), knob: C("knob"), knobs: C("knob"),
-  stalk: C("stalk"), stalks: C("stalk"), stem: C("stalk"), stems: C("stalk"),
+  stalk: C("stalk"), stalks: C("stalk"), stem: C("stalk"), stems: C("stalk"), rib: C("stalk"), ribs: C("stalk"),
   bunch: C("bunch"), bunches: C("bunch"), bundle: C("bunch"), bundles: C("bunch"),
   slice: C("slice"), slices: C("slice"), strip: C("strip"), strips: C("strip"),
   sprig: C("sprig"), sprigs: C("sprig"), leaf: C("leaf"), leaves: C("leaf"),
