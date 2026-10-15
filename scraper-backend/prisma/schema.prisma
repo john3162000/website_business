@@ -31,6 +31,15 @@ model Recipe {
   cookTime     Int?
   sourceSite   String              @default("PanlasangPinoy")
   scrapedAt    DateTime            @default(now())
+  /// From the page's schema.org Recipe JSON-LD: recipeCategory and recipeCuisine, ", "-joined ("Main Course, Soup").
+  course       String?
+  cuisine      String?
+  /// recipeYield as written ("4 people", "24 pieces").
+  yieldText    String?
+  /// Panlasang Pinoy's own per-serving nutrition (WPRM calculator); per whole recipe when the page gives no yield.
+  refNutrition Json?
+  /// When the structured data was last read from the page (null: not yet).
+  structuredAt DateTime?
   ingredients  RecipeIngredient[]
   instructions RecipeInstruction[]
 }
@@ -43,6 +52,8 @@ model RecipeIngredient {
   name     String
   amount   String?
   unit     String?
+  /// Ingredient group heading on the page ("Marinade ingredients", "For dredging").
+  groupName String?
 
   @@index([recipeId])
 }

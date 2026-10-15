@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { corsJson, corsPreflight } from "@/lib/cors";
+import { ensureRecipeColumns } from "@/lib/ensure-schema";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +12,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     return corsJson({ error: "Invalid recipe id" }, { status: 400 });
   }
 
+  await ensureRecipeColumns();
   const recipe = await prisma.recipe.findUnique({
     where: { id: recipeId },
     include: {

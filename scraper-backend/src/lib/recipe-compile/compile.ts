@@ -39,7 +39,8 @@ export interface RecipeInput {
   id: number;
   title: string;
   servings: number | null;
-  ingredients: { id?: number; name: string; amount: string | null; unit: string | null; rawText?: string | null }[];
+  /** group: the ingredient group heading on the page ("Marinade ingredients"), when there is one. */
+  ingredients: { id?: number; name: string; amount: string | null; unit: string | null; rawText?: string | null; group?: string | null }[];
   instructions?: string[];
 }
 
@@ -49,6 +50,8 @@ export type LineStatus =
 export interface CompiledLine {
   ingredientId?: number;
   text: string;
+  /** Group heading the line sits under: from the page, or a heading line above it ("Marinade ingredients:"). */
+  group: string | null;
   slug: string | null;
   label: string | null;
   status: LineStatus;
@@ -219,6 +222,61 @@ const PAN_FRY_STEP = /\bpan[- ]?fr(y|ied|ying)\b|\bfry (each|both) sides?\b|\bsh
 const BAKE_VETO = /\b(bake|baked|oven|preheat|cake|cookies?|bread|muffins?|brownies?|leche flan|bibingka|puto|ensaymada|dressing|vinaigrette)\b/i;
 const LIQUID_SLUG = /(water|broth|stock|sauce|milk|cream|vinegar|juice|wine|soda|beer|oil|syrup|ketchup|mayonnaise)/;
 
+// ── Marinades, brines and dredging: lines that are only partly eaten ──
+// Factors are author heuristics [heur], to be calibrated against the
+// Panlasang Pinoy reference (/api/recipes/nutrition-check).
+type Section = "marinade" | "brine" | "dredge";
+const MARINADE_DISCARDED = 0.2;   // drained and thrown away: the meat keeps ≈20%
+const MARINADE_DRAINED = 0.3;     // fried or grilled dish, fate not stated: usually drained first
+const MARINADE_BASTED = 0.5;      // brushed on while grilling
+const BRINE_KEPT = 0.1;           // like salted boiling water that is drained
+const DREDGE_DRY_KEPT = 0.3;      // flour/starch/crumbs: most stays in the dredging plate
+const DREDGE_WET_KEPT = 0.6;      // egg or milk wash
+const PROTEIN_DIET = /^(MEAT|POULTRY|FISH|SEAFOOD)$/;
+const GRILLED = /\b(grill(ed|ing)?|inihaw|ihaw|barbecue|bbq|broil(ed)?|roast(ed)?|skewers?)\b/i;
+
+/** What a group heading or a line's own note says about the line. */
+export function sectionOf(heading: string | null | undefined, text = ""): Section | null {
+  const t = text.toLowerCase();
+  if (/\bfor (dredging|coating|breading)\b/.test(t)) return "dredge";
+  if (/\bfor (the )?brin(e|ing)\b/.test(t)) return "brine";
+  if (/\bfor (the )?marinade\b|\bfor marinating\b/.test(t)) return "marinade";
+  const h = (heading ?? "").toLowerCase();
+  if (!h) return null;
+  if (/\bbrin(e|ing)\b/.test(h)) return "brine";
+  if (/marinad|marinate/.test(h)) return "marinade";
+  if (/dredg|breading|coating|\bto coat\b|crumb/.test(h)) return "dredge";
+  return null;
+}
+
+// "the marinade", not "the marinade ingredients" (that's the marinating step).
+const MARINADE = String.raw`\bmarinade\b(?!\s+ingredients)`;
+const MARINADE_DISCARD = new RegExp(String.raw`\bdiscard(ing|ed)?\b[^.]{0,40}${MARINADE}|${MARINADE}[^.]{0,30}\bdiscard`, "i");
+// Poured into the pan ("pour-in the marinade", "add the reserved marinade", "the marinade … simmer").
+// "Add the pork to the marinade" is marinating, so `add` must be followed by the marinade itself.
+const MARINADE_REUSED = new RegExp(
+  String.raw`\b(pour|reserved?|remaining|leftover)\b[^.]{0,25}${MARINADE}|\badd(?:[\s-]+(?:in|the|reserved|remaining|all|of))*[\s-]+${MARINADE.slice(2)}|${MARINADE}[^.]{0,40}\b(simmer|boil|bring|reduce)\b`,
+  "i",
+);
+const FRY_WORD = /\bfr(y|ied|ying)\b/i;
+
+/** How much of a marinade ends up eaten, from what the steps say happens to it. */
+function marinadeFate(steps: string, title: string, fried: boolean): { kept: number; reason: string } {
+  if (MARINADE_DISCARD.test(steps)) {
+    return { kept: MARINADE_DISCARDED, reason: `marinade is discarded: ≈${MARINADE_DISCARDED * 100}% stays on the food` };
+  }
+  if (MARINADE_REUSED.test(steps)) return { kept: 1, reason: "marinade is cooked with the dish" };
+  if (/\bbast(e|ing)\b/i.test(steps)) {
+    return { kept: MARINADE_BASTED, reason: `marinade is used for basting: ≈${MARINADE_BASTED * 100}% counted` };
+  }
+  const notGrill = (s: string) => s.replace(/\bno[- ]grill\b/gi, "");
+  const frying = fried || FRY_WORD.test(steps);
+  if (frying || GRILLED.test(notGrill(title)) || GRILLED.test(notGrill(steps))) {
+    return { kept: MARINADE_DRAINED, reason: `marinade is usually drained before ${frying ? "frying" : "grilling"}: ≈${MARINADE_DRAINED * 100}% counted` };
+  }
+  return { kept: 1, reason: "marinade stays with the dish" };
+}
+
 /** Uptake as a fraction of the fried food's weight: [low, high] (≈, Bognár / frying literature). */
 function uptakeRange(title: string, deep: boolean): [number, number] {
   if (FATTY_PORK.test(title)) return [0.01, 0.03];
@@ -230,20 +288,30 @@ function uptakeRange(title: string, deep: boolean): [number, number] {
 export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledRecipe {
   const lines: CompiledLine[] = [];
   const steps = (r.instructions ?? []).join(" ");
-  type Work = { line: CompiledLine; c: Canonical | null; q: ParsedQuantity | null; ep: number };
+  type Work = { line: CompiledLine; c: Canonical | null; q: ParsedQuantity | null; ep: number; section: Section | null };
   const work: Work[] = [];
+  // Some recipes write their group headings as ingredient lines ("Marinade ingredients:").
+  let headingLine: string | null = null;
 
   for (const ing of r.ingredients) {
     const text = (ing.rawText || [ing.amount, ing.unit, ing.name].filter(Boolean).join(" ")).trim();
     const flags: string[] = [];
-    const base: CompiledLine = { ingredientId: ing.id, text, slug: null, label: null, status: "ok", gAP: null, gEaten: null, reason: null, nutrients: null, cost: null, priced: false, priceSource: null, flags };
+    const group = ing.group ?? headingLine;
+    const base: CompiledLine = { ingredientId: ing.id, text, group, slug: null, label: null, status: "ok", gAP: null, gEaten: null, reason: null, nutrients: null, cost: null, priced: false, priceSource: null, flags };
 
-    if (/:\s*$/.test(ing.name.trim())) { lines.push({ ...base, status: "skipped", reason: "section header" }); continue; }
+    if (/:\s*$/.test(ing.name.trim())) {
+      headingLine = ing.name.trim().replace(/:\s*$/, "");
+      lines.push({ ...base, group: null, status: "skipped", reason: "section header" }); continue;
+    }
     const alias = ctx.aliases[nameKey(ing.name)]
       ?? lookupAlias(parseQuantity(ing.amount, ing.unit, ing.name).name, ctx.aliases)
       ?? lookupAlias(ing.name, ctx.aliases);
     if (!alias) { lines.push({ ...base, status: "unmatched", reason: "ingredient not in catalog yet" }); continue; }
-    if (alias.lineClass === "HEADER" || alias.lineClass === "UNIT_ONLY" || alias.lineClass === "EQUIPMENT") {
+    if (alias.lineClass === "HEADER") {
+      headingLine = ing.name.trim();
+      lines.push({ ...base, group: null, status: "skipped", reason: "header" }); continue;
+    }
+    if (alias.lineClass === "UNIT_ONLY" || alias.lineClass === "EQUIPMENT") {
       lines.push({ ...base, status: "skipped", reason: alias.lineClass.toLowerCase().replace("_", " ") }); continue;
     }
     if (alias.lineClass === "WATER") { lines.push({ ...base, status: "water", gEaten: 0, reason: "water: 0 kcal, not priced" }); continue; }
@@ -266,7 +334,9 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
     const line: CompiledLine = { ...base, slug, label: c.label, gAP };
     if (gAP === null) { line.status = "no-weight"; line.reason = "no amount or unknown unit weight"; }
     lines.push(line);
-    work.push({ line, c, q, ep });
+    // The meat or fish listed inside a marinade group is still eaten whole.
+    const section = PROTEIN_DIET.test(c.dietClass ?? "") ? null : sectionOf(group, text);
+    work.push({ line, c, q, ep, section });
   }
 
   // Frying: the largest frying-capable oil line with ≥ 1 cup (or 1/2–1 cup + fry evidence).
@@ -287,11 +357,20 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
   // water that is drained away; only a little stays in the meat (≈10%).
   const boilDrain = frying !== null && FATTY_PORK.test(r.title);
 
+  const marinade = work.some((w) => w.section === "marinade") ? marinadeFate(steps, r.title, frying !== null) : null;
+
   // Non-oil lines first, so the fried food's weight is known.
   for (const w of work) {
     if (w === medium || w.line.gAP === null || !w.c) continue;
     let nf = 1;
     if (w.c.role === "removed_aromatic") { nf = 0; w.line.reason = "removed before serving"; }
+    else if (w.section === "marinade" && marinade && marinade.kept < 1) { nf = marinade.kept; w.line.reason = marinade.reason; }
+    else if (w.section === "brine") { nf = BRINE_KEPT; w.line.reason = `brine is drained: ≈${BRINE_KEPT * 100}% stays in the meat`; }
+    else if (w.section === "dredge") {
+      const wet = /egg|milk|cream|water/.test(w.line.slug ?? "");
+      nf = wet ? DREDGE_WET_KEPT : DREDGE_DRY_KEPT;
+      w.line.reason = `for dredging or breading: ≈${Math.round(nf * 100)}% sticks to the food`;
+    }
     else if (boilDrain && /^salt/.test(w.line.slug ?? "")) { nf = 0.1; w.line.reason = "in the boiling water that is drained: ≈10% stays in the meat"; }
     w.line.gEaten = w.line.gAP * w.ep * nf;
     if (w.ep < 1 && nf === 1) w.line.reason = `≈${Math.round(w.ep * 100)}% edible (peel, bones or shells removed)`;
