@@ -290,3 +290,23 @@ test("generic names match only the whole name: young coconut meat is not grated 
   assert.notEqual(r.lines[4].slug, "corn_sweet");
   assert.equal(r.lines[5].slug, "noodles_pancit_canton"); // not the flour in "flour stick"
 });
+
+// ── Long tail: FNRI first, USDA SR Legacy where FNRI has no row ──
+test("long-tail foods: FNRI where FNRI has them, USDA otherwise, priced from DA / SM when sold there", () => {
+  const r = compileRecipe({
+    id: 70, title: "Mixed", servings: 4,
+    ingredients: [ing("1", "cup", "kaong"), ing("2", null, "avocado"), ing("10", "ounces", "condensed cream of mushroom soup"),
+      ing("1", "lb", "pig’s large intestine"), ing("1", "cup", "sauerkraut"), ing("5", "pieces", "pandan leaves")],
+  }, ctx);
+  const [kaong, avocado, soup, bituka, kraut, pandan] = r.lines;
+  assert.equal(kaong.slug, "kaong");
+  assert.equal(ctx.canonicals.kaong.fnriCode, "E090"); // FNRI first
+  assert.match(kaong.priceSource!, /SM Markets/);
+  assert.equal(avocado.gAP, 500);
+  assert.equal(soup.slug, "soup_cream_mushroom");
+  assert.ok(soup.flags.some((f) => /nutrition≈USDA/.test(f)), "USDA nutrition is flagged as approximate");
+  assert.equal(bituka.slug, "pork_intestine_large");
+  assert.equal(kraut.slug, "sauerkraut");
+  assert.equal(kraut.priced, false); // no source sells it: left unpriced rather than guessed
+  assert.equal(pandan.gEaten, 0); // removed before serving
+});

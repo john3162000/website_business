@@ -31,3 +31,129 @@ salmon_fillet	208	20.42	13.42	0	59	USDA≈ fish, salmon, Atlantic, farmed, raw
 salmon_head	208	20.42	13.42	0	59	USDA≈ Atlantic salmon, farmed, raw (edible part)
 salmon_belly	208	20.42	13.42	0	59	USDA≈ Atlantic salmon, farmed, raw (belly is fattier)
 salmon_smoked	117	18.28	4.32	0	784	USDA≈ fish, salmon, chinook, smoked
+peaches_canned	74	0.45	0.1	19.94	6	USDA≈ peaches, canned, heavy syrup pack, solids and liquids
+pineapple_fresh	50	0.54	0.12	13.12	1	USDA≈ pineapple, raw, all varieties
+grapes	69	0.72	0.16	18.1	2	USDA≈ grapes, red or green (european type, such as thompson seedless), raw
+cantaloupe	34	0.84	0.19	8.16	16	USDA≈ melons, cantaloupe, raw
+kiwi	61	1.14	0.52	14.66	3	USDA≈ kiwifruit, green, raw
+prunes	240	2.18	0.38	63.88	2	USDA≈ plums, dried (prunes), uncooked
+cranberries	46	0.46	0.13	11.97	2	USDA≈ cranberries, raw
+cranberry_sauce	158	0.75	0.05	40.4	5	USDA≈ cranberry sauce, whole, canned, ocean spray
+mandarin_canned	38	0.75	0.04	9.41	5	USDA≈ tangerines, (mandarin oranges), canned, juice pack, drained
+cherries_maraschino	165	0.22	0.21	41.97	4	USDA≈ maraschino cherries, canned, drained
+cherries_sour_canned	91	0.73	0.1	23.27	7	USDA≈ cherries, sour, red, canned, heavy syrup pack, solids and liquids
+cherry_pie_filling	115	0.37	0.07	28	18	USDA≈ pie fillings, canned, cherry
+coconut_desiccated_sweet	501	2.88	35.49	47.67	262	USDA≈ nuts, coconut meat, dried (desiccated), sweetened, shredded
+chives	30	3.27	0.73	4.35	3	USDA≈ chives, raw
+dill_fresh	43	3.46	1.12	7.02	61	USDA≈ dill weed, fresh
+dill_dried	253	19.96	4.36	55.82	208	USDA≈ spices, dill weed, dried
+leeks	61	1.5	0.3	14.15	20	USDA≈ leeks, (bulb and lower leaf-portion), raw
+shallots	72	2.5	0.1	16.8	12	USDA≈ shallots, raw
+kale	35	2.92	1.49	4.42	53	USDA≈ kale, raw
+arugula	25	2.58	0.66	3.65	27	USDA≈ arugula, raw
+collard_greens	32	3.02	0.61	5.42	17	USDA≈ collards, raw
+brussels_sprouts	43	3.38	0.3	8.95	25	USDA≈ brussels sprouts, raw
+fennel_bulb	31	1.24	0.2	7.3	52	USDA≈ fennel, bulb, raw
+water_chestnuts	50	0.88	0.06	12.3	8	USDA≈ waterchestnuts, chinese, canned, solids and liquids
+mushroom_straw	32	3.83	0.68	4.64	384	USDA≈ mushrooms, straw, canned, drained solids
+pandan_leaves	0	0	0	0	0	≈0 (not eaten / trace)
+lime_leaves	0	0	0	0	0	≈0 (not eaten / trace)
+curry_leaves	0	0	0	0	0	≈0 (not eaten / trace)
+nori	35	5.81	0.28	5.11	48	USDA≈ seaweed, laver, raw
+mint	44	3.29	0.73	8.41	30	USDA≈ spearmint, fresh
+sage_dried	315	10.63	12.75	60.73	11	USDA≈ spices, sage, ground
+coriander_ground	298	12.37	17.77	54.99	35	USDA≈ spices, coriander seed
+cardamom	311	10.76	6.7	68.47	18	USDA≈ spices, cardamom
+fennel_seeds	345	15.8	14.87	52.29	88	USDA≈ spices, fennel seed
+tarragon_dried	295	22.77	7.24	50.22	62	USDA≈ spices, tarragon, dried
+poultry_seasoning	307	9.59	7.53	65.59	27	USDA≈ spices, poultry seasoning
+taco_seasoning	322	4.5	0	58	7203	USDA≈ seasoning mix, dry, taco, original
+green_chiles_canned	21	0.72	0.27	4.6	397	USDA≈ peppers, chili, green, canned
+hominy	72	1.48	0.88	14.26	267	USDA≈ hominy, canned, white
+turkey_whole	144	21.64	5.64	0.14	112	USDA≈ turkey, whole, meat and skin, raw
+turkey_cooked	147	30.13	2.08	0	99	USDA≈ turkey, all classes, light meat, cooked, roasted
+turkey_ground	148	19.66	7.66	0	58	USDA≈ turkey, ground, raw
+horse_meat	133	21.39	4.6	0	53	USDA≈ game meat, horse, raw
+sausage_italian	290	13.9	24.26	2.97	563	USDA≈ sausage, italian, pork, mild, raw
+bratwurst	323	14.3	27.8	2.98	1112	USDA≈ bratwurst, pork, beef, link
+kielbasa	325	10.84	29.63	3.72	928	USDA≈ kielbasa, fully cooked, unheated
+meatballs	286	14.4	22.21	8.06	666	USDA≈ meatballs, frozen, italian style
+chicken_nuggets	268	12.02	17.31	16.09	540	USDA≈ chicken, nuggets, dark and white meat, precooked, frozen, not reheated
+scallops	69	12.06	0.49	3.18	392	USDA≈ mollusks, scallop, mixed species, raw
+lobster	112	20.6	1.51	2.43	177	USDA≈ crustaceans, spiny lobster, mixed species, raw
+lobster_tail	112	20.6	1.51	2.43	177	USDA≈ crustaceans, spiny lobster, mixed species, raw
+crawfish	77	15.97	0.95	0	58	USDA≈ crustaceans, crayfish, mixed species, wild, raw
+dulong	131	20.35	4.84	0	104	USDA≈ fish, anchovy, european, raw
+smelt	97	17.63	2.42	0	60	USDA≈ fish, smelt, rainbow, raw
+butterfish	146	17.28	8.02	0	89	USDA≈ fish, butterfish, raw
+mackerel_canned	156	23.19	6.3	0	379	USDA≈ fish, mackerel, jack, canned, drained solids
+anchovies_canned	210	28.89	9.71	0	3668	USDA≈ fish, anchovy, european, canned in oil, drained solids
+soup_cream_mushroom	79	1.35	5.3	6.8	691	USDA≈ soup, cream of mushroom, canned, condensed
+soup_cream_chicken	90	2.38	5.77	7.16	702	USDA≈ soup, cream of chicken, canned, condensed
+corn_cream_style	72	1.74	0.42	18.13	261	USDA≈ corn, sweet, yellow, canned, cream style, regular pack
+pumpkin_canned	34	1.1	0.28	8.09	5	USDA≈ pumpkin, canned, without salt
+kidney_beans_canned	124	7.98	1.05	21.49	231	USDA≈ beans, kidney, red, mature seeds, canned, drained solids
+refried_beans	90	4.98	2.01	13.55	370	USDA≈ refried beans, canned, traditional style
+cannellini_beans	114	7.26	0.29	21.2	340	USDA≈ beans, white, mature seeds, canned
+pork_and_beans	94	5.15	0.93	18.69	437	USDA≈ beans, baked, canned, with pork and tomato sauce
+chocolate_chips	480	4.2	30	63.9	11	USDA≈ candies, semisweet chocolate
+chocolate_dark	598	7.79	42.63	45.9	20	USDA≈ chocolate, dark, 70-85% cacao solids
+chocolate_white	539	5.87	32.09	59.24	90	USDA≈ candies, white chocolate
+chocolate_unsweetened	642	14.32	52.31	28.42	24	USDA≈ baking chocolate, unsweetened, squares
+corn_syrup	283	0	0.2	76.79	62	USDA≈ syrups, corn, light
+pancake_syrup	234	0	0	61.47	82	USDA≈ syrups, table blends, pancake
+maple_syrup	260	0.04	0.06	67.04	12	USDA≈ syrups, maple
+yogurt_plain	63	5.25	1.55	7.04	70	USDA≈ yogurt, plain, low fat
+yogurt_greek	59	10.19	0.39	3.6	36	USDA≈ yogurt, greek, plain, nonfat (includes foods for usda's food distribution program)
+yogurt_vanilla	85	4.93	1.25	13.8	66	USDA≈ yogurt, vanilla, low fat.
+ice_cream_vanilla	207	3.5	11	23.6	80	USDA≈ ice creams, vanilla
+whipped_cream	257	3.2	22.22	12.49	8	USDA≈ cream, whipped, cream topping, pressurized
+oat_bran	246	17.3	7.03	66.22	4	USDA≈ oat bran, raw
+wheat_bran	216	15.55	4.25	64.51	2	USDA≈ wheat bran, crude
+pancake_mix	368	9.77	3.1	73.65	1082	USDA≈ pancakes, plain, dry mix, complete (includes buttermilk)
+almonds	579	21.15	49.93	21.55	1	USDA≈ nuts, almonds
+cashews	553	18.22	43.85	30.19	12	USDA≈ nuts, cashew nuts, raw
+pine_nuts	673	13.69	68.37	13.08	2	USDA≈ nuts, pine nuts, dried
+pecans	691	9.17	71.97	13.86	0	USDA≈ nuts, pecans
+sunflower_seeds	584	20.78	51.46	20	9	USDA≈ seeds, sunflower seed kernels, dried
+pumpkin_seeds	559	30.23	49.05	10.71	7	USDA≈ seeds, pumpkin and squash seed kernels, dried
+capers	23	2.36	0.86	4.89	2348	USDA≈ capers, canned
+pickles_dill	12	0.5	0.3	2.41	809	USDA≈ pickles, cucumber, dill or kosher dill
+pickles_sweet	91	0.58	0.41	21.15	457	USDA≈ pickles, cucumber, sweet (includes bread and butter pickles)
+sauerkraut	19	0.91	0.14	4.28	661	USDA≈ sauerkraut, canned, solids and liquids
+kimchi	15	1.1	0.5	2.4	498	USDA≈ cabbage, kimchi
+teriyaki_sauce	89	5.93	0.02	15.56	3833	USDA≈ sauce, teriyaki, ready-to-serve
+sweet_sour_sauce	154	0.27	0.02	38.22	539	USDA≈ sauce, sweet and sour, ready-to-serve
+pesto	418	9.83	37.6	10.09	603	USDA≈ sauce, pesto, ready-to-serve, refrigerated
+pizza_sauce	54	2.18	1.15	8.66	348	USDA≈ sauce, pizza, canned, ready-to-serve
+tartar_sauce	211	1	16.7	13.3	667	USDA≈ sauce, tartar, ready-to-serve
+enchilada_sauce	30	0.62	0.91	4.87	547	USDA≈ sauce, enchilada, red, mild, ready to serve
+cheese_sauce	174	6.71	13.29	6.83	828	USDA≈ sauce, cheese, ready-to-serve
+salsa_con_queso	143	3.14	9.51	11.14	796	USDA≈ dip, salsa con queso, cheese and salsa- medium
+caesar_dressing_lite	110	0.3	4.4	18.6	1148	USDA≈ salad dressing, caesar, low calorie
+thousand_island	379	1.09	35.06	14.64	962	USDA≈ salad dressing, thousand island, commercial, regular
+gravy_brown	48	0.71	2.62	5.29	389	USDA≈ gravy, chicken, canned or bottled, ready-to-serve
+jelly	266	0.15	0.02	69.95	30	USDA≈ jellies
+coleslaw	159	0.88	11.78	12.35	221	USDA≈ restaurant, family style, coleslaw
+cola	42	0	0.25	10.36	3	USDA≈ beverages, carbonated, cola, regular
+liquor	231	0	0	0	1	USDA≈ alcoholic beverage, distilled, all (gin, rum, vodka, whiskey) 80 proof
+onion_soup_mix	293	7.48	0.34	65.07	8031	USDA≈ soup, onion, dry, mix
+flavoring	237	0.05	0	2.41	4	USDA≈ vanilla extract, imitation, alcohol
+tapioca_starch	358	0.19	0.02	88.69	1	USDA≈ tapioca, pearl, dry
+hamburger_buns	279	9.77	3.91	50.12	494	USDA≈ rolls, hamburger or hotdog, plain
+dinner_rolls	310	10.86	6.47	52.04	467	USDA≈ rolls, dinner, plain, commercially prepared (includes brown-and-serve)
+english_muffins	227	8.87	1.69	44.17	425	USDA≈ muffins, english, plain, enriched, with ca prop (includes sourdough)
+cornbread	266	6.7	7.1	43.5	658	USDA≈ bread, cornbread, prepared from recipe, made with low fat (2%) milk
+pie_crust	445	2.97	25.46	51.11	409	USDA≈ pie crust, refrigerated, regular, unbaked
+graham_pie_crust	501	5.1	24.83	64.3	471	USDA≈ pie crust, cookie-type, graham cracker, ready crust
+chocolate_pie_crust	484	6.08	22.42	64.48	503	USDA≈ pie crust, cookie-type, chocolate, ready crust
+croutons	465	10.8	18.3	63.5	1333	USDA≈ croutons, seasoned
+soda_crackers	418	9.46	8.64	74.05	941	USDA≈ crackers, saltines (includes oyster, soda, soup)
+tortilla_corn	218	5.7	2.85	44.64	45	USDA≈ tortillas, ready-to-bake or -fry, corn
+tortilla_chips	472	7.1	20.68	67.78	328	USDA≈ snacks, tortilla chips, plain, white corn, salted
+taco_shells	476	6.41	21.79	63.49	324	USDA≈ taco shells, baked
+french_fries_frozen	147	2.24	4.66	24.81	332	USDA≈ potatoes, french fried, all types, salt added in processing, frozen, unprepared
+hash_browns	84	1.75	0.08	19.16	42	USDA≈ potatoes, hash brown, refrigerated, unprepared
+tater_tots	178	1.93	8.71	24.8	428	USDA≈ potato puffs, frozen, unprepared
+additive_trace	0	0	0	0	0	≈0 (not eaten / trace)
+gelatin_dessert	60	1.22	0	14.19	75	USDA≈ gelatin desserts, dry mix, prepared with water
