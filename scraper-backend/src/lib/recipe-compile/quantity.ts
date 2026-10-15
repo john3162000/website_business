@@ -83,6 +83,11 @@ function unitKey(u: string): string {
   return u.toLowerCase().replace(/\./g, "").replace(/\s+/g, " ").trim();
 }
 
+/** Whether a word is a unit this parser knows ("tbsp", "lbs.", "pouch"). */
+export function isUnit(word: string): boolean {
+  return unitKey(word) in UNITS;
+}
+
 /** Parses "1", "1.5", "1/2", "1 1/2" (after unicode normalisation). */
 function parseNumber(s: string): number | null {
   const t = s.trim();

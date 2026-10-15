@@ -8,7 +8,7 @@
  *             → gEaten = gAP × edible fraction × consumed fraction
  * Nutrition uses gEaten. Cost uses gAP (frying oil: absorbed + leftover ÷ reuses).
  */
-import { parseQuantity, type ParsedQuantity } from "./quantity.ts";
+import { isUnit, parseQuantity, type ParsedQuantity } from "./quantity.ts";
 import type { Alias, Canonical } from "./types.ts";
 
 export interface Nutrients {
@@ -138,8 +138,15 @@ function containedAlias(text: string, aliases: Record<string, Alias>): Alias | n
   return null;
 }
 
+// Words around a food name that don't change which food it is: "* mushrooms",
+// "of pasta", "serving teriyaki sauce", "chives for garnish", "whipped cream as needed".
+const LEAD_NOISE = /^(?:[^a-z0-9]+|(?:a|an|of|servings?)\s+)+/;
+const TRAIL_NOISE = /\s+(?:for (?:garnish(?:ing)?|topping|serving|dipping|wrapping)|as needed|if desired|(?:with )?(?:bones?|skin|seeds?|heads?) (?:removed|discarded))\b.*$/;
+
 function lookupAlias(name: string, aliases: Record<string, Alias>): Alias | null {
-  const k = nameKey(name);
+  let k = nameKey(name);
+  if (aliases[k]) return aliases[k];
+  k = k.replace(LEAD_NOISE, "").replace(TRAIL_NOISE, "").trim();
   if (aliases[k]) return aliases[k];
   // "olive or sesame oil", "balaw or bagoong alamang": try each option in order.
   const options = k.split(/\s+or\s+/);
@@ -154,6 +161,56 @@ function lookupAlias(name: string, aliases: Record<string, Alias>): Alias | null
   // Last resort: the longest known ingredient name inside the line
   // ("slab 2 pounds pork belly" → pork belly, "grams of pasta" → pasta).
   return containedAlias(k, aliases);
+}
+
+// ── Scraper leftovers: the name span holds a unit, size or filler word, not the food ──
+// "1 slab 2 pounds pork belly" was split as name "slab", "3 tablespoons butter" as name
+// "tablespoons", "A pinch of nutmeg" has no amount span. These words are re-read as the
+// amount and unit, and the food is taken from the rest of the line.
+const FILLER = /^(a|an|one|of|thick|thin|small|medium|large|big|jumbo|slabs?|servings?|hint|drops?|envelopes?|sheets?|cobs?|bags?|jars?|sticks?)$/;
+const MODIFIER = /^(dried|fresh|organic)$/;
+const SIZE = /^(small|medium|large|big|jumbo)$/;
+// Water with only adjectives or a purpose around it: "lukewarm water", "additional water
+// for boiling", "of ice cold water placed in a large bowl", "water enough to cover the leg".
+const WATER_NAME = /^(?:(?:a|of|additional|extra|more|some|warm|lukewarm|tepid|hot|cold|ice|ice-cold|iced|boiling|clean|tap|distilled|filtered|plain|enough|rice|annatto|soaking)\s+)*water\b(?!\s*(?:chestnuts?|spinach|melons?|cress|crackers?))/;
+const WATER_ALIAS: Alias = { lineClass: "WATER", slugs: [], size: null, note: null };
+// "Juice of 2 lemons", "juice from 8 limes": a count of fruit, juiced.
+const JUICE_OF = /^juice (?:of|from) (?:the )?(\d+(?:\.\d+)?|an?|one) (lemon|lime|orange|calamansi)(?:e?s)?\b/;
+
+interface LineSource { amount: string | null; unit: string | null; name: string }
+
+function reread(ing: { name: string; amount: string | null; unit: string | null }, text: string): LineSource | null {
+  const key = nameKey(ing.name).replace(/^[^a-z0-9]+/, "").replace(/[.,;]+$/, "");
+  const juice = key.match(JUICE_OF);
+  if (juice) return { amount: /^\d/.test(juice[1]) ? juice[1] : "1", unit: null, name: `${juice[2]} juice` };
+  const words = key.split(" ");
+  // Units that are also food words ("whole chicken", "cloves", "rib eye", "head lettuce") stay in the name.
+  const lead = (w: string) => FILLER.test(w) || (isUnit(w) && !/^(whole|cloves?|heads?|ribs?|stems?|cubes?|blocks?|[a-z])$/.test(w));
+  const nameLost = words.every((w) => lead(w) || MODIFIER.test(w));
+  // A leading size word alone ("small bottle gourd") is read by parseQuantity as usual.
+  if (!nameLost && (!lead(words[0]) || SIZE.test(words[0]))) return null;
+  // Name lost: the food is in the rest of the line, after the amount and unit as written.
+  let rest = nameLost ? text : ing.name;
+  if (nameLost) {
+    if (ing.amount && rest.startsWith(ing.amount)) rest = rest.slice(ing.amount.length).trimStart();
+    if (ing.unit && rest.toLowerCase().startsWith(ing.unit.toLowerCase())) rest = rest.slice(ing.unit.length).trimStart();
+  }
+  let amount = ing.amount, unit = ing.unit, size: string | null = null;
+  const tokens = rest.split(/\s+/).filter(Boolean);
+  while (tokens.length && lead(tokens[0].toLowerCase())) {
+    const w = tokens.shift()!.toLowerCase();
+    if (/^(a|an|one)$/.test(w)) { if (!/\d/.test(amount ?? "")) amount = "1"; }
+    else if (/^(hint|drops?)$/.test(w)) unit ??= "dash";
+    else if (SIZE.test(w)) size = w;
+    else if (isUnit(w)) unit ??= w;
+  }
+  // "1 serving 3 1/2 cups marinara sauce": a single serving given as a measured amount.
+  const inner = tokens.join(" ").match(/^(\d+(?:\s+\d+\/\d+|[./]\d+)?)\s+(\S+)\s+(.*)$/);
+  if (inner && isUnit(inner[2]) && (!amount || amount === "1" || /^(cups?|tablespoons?|tbsp|teaspoons?|tsp|quarts?|pints?|liters?|l|ml)\.?$/i.test(inner[2])) && !/^(oz|ounces?|g|grams?|kg|ml|lbs?|pounds?)\.?$/i.test(inner[2])) {
+    return { amount: inner[1], unit: inner[2], name: inner[3] };
+  }
+  // Mass inside the rest ("2 pounds pork belly") is a package size: parseQuantity reads it.
+  return { amount, unit: unit ?? size, name: tokens.join(" ") };
 }
 
 /** Grams as purchased for one line, or null when no weight is known. */
@@ -315,9 +372,14 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
       lines.push({ ...base, group: null, status: "skipped", reason: "section header" }); continue;
     }
     const picked: Alias | null = ing.slug && ctx.canonicals[ing.slug] ? { lineClass: "FOOD", slugs: [ing.slug], size: null, note: null } : null;
-    const alias = picked ?? ctx.aliases[nameKey(ing.name)]
-      ?? lookupAlias(parseQuantity(ing.amount, ing.unit, ing.name).name, ctx.aliases)
-      ?? lookupAlias(ing.name, ctx.aliases);
+    const direct = picked ?? ctx.aliases[nameKey(ing.name)];
+    const reparsed = direct && direct.lineClass !== "UNIT_ONLY" && !JUICE_OF.test(nameKey(ing.name)) ? null : reread({ name: ing.name, amount: ing.amount, unit: ing.unit }, text);
+    const src: LineSource = reparsed ?? { name: ing.name, amount: ing.amount, unit: ing.unit };
+    if (reparsed && !reparsed.name) { lines.push({ ...base, status: "skipped", reason: "unit only" }); continue; }
+    const alias = (reparsed ? null : direct)
+      ?? lookupAlias(parseQuantity(src.amount, src.unit, src.name).name, ctx.aliases)
+      ?? lookupAlias(src.name, ctx.aliases)
+      ?? (WATER_NAME.test(nameKey(src.name).replace(LEAD_NOISE, "")) ? WATER_ALIAS : null);
     if (!alias) { lines.push({ ...base, status: "unmatched", reason: "ingredient not in catalog yet" }); continue; }
     if (alias.lineClass === "HEADER") {
       headingLine = ing.name.trim();
@@ -337,7 +399,7 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
     if (slug === "rice_white_raw" && /\b(cooked|leftover|steamed)\b/i.test(text)) slug = "rice_white_cooked";
     const c = ctx.canonicals[slug] ?? null;
     if (!c) { lines.push({ ...base, status: "unmatched", reason: `no catalog entry for ${slug}` }); continue; }
-    const q = parseQuantity(ing.amount, ing.unit, ing.name);
+    const q = parseQuantity(src.amount, src.unit, src.name);
     flags.push(...q.flags);
     if (q.unit === "to-taste" || (q.value === null && /\bto taste\b|\bas needed\b/i.test(text))) { lines.push({ ...base, slug, label: c.label, status: "to-taste", reason: "to taste: not counted" }); continue; }
     const gAP = gramsAP(q, c, alias, flags, text);

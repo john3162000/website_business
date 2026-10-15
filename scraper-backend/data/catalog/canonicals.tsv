@@ -206,7 +206,7 @@ broth_vegetable	Vegetable broth			no plain vegetable broth row (only canned veg 
 chili_dried	Dried red chili			FNRI chili D164 is fresh; no dried chili row		DA chilies are fresh	PLANT		0.6									100	whole dried pods	normal	medium	gEach ~0.6 g ?			
 cocoa_powder	Unsweetened cocoa powder	Q009	Cocoa, pwdr, local	cocoa powder, local		not in DA	PLANT	86										100	volume measured	normal	high				
 fish_fillet	Fish fillet	G145	Tilapia	generic white fish fillet; tilapia most common fillet fish in PH		DA sells whole fish, not fillets	FISH											100	boneless fillet	normal	low	could be cream dory/pangasius			
-lime_juice	Lime juice	E042	Lime	lime (dayap) flesh; no lime juice row		not in DA	PLANT	242										100	juice measured by volume	normal	medium				
+lime_juice	Lime juice	E042	Lime	lime (dayap) flesh; no lime juice row		not in DA	PLANT	242	44									100	juice measured by volume	normal	medium				
 marinara_sauce	Marinara sauce	N025	Tomato sauce	tomato sauce closest to plain marinara		not in DA	PLANT	250										100	liquid	normal	medium	marinara has oil, a bit more fat			
 tinapa	Tinapa flakes (smoked fish)	G208	Scad, round, smoked	galunggong tinapa, most common tinapa		not in DA	FISH	90										100	already flaked (no bones)	normal	medium	could be bangus tinapa (G183); cup ~90 g ?			
 vinegar_white_wine	White wine vinegar			no wine vinegar in FNRI		not in DA	PLANT	239										100	liquid	normal	high	nutritionally negligible			

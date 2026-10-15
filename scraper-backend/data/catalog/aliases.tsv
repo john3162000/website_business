@@ -784,3 +784,23 @@ sardines	FOOD	sardines_tomato_sauce
 5.5 oz. can sardines	FOOD	sardines_tomato_sauce		
 can sardines	FOOD	sardines_tomato_sauce		
 canned sardines	FOOD	sardines_tomato_sauce		
+ingredients	HEADER			scraped heading
+a 1-quart pitcher	EQUIPMENT			
+a double boiler	EQUIPMENT			
+double boiler	EQUIPMENT			
+a working food thermometer	EQUIPMENT			
+aluminum foil	EQUIPMENT			
+bamboo skewers	EQUIPMENT			
+cedar plank	EQUIPMENT			
+crock or container	EQUIPMENT			
+electric or charcoal grill	EQUIPMENT			
+banana leaves	EQUIPMENT			wrapping, not eaten
+ice	WATER			ice
+shaved ice	WATER			ice
+seasoning of your choice	TO_TASTE			unspecified seasoning
+your choice of spices and herbs	TO_TASTE			unspecified seasoning
+ground black	FOOD	black_pepper		truncated "ground black pepper"
+pats	FOOD	fish_sauce		typo of patis
+cooking	FOOD	oil_cooking		truncated "cooking oil" (deep-fried pork chops)
+sliced red	FOOD	bell_pepper_red		"sliced red, orange and yellow sweet peppers"
+lb.macaroni noodles	FOOD	macaroni_elbow		missing space after lb.
