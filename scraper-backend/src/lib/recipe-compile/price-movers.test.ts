@@ -44,3 +44,10 @@ test("price movers: unchanged prices give a 0% change", () => {
   assert.equal(ch.change, 0);
   assert.deepEqual(ch.drivers, []);
 });
+
+test("price movers: a recipe hidden for an unknown ingredient is not listed", () => {
+  const r = { ...SINIGANG, ingredients: [...SINIGANG.ingredients, ing("1", "cup", "zzz unknown thing")] };
+  const pork = ctx.da.get("Pork Belly (Liempo), Local")!.price!;
+  const now = compileRecipe(r, withPrices({ "Pork Belly (Liempo), Local": pork * 1.2 }));
+  assert.equal(dishPriceChange(now, compileRecipe(r, ctx)), null);
+});

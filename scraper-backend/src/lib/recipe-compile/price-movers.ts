@@ -3,7 +3,7 @@
  * today's DA prices and with the month-ago ones). Pure, for tests and the
  * /api/recipes/price-movers route.
  */
-import type { CompiledRecipe } from "./compile.ts";
+import { isHidden, type CompiledRecipe } from "./compile.ts";
 
 /** Same bar as the Sulit Score ranking: most of the dish (by weight) must be priced. */
 export const MIN_COST_COVERAGE = 0.75;
@@ -32,7 +32,8 @@ export interface DishPriceChange {
 }
 
 export function dishPriceChange(now: CompiledRecipe, then: CompiledRecipe): DishPriceChange | null {
-  if (now.isArticle || now.isCollection || now.costCoverageByWeight < MIN_COST_COVERAGE) return null;
+  // Recipes with an ingredient not in the catalog are hidden on the site, so not listed as movers either.
+  if (now.isArticle || now.isCollection || isHidden(now) || now.costCoverageByWeight < MIN_COST_COVERAGE) return null;
   let costNow = 0, costThen = 0, gShared = 0, gPricedNow = 0;
   // Same ingredient on two lines (garlic for the sauce and the garnish) is one driver.
   const byLabel = new Map<string, PriceDriver & { costThen: number; costNow: number }>();

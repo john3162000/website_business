@@ -363,6 +363,20 @@ function uptakeRange(title: string, deep: boolean): [number, number] {
   return deep ? [0.03, 0.07] : [0.02, 0.05];
 }
 
+/** Lines whose ingredient isn't in the catalog yet. */
+export function unknownLineCount(c: Pick<CompiledRecipe, "lines">): number {
+  return c.lines.filter((l) => l.status === "unmatched").length;
+}
+
+/**
+ * A recipe with any ingredient not in the catalog is hidden from rankings and lists:
+ * its cost and nutrition would leave that ingredient out. It is not deleted, and
+ * shows again as soon as the catalog learns the ingredient.
+ */
+export function isHidden(c: Pick<CompiledRecipe, "lines">): boolean {
+  return unknownLineCount(c) > 0;
+}
+
 export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledRecipe {
   const lines: CompiledLine[] = [];
   const steps = (r.instructions ?? []).join(" ");
