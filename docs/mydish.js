@@ -82,7 +82,11 @@ function store() {
 }
 
 async function initMyDish() {
+  // Draw first, then calculate: the ingredient list below can take a moment,
+  // and drawing the editor after a calculation would wipe its result.
   renderDishList();
+  renderEditor();
+  if (currentDish) scheduleDish(0);
   if (!INGREDIENTS) {
     try {
       const res = await fetch(`${API_BASE}/api/ingredients`);
@@ -92,7 +96,6 @@ async function initMyDish() {
     }
     document.getElementById("ingredient-options").innerHTML = INGREDIENTS.map((i) => `<option value="${escapeHtml(i.label)}"></option>`).join("");
   }
-  renderEditor();
 }
 
 // ── Saved dishes ──
@@ -129,6 +132,7 @@ function openDish(id) {
   const d = s && loadDishes(s).find((x) => x.id === id);
   if (!d) return;
   currentDish = JSON.parse(JSON.stringify(d));
+  lastResult = null;
   renderDishList();
   renderEditor();
   scheduleDish(0);
@@ -165,8 +169,7 @@ async function customizeRecipe(id) {
   }
   lastResult = null;
   closeModal();
-  showSection("mydish");
-  scheduleDish(0);
+  showSection("mydish"); // initMyDish draws the editor and calculates
 }
 
 // ── Editor ──
@@ -210,7 +213,7 @@ function renderEditor() {
           <span id="mydish-saved" class="text-xs text-gray-500"></span>
         </div>
       </div>
-      <div id="mydish-result" class="space-y-4"><p class="text-sm text-gray-400">Add ingredients to see the cost and nutrition.</p></div>
+      <div id="mydish-result" class="space-y-4">${lastResult ? dishResultHtml(lastResult) : `<p class="text-sm text-gray-400">Add ingredients to see the cost and nutrition.</p>`}</div>
     </div>`;
 }
 
@@ -251,6 +254,7 @@ async function computeDish() {
   if (!currentDish) return;
   const lines = currentDish.lines.filter((l) => l.name.trim());
   const out = document.getElementById("mydish-result");
+  if (!out) return;
   if (!lines.length) {
     out.innerHTML = `<p class="text-sm text-gray-400">Add ingredients to see the cost and nutrition.</p>`;
     return;
