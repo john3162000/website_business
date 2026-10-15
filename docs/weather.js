@@ -59,15 +59,26 @@ const COLD = [
 ];
 
 const byValue = (a, b) => (b.ranked - a.ranked) || (b.valueScore - a.valueScore) || (b.nutritionScore - a.nutritionScore);
+// Unknown cost or calories sort last.
+const costOf = (r) => (r.ranked && r.costPerServing > 0 ? r.costPerServing : Infinity);
+const kcalOf = (r) => (r.calories > 0 && r.nutritionCoverage >= 0.8 ? r.calories : Infinity);
 
-/** The best dish of each family in order, one per family, up to n; skips titles already taken. */
-function fromFamilies(families, recipes, n, taken) {
+/** How the suggested ulam can be sorted (the buttons above the picks). */
+const PICK_SORTS = {
+  value: { label: "Best value", cmp: byValue },
+  cheap: { label: "Cheapest", cmp: (a, b) => costOf(a) - costOf(b) || byValue(a, b) },
+  protein: { label: "Most protein", cmp: (a, b) => (b.protein || 0) - (a.protein || 0) || byValue(a, b) },
+  kcal: { label: "Fewest calories", cmp: (a, b) => kcalOf(a) - kcalOf(b) || byValue(a, b) },
+};
+
+/** The best dish (by `cmp`) of each family in order, one per family, up to n; skips titles already taken. */
+function fromFamilies(families, recipes, n, taken, cmp = byValue) {
   const out = [];
   for (const [match, exclude] of families) {
     if (out.length >= n) break;
     const best = recipes
       .filter((r) => r.category !== "Sauce & Condiment" && match.test(r.title) && !(exclude && exclude.test(r.title)) && !taken.has(r.title.toLowerCase()))
-      .sort(byValue)[0];
+      .sort(cmp)[0];
     if (best) {
       taken.add(best.title.toLowerCase());
       out.push(best);
@@ -87,16 +98,22 @@ function rotate(families, day) {
  * Up to n dishes for the mood. Rainy or cool: hot soups (bulalo first) plus one
  * warm merienda (bilo-bilo first). Sunny: cold treats and cold dishes. Null for
  * "mild": the caller shows its own any-weather list. `day` (days since epoch)
- * rotates the families after the first.
+ * rotates the families after the first. `sort` (a PICK_SORTS key) picks each
+ * family's recipe; any sort but "value" also reorders. The warm merienda stays last.
  */
-function weatherPicks(mood, recipes, n = 4, day = Math.floor(Date.now() / 86400000)) {
+function weatherPicks(mood, recipes, n = 4, day = Math.floor(Date.now() / 86400000), sort = "value") {
+  const cmp = (PICK_SORTS[sort] || PICK_SORTS.value).cmp;
   const taken = new Set();
   if (mood === "rainy" || mood === "cool") {
-    const sweet = fromFamilies(WARM_SWEET, recipes, 1, taken);
-    const soups = fromFamilies(rotate(SABAW, day), recipes, n - sweet.length, taken);
-    return [...soups, ...sweet];
+    const sweet = fromFamilies(WARM_SWEET, recipes, 1, taken, cmp);
+    const soups = fromFamilies(rotate(SABAW, day), recipes, n - sweet.length, taken, cmp);
+    // "Best value" keeps the featured order (bulalo first); other sorts reorder.
+    return [...(sort === "value" ? soups : soups.sort(cmp)), ...sweet];
   }
-  if (mood === "sunny") return fromFamilies(COLD, recipes, n, taken);
+  if (mood === "sunny") {
+    const cold = fromFamilies(COLD, recipes, n, taken, cmp);
+    return sort === "value" ? cold : cold.sort(cmp);
+  }
   return null;
 }
 

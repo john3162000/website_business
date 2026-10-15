@@ -116,6 +116,8 @@ function buildRecipe(raw, c) {
     valueScore,
     // Grams of protein per peso, for "Most Protein per ₱" (ranked dishes only: their cost is reliable).
     proteinPerPeso: ranked ? round1(perServing.protein) / costPerServing : 0,
+    // Grams of protein per 100 kcal, for "Most Protein per Calorie".
+    proteinPer100kcal: perServing.calories > 0 ? (perServing.protein / perServing.calories) * 100 : 0,
   };
 }
 
@@ -465,6 +467,7 @@ function filterRecipes() {
   filtered.sort((a, b) => {
     if (sort === "costPerServing") return (a.ranked ? a.costPerServing : Infinity) - (b.ranked ? b.costPerServing : Infinity);
     if (sort === "caloriesAsc") return (kcalKnown(a) ? a.calories : Infinity) - (kcalKnown(b) ? b.calories : Infinity);
+    if (sort === "proteinPer100kcal") return (kcalKnown(b) ? b.proteinPer100kcal : -1) - (kcalKnown(a) ? a.proteinPer100kcal : -1);
     return (b[sort] || 0) - (a[sort] || 0);
   });
 
@@ -497,6 +500,13 @@ const PRESETS = {
   protein: [undefined, undefined, 25],
   clear: [null, null, null],
 };
+// "💪 Rank by protein per calorie": the leanest protein first (grams per 100 kcal).
+function rankByProteinPerKcal() {
+  document.getElementById("sort-select").value = "proteinPer100kcal";
+  browseLimit = 48;
+  filterRecipes();
+}
+
 function setPreset(kind) {
   const [lo, hi, protein] = PRESETS[kind];
   const set = (id, v) => { if (v !== undefined) document.getElementById(id).value = v ?? ""; };
@@ -510,25 +520,80 @@ function setPreset(kind) {
 // ═══════════════ WEATHER PICKS ═══════════════
 // weather.js: weatherMood, weatherPicks, fetchWeather, getLocation, MANILA.
 
-async function showWeather(place) {
+// The weather buttons (Auto follows the live weather) and the sort buttons,
+// remembered on this device.
+const MODE_KEY = "sarapsulit.weatherMode";
+const SORT_KEY = "sarapsulit.pickSort";
+const MOOD_ICON = { sunny: "☀️", rainy: "🌧️", cool: "🌥️", mild: "⛅" };
+let lastWeather = null; // { w, place } from Open-Meteo
+let weatherError = null;
+let weatherMode = readPref(MODE_KEY, ["auto", "sunny", "rainy", "cool"], "auto");
+let pickSort = readPref(SORT_KEY, Object.keys(PICK_SORTS), "value");
+
+function readPref(key, allowed, fallback) {
+  try { const v = localStorage.getItem(key); return allowed.includes(v) ? v : fallback; } catch { return fallback; }
+}
+function writePref(key, v) {
+  try { localStorage.setItem(key, v); } catch { /* storage blocked: the choice lasts this visit */ }
+}
+
+function setWeatherMode(mode) { weatherMode = mode; writePref(MODE_KEY, mode); renderWeather(); }
+function setPickSort(sort) { pickSort = sort; writePref(SORT_KEY, sort); renderWeather(); }
+
+/** Rainy look on or off: palette via body.rainy, falling drops unless reduced motion is asked for. */
+function setRainy(on) {
+  document.body.classList.toggle("rainy", on);
+  let rain = document.getElementById("rain");
+  const still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!on || still) { if (rain) rain.remove(); return; }
+  if (rain) return;
+  rain = document.createElement("div");
+  rain.id = "rain";
+  rain.setAttribute("aria-hidden", "true");
+  rain.innerHTML = Array.from({ length: 70 }, () => {
+    const len = 12 + Math.random() * 14;
+    return `<i style="left:${(Math.random() * 105).toFixed(1)}%;height:${len.toFixed(0)}px;animation-duration:${(0.6 + Math.random() * 0.6).toFixed(2)}s;animation-delay:-${(Math.random() * 1.2).toFixed(2)}s;opacity:${(0.35 + Math.random() * 0.5).toFixed(2)}"></i>`;
+  }).join("");
+  document.body.appendChild(rain);
+}
+
+function renderWeather() {
+  document.querySelectorAll("[data-mode]").forEach((b) => b.classList.toggle("on", b.dataset.mode === weatherMode));
+  document.querySelectorAll("[data-sort]").forEach((b) => b.classList.toggle("on", b.dataset.sort === pickSort));
+  const live = lastWeather ? weatherMood(lastWeather.w) : null;
+  const mood = weatherMode === "auto" ? live : weatherMode;
   const sub = document.getElementById("weather-sub");
+  if (lastWeather) {
+    const { w, place } = lastWeather;
+    const label = weatherLabel(w.code);
+    const rain = w.rainChance6h > 0 ? ` · ${w.rainChance6h}% chance of rain in the next 6 hours` : "";
+    sub.textContent = `${Math.round(w.temp)}°C, feels like ${Math.round(w.apparent)}°C, ${label.text}${rain} · ${place === MANILA ? MANILA.name : "near you"}`
+      + (weatherMode !== "auto" ? ` · showing ${weatherMode} picks (your choice)` : "");
+  } else if (weatherError) {
+    sub.textContent = `Couldn’t get the weather (${weatherError})${weatherMode !== "auto" ? `. Showing ${weatherMode} picks.` : ". Pick a weather above."}`;
+  }
+  if (!mood) return; // still waiting for the weather
+  setRainy(mood === "rainy");
+  const copy = MOOD_COPY[mood];
+  setText("weather-icon", weatherMode === "auto" && lastWeather ? weatherLabel(lastWeather.w.code).icon : MOOD_ICON[mood]);
+  setText("weather-title", copy.title);
+  setText("weather-desc", copy.sub);
+  // Mild weather: the next best value meals after the Top Value list, in the chosen order.
+  const picks = weatherPicks(mood, RECIPES, 4, undefined, pickSort)
+    ?? (pickSort === "value" ? topValueMeals().slice(8, 12) : topValueMeals().slice(8, 12).sort(PICK_SORTS[pickSort].cmp));
+  document.getElementById("weather-grid").innerHTML = picks.map(buildRecipeCard).join("")
+    || `<p class="col-span-4 text-gray-400">No matching dishes yet.</p>`;
+}
+
+async function showWeather(place) {
   try {
     const [w] = await Promise.all([fetchWeather(place), DATA_READY ? DATA_READY.catch(() => {}) : null]);
-    const mood = weatherMood(w);
-    const label = weatherLabel(w.code);
-    const copy = MOOD_COPY[mood];
-    setText("weather-icon", label.icon);
-    setText("weather-title", copy.title);
-    const rain = w.rainChance6h > 0 ? ` · ${w.rainChance6h}% chance of rain in the next 6 hours` : "";
-    sub.textContent = `${Math.round(w.temp)}°C, feels like ${Math.round(w.apparent)}°C, ${label.text}${rain} · ${place === MANILA ? MANILA.name : "near you"}`;
-    setText("weather-desc", copy.sub);
-    // Mild weather: the next best value meals after the Top Value list.
-    const picks = weatherPicks(mood, RECIPES, 4) ?? topValueMeals().slice(8, 12);
-    document.getElementById("weather-grid").innerHTML = picks.map(buildRecipeCard).join("")
-      || `<p class="col-span-4 text-gray-400">No matching dishes yet.</p>`;
+    lastWeather = { w, place };
+    weatherError = null;
   } catch (e) {
-    sub.textContent = `Couldn’t get the weather (${e.message}).`;
+    weatherError = e.message;
   }
+  renderWeather();
 }
 
 // Asks for the phone's location as the page opens. No answer within 8 s (or a
@@ -587,6 +652,8 @@ function showSection(name) {
 
 (async function init() {
   DATA_READY = loadData();
+  renderWeather();
+  if (weatherMode !== "auto") DATA_READY.then(renderWeather, () => {});
   loadWeatherPicks();
   try {
     await DATA_READY;
