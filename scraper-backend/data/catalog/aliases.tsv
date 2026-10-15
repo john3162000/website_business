@@ -801,6 +801,275 @@ seasoning of your choice	TO_TASTE			unspecified seasoning
 your choice of spices and herbs	TO_TASTE			unspecified seasoning
 ground black	FOOD	black_pepper		truncated "ground black pepper"
 pats	FOOD	fish_sauce		typo of patis
-cooking	FOOD	oil_cooking		truncated "cooking oil" (deep-fried pork chops)
+cooking	FOOD	oil_cooking		truncated "cooking oil" (deep-fried pork chops) [exact]
 sliced red	FOOD	bell_pepper_red		"sliced red, orange and yellow sweet peppers"
 lb.macaroni noodles	FOOD	macaroni_elbow		missing space after lb.
+nutmeg	FOOD	nutmeg_ground		
+vanilla	FOOD	vanilla_extract		[exact]
+vanilla essence	FOOD	vanilla_extract		essence ≈ extract
+vanilla essence or extract	FOOD	vanilla_extract		
+vanilla essence/extract	FOOD	vanilla_extract		
+alamang	FOOD	shrimp_paste		bagoong alamang
+balaw	FOOD	shrimp_paste		balaw = bagoong alamang
+anatto powder	FOOD	annatto_powder		spelling
+anatto seeds	FOOD	annatto_seeds		spelling
+achiote	FOOD	annatto_seeds		achiote = atsuete
+anchovy sauce	FOOD	bagoong_isda		bagoong isda
+anisado wine	FOOD	anisette_liquor		
+anise liquor	FOOD	anisette_liquor		
+baby back rib	FOOD	pork_ribs		
+baby back ribs	FOOD	pork_ribs		
+slab baby back ribs	FOOD	pork_ribs		
+spare ribs	FOOD	pork_ribs		
+st. louis-style spare ribs	FOOD	pork_ribs		
+baguio beans	FOOD	beans_baguio		
+strings beans	FOOD	sitaw		typo
+bean sprouts	FOOD	mung_bean_sprouts		togue
+bihon noodles	FOOD	noodles_bihon		
+vermicelli noodles	FOOD	noodles_sotanghon		Vegetarian Pancit Sotanghon
+bitter gourd	FOOD	ampalaya		
+bitter melon	FOOD	ampalaya		
+black pepper powder	FOOD	black_pepper		
+white pepper powder	FOOD	white_pepper		
+whole pepperorn	FOOD	peppercorn_whole		typo
+bottled tuyo	FOOD	fish_dried		
+tuyo	FOOD	fish_dried		[exact]
+cooked tuyo	FOOD	fish_dried		
+dried danggit	FOOD	fish_dried		
+uncooked danggit	FOOD	fish_dried		
+salted dried bisugo	FOOD	fish_dried		
+packaged dried jeprox	FOOD	fish_dried		
+broth	FOOD	broth_chicken		preferably chicken broth [exact]
+stock	FOOD	broth_chicken		chicken, beef, vegetable [exact]
+vegetable stock	FOOD	broth_vegetable		
+broth cubes	FOOD	stock_cube_chicken		generic bouillon cube
+beef cubes	FOOD	stock_cube_beef		
+beef cubes dissolved in 3 cups boiling water	FOOD	stock_cube_beef		
+pork cube	FOOD	stock_cube_pork		
+pork cubes	FOOD	stock_cube_pork		
+shrimp cube	FOOD	stock_cube_shrimp		
+beef broth powder	FOOD	seasoning_beef_powder		
+kang kong	FOOD	kangkong		
+chinese kang kong	FOOD	kangkong		
+baby bokchoy	FOOD	pechay		
+chicharron	FOOD	chicharon_pork		
+chick pea	FOOD	chickpeas		
+chick peas	FOOD	chickpeas		
+hot chili sauce	FOOD	hot_sauce		
+tabasco sauce	FOOD	hot_sauce		
+frank's redhot sauce	FOOD	hot_sauce		
+chilli powder	FOOD	chili_powder		spelling
+chorizo	FOOD	chorizo_bilbao		
+coconut mlk	FOOD	coconut_milk		typo
+coconut	FOOD	coconut_grated		coconut grated [exact]
+shredded coconut	FOOD	coconut_grated		[exact]
+coconut gel	FOOD	nata_de_coco		
+knorr cream of mushroom mix	FOOD	mix_cream_of_mushroom		
+corn kernels	FOOD	corn_kernel_canned		
+whole corn kernel	FOOD	corn_kernel_canned		
+whole kernel corns	FOOD	corn_kernel_canned		
+whole sweet kernel corn	FOOD	corn_kernel_canned		
+white corn kernels	FOOD	corn_kernel_canned		
+corn in can	FOOD	corn_kernel_canned		
+can corn kernels	FOOD	corn_kernel_canned		
+corn	FOOD	corn_sweet		[exact]
+corn on the cob	FOOD	corn_sweet		
+white corn	FOOD	corn_sweet		[exact]
+corn meal	FOOD	cornmeal		
+corn starch	FOOD	cornstarch		
+crabmeat	FOOD	crab_meat		
+crabsticks	FOOD	crab_stick		
+imitation crabmeat	FOOD	crab_stick		
+crablets	FOOD	crab		
+cream tartar	FOOD	cream_of_tartar		
+mushroom	FOOD	mushroom_button		[exact]
+mushrooms	FOOD	mushroom_button		[exact]
+chopped mushroom	FOOD	mushroom_button		[exact]
+crimini mushroom	FOOD	mushroom_button		brown button mushroom
+crimini mushrooms	FOOD	mushroom_button		brown button mushroom
+baby bella mushroom	FOOD	mushroom_button		brown button mushroom
+white or crimini mushrooms	FOOD	mushroom_button		
+crushed graham	FOOD	graham_cracker		
+crushed pineapple	FOOD	pineapple_canned		canned
+pineapple slices	FOOD	pineapple_canned		canned
+sliced pineapple	FOOD	pineapple_canned		canned
+juice from the canned tidbits	FOOD	pineapple_juice		syrup from canned pineapple
+dahon ng laurel	FOOD	bay_leaf		
+daikon	FOOD	radish_daikon		
+labanos	FOOD	radish_daikon		
+radish	FOOD	radish_daikon		PH radish = labanos [exact]
+dried mustard	FOOD	mustard_powder		
+mustard	FOOD	mustard_dijon		preferably Dijon / yellow or Dijon [exact]
+mustard greens	FOOD	mustard_greens		
+fresh flat mustard greens	FOOD	mustard_greens		
+eggplant	FOOD	eggplant		[exact]
+eggplants	FOOD	eggplant		
+japanese eggplants	FOOD	eggplant		
+round eggplant	FOOD	eggplant		
+black bell or italian eggplant	FOOD	eggplant		
+english cucumbers	FOOD	cucumber		
+english cucumber	FOOD	cucumber		
+macaroni	FOOD	macaroni_elbow		[exact]
+macaroni pasta	FOOD	macaroni_elbow		
+farfalle	FOOD	penne		dry short pasta, same flour and nutrition
+bow tie pasta	FOOD	penne		dry short pasta
+bowtie pasta	FOOD	penne		dry short pasta
+rotini	FOOD	penne		dry short pasta
+rotini pasta	FOOD	penne		dry short pasta
+tri-color rotini	FOOD	penne		dry short pasta
+tri color rotini pasta	FOOD	penne		dry short pasta
+rigatoni pasta	FOOD	penne		dry short pasta
+pasta shells	FOOD	penne		dry short pasta
+spiral noodles	FOOD	penne		dry short pasta
+gemelli or any short-cut noodles	FOOD	penne		dry short pasta
+pasta	FOOD	penne		dry pasta [exact]
+fettuccine noodles	FOOD	fettuccine		
+fettucine pasta	FOOD	fettuccine		
+lasagna noodles	FOOD	lasagna_noodles		
+fresh kamote tops	FOOD	camote_tops		
+kamote	FOOD	sweet_potato		[exact]
+fresh pepper leaves	FOOD	chili_leaves		dahon ng sili
+fresh rosemary leaves	FOOD	rosemary		
+calamari rings	FOOD	squid		
+frozen calamari rings	FOOD	squid		
+gabi	FOOD	taro		[exact]
+garlic paste	FOOD	garlic		
+ginger paste	FOOD	ginger		
+glutinous rice powder	FOOD	flour_glutinous_rice		
+ground peanut	FOOD	peanut_roasted		
+peanut paste	FOOD	peanut_butter		ground peanuts
+hot dogs	FOOD	hotdog		
+young jackfruit	FOOD	jackfruit_unripe		
+unripe jack fruit	FOOD	jackfruit_unripe		
+cans unripe jack fruit	FOOD	jackfruit_unripe		
+jalapeno	FOOD	chili_jalapeno		
+jalapeño	FOOD	chili_jalapeno		
+kasubha	FOOD	saffron		
+safflower	FOOD	saffron		kasubha
+knorr savorrich liquid seasoning	FOOD	seasoning_liquid_savorrich_chicken		
+maggi savor	FOOD	seasoning_liquid_knorr		liquid seasoning, other brand
+knorr sinigang na sampaloc mix	FOOD	mix_sinigang_tamarind		
+knorr sinigang sa sampaloc	FOOD	mix_sinigang_tamarind		
+knorr sinigang sa sampaloc original	FOOD	mix_sinigang_tamarind		
+knorr sinigang sa sampaloc with gabi	FOOD	mix_sinigang_tamarind		
+knorr sinigang na may gabi recipe mix	FOOD	mix_sinigang_tamarind		
+knorr sinigang na isda mix	FOOD	mix_sinigang_tamarind		
+sinigang sa sampaloc mix	FOOD	mix_sinigang_tamarind		
+maggi magic sinigang sa sampaloc	FOOD	mix_sinigang_tamarind		other brand
+maggi magic sinigang with gabi	FOOD	mix_sinigang_tamarind		other brand
+powdered tamarind soup base mix	FOOD	mix_sinigang_tamarind		
+tamarind soup mix	FOOD	mix_sinigang_tamarind		
+knorr sinigang na may miso recipe mix	FOOD	mix_sinigang_tamarind_miso		
+lard	FOOD	shortening		lard or shortening; both ≈100% fat
+lengua	FOOD	beef_tongue		
+ox tail	FOOD	oxtail		
+cow’s heart	FOOD	beef_heart		
+blanket tripe	FOOD	beef_tripe		
+honeycomb tripe	FOOD	beef_tripe		
+liver	FOOD	pork_liver		pig's or cow's liver [exact]
+mahi mahi fillet	FOOD	fish_fillet		
+mahi-mahi fillet	FOOD	fish_fillet		
+mahi mahi fillets	FOOD	fish_fillet		
+mahi-mahi fillets	FOOD	fish_fillet		
+fresh mahi-mahi fillets	FOOD	fish_fillet		
+frozen mahi mahi fillets	FOOD	fish_fillet		
+halibut fillets	FOOD	fish_fillet		
+cod fillets	FOOD	fish_fillet		
+swai fillet	FOOD	fish_fillet		
+whiting fillet	FOOD	fish_fillet		
+manzanilla olives	FOOD	olives_green		
+kalamata olives	FOOD	olives_black		
+mayonnise	FOOD	mayonnaise		typo
+miso	FOOD	miso_paste		
+yellow miso	FOOD	miso_paste		
+white or yellow miso	FOOD	miso_paste		
+shiromiso	FOOD	miso_paste		white miso
+misua noodles	FOOD	misua		
+monggo	FOOD	mung_beans		
+mooring	FOOD	malunggay		moringa
+mozzarella	FOOD	cheese_mozzarella		
+sharp cheddar	FOOD	cheese_cheddar		
+colby and sharp cheddar cheeses	FOOD	cheese_cheddar		
+napa cabbage leaves	FOOD	cabbage_napa		
+nestlé carnation condensada	FOOD	milk_condensed		
+pancit canton noodles	FOOD	noodles_pancit_canton		
+package pancit canton noodles	FOOD	noodles_pancit_canton		
+miki lucban noodles	FOOD	noodles_miki		
+panceta	FOOD	pork_belly		Filipino usage: liempo
+pancetta	FOOD	bacon		cured pork belly
+pig's leg	FOOD	pork_hock		pata
+pimento	FOOD	pimiento		
+chopped pimento	FOOD	pimiento		
+pimento peppers	FOOD	pimiento		
+prawn	FOOD	shrimp		
+sugpo	FOOD	shrimp		tiger prawn
+purple yam	FOOD	ube		
+boiled purple yam	FOOD	ube		
+mashed purple yam	FOOD	ube		
+red chillies	FOOD	chili_bird		
+bird’s eye or thai chilies	FOOD	chili_bird		
+t-bone steak	FOOD	beef_sirloin		steak cut ≈ sirloin
+porterhouse steak	FOOD	beef_sirloin		steak cut ≈ sirloin
+grilled porterhouse steak	FOOD	beef_sirloin		steak cut ≈ sirloin
+new york strip steak	FOOD	beef_sirloin		strip loin
+rib eye	FOOD	beef_sirloin		steak cut ≈ sirloin
+rib eye steak	FOOD	beef_sirloin		steak cut ≈ sirloin
+ribeye steak	FOOD	beef_sirloin		steak cut ≈ sirloin
+slices of rib eye steak	FOOD	beef_sirloin		steak cut ≈ sirloin
+ribeye or eye of round	FOOD	beef_sirloin		steak cut ≈ sirloin
+round steak	FOOD	beef_sirloin		steak cut ≈ sirloin
+filet mignon steak	FOOD	beef_tenderloin		
+each filet mignon steak	FOOD	beef_tenderloin		
+skirt steak	FOOD	beef_flank		
+flank or skirt steak	FOOD	beef_flank		
+rice wine	FOOD	wine_rice_cooking		
+sake	FOOD	wine_rice_cooking		rice wine [exact]
+warm sake	FOOD	wine_rice_cooking		rice wine
+saging na saba	FOOD	banana_saba		
+ripe bananas	FOOD	banana_lakatan		
+sized ripe bananas	FOOD	banana_lakatan		
+sayote	FOOD	chayote		
+sibuyas	FOOD	onion_yellow		[exact]
+spaghetti sauce	FOOD	marinara_sauce		US recipes (casserole, million dollar spaghetti)
+spinach leaves	FOOD	spinach		
+spring roll wrapper	FOOD	lumpia_wrapper		
+spring roll wrappers	FOOD	lumpia_wrapper		
+spring roll	FOOD	lumpia_wrapper		spring roll lumpia wrapper [exact]
+lumpia	FOOD	lumpia_wrapper		lumpia egg roll wrapper [exact]
+wrapper	FOOD	wonton_wrapper		wrapper wonton [exact]
+won ton wrapper	FOOD	wonton_wrapper		
+gyoza wrapper	FOOD	wonton_wrapper		
+sprite	FOOD	soda_lemon_lime		
+clear soft drink	FOOD	soda_lemon_lime		
+sukang iloko	FOOD	vinegar_cane_white		sugarcane vinegar
+sukang puti	FOOD	vinegar_cane_white		
+sukang paombong	FOOD	vinegar_coconut		palm sap vinegar
+sinamak or pinakurat	FOOD	vinegar_coconut		spiced coconut vinegar
+sweet peppers	FOOD	bell_pepper_red		
+small sweet peppers	FOOD	bell_pepper_red		
+assorted red and yellow sweet peppers	FOOD	bell_pepper_red		
+super green pickle relish	FOOD	pickle_relish_sweet		
+tausi	FOOD	black_beans_salted		
+canned tausi	FOOD	black_beans_salted		
+fermented soy beans	FOOD	black_beans_salted		douchi
+toyo	FOOD	soy_sauce		[exact]
+toasted anchovies	FOOD	anchovies_dried		tustadong dilis
+tortilla wrap	FOOD	tortilla_flour		
+10 inches tortilla wrap	FOOD	tortilla_flour		
+unripe papaya	FOOD	papaya_green		
+wine	FOOD	wine_white		wine white [exact]
+pinot grigio	FOOD	wine_white		
+moscato	FOOD	wine_white		
+bbq sauce	FOOD	barbecue_sauce		
+bamboo shoot	FOOD	bamboo_shoots		
+peas	FOOD	green_peas		[exact]
+blueberries	FOOD	blueberries		
+granny smith apple	FOOD	apple		
+dark chocolate powder	FOOD	cocoa_powder		
+apple cider	FOOD	apple_juice		US cider = unfiltered apple juice [exact]
+bilimbi	FOOD	kamias		
+dried or fresh bilimbi	FOOD	kamias		
+fresh or dried bilimbi	FOOD	kamias		
+cornish game hens	FOOD	chicken_whole		small whole chicken
+buko juice	WATER			buko juice = young coconut water
+white pepper powder to taste	TO_TASTE	white_pepper		
