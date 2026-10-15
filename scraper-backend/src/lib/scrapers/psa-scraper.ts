@@ -6,6 +6,10 @@
  * Third price source after DA (daily): it covers wet-market items DA doesn't
  * list (tahong, halaan, lapu-lapu, gizzard, kangkong, malunggay…), about a
  * month behind. https://openstat.psa.gov.ph/PXWeb/api/v1/en/DB/2M/2018NEW
+ *
+ * The national average ("PH") is kept too: PSA surveys some items only outside
+ * Metro Manila (malunggay, beef tripe, clams, puso ng saging), and a national
+ * price is better than none. NCR always wins where it has a price.
  */
 const BASE = "https://openstat.psa.gov.ph/PXWeb/api/v1/en/DB/2M/2018NEW/";
 // The 2018-based retail tables (cereals … fish). Their ids are stable.
@@ -17,6 +21,8 @@ const MONTHS = ["January", "February", "March", "April", "May", "June", "July", 
 
 export interface PsaRow {
   commodity: string;
+  /** "NCR" (Metro Manila) or "PH" (national average). */
+  region: "NCR" | "PH";
   category: string | null;
   unit: "kg" | "piece";
   price: number;
@@ -35,18 +41,19 @@ export function psaUnit(commodity: string): "kg" | "piece" {
 
 const find = (meta: PxMeta, re: RegExp) => meta.variables.find((v) => re.test(v.text));
 
-/** The NCR request body for a table: every commodity, the given years, every month (not "Annual"). */
+/** The request body for a table: NCR and the national average, every commodity, the given years, every month (not "Annual"). */
 export function ncrQuery(meta: PxMeta, years: string[]) {
   const geo = find(meta, /geo|region/i)!;
   const com = find(meta, /commodit/i)!;
   const year = find(meta, /^year$/i)!;
   const per = find(meta, /period/i)!;
   const ncr = geo.values[geo.valueTexts.findIndex((t) => /NATIONAL CAPITAL/i.test(t))];
+  const ph = geo.values[geo.valueTexts.findIndex((t) => /^PHILIPPINES/i.test(t.trim()))];
   const yearCodes = year.values.filter((_, i) => years.includes(year.valueTexts[i]));
   const months = per.values.filter((_, i) => per.valueTexts[i] !== "Annual");
   return {
     query: [
-      { code: geo.code, selection: { filter: "item", values: [ncr] } },
+      { code: geo.code, selection: { filter: "item", values: ph ? [ncr, ph] : [ncr] } },
       { code: com.code, selection: { filter: "all", values: ["*"] } },
       { code: year.code, selection: { filter: "item", values: yearCodes } },
       { code: per.code, selection: { filter: "item", values: months } },
@@ -60,6 +67,7 @@ export function ncrQuery(meta: PxMeta, years: string[]) {
  * "." or ".."; only positive numbers are prices.
  */
 export function parsePsa(meta: PxMeta, data: PxData): PsaRow[] {
+  const geo = find(meta, /geo|region/i)!;
   const com = find(meta, /commodit/i)!;
   const year = find(meta, /^year$/i)!;
   const per = find(meta, /period/i)!;
@@ -67,12 +75,13 @@ export function parsePsa(meta: PxMeta, data: PxData): PsaRow[] {
   const category = meta.title.split(":")[0].trim() || null;
   const out: PsaRow[] = [];
   for (const row of data.data) {
-    const [, c, y, p] = row.key;
+    const [g, c, y, p] = row.key;
+    const region = /^PHILIPPINES/i.test((name(geo, g) ?? "").trim()) ? "PH" : "NCR";
     const price = Number(row.values[0]);
     const month = MONTHS.indexOf(name(per, p));
     if (!Number.isFinite(price) || price <= 0 || month < 0) continue;
     const commodity = name(com, c);
-    out.push({ commodity, category, unit: psaUnit(commodity), price, period: new Date(Date.UTC(Number(name(year, y)), month, 1)) });
+    out.push({ commodity, region, category, unit: psaUnit(commodity), price, period: new Date(Date.UTC(Number(name(year, y)), month, 1)) });
   }
   return out;
 }
@@ -88,7 +97,7 @@ async function json<T>(url: string, body?: unknown): Promise<T> {
   return (await res.json()) as T;
 }
 
-/** All NCR monthly prices for this year and last year, from every retail table. */
+/** All NCR and national monthly prices for this year and last year, from every retail table. */
 export async function fetchPsaPrices(now = new Date()): Promise<PsaRow[]> {
   const years = [String(now.getUTCFullYear() - 1), String(now.getUTCFullYear())];
   const rows: PsaRow[] = [];

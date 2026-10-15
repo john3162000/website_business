@@ -42,6 +42,8 @@ export interface PsaPrice {
   per: "kg" | "piece";
   /** First day of the month, ISO; shown as "PSA Sep 2026". */
   period: string;
+  /** National average, used where PSA has no Metro Manila price; shown as "PSA PH avg Sep 2026". */
+  national?: boolean;
 }
 export interface RecipeInput {
   id: number;
@@ -547,7 +549,7 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
       const psa = p ? (p.per === "kg" ? (p.price / 1000) * g : c.gEach ? (p.price / c.gEach) * g : null) : null;
       const m = line.slug ? ctx.manualPrices?.[line.slug] : undefined;
       if (da !== null) setCost(da, "DA");
-      else if (psa !== null && p) setCost(psa, `PSA ${new Date(p.period).toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "UTC" })}`);
+      else if (psa !== null && p) setCost(psa, `PSA ${p.national ? "PH avg " : ""}${new Date(p.period).toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "UTC" })}`);
       else if (m && m.price != null && m.packAmount) {
         // Packs sold by volume: grams → ml through the catalog's grams-per-cup.
         const amount = m.packUnit === "ml" ? (c.gPerCup ? line.gAP / (c.gPerCup / CUP_ML) : line.gAP) : line.gAP;

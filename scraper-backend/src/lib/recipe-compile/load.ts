@@ -4,6 +4,7 @@ import { isMalformedName, parsePriceBasis } from "@/lib/da-units";
 import { compareDate } from "@/lib/price-history";
 import { yieldCount, type RefNutrition } from "@/lib/scrapers/recipe-structured";
 import { ALIASES, CANONICALS, EXTRA_NUTRIENTS, MANUAL_PRICES } from "./catalog.generated.ts";
+import { psaSnapshot, type PsaRow } from "./psa-snapshot.ts";
 import { compileRecipe, unknownLineCount, type CompileContext, type CompiledRecipe, type DaPrice, type FnriFood, type PsaPrice } from "./compile.ts";
 
 const DAY = 86400000;
@@ -71,30 +72,17 @@ function daSnapshot(rows: PriceRow[], asOf?: string): { da: Map<string, DaPrice>
 }
 
 /** PSA prices are monthly and about a month behind: one older than this (before the snapshot day) isn't used. */
-const PSA_MAX_AGE_DAYS = 120;
-type PsaRow = { commodity: string; unit: string; price: number; period: Date };
 
 /** PSA monthly NCR rows from ~6 months back; empty until the first PSA import. */
 async function loadPsa(): Promise<PsaRow[]> {
   await ensurePsaTable();
   return prisma.psaPrice.findMany({
-    where: { region: "NCR", period: { gte: new Date(Date.now() - 200 * DAY) } },
+    where: { region: { in: ["NCR", "PH"] }, period: { gte: new Date(Date.now() - 200 * DAY) } },
     orderBy: { period: "asc" },
-    select: { commodity: true, unit: true, price: true, period: true },
+    select: { commodity: true, unit: true, price: true, period: true, region: true },
   });
 }
 
-/** The latest PSA price per commodity for months on or before `asOf` (default: now), within PSA_MAX_AGE_DAYS. */
-function psaSnapshot(rows: PsaRow[], asOf?: string): Map<string, PsaPrice> {
-  const until = asOf ? new Date(asOf).getTime() : Date.now();
-  const psa = new Map<string, PsaPrice>();
-  for (const r of rows) {
-    const t = r.period.getTime();
-    if (t > until || t < until - PSA_MAX_AGE_DAYS * DAY) continue;
-    psa.set(r.commodity, { price: r.price, per: r.unit === "piece" ? "piece" : "kg", period: r.period.toISOString() });
-  }
-  return psa;
-}
 
 function compileAll(recipes: Recipes, fnri: Map<string, FnriFood>, da: Map<string, DaPrice>, psa: Map<string, PsaPrice>): CompiledFromDb[] {
   const ctx: CompileContext = { aliases: ALIASES, canonicals: CANONICALS, extraNutrients: EXTRA_NUTRIENTS, manualPrices: MANUAL_PRICES, fnri, da, psa };
