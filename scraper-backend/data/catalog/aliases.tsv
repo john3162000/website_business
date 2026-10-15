@@ -1073,3 +1073,522 @@ fresh or dried bilimbi	FOOD	kamias
 cornish game hens	FOOD	chicken_whole		small whole chicken
 buko juice	WATER			buko juice = young coconut water
 white pepper powder to taste	TO_TASTE	white_pepper		
+avocado	FOOD	avocado		step 3
+avocados peeled and pitted	FOOD	avocado		step 3
+ripe avocado	FOOD	avocado		step 3
+medium sized avocado	FOOD	avocado		step 3
+sized avocado	FOOD	avocado		step 3
+half side of 1 medium avocado	FOOD	avocado		step 3
+kaong	FOOD	kaong		step 3
+green kaong	FOOD	kaong		step 3
+red kaong	FOOD	kaong		step 3
+latik	FOOD	latik		step 3
+1/4 cup latik	FOOD	latik		step 3
+santol	FOOD	santol		step 3
+strawberries	FOOD	strawberries		step 3
+strawberry	FOOD	strawberries		step 3
+fresh strawberries	FOOD	strawberries		step 3
+medium strawberries	FOOD	strawberries		step 3
+peaches	FOOD	peaches_canned		step 3
+peach	FOOD	peaches_canned		step 3
+sliced peaches	FOOD	peaches_canned		step 3
+pineapple	FOOD	pineapple_fresh		step 3
+chopped pineapple	FOOD	pineapple_fresh		step 3
+chopped fresh pineapple	FOOD	pineapple_fresh		step 3
+fresh pineapple	FOOD	pineapple_fresh		step 3
+grapes	FOOD	grapes		step 3
+seedless grapes	FOOD	grapes		step 3
+red seedless grapes	FOOD	grapes		step 3
+watermelon	FOOD	watermelon		step 3
+cantaloupe	FOOD	cantaloupe		step 3
+small cantaloupe	FOOD	cantaloupe		step 3
+kiwi	FOOD	kiwi		step 3
+kiwifruit	FOOD	kiwi		step 3
+dates	FOOD	dates		step 3
+pitted dates	FOOD	dates		step 3
+prunes	FOOD	prunes		step 3
+chopped prunes	FOOD	prunes		step 3
+cranberries	FOOD	cranberries		step 3
+fresh cranberries	FOOD	cranberries		step 3
+fresh or frozen cranberry	FOOD	cranberries		step 3
+cranberry	FOOD	cranberries		step 3
+cranberry sauce	FOOD	cranberry_sauce		step 3
+guava	FOOD	guava		step 3
+guavas	FOOD	guava		step 3
+jackfruit	FOOD	jackfruit_ripe		step 3
+ripe jackfruit	FOOD	jackfruit_ripe		step 3
+sliced ripe jackfruit	FOOD	jackfruit_ripe		step 3
+ripe jackfruit sliced into strips	FOOD	jackfruit_ripe		step 3
+langka	FOOD	jackfruit_ripe		step 3
+peeled mandarin	FOOD	mandarin_canned		step 3
+mandarin oranges	FOOD	mandarin_canned		step 3
+maraschino cherries	FOOD	cherries_maraschino		step 3
+pitted tart red cherries	FOOD	cherries_sour_canned		step 3
+cherrie pie filling	FOOD	cherry_pie_filling		step 3
+cherry pie filling	FOOD	cherry_pie_filling		step 3
+can cherrie pie filling	FOOD	cherry_pie_filling		step 3
+green mangoes	FOOD	mango_green		step 3
+medium green mangoes	FOOD	mango_green		step 3
+green mango	FOOD	mango_green		step 3
+unripe mango	FOOD	mango_green		step 3
+young coconut meat	FOOD	buko_meat		step 3
+shredded young coconut meat	FOOD	buko_meat		step 3
+young coconut strips	FOOD	buko_meat		step 3
+young coconut	FOOD	buko_meat		step 3
+fresh coconut strips	FOOD	buko_meat		step 3
+young coconuts	FOOD	buko_whole		step 3
+sweetened shredded coconut	FOOD	coconut_desiccated_sweet		step 3
+sweetened desiccated coconut	FOOD	coconut_desiccated_sweet		step 3
+shredded sweetened desiccated coconut	FOOD	coconut_desiccated_sweet		step 3
+sweet shredded coconut	FOOD	coconut_desiccated_sweet		step 3
+sweet shredded coconut or desiccated coconut	FOOD	coconut_desiccated_sweet		step 3
+lettuce	FOOD	lettuce		step 3
+leaf lettuce	FOOD	lettuce		step 3
+curly leaf lettuce	FOOD	lettuce		step 3
+leaf curly lettuce	FOOD	lettuce		step 3
+lettuce leaves	FOOD	lettuce		step 3
+chopped lettuce	FOOD	lettuce		step 3
+of lettuce	FOOD	lettuce		step 3
+chopped iceberg lettuce	FOOD	lettuce		step 3
+iceberg lettuce	FOOD	lettuce		step 3
+mixed greens	FOOD	lettuce		step 3
+spring mix	FOOD	lettuce		step 3
+chives	FOOD	chives		step 3
+chopped chives	FOOD	chives		step 3
+chinese chives	FOOD	chives		step 3
+chinese chive	FOOD	chives		step 3
+stalks chives	FOOD	chives		step 3
+dill	FOOD	dill_fresh		step 3
+chopped dill	FOOD	dill_fresh		step 3
+fresh dill	FOOD	dill_fresh		step 3
+dill weed	FOOD	dill_dried		step 3
+dried dill weed	FOOD	dill_dried		step 3
+leeks	FOOD	leeks		step 3
+leek	FOOD	leeks		step 3
+leeks chopped	FOOD	leeks		step 3
+stalks leeks	FOOD	leeks		step 3
+shallot	FOOD	shallots		step 3
+shallots	FOOD	shallots		step 3
+kale	FOOD	kale		step 3
+kale leaves	FOOD	kale		step 3
+dried chopped kale leaves	FOOD	kale		step 3
+arugula	FOOD	arugula		step 3
+fresh arugula	FOOD	arugula		step 3
+collard greens	FOOD	collard_greens		step 3
+fresh collard greens	FOOD	collard_greens		step 3
+brussels sprouts	FOOD	brussels_sprouts		step 3
+fennel bulb	FOOD	fennel_bulb		step 3
+fennel	FOOD	fennel_bulb		step 3
+water chestnut	FOOD	water_chestnuts		step 3
+water chestnuts	FOOD	water_chestnuts		step 3
+chopped water chestnuts	FOOD	water_chestnuts		step 3
+straw mushrooms	FOOD	mushroom_straw		step 3
+straw mushroom	FOOD	mushroom_straw		step 3
+straw mushroom, water discarded	FOOD	mushroom_straw		step 3
+dried wood ear	FOOD	wood_ear_dried		step 3
+dried wood ear mushroom	FOOD	wood_ear_dried		step 3
+wood ear	FOOD	wood_ear_dried		step 3
+wood ear mushroom	FOOD	wood_ear_dried		step 3
+dried taro leaves	FOOD	taro_leaves_dried		step 3
+taro leaves	FOOD	taro_leaves_dried		step 3
+alugbati	FOOD	alugbati		step 3
+amaranth leaves	FOOD	amaranth_leaves		step 3
+kulitis	FOOD	amaranth_leaves		step 3
+saluyot leaves	FOOD	saluyot		step 3
+saluyot	FOOD	saluyot		step 3
+jute leaves	FOOD	saluyot		step 3
+bago leaves	FOOD	bago_leaves		step 3
+tamarind leaves	FOOD	tamarind_leaves		step 3
+pandan leaves	FOOD	pandan_leaves		step 3
+pandan	FOOD	pandan_leaves		step 3
+pandan skrewpine leaves	FOOD	pandan_leaves		step 3
+fresh or fresh frozen pandan leaves	FOOD	pandan_leaves		step 3
+lime leaves	FOOD	lime_leaves		step 3
+kaffir lime leaves	FOOD	lime_leaves		step 3
+curry leaves	FOOD	curry_leaves		step 3
+sliced turmeric	FOOD	turmeric_fresh		step 3
+knob turmeric	FOOD	turmeric_fresh		step 3
+fresh turmeric	FOOD	turmeric_fresh		step 3
+hearts of palm	FOOD	heart_of_palm		step 3
+heart of palm	FOOD	heart_of_palm		step 3
+ubod	FOOD	heart_of_palm		step 3
+nori	FOOD	nori		step 3
+sheets nori	FOOD	nori		step 3
+nori strips	FOOD	nori		step 3
+sheets sushinori	FOOD	nori		step 3
+sushinori	FOOD	nori		step 3
+mint	FOOD	mint		step 3
+chopped mint	FOOD	mint		step 3
+mint leaves	FOOD	mint		step 3
+sage	FOOD	sage_dried		step 3
+dried sage	FOOD	sage_dried		step 3
+dry sage	FOOD	sage_dried		step 3
+coriander seeds	FOOD	coriander_ground		step 3
+ground coriander	FOOD	coriander_ground		step 3
+ground cardamom	FOOD	cardamom		step 3
+cardamom seeds	FOOD	cardamom		step 3
+black cardamom pod	FOOD	cardamom		step 3
+cardamom	FOOD	cardamom		step 3
+fennel seeds	FOOD	fennel_seeds		step 3
+dried tarragon	FOOD	tarragon_dried		step 3
+tarragon	FOOD	tarragon_dried		step 3
+poultry seasoning	FOOD	poultry_seasoning		step 3
+taco seasoning	FOOD	taco_seasoning		step 3
+taco seasoning mix	FOOD	taco_seasoning		step 3
+pouch taco seasoning	FOOD	taco_seasoning		step 3
+pigeon pea	FOOD	pigeon_pea		step 3
+pigeon peas	FOOD	pigeon_pea		step 3
+kadyos	FOOD	pigeon_pea		step 3
+canned green chiles	FOOD	green_chiles_canned		step 3
+canned green chiles, diced	FOOD	green_chiles_canned		step 3
+canned peeled green chiles	FOOD	green_chiles_canned		step 3
+hominy	FOOD	hominy		step 3
+bung	FOOD	pork_intestine_large		step 3
+pig large intestine	FOOD	pork_intestine_large		step 3
+pig’s large intestine	FOOD	pork_intestine_large		step 3
+pig intestine	FOOD	pork_intestine_large		step 3
+well cleaned intestine	FOOD	pork_intestine_large		step 3
+pork intestine	FOOD	pork_intestine_large		step 3
+pig’s small intestine	FOOD	pork_intestine_small		step 3
+pig or cow’s small intestine	FOOD	pork_intestine_small		step 3
+small intestine	FOOD	pork_intestine_small		step 3
+cow’s small intestine	FOOD	beef_intestine_small		step 3
+pig heart	FOOD	pork_heart		step 3
+pig’s heart	FOOD	pork_heart		step 3
+pork heart	FOOD	pork_heart		step 3
+pig kidney	FOOD	pork_kidney		step 3
+pork kidney	FOOD	pork_kidney		step 3
+pig stomach	FOOD	pork_stomach		step 3
+pork stomach	FOOD	pork_stomach		step 3
+pig head	FOOD	pork_head		step 3
+pig face	FOOD	pork_head		step 3
+pig cheeks	FOOD	pork_head		step 3
+pig snout	FOOD	pork_head		step 3
+pork head	FOOD	pork_head		step 3
+turkey	FOOD	turkey_whole		step 3
+turkey breast	FOOD	turkey_breast		step 3
+leftover roast turkey	FOOD	turkey_cooked		step 3
+chopped leftover turkey	FOOD	turkey_cooked		step 3
+of leftover roast turkey	FOOD	turkey_cooked		step 3
+of leftover roast turkey breast	FOOD	turkey_cooked		step 3
+turkey deli	FOOD	turkey_cooked		step 3
+ground turkey	FOOD	turkey_ground		step 3
+duck	FOOD	duck		step 3
+duck meat	FOOD	duck		step 3
+lamb chops	FOOD	lamb_chops		step 3
+rack of lamb	FOOD	lamb_chops		step 3
+racks lamb	FOOD	lamb_chops		step 3
+lamb	FOOD	lamb_chops		step 3
+horse meat	FOOD	horse_meat		step 3
+rabbit meat	FOOD	rabbit		step 3
+rabbit	FOOD	rabbit		step 3
+uncooked tocino	FOOD	tocino		step 3
+tocino	FOOD	tocino		step 3
+pork tocino	FOOD	tocino		step 3
+vienna sausage	FOOD	vienna_sausage		step 3
+chopped vienna sausage	FOOD	vienna_sausage		step 3
+cdo idol cheesedog	FOOD	hotdog_cheese		step 3
+cheesedog	FOOD	hotdog_cheese		step 3
+cheese dog	FOOD	hotdog_cheese		step 3
+italian sausage	FOOD	sausage_italian		step 3
+ground italian sausage	FOOD	sausage_italian		step 3
+grilled italian sausage	FOOD	sausage_italian		step 3
+bulk pork sausage	FOOD	sausage_italian		step 3
+sausage	FOOD	sausage_italian		step 3
+sausage links	FOOD	sausage_italian		step 3
+sausage patties	FOOD	sausage_italian		step 3
+bratwurst	FOOD	bratwurst		step 3
+kielbasa sausage	FOOD	kielbasa		step 3
+sliced kielbasa sausage	FOOD	kielbasa		step 3
+kielbasa	FOOD	kielbasa		step 3
+meatballs	FOOD	meatballs		step 3
+cooked meatballs	FOOD	meatballs		step 3
+ikea or swedish meatballs	FOOD	meatballs		step 3
+chicken nuggets	FOOD	chicken_nuggets		step 3
+scallops	FOOD	scallops		step 3
+bay scallops	FOOD	scallops		step 3
+sea scallops	FOOD	scallops		step 3
+jumbo scallops	FOOD	scallops		step 3
+fresh lobsters	FOOD	lobster		step 3
+lobster	FOOD	lobster		step 3
+lobsters	FOOD	lobster		step 3
+lobster tails	FOOD	lobster_tail		step 3
+lobster tail	FOOD	lobster_tail		step 3
+meat from 2 steamed lobsters	FOOD	lobster_tail		step 3
+octopus	FOOD	octopus		step 3
+pugita	FOOD	octopus		step 3
+steamed oysters	FOOD	oyster_meat		step 3
+oyster meat	FOOD	oyster_meat		step 3
+shucked oysters	FOOD	oyster_meat		step 3
+apple snails	FOOD	snails		step 3
+sea snails	FOOD	snails		step 3
+snails	FOOD	snails		step 3
+kuhol	FOOD	snails		step 3
+crawfish	FOOD	crawfish		step 3
+crayfish	FOOD	crawfish		step 3
+dulong	FOOD	dulong		step 3
+silverfish	FOOD	dulong		step 3
+smelt	FOOD	smelt		step 3
+small smelt	FOOD	smelt		step 3
+butterfish	FOOD	butterfish		step 3
+pompano	FOOD	pompano		step 3
+pampano	FOOD	pompano		step 3
+large pompano	FOOD	pompano		step 3
+tanigue	FOOD	tanigue		step 3
+mackerel	FOOD	mackerel_canned		step 3
+anchovies	FOOD	anchovies_canned		step 3
+anchovy fillets	FOOD	anchovies_canned		step 3
+lobster balls	FOOD	fish_ball		step 3
+fish balls	FOOD	fish_ball		step 3
+fishballs	FOOD	fish_ball		step 3
+masago	FOOD	fish_roe		step 3
+fish roe	FOOD	fish_roe		step 3
+fried bilong-bilong	FOOD	moonfish		step 3
+bilong-bilong	FOOD	moonfish		step 3
+moonfish	FOOD	moonfish		step 3
+mussel meat	FOOD	mussel_meat		step 3
+condensed cream of mushroom	FOOD	soup_cream_mushroom		step 3
+condensed cream of mushroom soup	FOOD	soup_cream_mushroom		step 3
+cream of mushroom	FOOD	soup_cream_mushroom		step 3
+cream of mushroom soup	FOOD	soup_cream_mushroom		step 3
+condense cream of mushroom	FOOD	soup_cream_mushroom		step 3
+can condense cream of mushroom	FOOD	soup_cream_mushroom		step 3
+cream of chicken and mushroom	FOOD	soup_cream_chicken		step 3
+cream of chicken	FOOD	soup_cream_chicken		step 3
+condensed cream of chicken soup	FOOD	soup_cream_chicken		step 3
+cream style corn	FOOD	corn_cream_style		step 3
+sweet corn cream style	FOOD	corn_cream_style		step 3
+shredded kernel corn	FOOD	corn_cream_style		step 3
+canned pumpkin	FOOD	pumpkin_canned		step 3
+red kidney beans	FOOD	kidney_beans_canned		step 3
+can red kidney beans	FOOD	kidney_beans_canned		step 3
+canned red kidney beans	FOOD	kidney_beans_canned		step 3
+can light red kidney beans	FOOD	kidney_beans_canned		step 3
+kidney beans	FOOD	kidney_beans_canned		step 3
+refried beans	FOOD	refried_beans		step 3
+canned refried beans	FOOD	refried_beans		step 3
+cannellini beans	FOOD	cannellini_beans		step 3
+white beans	FOOD	cannellini_beans		step 3
+pork and beans	FOOD	pork_and_beans		step 3
+chocolate chips	FOOD	chocolate_chips		step 3
+semi sweet chocolate chips	FOOD	chocolate_chips		step 3
+semi-sweet chocolate chips	FOOD	chocolate_chips		step 3
+semisweet chocolate chips	FOOD	chocolate_chips		step 3
+semi-sweet chocolate	FOOD	chocolate_chips		step 3
+bitter sweet chocolate chips	FOOD	chocolate_chips		step 3
+unsweetened chocolate chunks or chocolate chips	FOOD	chocolate_chips		step 3
+dark chocolate	FOOD	chocolate_dark		step 3
+white chocolate chips	FOOD	chocolate_white		step 3
+white chocolate	FOOD	chocolate_white		step 3
+unsweetened chocolate	FOOD	chocolate_unsweetened		step 3
+tablea	FOOD	tablea		step 3
+cacao tablea	FOOD	tablea		step 3
+pure cocoa tablea	FOOD	tablea		step 3
+molasses	FOOD	molasses		step 3
+blackstrap molasses	FOOD	molasses		step 3
+light corn syrup	FOOD	corn_syrup		step 3
+corn syrup	FOOD	corn_syrup		step 3
+pancake syrup	FOOD	pancake_syrup		step 3
+maple syrup	FOOD	maple_syrup		step 3
+unflavored gelatin	FOOD	gelatin_unflavored		step 3
+unflavored gelatin powder	FOOD	gelatin_unflavored		step 3
+powdered gelatin	FOOD	gelatin_unflavored		step 3
+red gelatin powder (unflavored)	FOOD	gelatin_unflavored		step 3
+red gelatin powder	FOOD	gelatin_unflavored		step 3
+agar powder	FOOD	agar		step 3
+agar	FOOD	agar		step 3
+gulaman	FOOD	agar		step 3
+yogurt	FOOD	yogurt_plain		step 3
+plain yogurt	FOOD	yogurt_plain		step 3
+plain yoghurt	FOOD	yogurt_plain		step 3
+unflavored yogurt	FOOD	yogurt_plain		step 3
+nonfat plain yogurt	FOOD	yogurt_plain		step 3
+plain greek yogurt	FOOD	yogurt_greek		step 3
+greek yogurt	FOOD	yogurt_greek		step 3
+non-fat vanilla yogurt	FOOD	yogurt_vanilla		step 3
+vanilla greek yogurt	FOOD	yogurt_vanilla		step 3
+vanilla yogurt	FOOD	yogurt_vanilla		step 3
+vanilla ice cream	FOOD	ice_cream_vanilla		step 3
+selecta vanilla ice cream	FOOD	ice_cream_vanilla		step 3
+whipped cream	FOOD	whipped_cream		step 3
+oats	FOOD	oats		step 3
+quick 1-minute oats	FOOD	oats		step 3
+rolled oats	FOOD	oats		step 3
+quick oats	FOOD	oats		step 3
+oat bran	FOOD	oat_bran		step 3
+wheat bran	FOOD	wheat_bran		step 3
+dry yeast	FOOD	yeast_dry		step 3
+rapid rise yeast	FOOD	yeast_dry		step 3
+instant yeast	FOOD	yeast_dry		step 3
+active dry yeast	FOOD	yeast_dry		step 3
+yeast	FOOD	yeast_dry		step 3
+pancake mix	FOOD	pancake_mix		step 3
+bisquick pancake mix	FOOD	pancake_mix		step 3
+almonds	FOOD	almonds		step 3
+roasted almonds	FOOD	almonds		step 3
+sliced almond	FOOD	almonds		step 3
+sliced almonds	FOOD	almonds		step 3
+gluten free sliced almonds	FOOD	almonds		step 3
+cashew nuts	FOOD	cashews		step 3
+roasted cashew nuts	FOOD	cashews		step 3
+roasted cashews	FOOD	cashews		step 3
+toasted cashews	FOOD	cashews		step 3
+chopped cashew	FOOD	cashews		step 3
+cashews	FOOD	cashews		step 3
+pine nuts	FOOD	pine_nuts		step 3
+pecan chips	FOOD	pecans		step 3
+pecans	FOOD	pecans		step 3
+roasted sunflower seeds	FOOD	sunflower_seeds		step 3
+sunflower seeds	FOOD	sunflower_seeds		step 3
+pumpkin seeds	FOOD	pumpkin_seeds		step 3
+capers	FOOD	capers		step 3
+bottled capers	FOOD	capers		step 3
+dill pickle spears	FOOD	pickles_dill		step 3
+dill pickle cut into sticks	FOOD	pickles_dill		step 3
+dill pickle	FOOD	pickles_dill		step 3
+dill pickles	FOOD	pickles_dill		step 3
+medium whole sweet pickles	FOOD	pickles_sweet		step 3
+sweet pickles or gherkins	FOOD	pickles_sweet		step 3
+sweet pickles	FOOD	pickles_sweet		step 3
+sauerkraut	FOOD	sauerkraut		step 3
+sauerkraut`	FOOD	sauerkraut		step 3
+kimchi	FOOD	kimchi		step 3
+kimchi juice	FOOD	kimchi		step 3
+papaya atchara	FOOD	atchara		step 3
+atchara	FOOD	atchara		step 3
+atsara	FOOD	atchara		step 3
+teriyaki sauce	FOOD	teriyaki_sauce		step 3
+sweet and sour sauce	FOOD	sweet_sour_sauce		step 3
+pesto sauce	FOOD	pesto		step 3
+pesto	FOOD	pesto		step 3
+pizza sauce	FOOD	pizza_sauce		step 3
+tartar sauce	FOOD	tartar_sauce		step 3
+enchilada sauce	FOOD	enchilada_sauce		step 3
+cheese sauce	FOOD	cheese_sauce		step 3
+packet of cheese sauce	FOOD	cheese_sauce		step 3
+salsa con queso	FOOD	salsa_con_queso		step 3
+lite caesar salad dressing	FOOD	caesar_dressing_lite		step 3
+light caesar dressing	FOOD	caesar_dressing_lite		step 3
+thousand island dressing	FOOD	thousand_island		step 3
+kfc style gravy	FOOD	gravy_brown		step 3
+gravy	FOOD	gravy_brown		step 3
+caramel sauce	FOOD	caramel_sauce		step 3
+jelly	FOOD	jelly		step 3
+coleslaw	FOOD	coleslaw		step 3
+coke	FOOD	cola		step 3
+coca-cola	FOOD	cola		step 3
+cola drink	FOOD	cola		step 3
+cola	FOOD	cola		step 3
+vodka	FOOD	liquor		step 3
+brandy	FOOD	liquor		step 3
+cherry liqueur or rhum	FOOD	liquor		step 3
+rum	FOOD	liquor		step 3
+onion soup mix	FOOD	onion_soup_mix		step 3
+onion soup mix powder	FOOD	onion_soup_mix		step 3
+french onion soup mix	FOOD	onion_soup_mix		step 3
+envelope of onion soup and dip mix	FOOD	onion_soup_mix		step 3
+onion soup and dip mix	FOOD	onion_soup_mix		step 3
+ube flavoring	FOOD	flavoring		step 3
+ube extract	FOOD	flavoring		step 3
+purple ube flavoring	FOOD	flavoring		step 3
+buko pandan flavoring	FOOD	flavoring		step 3
+buko-pandan essence	FOOD	flavoring		step 3
+pandan essence	FOOD	flavoring		step 3
+almond extract	FOOD	flavoring		step 3
+pinipig	FOOD	pinipig		step 3
+tapioca starch	FOOD	tapioca_starch		step 3
+jet-puffed marshmallows	FOOD	marshmallows		step 3
+marshmallows	FOOD	marshmallows		step 3
+marshmallow	FOOD	marshmallows		step 3
+pandesal	FOOD	pandesal		step 3
+pan de sal	FOOD	pandesal		step 3
+hamburger buns	FOOD	hamburger_buns		step 3
+burger bun	FOOD	hamburger_buns		step 3
+burger buns	FOOD	hamburger_buns		step 3
+fresh hamburger buns	FOOD	hamburger_buns		step 3
+kaiser buns or hamburger buns	FOOD	hamburger_buns		step 3
+kaiser roll or hamburger bun	FOOD	hamburger_buns		step 3
+hoagie roll	FOOD	hamburger_buns		step 3
+dinner rolls	FOOD	dinner_rolls		step 3
+english muffins	FOOD	english_muffins		step 3
+english muffin	FOOD	english_muffins		step 3
+cornbread	FOOD	cornbread		step 3
+pie crust	FOOD	pie_crust		step 3
+unbaked pie crust	FOOD	pie_crust		step 3
+pastry dough	FOOD	pie_crust		step 3
+pastry doughs	FOOD	pie_crust		step 3
+pastry dough for a single crust pie	FOOD	pie_crust		step 3
+pastry dough for double crust pie	FOOD	pie_crust		step 3
+pastry for double crust pie	FOOD	pie_crust		step 3
+ready made graham pie crust	FOOD	graham_pie_crust		step 3
+graham pie crust	FOOD	graham_pie_crust		step 3
+chocolate cookie pie crust	FOOD	chocolate_pie_crust		step 3
+croutons	FOOD	croutons		step 3
+pack croutons	FOOD	croutons		step 3
+soda crackers	FOOD	soda_crackers		step 3
+soda crackers or snack cracker	FOOD	soda_crackers		step 3
+crackers	FOOD	soda_crackers		step 3
+corn tortillas	FOOD	tortilla_corn		step 3
+package corn tortillas	FOOD	tortilla_corn		step 3
+corn tortilla	FOOD	tortilla_corn		step 3
+tortilla chips	FOOD	tortilla_chips		step 3
+corn tortilla strips	FOOD	tortilla_chips		step 3
+blue tortilla chips	FOOD	tortilla_chips		step 3
+large bag blue tortilla chips	FOOD	tortilla_chips		step 3
+fresh tortilla chips	FOOD	tortilla_chips		step 3
+tostada shells	FOOD	taco_shells		step 3
+taco shells	FOOD	taco_shells		step 3
+frozen french fries	FOOD	french_fries_frozen		step 3
+cooked crispy fries	FOOD	french_fries_frozen		step 3
+french fries	FOOD	french_fries_frozen		step 3
+hash browns	FOOD	hash_browns		step 3
+tater tots	FOOD	tater_tots		step 3
+sodium phosphate	FOOD	additive_trace		step 3
+sodium benzoate	FOOD	additive_trace		step 3
+vitamin c powder	FOOD	additive_trace		step 3
+carrageenan	FOOD	additive_trace		step 3
+meat enhancer	FOOD	additive_trace		step 3
+isolate	FOOD	additive_trace		step 3
+romaine lettuce leaves	FOOD	lettuce_romaine		
+of pineapple	FOOD	pineapple_canned		"slices of pineapple, use canned pineapple"
+spam light	FOOD	luncheon_meat		
+spam lite	FOOD	luncheon_meat		
+of spam lite	FOOD	luncheon_meat		
+can spam light	FOOD	luncheon_meat		
+carne asada	FOOD	beef_flank		grilled flank/skirt steak
+grilled carne asada	FOOD	beef_flank		grilled flank/skirt steak
+bulalo	FOOD	beef_shank		"bulalo beef shank"
+calf knuckle bones	FOOD	beef_neck_bone		soup bones
+shank bones with marrow	FOOD	beef_neck_bone		soup bones
+round clam	FOOD	clams		
+romano beans	FOOD	beans_baguio		flat green beans
+italian beans	FOOD	beans_baguio		flat green beans
+fresh chow mein noodles	FOOD	noodles_miki		fresh egg noodles
+hong kong style pan fried noodles	FOOD	noodles_egg		
+dumpling noodles	FOOD	noodles_egg		
+wonton noodles	FOOD	noodles_egg		
+mi trung	FOOD	noodles_egg		dried egg noodles
+dried noodles	FOOD	noodles_egg		"dried noodles Mi Trung"
+habhab noodles	FOOD	noodles_miki		Lucban miki
+pancit bato	FOOD	noodles_pancit_canton		dried wheat noodles
+palabok noodles	FOOD	noodles_bihon		rice/cornstarch sticks
+thick palabok noodles	FOOD	noodles_bihon		rice/cornstarch sticks
+gochugaru	FOOD	red_pepper_flakes		Korean red pepper flakes
+yellow food coloring	FOOD	food_coloring_red		food coloring, another color
+violet food coloring	FOOD	food_coloring_red		food coloring, another color
+coloring – choco brown	FOOD	food_coloring_red		food coloring, another color
+drops red and green food coloring	FOOD	food_coloring_red		
+red and green food coloring	FOOD	food_coloring_red		
+lemongrass leaves	FOOD	lemongrass		
+stalks lemongrass leaves	FOOD	lemongrass		
+yellow mustard	FOOD	mustard_dijon		prepared mustard
+gelatin	FOOD	gelatin_dessert		step 3
+salted duck egg	FOOD	salted_duck_egg		step 3
+salted duck eggs	FOOD	salted_duck_egg		step 3
+salted egg	FOOD	salted_duck_egg		step 3
+itlog na pula	FOOD	salted_duck_egg		step 3
+beef small intestine	FOOD	beef_intestine_small		
+~250g pancit canton noodles (flour noodles)	FOOD	noodles_pancit_canton		
+dill relish	FOOD	pickles_dill		
+pan drippings from roast turkey	TO_TASTE			
+head lettuce	FOOD	lettuce		unit:head

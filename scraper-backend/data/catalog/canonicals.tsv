@@ -302,7 +302,7 @@ fruit_cocktail	Fruit cocktail (canned)	E107	Fruit cocktail, tropical, in syrup, 
 half_and_half	Half and half	J015	Milk, evaporated	FNRI has only cream (J007, 23.9% fat) and milk; half-and-half (~12% fat) not close		dairy not tracked by DA	DAIRY	242										100	liquid	normal	medium	could approximate as 50/50 J014 milk + J007 cream			
 kamias	Kamias (bilimbi)	E019	Bilimbi	raw bilimbi fruit		not in DA list	PLANT		12									100	FNRI EP 100	normal	high	gEach 12?			
 lettuce_romaine	Romaine lettuce	D115	Lettuce lvs & petioles	raw lettuce leaves & petioles	Lettuce (Romaine)	exact variety	PLANT	47	15									100	leaves/shredded; FNRI EP 79 for whole head	normal	high	gEach (one leaf) 15?			
-luncheon_meat	Luncheon meat	F235	Luncheon meat, cnd	canned luncheon meat		not sold by DA	MEAT		165									100	canned, no refuse	normal	high	gEach = one DTI 165 g can			
+luncheon_meat	Luncheon meat	F235	Luncheon meat, cnd	canned luncheon meat		not sold by DA	MEAT		165								28	100	canned, no refuse	normal	high	gEach = one DTI 165 g can			
 lye_water	Lye water (lihiya)			not in FNRI (alkaline solution, no energy)		not a DA commodity	PLANT	240										100	liquid	normal	high	gPerCup 240?			
 mix_crab_corn_soup	Knorr crab and corn soup mix			no instant soup powder of this kind in FNRI		branded mix, not DA	ANIMAL_CONDIMENT											100	packet weighed in grams	normal	high				
 orange_juice	Orange juice	Q046	Juice, orange, unsweetn, cnd	unsweetened orange juice		not sold by DA	PLANT	248										100	liquid	normal	high				
@@ -360,3 +360,187 @@ mango_ripe	Mango, ripe (carabao)	E051	Mango, Manila super, ripe	carabao mango, r
 red_snapper	Red snapper (maya-maya)	G098	Red snapper/Malabar	FNRI red snapper		DA doesn't list maya-maya; PSA does	FISH		700									55	whole fish [heur]	normal	medium				FRESH FISH, SNAPPER, MAYA-MAYA, MEDIUM, 1 KG
 tapioca_pearls	Tapioca pearls (sago)	B035	Tapioca starch ball	dry tapioca pearls			PLANT	152										100		normal	medium				
 milk_powdered	Powdered milk	J020	Milk, pwdr, full cream	full-cream powdered milk			DAIRY	128										100		normal	medium				
+avocado	Avocado	E004	Avocado, green	FNRI Avocado, green / Abokado, berde	Avocado	DA daily price	PLANT	150	250									70		normal	medium	PH avocado ≈250 g			FRESH FRUIT, AVOCADO, 1 KG
+kaong	Kaong (sugar palm fruit)	E090	Sugar palm	FNRI Sugar palm / Kaong		no DA/PSA price	PLANT	160	5									100		normal	medium	bottled kaong in syrup, drained			
+latik	Latik (coconut curd)	C053	Coconut, cream curd	FNRI Coconut, cream curd / Latik		no DA/PSA price	PLANT	120										100		normal	medium				
+santol	Santol	E078	Santol	FNRI Santol / Cotton fruit		no DA/PSA price	PLANT		150									59		normal	medium				
+strawberries	Strawberries	E088	Strawberry	FNRI Strawberry		no DA/PSA price	PLANT	152	12									98		normal	medium				
+peaches_canned	Peaches, canned in syrup			FNRI has no peaches, canned in syrup; USDA SR Legacy 169112		no DA/PSA price	PLANT	262	98									100		normal	medium	USDA 1 half with liquid 98 g			
+pineapple_fresh	Pineapple, fresh			FNRI has no pineapple, fresh; USDA SR Legacy 169124		PSA monthly price	PLANT	165	905									51		normal	medium	USDA refuse 49% (crown, peel, core)			FRESH FRUIT, PINEAPPLE, PINYA, MEDIUM, 1 KG
+grapes	Grapes			FNRI has no grapes; USDA SR Legacy 174683		PSA monthly price	PLANT	151	5									100		normal	medium				FRESH FRUIT, GRAPES, 1 KG
+watermelon	Watermelon	E064	Melon, watermelon	FNRI Melon, watermelon / Pakwan	Watermelon	DA daily price	PLANT	152										62		normal	medium				
+cantaloupe	Cantaloupe (melon)			FNRI has no cantaloupe (melon); USDA SR Legacy 169092	Melon	DA daily price	PLANT	160	800									51		normal	medium	DA "Melon"			
+kiwi	Kiwifruit			FNRI has no kiwifruit; USDA SR Legacy 168153		no DA/PSA price	PLANT	180	69									86		normal	medium				
+dates	Dates, dried	E105	Date, dried	FNRI Date, dried		no DA/PSA price	PLANT	147	7									100		normal	medium				
+prunes	Prunes			FNRI has no prunes; USDA SR Legacy 168162		no DA/PSA price	PLANT	174	9.5									100		normal	medium				
+cranberries	Cranberries			FNRI has no cranberries; USDA SR Legacy 171722		no DA/PSA price	PLANT	100										100		normal	medium				
+cranberry_sauce	Cranberry sauce (canned)			FNRI has no cranberry sauce (canned); USDA SR Legacy 167803		no DA/PSA price	PLANT	280										100		normal	medium	USDA 1/4 cup 70 g			
+guava	Guava	E032	Guava, white	FNRI Guava, white / Bayabas, puti		no DA/PSA price	PLANT	165	100									99		normal	medium				
+jackfruit_ripe	Jackfruit, ripe (langka)	E033	Jackfruit	FNRI Jackfruit / Langka/Nangka		no DA/PSA price	PLANT	165										34		normal	medium	ep 34% for a whole fruit; sliced cups are flesh			
+mandarin_canned	Mandarin oranges, canned			FNRI has no mandarin oranges, canned; USDA SR Legacy 168184		no DA/PSA price	PLANT	189										100		normal	medium				
+cherries_maraschino	Maraschino cherries			FNRI has no maraschino cherries; USDA SR Legacy 167766		no DA/PSA price	PLANT		5									100		normal	medium				
+cherries_sour_canned	Sour cherries, canned			FNRI has no sour cherries, canned; USDA SR Legacy 171716		no DA/PSA price	PLANT	256										100		normal	medium				
+cherry_pie_filling	Cherry pie filling (canned)			FNRI has no cherry pie filling (canned); USDA SR Legacy 168824		no DA/PSA price	PLANT	300	595									100		normal	medium	1 can 21 oz = 595 g			
+mango_green	Mango, green (unripe)	E052	Mango, Manila super, unripe	FNRI Mango, Manila super, unripe / Mangga, kalabaw, hilaw		no DA/PSA price	PLANT	165	250									72		normal	medium				
+buko_meat	Young coconut meat (buko)	C008	Coconut meat, young	FNRI Coconut meat, young / Buko, malakanin		PSA monthly price	PLANT	80	200									100		normal	medium	gEach = meat of one buko (≈200 g), so the PSA per-nut price covers it			YOUNG COCONUT, MEDIUM, 1 PC
+buko_whole	Young coconut (whole nut)	C008	Coconut meat, young	FNRI Coconut meat, young / Buko, malakanin		PSA monthly price	PLANT		200									100		normal	medium	counted as its meat (≈200 g); the water is not counted			YOUNG COCONUT, MEDIUM, 1 PC
+coconut_desiccated_sweet	Sweetened desiccated coconut			FNRI has no sweetened desiccated coconut; USDA SR Legacy 168586		no DA/PSA price	PLANT	93										100		normal	medium				
+lettuce	Lettuce (green leaf / iceberg)	D115	Lettuce lvs & petioles	FNRI Lettuce lvs & petioles / Letsugas dahon at tangkay	Lettuce (Green Ice)	DA daily price	PLANT	36	15				360					79		normal	medium	gEach = one leaf			
+chives	Chives			FNRI has no chives; USDA SR Legacy 169994		no DA/PSA price	PLANT	48	3									100		normal	medium	gStalk 3 g			
+dill_fresh	Dill, fresh			FNRI has no dill, fresh; USDA SR Legacy 172233		no DA/PSA price	PLANT	9										100		normal	medium				
+dill_dried	Dill weed, dried			FNRI has no dill weed, dried; USDA SR Legacy 171322		no DA/PSA price	PLANT	50										100		normal	medium				
+leeks	Leeks			FNRI has no leeks; USDA SR Legacy 169246		no DA/PSA price	PLANT	89	89						300	89		100		normal	medium				
+shallots	Shallots			FNRI has no shallots; USDA SR Legacy 170499		no DA/PSA price	PLANT	160	30									100		normal	medium				
+kale	Kale			FNRI has no kale; USDA SR Legacy 168421		no DA/PSA price	PLANT	21							200			100		normal	medium				
+arugula	Arugula			FNRI has no arugula; USDA SR Legacy 169387		no DA/PSA price	PLANT	20										100		normal	medium				
+collard_greens	Collard greens			FNRI has no collard greens; USDA SR Legacy 170406		no DA/PSA price	PLANT	36										100		normal	medium				
+brussels_sprouts	Brussels sprouts			FNRI has no brussels sprouts; USDA SR Legacy 170383		no DA/PSA price	PLANT	88	19									100		normal	medium				
+fennel_bulb	Fennel bulb			FNRI has no fennel bulb; USDA SR Legacy 169385		no DA/PSA price	PLANT	87	234									100		normal	medium				
+water_chestnuts	Water chestnuts (canned)			FNRI has no water chestnuts (canned); USDA SR Legacy 170067		no DA/PSA price	PLANT	140	7									100		normal	medium	recipes use canned			
+mushroom_straw	Straw mushrooms (canned)			FNRI has no straw mushrooms (canned); USDA SR Legacy 168582		no DA/PSA price	PLANT	182	5.5									100		normal	medium				
+wood_ear_dried	Wood ear mushroom, dried (tenga ng daga)	D277	Black wood ear mushroom, dried	FNRI Black wood ear mushroom, dried / Tengang daga, tuyo		no DA/PSA price	PLANT	28	4.5									100		normal	medium				
+taro_leaves_dried	Taro leaves, dried (dahon ng gabi)	D293	Taro lvs, dried	FNRI Taro lvs, dried / Gabi dahon, tuyo		no DA/PSA price	PLANT	30										100		normal	medium				
+alugbati	Alugbati (Malabar spinach)	D121	Malabar nightshade lvs	FNRI Malabar nightshade lvs / Alugbati dahon/Spinach vine lvs		PSA monthly price	PLANT	30							250			59		normal	medium				ALUGBATI, 1 KG
+amaranth_leaves	Kulitis (amaranth leaves)	D203	Slender/Spineless amaranth lvs	FNRI Slender/Spineless amaranth lvs / Kulitis dahon		no DA/PSA price	PLANT	28										71		normal	medium				
+saluyot	Saluyot (jute leaves)	D107	Jute lvs	FNRI Jute lvs / Saluyot/Pasaw dahon		no DA/PSA price	PLANT	30										51		normal	medium				
+bago_leaves	Bago leaves (Gnetum)	D006	Bago lvs	FNRI Bago lvs / Spanish joint-fir lvs		no DA/PSA price	PLANT	30										75		normal	medium				
+tamarind_leaves	Tamarind leaves (dahon ng sampalok)	D249	Tamarind lvs	FNRI Tamarind lvs / Sampalok dahon		no DA/PSA price	PLANT	30										81		normal	medium				
+pandan_leaves	Pandan leaves			≈0 kcal (removed before serving, or a trace additive)		no DA/PSA price	PLANT		5						30			100		removed_aromatic	medium	removed before serving			
+lime_leaves	Lime leaves			≈0 kcal (removed before serving, or a trace additive)		no DA/PSA price	PLANT		0.5									100		removed_aromatic	medium	removed before serving			
+curry_leaves	Curry leaves			≈0 kcal (removed before serving, or a trace additive)		no DA/PSA price	PLANT		0.5									100		removed_aromatic	medium	removed before serving			
+turmeric_fresh	Turmeric, fresh (luyang dilaw)	D305	Turmeric	FNRI Turmeric / Luyang dilaw		no DA/PSA price	PLANT	110	15					15				71		normal	medium				
+heart_of_palm	Heart of palm (ubod)	D057	Coconut, heart of palm	FNRI Coconut, heart of palm / Niyog ubod		no DA/PSA price	PLANT	146										100		normal	medium				
+nori	Nori (seaweed sheets)			FNRI has no nori (seaweed sheets); USDA SR Legacy 168458		no DA/PSA price	PLANT	16	2.6									100		normal	medium	USDA 10 sheets = 26 g			
+mint	Mint, fresh			FNRI has no mint, fresh; USDA SR Legacy 173475		no DA/PSA price	PLANT	91										100		normal	medium				
+sage_dried	Sage, dried			FNRI has no sage, dried; USDA SR Legacy 170935		no DA/PSA price	PLANT	32	1									100		normal	medium	gEach = one leaf			
+coriander_ground	Coriander seed			FNRI has no coriander seed; USDA SR Legacy 170922		no DA/PSA price	PLANT	80										100		normal	medium				
+cardamom	Cardamom			FNRI has no cardamom; USDA SR Legacy 170919		no DA/PSA price	PLANT	93	3									100		normal	medium	gEach = one black pod			
+fennel_seeds	Fennel seed			FNRI has no fennel seed; USDA SR Legacy 171323		no DA/PSA price	PLANT	93										100		normal	medium				
+tarragon_dried	Tarragon, dried			FNRI has no tarragon, dried; USDA SR Legacy 170937		no DA/PSA price	PLANT	29										100		normal	medium				
+poultry_seasoning	Poultry seasoning			FNRI has no poultry seasoning; USDA SR Legacy 171331		no DA/PSA price	PLANT	70										100		normal	medium				
+taco_seasoning	Taco seasoning mix			FNRI has no taco seasoning mix; USDA SR Legacy 172243		no DA/PSA price	PLANT	136	28									100		normal	medium	gEach = one 1 oz pouch			
+pigeon_pea	Pigeon peas (kadyos), dried	C039	Pigeon pea seed, dried	FNRI Pigeon pea seed, dried / Kadyos buto, tuyo		no DA/PSA price	PLANT	205										100		normal	medium				
+green_chiles_canned	Green chiles, canned			FNRI has no green chiles, canned; USDA SR Legacy 168577		no DA/PSA price	PLANT	139										100		normal	medium				
+hominy	Hominy, canned			FNRI has no hominy, canned; USDA SR Legacy 169701		no DA/PSA price	PLANT	165										100		normal	medium				
+pork_intestine_large	Pork large intestine	F168	Pork intestine, large	FNRI Pork intestine, large / Baboy bitukang malaki	Pork Offals, Local	DA daily price	MEAT											100		normal	medium	DA pork offals price (mixed offal)			
+pork_intestine_small	Pork small intestine	F169	Pork intestine, small	FNRI Pork intestine, small / Baboy bitukang maliit	Pork Offals, Local	DA daily price	MEAT											100		normal	medium	DA pork offals price (mixed offal)			
+beef_intestine_small	Beef small intestine	F013	Beef intestine, small	FNRI Beef intestine, small / Baka bitukang maliit		no DA/PSA price	MEAT											100		normal	medium				
+pork_heart	Pork heart	F167	Pork heart	FNRI Pork heart / Baboy puso	Pork Offals, Local	DA daily price	MEAT		226									100		normal	medium	DA pork offals price (mixed offal)			
+pork_kidney	Pork kidney	F171	Pork kidney	FNRI Pork kidney / Baboy bato	Pork Offals, Local	DA daily price	MEAT		140									80		normal	medium	DA pork offals price (mixed offal)			
+pork_stomach	Pork stomach	F185	Pork stomach	FNRI Pork stomach / Baboy sikmura	Pork Offals, Local	DA daily price	MEAT											96		normal	medium	DA pork offals price (mixed offal)			
+pork_head	Pork head / face (maskara)	F166	Pork head	FNRI Pork head / Baboy ulo	Pork Head, Local	DA daily price	MEAT		4000									60		normal	medium				
+turkey_whole	Turkey, whole			FNRI has no turkey, whole; USDA SR Legacy 171081		no DA/PSA price	POULTRY										28	68		normal	medium	USDA whole bird meat+skin; ≈68% edible			
+turkey_breast	Turkey breast	F208	Turkey breast	FNRI Turkey breast / Pabo pitso		no DA/PSA price	POULTRY											100		normal	medium				
+turkey_cooked	Turkey, cooked (leftover roast)			FNRI has no turkey, cooked (leftover roast); USDA SR Legacy 171491		no DA/PSA price	POULTRY	140									28	100		normal	medium				
+turkey_ground	Ground turkey			FNRI has no ground turkey; USDA SR Legacy 171505		no DA/PSA price	POULTRY											100		normal	medium				
+duck	Duck	F121	Duck thigh	FNRI Duck thigh / Pato hita	Duck Meat, Local	DA daily price	POULTRY		1500									71		normal	medium	FNRI duck thigh (meat with skin)			
+lamb_chops	Lamb chops / rack	F135	Lamb riblet	FNRI Lamb riblet / Tupa tadyang	Lamb Meat	DA daily price	MEAT		800									75		normal	medium	FNRI lamb riblet			
+horse_meat	Horse meat			FNRI has no horse meat; USDA SR Legacy 175086		no DA/PSA price	MEAT											100		normal	medium				
+rabbit	Rabbit meat	F206	Rabbit white meat	FNRI Rabbit white meat / Kuneho laman		no DA/PSA price	MEAT											100		normal	medium				
+tocino	Tocino (sweet cured pork)	F245	Pork, sweet cured	FNRI Pork, sweet cured / Tocino, baboy		no DA/PSA price	MEAT											100		normal	medium				
+vienna_sausage	Vienna sausage	F261	Sausage, Vienna	FNRI Sausage, Vienna		no DA/PSA price	MEAT	130	16									100		normal	medium				
+hotdog_cheese	Cheese hotdog	F255	Sausage, hotdog, w/ cheese	FNRI Sausage, hotdog, w/ cheese / Cheese dog		no DA/PSA price	MEAT		45									100		normal	medium				
+sausage_italian	Italian / pork sausage			FNRI has no italian / pork sausage; USDA SR Legacy 171631		no DA/PSA price	MEAT		101									100		normal	medium				
+bratwurst	Bratwurst			FNRI has no bratwurst; USDA SR Legacy 171622		no DA/PSA price	MEAT		70									100		normal	medium				
+kielbasa	Kielbasa (Polish sausage)			FNRI has no kielbasa (polish sausage); USDA SR Legacy 173879		no DA/PSA price	MEAT	140	396									100		normal	medium				
+meatballs	Meatballs (frozen, cooked)			FNRI has no meatballs (frozen, cooked); USDA SR Legacy 171638		no DA/PSA price	MEAT		19									100		normal	medium				
+chicken_nuggets	Chicken nuggets (frozen)			FNRI has no chicken nuggets (frozen); USDA SR Legacy 172111		no DA/PSA price	POULTRY		18									100		normal	medium				
+scallops	Scallops			FNRI has no scallops; USDA SR Legacy 174220		no DA/PSA price	SEAFOOD		15									100		normal	medium	gEach 15 g (USDA 2 large = 30 g)			
+lobster	Lobster (whole)			FNRI has no lobster (whole); USDA SR Legacy 174211		no DA/PSA price	SEAFOOD		600									35		normal	medium	≈35% edible			
+lobster_tail	Lobster tail			FNRI has no lobster tail; USDA SR Legacy 174211		no DA/PSA price	SEAFOOD		200									75		normal	medium				
+octopus	Octopus (pugita)	G088	Octopus	FNRI Octopus / Pugita		no DA/PSA price	SEAFOOD											94		normal	medium				
+oyster_meat	Oysters, shucked (talaba)	G089	Oyster	FNRI Oyster / Talaba		no DA/PSA price	SEAFOOD	248										100		normal	medium	shucked meat, no shell			
+snails	Snails (kuhol)	G129	Snail, golden	FNRI Snail, golden / Kuhol, kulay ginto		no DA/PSA price	SEAFOOD											52		normal	medium				
+crawfish	Crawfish			FNRI has no crawfish; USDA SR Legacy 174206		no DA/PSA price	SEAFOOD											15		normal	medium	≈15% edible (tail meat)			
+dulong	Dulong / silverfish (anchovy fry)			FNRI has no dulong / silverfish (anchovy fry); USDA SR Legacy 174182		no DA/PSA price	FISH											100		normal	medium	USDA anchovy nutrition; no dulong price			
+smelt	Smelt			FNRI has no smelt; USDA SR Legacy 175146		no DA/PSA price	FISH											85		normal	medium				
+butterfish	Butterfish			FNRI has no butterfish; USDA SR Legacy 171951		no DA/PSA price	FISH		100									60		normal	medium				
+pompano	Pompano (pampano)	G094	Pomfret, black	FNRI Pomfret, black / Pampano	Pampano, Local	DA daily price	FISH		600									48		normal	medium				
+tanigue	Tanigue (Spanish mackerel)	G072	Mackerel, Spanish	FNRI Mackerel, Spanish / Tangigi	Tanigue Fresh, Whole Round	DA daily price	FISH											69		normal	medium	cut into steaks or fillets in recipes; FNRI ep 69% for whole fish			
+mackerel_canned	Mackerel, canned			FNRI has no mackerel, canned; USDA SR Legacy 175121		no DA/PSA price	FISH	190										100		normal	medium	recipes use canned mackerel			
+anchovies_canned	Anchovies, canned in oil			FNRI has no anchovies, canned in oil; USDA SR Legacy 174183		no DA/PSA price	FISH		4									100		normal	medium				
+fish_ball	Fish balls	G161	Fish ball	FNRI Fish ball		no DA/PSA price	FISH		10									100		normal	medium				
+fish_roe	Fish roe (masago)	G051	Fish roe	FNRI Fish roe / Isda, itlog		no DA/PSA price	FISH	224										100		normal	medium				
+moonfish	Moonfish (bilong-bilong)	G079	Moonfish, spotted	FNRI Moonfish, spotted / Chabita/Hiwas		no DA/PSA price	FISH		150									48		normal	medium				
+mussel_meat	Mussel meat (shelled)	G085	Mussel, green	Mussel, green (tahong) raw		no DA/PSA price	SEAFOOD											100		normal	medium	same food as mussels, without the shell			FRESH SHELLS, TAHONG, 1 KG
+soup_cream_mushroom	Condensed cream of mushroom soup (canned)			FNRI has no condensed cream of mushroom soup (canned); USDA SR Legacy 171155		no DA/PSA price	PLANT	252	298									100		normal	medium				
+soup_cream_chicken	Condensed cream of chicken soup (canned)			FNRI has no condensed cream of chicken soup (canned); USDA SR Legacy 171146		no DA/PSA price	POULTRY	252										100		normal	medium				
+corn_cream_style	Cream style corn (canned)			FNRI has no cream style corn (canned); USDA SR Legacy 169215		no DA/PSA price	PLANT	256										100		normal	medium				
+pumpkin_canned	Pumpkin, canned			FNRI has no pumpkin, canned; USDA SR Legacy 168450		no DA/PSA price	PLANT	245										100		normal	medium				
+kidney_beans_canned	Red kidney beans, canned			FNRI has no red kidney beans, canned; USDA SR Legacy 174285		no DA/PSA price	PLANT	177										100		normal	medium	drained			
+refried_beans	Refried beans, canned			FNRI has no refried beans, canned; USDA SR Legacy 172438		no DA/PSA price	PLANT	238										100		normal	medium				
+cannellini_beans	White (cannellini) beans, canned			FNRI has no white (cannellini) beans, canned; USDA SR Legacy 175204		no DA/PSA price	PLANT	262										100		normal	medium				
+pork_and_beans	Pork and beans (canned)			FNRI has no pork and beans (canned); USDA SR Legacy 173733		no DA/PSA price	PLANT	246										100		normal	medium				
+chocolate_chips	Semisweet chocolate chips			FNRI has no semisweet chocolate chips; USDA SR Legacy 167976		no DA/PSA price	PLANT	170										100		normal	medium				
+chocolate_dark	Dark chocolate			FNRI has no dark chocolate; USDA SR Legacy 170273		no DA/PSA price	PLANT	170										100		normal	medium				
+chocolate_white	White chocolate chips			FNRI has no white chocolate chips; USDA SR Legacy 167571		no DA/PSA price	PLANT	170										100		normal	medium				
+chocolate_unsweetened	Unsweetened baking chocolate			FNRI has no unsweetened baking chocolate; USDA SR Legacy 167568		no DA/PSA price	PLANT	132										100		normal	medium				
+tablea	Tablea (pure cacao tablets)	M013	Chocolate, tablea	FNRI Chocolate, tablea		no DA/PSA price	PLANT		15									100		normal	medium	gEach ≈15 g tablet			
+molasses	Molasses	M048	Syrup, molasses, cane	FNRI Syrup, molasses, cane / Pulot		no DA/PSA price	PLANT	337										100		normal	medium				
+corn_syrup	Light corn syrup			FNRI has no light corn syrup; USDA SR Legacy 168837		no DA/PSA price	PLANT	341										100		normal	medium				
+pancake_syrup	Pancake syrup			FNRI has no pancake syrup; USDA SR Legacy 169578		no DA/PSA price	PLANT	314										100		normal	medium				
+maple_syrup	Maple syrup			FNRI has no maple syrup; USDA SR Legacy 169661		no DA/PSA price	PLANT	315										100		normal	medium				
+gelatin_unflavored	Gelatin powder, unflavored	T007	Gelatin powder	FNRI Gelatin powder		no DA/PSA price	ANIMAL_CONDIMENT	150	7									100		normal	medium	gEach = one 7 g envelope			
+agar	Agar (gulaman)	T004	Ceylon moss/Agar-agar bar	FNRI Ceylon moss/Agar-agar bar / Gulaman		no DA/PSA price	PLANT	150	10									100		normal	medium				
+yogurt_plain	Yogurt, plain			FNRI has no yogurt, plain; USDA SR Legacy 170886		no DA/PSA price	DAIRY	245										100		normal	medium				
+yogurt_greek	Greek yogurt, plain			FNRI has no greek yogurt, plain; USDA SR Legacy 170894		no DA/PSA price	DAIRY	245										100		normal	medium				
+yogurt_vanilla	Yogurt, vanilla			FNRI has no yogurt, vanilla; USDA SR Legacy 170888		no DA/PSA price	DAIRY	245										100		normal	medium				
+ice_cream_vanilla	Vanilla ice cream			FNRI has no vanilla ice cream; USDA SR Legacy 167575		no DA/PSA price	DAIRY	132										100		normal	medium				
+whipped_cream	Whipped cream (pressurized)			FNRI has no whipped cream (pressurized); USDA SR Legacy 170860		no DA/PSA price	DAIRY	60										100		normal	medium				
+oats	Oats, quick-cooking	A149	Oats, quick-cooking	FNRI Oats, quick-cooking		no DA/PSA price	PLANT	80										100		normal	medium				
+oat_bran	Oat bran			FNRI has no oat bran; USDA SR Legacy 168872		no DA/PSA price	PLANT	94										100		normal	medium				
+wheat_bran	Wheat bran			FNRI has no wheat bran; USDA SR Legacy 169722		no DA/PSA price	PLANT	58										100		normal	medium				
+yeast_dry	Dry yeast	T009	Yeast, baker's, active, dry	FNRI Yeast, baker's, active, dry / Lebadura, baker's, tuyo		no DA/PSA price	PLANT	192	7									100		normal	medium	gEach = one 7 g pouch			
+pancake_mix	Pancake mix			FNRI has no pancake mix; USDA SR Legacy 172772		no DA/PSA price	PLANT	130										100		normal	medium				
+almonds	Almonds			FNRI has no almonds; USDA SR Legacy 170567		no DA/PSA price	PLANT	143										100		normal	medium				
+cashews	Cashew nuts			FNRI has no cashew nuts; USDA SR Legacy 170162		no DA/PSA price	PLANT	137										100		normal	medium				
+pine_nuts	Pine nuts			FNRI has no pine nuts; USDA SR Legacy 170591		no DA/PSA price	PLANT	135										100		normal	medium				
+pecans	Pecans			FNRI has no pecans; USDA SR Legacy 170182		no DA/PSA price	PLANT	109										100		normal	medium				
+sunflower_seeds	Sunflower seeds			FNRI has no sunflower seeds; USDA SR Legacy 170562		no DA/PSA price	PLANT	140										100		normal	medium				
+pumpkin_seeds	Pumpkin seeds			FNRI has no pumpkin seeds; USDA SR Legacy 170556		no DA/PSA price	PLANT	129										100		normal	medium				
+capers	Capers			FNRI has no capers; USDA SR Legacy 172238		no DA/PSA price	PLANT	138										100		normal	medium				
+pickles_dill	Dill pickles			FNRI has no dill pickles; USDA SR Legacy 168558		no DA/PSA price	PLANT	143	35									100		normal	medium				
+pickles_sweet	Sweet pickles (gherkins)			FNRI has no sweet pickles (gherkins); USDA SR Legacy 169378		no DA/PSA price	PLANT	160	35									100		normal	medium				
+sauerkraut	Sauerkraut			FNRI has no sauerkraut; USDA SR Legacy 169279		no DA/PSA price	PLANT	142										100		normal	medium				
+kimchi	Kimchi			FNRI has no kimchi; USDA SR Legacy 170392		no DA/PSA price	PLANT	150										100		normal	medium				
+atchara	Atchara (pickled papaya)	D288	Pickles, papaya	FNRI Pickles, papaya / Atsara, papaya		no DA/PSA price	PLANT	150										100		normal	medium				
+teriyaki_sauce	Teriyaki sauce			FNRI has no teriyaki sauce; USDA SR Legacy 171167		no DA/PSA price	PLANT	288										100		normal	medium				
+sweet_sour_sauce	Sweet and sour sauce			FNRI has no sweet and sour sauce; USDA SR Legacy 174066		no DA/PSA price	PLANT	280										100		normal	medium				
+pesto	Pesto sauce			FNRI has no pesto sauce; USDA SR Legacy 171579		no DA/PSA price	DAIRY	252										100		normal	medium				
+pizza_sauce	Pizza sauce			FNRI has no pizza sauce; USDA SR Legacy 172880		no DA/PSA price	PLANT	252										100		normal	medium				
+tartar_sauce	Tartar sauce			FNRI has no tartar sauce; USDA SR Legacy 171826		no DA/PSA price	PLANT	240										100		normal	medium				
+enchilada_sauce	Enchilada sauce			FNRI has no enchilada sauce; USDA SR Legacy 174074		no DA/PSA price	PLANT	224										100		normal	medium				
+cheese_sauce	Cheese sauce			FNRI has no cheese sauce; USDA SR Legacy 171191		no DA/PSA price	DAIRY	252										100		normal	medium				
+salsa_con_queso	Salsa con queso			FNRI has no salsa con queso; USDA SR Legacy 174068		no DA/PSA price	DAIRY	250										100		normal	medium				
+caesar_dressing_lite	Caesar dressing, light			FNRI has no caesar dressing, light; USDA SR Legacy 169877		no DA/PSA price	PLANT	240										100		normal	medium				
+thousand_island	Thousand Island dressing			FNRI has no thousand island dressing; USDA SR Legacy 171402		no DA/PSA price	PLANT	250										100		normal	medium				
+gravy_brown	Gravy (brown, prepared)			FNRI has no gravy (brown, prepared); USDA SR Legacy 171566		no DA/PSA price	PLANT	228										100		normal	medium	USDA chicken gravy, ready-to-serve			
+caramel_sauce	Caramel sauce	M011	Caramelo	FNRI Caramelo		no DA/PSA price	PLANT	300										100		normal	medium				
+jelly	Jelly			FNRI has no jelly; USDA SR Legacy 169642		no DA/PSA price	PLANT	300										100		normal	medium				
+coleslaw	Coleslaw			FNRI has no coleslaw; USDA SR Legacy 169026		no DA/PSA price	PLANT	150										100		normal	medium				
+cola	Cola (soft drink)			FNRI has no cola (soft drink); USDA SR Legacy 174852		no DA/PSA price	PLANT	246										100		normal	medium				
+liquor	Spirits (vodka, brandy, rum)			FNRI has no spirits (vodka, brandy, rum); USDA SR Legacy 174815		no DA/PSA price	PLANT	232										100		normal	medium				
+onion_soup_mix	Onion soup mix (dry)			FNRI has no onion soup mix (dry); USDA SR Legacy 171165		no DA/PSA price	PLANT		39									100		normal	medium	gEach = one 39 g packet			
+flavoring	Flavoring extract (ube, pandan, almond)			FNRI has no flavoring extract (ube, pandan, almond); USDA SR Legacy 172235		no DA/PSA price	PLANT	208										100		normal	medium	USDA imitation vanilla extract (alcohol) as the stand-in for other flavorings			
+pinipig	Pinipig (flattened glutinous rice)	A011	Rice, glutinous, parboiled, flattened	FNRI Rice, glutinous, parboiled, flattened / Pinipig		no DA/PSA price	PLANT	100										100		normal	medium				
+tapioca_starch	Tapioca starch			FNRI has no tapioca starch; USDA SR Legacy 169717		no DA/PSA price	PLANT	120										100		normal	medium	USDA tapioca, dry			
+marshmallows	Marshmallows	M033	Marshmallow	FNRI Marshmallow		no DA/PSA price	PLANT	50	7									100		normal	medium				
+pandesal	Pandesal	A042	Bread, pan de sal	FNRI Bread, pan de sal		no DA/PSA price	PLANT		35									100		normal	medium				
+hamburger_buns	Hamburger buns			FNRI has no hamburger buns; USDA SR Legacy 172796		no DA/PSA price	PLANT		44									100		normal	medium				
+dinner_rolls	Dinner rolls			FNRI has no dinner rolls; USDA SR Legacy 172793		no DA/PSA price	PLANT		28									100		normal	medium				
+english_muffins	English muffins			FNRI has no english muffins; USDA SR Legacy 174994		no DA/PSA price	PLANT		57									100		normal	medium				
+cornbread	Cornbread			FNRI has no cornbread; USDA SR Legacy 174910		no DA/PSA price	PLANT		65								65	100		normal	medium				
+pie_crust	Pie crust (unbaked)			FNRI has no pie crust (unbaked); USDA SR Legacy 167932		no DA/PSA price	PLANT		229									100		normal	medium	gEach = one 229 g crust			
+graham_pie_crust	Graham cracker pie crust			FNRI has no graham cracker pie crust; USDA SR Legacy 167520		no DA/PSA price	PLANT		183									100		normal	medium				
+chocolate_pie_crust	Chocolate cookie pie crust			FNRI has no chocolate cookie pie crust; USDA SR Legacy 167521		no DA/PSA price	PLANT		182									100		normal	medium				
+croutons	Croutons			FNRI has no croutons; USDA SR Legacy 172752		no DA/PSA price	PLANT	40										100		normal	medium				
+soda_crackers	Soda crackers			FNRI has no soda crackers; USDA SR Legacy 172746		no DA/PSA price	PLANT	70	3									100		normal	medium				
+tortilla_corn	Corn tortillas			FNRI has no corn tortillas; USDA SR Legacy 175036		no DA/PSA price	PLANT		24									100		normal	medium				
+tortilla_chips	Tortilla chips			FNRI has no tortilla chips; USDA SR Legacy 167558		no DA/PSA price	PLANT	28										100		normal	medium				
+taco_shells	Taco / tostada shells			FNRI has no taco / tostada shells; USDA SR Legacy 172800		no DA/PSA price	PLANT		13									100		normal	medium				
+french_fries_frozen	French fries (frozen)			FNRI has no french fries (frozen); USDA SR Legacy 168442		no DA/PSA price	PLANT	90										100		normal	medium				
+hash_browns	Hash browns			FNRI has no hash browns; USDA SR Legacy 167604		no DA/PSA price	PLANT	159										100		normal	medium				
+tater_tots	Tater tots			FNRI has no tater tots; USDA SR Legacy 170047		no DA/PSA price	PLANT	120	9									100		normal	medium				
+additive_trace	Food additive (trace amount)			≈0 kcal (removed before serving, or a trace additive)		no DA/PSA price	PLANT											100		normal	medium	used in pinches; ≈0 kcal			
+gelatin_dessert	Gelatin dessert (prepared jelly)			FNRI has no gelatin dessert (prepared jelly); USDA SR Legacy 169596		no DA/PSA price	PLANT	270										100		normal	medium	prepared gelatin cubes			
+salted_duck_egg	Salted duck egg (itlog na pula)	H021	Egg, duck, whole, salted	FNRI Egg, duck, whole, salted / Itlog, pato, maalat		no DA/PSA price	EGG		65									83		normal	medium				
