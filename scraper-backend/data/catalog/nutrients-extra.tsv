@@ -27,3 +27,7 @@ cayenne_pepper	318	12	17.3	56.6	30	USDA≈ spices, pepper, red or cayenne
 annatto_powder	300	10	5	60	20	≈ achuete powder, rough (used in tiny amounts)
 mix_sinigang_tamarind	300	2	1	60	16000	≈ tamarind soup mix (mostly salt + sugar + tamarind), rough
 mix_ginataang_gulay	450	6	25	50	9000	≈ coconut-milk powder seasoning mix, rough
+salmon_fillet	208	20.42	13.42	0	59	USDA≈ fish, salmon, Atlantic, farmed, raw
+salmon_head	208	20.42	13.42	0	59	USDA≈ Atlantic salmon, farmed, raw (edible part)
+salmon_belly	208	20.42	13.42	0	59	USDA≈ Atlantic salmon, farmed, raw (belly is fattier)
+salmon_smoked	117	18.28	4.32	0	784	USDA≈ fish, salmon, chinook, smoked

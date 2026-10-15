@@ -123,7 +123,7 @@ calamansi	Calamansi	E023	Calamansi/Philippine lemon	Calamansi raw	Calamansi	DA c
 cheese_mozzarella	Mozzarella cheese	J004	Cheese, native	no mozzarella in FNRI		DA does not sell it	DAIRY	113										100		normal	medium			
 egg_quail	Quail egg	H010	Egg, quail	Egg, quail raw (often boiled; H011 similar)		DA does not sell it	EGG		10									85	FNRI EP (shell)	normal	high			
 parsley_dried	Parsley, dried flakes			FNRI has only fresh parsley lvs (D159)		DA does not sell it	PLANT	25										100		normal	medium	gPerCup ~25 ?		
-chicken_ground	Ground chicken	F107	Chicken thigh	no ground chicken in FNRI; thigh meat closest in fat to ground chicken		DA does not sell it (ground)	POULTRY											100	boneless ground	normal	low	F107 EP 66 not applicable (boneless); F110 white meat is leaner alt		
+chicken_ground	Ground chicken	F107	Chicken thigh	no ground chicken in FNRI; thigh meat closest in fat to ground chicken	Chicken Breast, Local Unbranded, Fresh	stand-in: DA does not list ground chicken; usually ground from breast	POULTRY											100	boneless ground	normal	low	F107 EP 66 not applicable (boneless); F110 white meat is leaner alt		
 chicken_liver	Chicken liver	F103	Chicken liver	raw chicken liver	Chicken Liver, Local	local chicken liver	POULTRY	220										100		normal	high			
 white_pepper	White pepper, ground			not in FNRI		DA does not sell it	PLANT	115										100		normal	high			
 wine_sherry	Sherry / sherry cooking wine			not in FNRI (P005 Chinese wine is different)		DA does not sell it	PLANT	236										100		normal	medium			
@@ -186,7 +186,7 @@ chicken_thigh	Chicken thigh	F107	Chicken thigh	raw chicken thigh, bone-in skin-o
 chicken_wings	Chicken wings	F109	Chicken wing	raw chicken wing	Chicken Wing, Local Unbranded, Fresh	local unbranded	POULTRY		90									62	FNRI F109 EP 62	normal	high	whole wing ~90 g ?		
 noodles_miki	Fresh miki noodles	A147	Noodles, wheat, miki, dry, boiled	fresh wheat noodles (mami, sariwa) - same fresh state; FNRI miki row is dry		not in DA	PLANT											100	no refuse	normal	low	A141 only 73 kcal/100g, looks low for fresh egg noodles (~250+); A146 miki dry is 472 kcal		
 rice_garlic_fried	Garlic fried rice (sinangag)	A021	Rice, well-milled, fried	well-milled rice, fried = sinangag		cooked dish; not in DA	PLANT	175										100	volume measured	normal	high	cup ~175 g ?		
-salmon_fillet	Salmon fillet	G012	Carp	"FNRI ""salmon"" G099 is rainbow runner, not Atlantic salmon (0.7 g fat vs ~13)"		DA sells salmon belly/head only, different cut	FISH		170									100	boneless fillet	normal	medium	piece ~6 oz fillet ?		
+salmon_fillet	Salmon fillet			FNRI has no Atlantic salmon (its salmon row G099 is rainbow runner); USDA values in nutrients-extra		DA sells salmon belly/head only, different cut	FISH		170									100	boneless fillet	normal	medium	piece ~6 oz fillet ?		
 seasoning_chicken_powder	Chicken powder (bouillon granules)	N003	Bouillon cube, chicken	chicken bouillon; same composition as powder/granules		not in DA	ANIMAL_CONDIMENT	192										100	volume measured	normal	medium	1 tsp ~4 g ?		
 tomato_canned_diced	Canned diced tomatoes	D257	Tomato	no canned tomato row; raw tomato closest		canned product not in DA	PLANT	240										100	canned, incl. juice	normal	low	"canned has added sodium; ""can"" unit used (14.5 oz = 411 g) but no can column"		
 vinegar_coconut	Coconut vinegar (sukang tuba)	N027	Vinegar, coconut	exact		not in DA	PLANT	239										100	liquid	normal	high			
@@ -345,3 +345,17 @@ seasoning_liquid_savorrich_pork	Knorr SavorRich pork liquid seasoning			no liqui
 shrimp_dried	Dried shrimp	G212	Shrimp, small marine, dried	dried small marine shrimp (hibe)		not sold by DA	SEAFOOD	90										100	dried, measured as is	normal	high	gPerCup 90?		
 ube	Grated purple yam (ube)	B020	Yam, purple	raw purple yam		not in DA list	PLANT	130										100	grated flesh; FNRI EP 83 for whole tuber	normal	high	gPerCup 130?; may be frozen grated ube		
 vinegar_balsamic	Balsamic vinegar			not in FNRI		not sold by DA	PLANT	255										100	liquid	normal	high			
+salmon_head	Salmon head			USDA Atlantic salmon in nutrients-extra (FNRI has none)	Salmon Head, Imported	DA imported salmon head	FISH		700									40	heads are mostly bone [heur]	normal	low			
+salmon_belly	Salmon belly			USDA Atlantic salmon in nutrients-extra (FNRI has none)	Salmon Belly, Imported	DA imported salmon belly	FISH											90	skin and fins trimmed [heur]	normal	medium			
+salmon_smoked	Smoked salmon			USDA smoked chinook in nutrients-extra			FISH											100		normal	medium			
+patola	Patola (sponge gourd)	D219	Sponge gourd fruit	raw patola			PLANT	100	300	200	450							85	peeled ridges [heur]	normal	medium			
+upo	Upo (bottle gourd)	D025	Bottle gourd fruit	raw upo			PLANT	120	1000	600	1500							85	peel and seeds [heur]	normal	medium			
+longganisa	Longganisa	F249	Sausage, chorizo	FNRI Longanisa, chorizo; no plain pork longganisa row			MEAT		40									100		normal	low	SM price is pork longganisa; chorizo nutrition is denser than fresh longganisa		
+miswa	Miswa (wheat vermicelli)	A144	Noodles, wheat, thin	FNRI Misua/Miswa, dry			PLANT		50						50			100		normal	medium	sold in ~50 g bundles		
+galunggong	Galunggong (round scad)	G105	Scad, round	FNRI Galunggong	Galunggong, Local Male, Medium (12-14 pcs/kg)	DA local medium	FISH		75									60	whole fish, head and bones [heur]	normal	medium			
+tulingan	Tulingan (frigate tuna)	G146	Tuna, frigate	FNRI frigate tuna	Bonito (Frigate Tuna)	DA frigate tuna (often unpriced)	FISH		300									60	whole fish [heur]	normal	medium			
+singkamas	Singkamas (jicama)	D260	Yam bean	raw yam bean root			PLANT	130	300									85	peeled	normal	medium			
+camote_tops	Talbos ng kamote (sweet potato leaves)	D244	Sweet potato lvs	raw camote tops			PLANT	35							150			70	tough stems removed [heur]	normal	medium			
+mango_ripe	Mango, ripe (carabao)	E051	Mango, Manila super, ripe	carabao mango, ripe	Mango (Carabao) Ripe, 3-4 pcs/kg	DA carabao mango	PLANT	165	280									65	peel and seed	normal	medium			
+red_snapper	Red snapper (maya-maya)	G098	Red snapper/Malabar	FNRI red snapper			FISH		700									55	whole fish [heur]	normal	medium			
+tapioca_pearls	Tapioca pearls (sago)	B035	Tapioca starch ball	dry tapioca pearls			PLANT	152										100		normal	medium			

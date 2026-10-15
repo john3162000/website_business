@@ -7,7 +7,9 @@ import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const readTsv = (p) => {
-  const [head, ...rows] = readFileSync(join(root, p), "utf8").split("\n").filter((l) => l.trim());
+  // \r?\n: a Windows checkout (core.autocrlf) has CRLF lines, and a stray \r would
+  // rename the last column ("note\r") and drop every value in it.
+  const [head, ...rows] = readFileSync(join(root, p), "utf8").split(/\r?\n/).filter((l) => l.trim());
   const cols = head.split("\t");
   return rows.map((r) => Object.fromEntries(r.split("\t").map((v, i) => [cols[i], v ?? ""])));
 };
