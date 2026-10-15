@@ -8,6 +8,11 @@ export function requireAdmin(request: Request): Response | null {
   // stray space or newline that makes an otherwise correct token fail.
   const token = process.env.ADMIN_TOKEN?.trim();
   if (!token) return null;
-  if ((request.headers.get("x-admin-token") ?? "").trim() === token) return null;
-  return Response.json({ error: "Admin token missing or wrong. Enter it at the top of /admin." }, { status: 401 });
+  const sent = (request.headers.get("x-admin-token") ?? "").trim();
+  if (sent === token) return null;
+  // Say how the two differ without revealing the token: lengths, and whether the
+  // saved value is wrapped in quotes (a common copy-paste mistake in Vercel).
+  const quoted = /^["'].*["']$/.test(token) ? " The token saved in Vercel is wrapped in quotes; remove them there." : "";
+  const hint = sent ? ` You entered ${sent.length} characters; the server's token has ${token.length}.${quoted}` : " No token was entered.";
+  return Response.json({ error: `Admin token missing or wrong.${hint} Enter it at the top of /admin.` }, { status: 401 });
 }
