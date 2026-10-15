@@ -74,6 +74,17 @@
     </div>
   </div>
 
+  <!-- Weather picks -->
+  <div class="max-w-6xl mx-auto px-4 pt-12 w-full">
+    <div class="mb-6">
+      <h2 class="text-2xl font-bold"><span id="weather-icon">🌤️</span> <span id="weather-title">Today’s weather picks</span></h2>
+      <p class="text-sm text-gray-500 mt-1" id="weather-sub">Checking the weather…</p>
+      <p class="text-sm text-gray-500" id="weather-desc"></p>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5" id="weather-grid"></div>
+    <p class="text-xs text-gray-400 mt-3">Weather by <a href="https://open-meteo.com/" target="_blank" rel="noopener" class="underline">Open-Meteo</a>. Your location is rounded to about 1 km and only used to look up the weather.</p>
+  </div>
+
   <!-- Top Recipes -->
   <div class="max-w-6xl mx-auto px-4 py-12">
     <div class="flex items-center justify-between mb-6">
@@ -129,6 +140,8 @@
           <option value="costPerServing">Cheapest per Serving</option>
           <option value="protein">Highest Protein</option>
           <option value="calories">Highest Calories</option>
+          <option value="caloriesAsc">Lowest Calories</option>
+          <option value="proteinPerPeso">Most Protein per ₱</option>
         </select>
       </div>
       <div>
@@ -142,6 +155,23 @@
       <div>
         <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1">Contains Produce</label>
         <input type="text" id="produce-filter" placeholder="e.g. kangkong, pork" oninput="filterRecipes()" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"/>
+      </div>
+      <div class="sm:col-span-2 lg:col-span-4 flex flex-wrap items-end gap-4 border-t border-gray-100 pt-4">
+        <div>
+          <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1">Calories per Serving (kcal)</label>
+          <div class="flex items-center gap-2">
+            <input type="number" id="min-kcal" placeholder="min" oninput="filterRecipes()" class="w-24 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"/>
+            <span class="text-gray-400">–</span>
+            <input type="number" id="max-kcal" placeholder="max" oninput="filterRecipes()" class="w-24 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"/>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="setPreset('light')" class="bg-white border border-gray-200 text-gray-600 text-xs px-3 py-1.5 rounded-full font-medium hover:bg-green-50">Light (≤ 400 kcal)</button>
+          <button onclick="setPreset('regular')" class="bg-white border border-gray-200 text-gray-600 text-xs px-3 py-1.5 rounded-full font-medium hover:bg-green-50">Regular (400–700)</button>
+          <button onclick="setPreset('hearty')" class="bg-white border border-gray-200 text-gray-600 text-xs px-3 py-1.5 rounded-full font-medium hover:bg-green-50">Hearty (700+)</button>
+          <button onclick="setPreset('protein')" class="bg-white border border-gray-200 text-gray-600 text-xs px-3 py-1.5 rounded-full font-medium hover:bg-green-50">High protein (25 g+)</button>
+          <button onclick="setPreset('clear')" class="text-xs text-gray-400 hover:text-gray-600 px-2 py-1.5">Clear</button>
+        </div>
       </div>
     </div>
 
@@ -236,6 +266,7 @@
   <p class="mt-1 text-green-400">SarapSulit — Masarap, Masustansya, Sulit!</p>
 </footer>
 
+<script src="weather.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

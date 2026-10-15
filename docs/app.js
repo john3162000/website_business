@@ -51,12 +51,12 @@ function formatDate(d) {
 // soups, desserts and sauces are taken from them.
 function categoryFor(title, course) {
   const c = (course || "").toLowerCase();
-  if (/(desserts?|kakanin|cakes?|cookies|candy|sweets|drinks?|beverages?)/.test(c)) return "Dessert";
-  if (/(sauces?|condiments?|dips?|dressings?)/.test(c)) return "Sauce & Condiment";
-  if (/soups?/.test(c)) return "Soup";
+  if (/\b(desserts?|kakanin|cakes?|cookies|candy|sweets|drinks?|beverages?)\b/.test(c)) return "Dessert";
+  if (/\b(sauces?|condiments?|dips?|dressings?)\b/.test(c)) return "Sauce & Condiment";
+  if (/\bsoups?\b/.test(c)) return "Soup";
   const t = title.toLowerCase();
   if (/\b(sinigang|tinola|nilaga|bulalo|soup|sopas|molo|lomi|mami|goto|arroz caldo|lugaw|batchoy|pochero|cansi)\b/.test(t)) return "Soup";
-  if (/\b(sauce|dip|dipping|dressing|gravy|marinade|vinaigrette|spread|salsa|chutney|syrup)\b/.test(t)) return "Sauce & Condiment";
+  if (/\b(sauce|dip|dipping|dressing|gravy|marinade|vinaigrette|spread|salsa|chutney|syrup|sinamak|chili oil|garlic oil|chili garlic)\b/.test(t)) return "Sauce & Condiment";
   if (/\b(cake|flan|halo|turon|biko|suman|puto|kakanin|ice cream|pie|cookies?|bibingka|maja|leche|dessert|brownies?|polvoron|pastillas|kutsinta|sapin|graham|buko pandan|champorado|yema|candy|tart|muffins?|cupcakes?|donuts?|doughnuts?|bread|ensaymada|silvanas|sans rival|macapuno|ube halaya|taho|gulaman)\b/.test(t)) return "Dessert";
   if (/\b(pancit|bihon|canton|sotanghon|spaghetti|pasta|noodles?|rice|sinangag|carbonara|lasagna|macaroni)\b/.test(t)) return "Rice & Noodles";
   if (/\b(gulay|pinakbet|pakbet|laing|chopsuey|chop suey|ginisang|monggo|munggo|ampalaya|kangkong|talong|okra|tofu|tokwa|vegetable|salad|lumpiang gulay)\b/.test(t)) return "Vegetable Dish";
@@ -114,6 +114,8 @@ function buildRecipe(raw, c) {
     ranked,
     nutritionScore,
     valueScore,
+    // Grams of protein per peso, for "Most Protein per ₱" (ranked dishes only: their cost is reliable).
+    proteinPerPeso: ranked ? round1(perServing.protein) / costPerServing : 0,
   };
 }
 
@@ -337,13 +339,16 @@ function buildModal(r, instructions, lines) {
     </div>`;
 }
 
-function renderTopRecipes() {
+// Meals by Sulit Score: sauces and desserts stay searchable but aren't ranked here.
+function topValueMeals() {
   const seen = new Set();
-  // "Top Value Dishes" are meals: sauces and desserts stay searchable but aren't ranked here.
-  const sorted = RECIPES.filter((r) => r.ranked && r.nutritionScore >= TOP_MIN_NUTRITION_SCORE && r.category !== "Dessert" && r.category !== "Sauce & Condiment")
+  return RECIPES.filter((r) => r.ranked && r.nutritionScore >= TOP_MIN_NUTRITION_SCORE && r.category !== "Dessert" && r.category !== "Sauce & Condiment")
     .sort((a, b) => b.valueScore - a.valueScore)
-    .filter((r) => { const k = r.title.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; })
-    .slice(0, 8);
+    .filter((r) => { const k = r.title.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; });
+}
+
+function renderTopRecipes() {
+  const sorted = topValueMeals().slice(0, 8);
   document.getElementById("top-recipes-grid").innerHTML = sorted.map(buildRecipeCard).join("")
     || `<p class="col-span-4 text-center text-gray-400 py-10">No ranked recipes yet.</p>`;
 }
@@ -442,9 +447,14 @@ function filterRecipes() {
   const maxCost = parseFloat(document.getElementById("max-cost").value) || Infinity;
   const produce = document.getElementById("produce-filter").value.toLowerCase().split(",").map((s) => s.trim()).filter(Boolean);
   const search = document.getElementById("search-input").value.toLowerCase();
+  const minKcal = parseFloat(document.getElementById("min-kcal").value) || 0;
+  const maxKcal = parseFloat(document.getElementById("max-kcal").value) || Infinity;
+  const kcalFilter = minKcal > 0 || maxKcal !== Infinity;
 
   const filtered = RECIPES.filter((r) => {
     if (r.protein < minProt) return false;
+    // Calorie filters need trustworthy calories: a dish missing most nutrition data would look "light".
+    if (kcalFilter && (!kcalKnown(r) || r.calories < minKcal || r.calories > maxKcal)) return false;
     if (maxCost !== Infinity && (!r.ranked || r.costPerServing > maxCost)) return false;
     if (produce.length && !produce.every((p) => r.ingredientNames.some((n) => n.includes(p)))) return false;
     if (search && !r.title.toLowerCase().includes(search)) return false;
@@ -453,6 +463,7 @@ function filterRecipes() {
 
   filtered.sort((a, b) => {
     if (sort === "costPerServing") return (a.ranked ? a.costPerServing : Infinity) - (b.ranked ? b.costPerServing : Infinity);
+    if (sort === "caloriesAsc") return (kcalKnown(a) ? a.calories : Infinity) - (kcalKnown(b) ? b.calories : Infinity);
     return (b[sort] || 0) - (a[sort] || 0);
   });
 
@@ -472,6 +483,65 @@ function filterRecipes() {
 
 let browseLimit = 48;
 function showMore() { browseLimit += 48; filterRecipes(); }
+
+// Calories worth comparing: mostly-known nutrition, and a dish rather than a sauce
+// (a spoonful of sinamak isn't a light meal).
+function kcalKnown(r) { return r.calories > 0 && r.nutritionCoverage >= MIN_NUTRITION_COVERAGE && r.category !== "Sauce & Condiment"; }
+
+// Quick filters: [min kcal, max kcal, min protein]; undefined leaves a field as it is.
+const PRESETS = {
+  light: [null, 400, undefined],
+  regular: [400, 700, undefined],
+  hearty: [700, null, undefined],
+  protein: [undefined, undefined, 25],
+  clear: [null, null, null],
+};
+function setPreset(kind) {
+  const [lo, hi, protein] = PRESETS[kind];
+  const set = (id, v) => { if (v !== undefined) document.getElementById(id).value = v ?? ""; };
+  set("min-kcal", lo);
+  set("max-kcal", hi);
+  set("min-protein", protein);
+  browseLimit = 48;
+  filterRecipes();
+}
+
+// ═══════════════ WEATHER PICKS ═══════════════
+// weather.js: weatherMood, weatherPicks, fetchWeather, getLocation, MANILA.
+
+async function showWeather(place) {
+  const sub = document.getElementById("weather-sub");
+  try {
+    const [w] = await Promise.all([fetchWeather(place), DATA_READY ? DATA_READY.catch(() => {}) : null]);
+    const mood = weatherMood(w);
+    const label = weatherLabel(w.code);
+    const copy = MOOD_COPY[mood];
+    setText("weather-icon", label.icon);
+    setText("weather-title", copy.title);
+    const rain = w.rainChance6h > 0 ? ` · ${w.rainChance6h}% chance of rain in the next 6 hours` : "";
+    sub.textContent = `${Math.round(w.temp)}°C, feels like ${Math.round(w.apparent)}°C, ${label.text}${rain} · ${place === MANILA ? MANILA.name : "near you"}`;
+    setText("weather-desc", copy.sub);
+    // Mild weather: the next best value meals after the Top Value list.
+    const picks = weatherPicks(mood, RECIPES, 4) ?? topValueMeals().slice(8, 12);
+    document.getElementById("weather-grid").innerHTML = picks.map(buildRecipeCard).join("")
+      || `<p class="col-span-4 text-gray-400">No matching dishes yet.</p>`;
+  } catch (e) {
+    sub.textContent = `Couldn’t get the weather (${e.message}).`;
+  }
+}
+
+// Asks for the phone's location as the page opens. No answer within 8 s (or a
+// refusal) shows Metro Manila; a late "allow" then switches to the phone's weather.
+async function loadWeatherPicks() {
+  const geo = getLocation();
+  const first = await Promise.race([geo, new Promise((r) => setTimeout(() => r("timeout"), 8000))]);
+  if (first && first !== "timeout") return showWeather(first);
+  await showWeather(MANILA);
+  if (first === "timeout") {
+    const later = await geo;
+    if (later) await showWeather(later);
+  }
+}
 
 // ═══════════════ MODAL ═══════════════
 
@@ -514,8 +584,9 @@ function showSection(name) {
 // ═══════════════ INIT ═══════════════
 
 (async function init() {
+  DATA_READY = loadData();
+  loadWeatherPicks();
   try {
-    DATA_READY = loadData();
     await DATA_READY;
   } catch (e) {
     document.getElementById("top-recipes-grid").innerHTML =

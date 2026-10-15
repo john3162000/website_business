@@ -25,5 +25,7 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npx tsc --noEmit
-      - name: Site script parses
-        run: node --check ../docs/app.js
+      - name: Site scripts parse
+        run: node --check ../docs/app.js && node --check ../docs/weather.js
+      - name: Site tests
+        run: node --test ../docs/*.test.mjs
