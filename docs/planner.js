@@ -191,7 +191,8 @@ function renderPicker() {
   const cat = document.getElementById("plan-cat").value;
   const types = new Map(RECIPES.map((r) => [r.id, mealTypes(r)]));
   const inSeries = (r) => series === "all" || types.get(r.id).has(series);
-  const pool = RECIPES.filter((r) => r.costPerServing > 0);
+  // Sauces and condiments fit no meal slot: not offered.
+  const pool = RECIPES.filter((r) => r.costPerServing > 0 && types.get(r.id).size > 0);
   document.getElementById("plan-series").innerHTML = SERIES.map((s) =>
     `<button class="wx-btn ${s.key === series ? "on" : ""}" onclick="setSeries('${s.key}')">${s.label}</button>`).join("");
   const matches = pool
