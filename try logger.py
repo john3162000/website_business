@@ -1,3 +1,4 @@
+import os
 import serial
 import psycopg2
 from psycopg2.extras import execute_values
@@ -10,7 +11,7 @@ BAUD_RATE  = 9600
 DB_PARAMS  = dict(
     dbname="temp_monitor",
     user="postgres",
-    password="11111111",
+    password=os.environ.get("DB_PASSWORD", ""),
     host="localhost",
     port="5432"
 )

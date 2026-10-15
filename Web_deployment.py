@@ -1,3 +1,5 @@
+import secrets
+import os
 import threading, time, psycopg2, pandas as pd
 from datetime import datetime
 import dash
@@ -18,16 +20,16 @@ batch_recording = False  # Flag to control recording
 serial_lock = threading.Lock()
 
 # ── Demo credentials ─────────────────────────────────
-VALID_USER = "admin"
-VALID_PASS = "password"
+VALID_USER = os.environ.get("DASH_USER", "admin")
+VALID_PASS = os.environ.get("DASH_PASS") or secrets.token_urlsafe(16)
 
 # ── Database config ──────────────────────────────────
 def get_conn():
     return psycopg2.connect(
-        dbname="postgres",
-        user="postgres.vdpptixwogcrbcipselj",  # notice the dot in the user!
-        password="J@0602ian0827",
-        host="aws-0-ap-southeast-1.pooler.supabase.com",  # this is the pooler host
+        dbname=os.environ.get("DB_NAME", "postgres"),
+        user=os.environ.get("DB_USER", ""),
+        password=os.environ.get("DB_PASSWORD", ""),
+        host=os.environ.get("DB_HOST", ""),
         port="5432",
         sslmode="require"
     )
