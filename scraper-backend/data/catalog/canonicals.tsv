@@ -217,7 +217,7 @@ chili_serrano	Serrano pepper	D164	Pepper, chili fruit	no serrano row; fresh chil
 fettuccine	Fettuccine (dry)	A153	Pasta, spaghetti	dry durum pasta; spaghetti row same composition		not in DA	PLANT											100	dry pasta	normal	high				
 fish_whole	Whole fish (tilapia)	G145	Tilapia	generic whole fish; tilapia most common	Tilapia Medium (5-6 pcs/kg)	medium size	FISH		180									46	FNRI G145 EP 46 (whole fish)	normal	low	species unknown; gEach ~180 g ?			
 flour_cake	Cake flour	A203	Wheat flour, cake flour, enr, bleached	exact		not in DA	PLANT	120										100	volume measured	normal	high	cup 114 sifted / 137 spooned; 120 ?			
-jicama	Jicama (singkamas)	D260	Yam bean	raw yam bean root		not in DA	PLANT	130	300									87	FNRI D260 EP 87 (peel)	normal	high	gEach ~300 g ?			
+jicama	Jicama (singkamas)	D260	Yam bean	raw yam bean root		not in DA	PLANT	130	300									87	FNRI D260 EP 87 (peel)	normal	high	gEach ~300 g ?			TURNIP (SINGKAMAS), 1 KG
 mayonnaise_light	Light mayonnaise			FNRI mayonnaise K007 is full-fat (light has ~1/3 fat)		not in DA	EGG	240										100	volume measured	normal	medium				
 mung_bean_sprouts	Mung bean sprouts (togue)	D131	Mung bean sprout	raw mung bean sprouts		DA mungbean is dry seed, different form	PLANT	104										100	volume measured; FNRI EP 91 if untrimmed by weight	normal	high				
 mushroom_shiitake	Shiitake mushroom	D133	Mushroom, fresh	generic fresh mushroom		not in DA	PLANT	70	19									94	FNRI D133 EP 94 (stems)	normal	medium	PH recipes often use dried shiitake (~3 g each); cup sliced ~70 g ?			
@@ -227,7 +227,7 @@ peanut_roasted	Roasted peanuts	C038	Peanut w/o skin, roasted	roasted peanuts w/o
 shortening	Vegetable shortening	K009	Oil, corn	no shortening row; pork fat (lard) has same ~100% fat composition		not in DA	PLANT	205										100	volume measured	frying_oil_candidate	low	lard used only as nutrient proxy; shortening is plant fat			
 soy_sauce_low_sodium	Low sodium soy sauce	N023	Soy sauce	soy sauce (regular)		not in DA	PLANT	255										100	liquid	normal	medium	sodium ~40% lower than N023			
 squid_balls	Squid balls	G161	Fish ball	no squid ball row; fish ball same product type		not in DA	SEAFOOD		12									100	no refuse	normal	medium	gEach ~12 g ?			
-taro	Taro (gabi)	B015	Taro	raw taro corm		not in DA	PLANT		80									77	FNRI B015 EP 77 (peel)	normal	high	gEach ~80 g ? (small gabi)			
+taro	Taro (gabi)	B015	Taro	raw taro corm		not in DA	PLANT		80									77	FNRI B015 EP 77 (peel)	normal	high	gEach ~80 g ? (small gabi)			GABI TUBERS, TAGALOG, 1 KG
 beef_neck_bone	Beef neck bones	F006	Beef chuck	no neck row; beef chuck (adjacent forequarter meat) for the meat portion	Beef Brisket, Local Meat with Bones	stand-in: bone-in beef; DA doesn't list neck bones	MEAT											45	bone-in neck; meat ~45% ?	normal	low	epPct 45 ?			
 cassava	Cassava (grated)	B001	Cassava	raw cassava		not in DA	PLANT	200										100	usually bought grated (frozen); FNRI EP 74 for whole root	normal	high	cup grated ~200 g ?			
 cheese_swiss	Swiss cheese	J004	Cheese, native	no Swiss cheese row; processed cheddar not close enough		not in DA	DAIRY		28								28	100	no refuse	normal	medium	slice ~28 g (1 oz)			
@@ -354,7 +354,7 @@ longganisa	Longganisa	F249	Sausage, chorizo	FNRI Longanisa, chorizo; no plain po
 miswa	Miswa (wheat vermicelli)	A144	Noodles, wheat, thin	FNRI Misua/Miswa, dry			PLANT		50						50			100		normal	medium	sold in ~50 g bundles			
 galunggong	Galunggong (round scad)	G105	Scad, round	FNRI Galunggong	Galunggong, Local Male, Medium (12-14 pcs/kg)	DA local medium	FISH		75									60	whole fish, head and bones [heur]	normal	medium				FRESH FISH, ROUND SCAD, GALUNGGONG, MEDIUM, 1 KG
 tulingan	Tulingan (frigate tuna)	G146	Tuna, frigate	FNRI frigate tuna	Bonito (Frigate Tuna)	DA frigate tuna when priced, else PSA	FISH		300									60	whole fish [heur]	normal	medium				FRESH FISH, TULINGAN (FRIGATE TUNA), MEDIUM, 1 KG
-singkamas	Singkamas (jicama)	D260	Yam bean	raw yam bean root			PLANT	130	300									85	peeled	normal	medium				
+singkamas	Singkamas (jicama)	D260	Yam bean	raw yam bean root			PLANT	130	300									85	peeled	normal	medium				TURNIP (SINGKAMAS), 1 KG
 camote_tops	Talbos ng kamote (sweet potato leaves)	D244	Sweet potato lvs	raw camote tops			PLANT	35							150			70	tough stems removed [heur]	normal	medium				CAMOTE TOPS, 1 KG
 mango_ripe	Mango, ripe (carabao)	E051	Mango, Manila super, ripe	carabao mango, ripe	Mango (Carabao) Ripe, 3-4 pcs/kg	DA carabao mango	PLANT	165	280									65	peel and seed	normal	medium				
 red_snapper	Red snapper (maya-maya)	G098	Red snapper/Malabar	FNRI red snapper		DA doesn't list maya-maya; PSA does	FISH		700									55	whole fish [heur]	normal	medium				FRESH FISH, SNAPPER, MAYA-MAYA, MEDIUM, 1 KG
@@ -376,7 +376,7 @@ prunes	Prunes			FNRI has no prunes; USDA SR Legacy 168162		no DA/PSA price	PLANT
 cranberries	Cranberries			FNRI has no cranberries; USDA SR Legacy 171722		no DA/PSA price	PLANT	100										100		normal	medium				
 cranberry_sauce	Cranberry sauce (canned)			FNRI has no cranberry sauce (canned); USDA SR Legacy 167803		no DA/PSA price	PLANT	280										100		normal	medium	USDA 1/4 cup 70 g			
 guava	Guava	E032	Guava, white	FNRI Guava, white / Bayabas, puti		no DA/PSA price	PLANT	165	100									99		normal	medium				
-jackfruit_ripe	Jackfruit, ripe (langka)	E033	Jackfruit	FNRI Jackfruit / Langka/Nangka		no DA/PSA price	PLANT	165										34		normal	medium	ep 34% for a whole fruit; sliced cups are flesh			
+jackfruit_ripe	Jackfruit, ripe (langka)	E033	Jackfruit	FNRI Jackfruit / Langka/Nangka		no DA/PSA price	PLANT	165										34		normal	medium	ep 34% for a whole fruit; sliced cups are flesh			FRESH FRUIT, JACKFRUIT, LANGKA, 1 KG
 mandarin_canned	Mandarin oranges, canned			FNRI has no mandarin oranges, canned; USDA SR Legacy 168184		no DA/PSA price	PLANT	189										100		normal	medium				
 cherries_maraschino	Maraschino cherries			FNRI has no maraschino cherries; USDA SR Legacy 167766		no DA/PSA price	PLANT		5									100		normal	medium				
 cherries_sour_canned	Sour cherries, canned			FNRI has no sour cherries, canned; USDA SR Legacy 171716		no DA/PSA price	PLANT	256										100		normal	medium				
