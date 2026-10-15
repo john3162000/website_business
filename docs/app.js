@@ -273,6 +273,7 @@ function buildModal(r, instructions, lines) {
         <h2 class="text-2xl font-bold">${escapeHtml(r.title)}</h2>
         <span class="text-sm text-gray-500">${r.category} · ${r.servings} servings${r.servingsAssumed ? " (assumed: the recipe doesn’t say)" : ""}${(r.prepTime || 0) + (r.cookTime || 0) > 0 ? ` · ${(r.prepTime || 0) + (r.cookTime || 0)} min` : ""}</span>
         ${r.url ? `<a href="${escapeHtml(r.url)}" target="_blank" rel="noopener" class="block text-xs text-green-700 hover:underline mt-1">View original on Panlasang Pinoy ↗</a>` : ""}
+        ${r.id ? `<button onclick="customizeRecipe(${r.id})" class="mt-2 text-xs font-medium bg-amber-100 hover:bg-amber-200 text-amber-800 px-3 py-1 rounded-full">✏️ Customize this dish</button>` : ""}
       </div>
       <button onclick="closeModalBtn()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">✕</button>
     </div>
@@ -570,7 +571,7 @@ function closeModalBtn() { closeModal(); }
 // ═══════════════ NAVIGATION ═══════════════
 
 function showSection(name) {
-  ["home", "browse", "prices"].forEach((s) => {
+  ["home", "browse", "prices", "mydish"].forEach((s) => {
     document.getElementById(`section-${s}`).classList.toggle("hidden", s !== name);
     document.getElementById(`section-${s}`).classList.toggle("flex", s === name);
     const btn = document.getElementById(`nav-${s}`);
@@ -579,6 +580,7 @@ function showSection(name) {
   window.scrollTo(0, 0);
   if (name === "browse") filterRecipes();
   if (name === "prices") loadMovers();
+  if (name === "mydish") initMyDish();
 }
 
 // ═══════════════ INIT ═══════════════

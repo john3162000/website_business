@@ -11,12 +11,14 @@ export const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Headers": "Content-Type",
 };
 
-export function corsJson(data: unknown, init?: ResponseInit): NextResponse {
+export function corsJson(data: unknown, init?: ResponseInit, methods = "GET, OPTIONS"): NextResponse {
   const res = NextResponse.json(data, init);
   for (const [k, v] of Object.entries(CORS_HEADERS)) res.headers.set(k, v);
+  res.headers.set("Access-Control-Allow-Methods", methods);
   return res;
 }
 
-export function corsPreflight(): NextResponse {
-  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+/** methods: e.g. "POST, OPTIONS" for /api/dish, which computes but stores nothing. */
+export function corsPreflight(methods = "GET, OPTIONS"): NextResponse {
+  return new NextResponse(null, { status: 204, headers: { ...CORS_HEADERS, "Access-Control-Allow-Methods": methods } });
 }
