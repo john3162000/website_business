@@ -113,6 +113,13 @@ export function nameKey(s: string): string {
 
 const HEAD_NOUNS = /^(broth|stock|juice|sauce|noodles?|powder|oil|cubes?|paste|flour|extract|flavou?ring|wine|vinegar|milk|cream|chips|mix|soup|rinds?|skin|bones?|fat|water|leaves|seeds?|spread|jam|syrup|balls?|sausages?|patties|burgers?|nuggets?|crackers?|cake|bread)$/;
 
+/**
+ * Generic names ("coconut", "corn", "mushroom", "vanilla") marked [exact] in the alias note
+ * match only the whole name, never as part of a longer one: "young coconut meat" is not
+ * grated coconut, "cream style corn" is not corn on the cob, "vanilla ice cream" is not extract.
+ */
+const exactOnly = (a: Alias) => a.note?.includes("[exact]") ?? false;
+
 // Alias keys sorted longest first, for "find a known ingredient inside the line".
 let aliasKeysByLength: string[] | null = null;
 let aliasKeysSource: Record<string, Alias> | null = null;
@@ -121,7 +128,7 @@ function containedAlias(text: string, aliases: Record<string, Alias>): Alias | n
   if (aliasKeysSource !== aliases) {
     aliasKeysSource = aliases;
     aliasKeysByLength = Object.keys(aliases)
-      .filter((k) => aliases[k].lineClass === "FOOD" && k.length >= 3 && !/\d/.test(k))
+      .filter((k) => aliases[k].lineClass === "FOOD" && k.length >= 3 && !/\d/.test(k) && !exactOnly(aliases[k]))
       .sort((a, b) => b.length - a.length);
   }
   const t = ` ${text.replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim()} `;
@@ -143,14 +150,14 @@ function containedAlias(text: string, aliases: Record<string, Alias>): Alias | n
 const LEAD_NOISE = /^(?:[^a-z0-9]+|(?:a|an|of|servings?)\s+)+/;
 const TRAIL_NOISE = /\s+(?:for (?:garnish(?:ing)?|topping|serving|dipping|wrapping)|as needed|if desired|(?:with )?(?:bones?|skin|seeds?|heads?) (?:removed|discarded))\b.*$/;
 
-function lookupAlias(name: string, aliases: Record<string, Alias>): Alias | null {
+function lookupAlias(name: string, aliases: Record<string, Alias>, contained = true): Alias | null {
   let k = nameKey(name);
   if (aliases[k]) return aliases[k];
   k = k.replace(LEAD_NOISE, "").replace(TRAIL_NOISE, "").trim();
   if (aliases[k]) return aliases[k];
   // "olive or sesame oil", "balaw or bagoong alamang": try each option in order.
   const options = k.split(/\s+or\s+/);
-  if (options.length > 1) for (const o of options) if (aliases[o.trim()]) return aliases[o.trim()];
+  if (options.length > 1) for (const o of options) { const a = aliases[o.trim()]; if (a && !exactOnly(a)) return a; }
   const stripped = k.replace(SIZE_WORDS, " ").replace(/\s+/g, " ").trim();
   if (aliases[stripped]) return aliases[stripped];
   const bare = stripped.replace(PREP_WORDS, " ").replace(/[,()]/g, " ").replace(/\s+/g, " ").trim();
@@ -158,9 +165,12 @@ function lookupAlias(name: string, aliases: Record<string, Alias>): Alias | null
   if (bare.endsWith("es") && aliases[bare.slice(0, -2)]) return aliases[bare.slice(0, -2)];
   if (bare.endsWith("s") && aliases[bare.slice(0, -1)]) return aliases[bare.slice(0, -1)];
   if (aliases[`${bare}s`]) return aliases[`${bare}s`];
+  // A note after a comma, semicolon or bracket: "chickpeas, water removed", "bamboo shoot; cut in 2 inch length".
+  const head = k.split(/\s*[;,(]/)[0].trim();
+  if (head && head !== k) { const h = lookupAlias(head, aliases, false); if (h) return h; }
   // Last resort: the longest known ingredient name inside the line
   // ("slab 2 pounds pork belly" → pork belly, "grams of pasta" → pasta).
-  return containedAlias(k, aliases);
+  return contained ? containedAlias(k, aliases) : null;
 }
 
 // ── Scraper leftovers: the name span holds a unit, size or filler word, not the food ──
@@ -376,10 +386,11 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
     const reparsed = direct && direct.lineClass !== "UNIT_ONLY" && !JUICE_OF.test(nameKey(ing.name)) ? null : reread({ name: ing.name, amount: ing.amount, unit: ing.unit }, text);
     const src: LineSource = reparsed ?? { name: ing.name, amount: ing.amount, unit: ing.unit };
     if (reparsed && !reparsed.name) { lines.push({ ...base, status: "skipped", reason: "unit only" }); continue; }
+    // Water first: "water for cooking the pasta" is not pasta.
     const alias = (reparsed ? null : direct)
+      ?? (WATER_NAME.test(nameKey(src.name).replace(LEAD_NOISE, "")) ? WATER_ALIAS : null)
       ?? lookupAlias(parseQuantity(src.amount, src.unit, src.name).name, ctx.aliases)
-      ?? lookupAlias(src.name, ctx.aliases)
-      ?? (WATER_NAME.test(nameKey(src.name).replace(LEAD_NOISE, "")) ? WATER_ALIAS : null);
+      ?? lookupAlias(src.name, ctx.aliases);
     if (!alias) { lines.push({ ...base, status: "unmatched", reason: "ingredient not in catalog yet" }); continue; }
     if (alias.lineClass === "HEADER") {
       headingLine = ing.name.trim();

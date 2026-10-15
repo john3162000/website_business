@@ -269,3 +269,24 @@ test("equipment and headings found in ingredient lists are skipped, not unknown"
   }, ctx);
   assert.deepEqual(r.lines.map((l) => l.status), ["skipped", "skipped", "skipped", "water"]);
 });
+
+// ── Other names for foods already in the catalog ──
+test("other names: bitter melon, kamote, daikon, hot dogs, chicharron, alamang, sugpo, miso, monggo", () => {
+  const names = ["bitter melon", "kamote", "daikon", "hot dogs", "chicharron", "alamang", "sugpo", "miso", "monggo", "mozzarella", "sharp cheddar", "lard"];
+  const r = compileRecipe({ id: 60, title: "Mix", servings: 4, ingredients: names.map((n) => ing("1", "cup", n)) }, ctx);
+  assert.deepEqual(r.lines.map((l) => l.slug), ["ampalaya", "sweet_potato", "radish_daikon", "hotdog", "chicharon_pork", "shrimp_paste", "shrimp", "miso_paste", "mung_beans", "cheese_mozzarella", "cheese_cheddar", "shortening"]);
+});
+
+test("generic names match only the whole name: young coconut meat is not grated coconut", () => {
+  const r = compileRecipe({
+    id: 61, title: "Buko Salad", servings: 4,
+    ingredients: [ing("1", "cup", "coconut"), ing("1", "cup", "young coconut meat"), ing("1", "cup", "vanilla ice cream"),
+      ing("8", "ounces", "mushrooms"), ing("1", "can", "cream style corn"), ing("1", "cup", "flour stick (pancit canton)")],
+  }, ctx);
+  assert.equal(r.lines[0].slug, "coconut_grated");
+  assert.notEqual(r.lines[1].slug, "coconut_grated");
+  assert.notEqual(r.lines[2].slug, "vanilla_extract");
+  assert.equal(r.lines[3].slug, "mushroom_button");
+  assert.notEqual(r.lines[4].slug, "corn_sweet");
+  assert.equal(r.lines[5].slug, "noodles_pancit_canton"); // not the flour in "flour stick"
+});
