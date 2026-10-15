@@ -762,3 +762,6 @@ ripe mangoes	FOOD	mango_ripe
 red snapper	FOOD	red_snapper		
 tapioca pearls	FOOD	tapioca_pearls		
 sago	FOOD	tapioca_pearls		
+pig leg	FOOD	pork_hock		
+pork leg	FOOD	pork_hock		
+pig legs	FOOD	pork_hock		
