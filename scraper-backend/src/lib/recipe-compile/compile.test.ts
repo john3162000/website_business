@@ -197,3 +197,19 @@ test("personal dish: a picked catalog slug skips name matching", () => {
   assert.equal(r.lines[0].gAP, 300);
   assert.equal(r.lines[1].status, "unmatched");
 });
+
+test("price order: DA, then PSA, then SM; 'to taste' in the text alone is not counted", () => {
+  const psa = new Map([
+    ["FRESH SHELLS, TAHONG, 1 KG", { price: 123.25, per: "kg" as const, period: "2026-09-01T00:00:00.000Z" }],
+    ["FRESH FISH, TILAPIA, MEDIUM, 1 KG", { price: 999, per: "kg" as const, period: "2026-09-01T00:00:00.000Z" }],
+  ]);
+  const r = compileRecipe({
+    id: 40, title: "Tinolang Tahong", servings: 4,
+    ingredients: [ing("2", "lbs", "mussels"), ing("1", "lb", "tilapia"), ing(null, null, "ground black pepper to taste")],
+  }, { ...ctx, psa });
+  const mussels = line(r, "mussels"), tilapia = line(r, "tilapia");
+  assert.equal(mussels.priceSource, "PSA Sep 2026"); // PSA beats the SM reference price
+  assert.ok(Math.abs(mussels.cost! - (123.25 / 1000) * mussels.gAP!) < 1e-6);
+  assert.equal(tilapia.priceSource, "DA"); // DA still first
+  assert.equal(r.lines[2].status, "to-taste");
+});

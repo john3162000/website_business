@@ -46,3 +46,28 @@ export function ensureRecipeColumns(): Promise<void> {
   });
   return recipeColumns;
 }
+
+/** PSA price table (prisma/migrations/20261016000000_psa_price). */
+let psaTable: Promise<void> | null = null;
+
+export function ensurePsaTable(): Promise<void> {
+  psaTable ??= (async () => {
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "PsaPrice" (
+        "id" SERIAL PRIMARY KEY,
+        "commodity" TEXT NOT NULL,
+        "category" TEXT,
+        "unit" TEXT NOT NULL,
+        "price" DOUBLE PRECISION NOT NULL,
+        "period" TIMESTAMP(3) NOT NULL,
+        "region" TEXT NOT NULL DEFAULT 'NCR',
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`);
+    await prisma.$executeRawUnsafe(`CREATE UNIQUE INDEX IF NOT EXISTS "PsaPrice_commodity_region_period_key" ON "PsaPrice"("commodity", "region", "period")`);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "PsaPrice_period_idx" ON "PsaPrice"("period")`);
+  })().catch((err) => {
+    psaTable = null; // retry on the next request
+    throw err;
+  });
+  return psaTable;
+}
