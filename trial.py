@@ -1,3 +1,5 @@
+import secrets
+import os
 """
 Dash Batch Monitor
 ────────────────────────────────────────────────────────────
@@ -27,14 +29,14 @@ import plotly.graph_objs as go
 import dash_bootstrap_components as dbc
 
 # ── Demo credentials ────────────────────────────────────────────────
-VALID_USER = "admin"
-VALID_PASS = "password"
+VALID_USER = os.environ.get("DASH_USER", "admin")
+VALID_PASS = os.environ.get("DASH_PASS") or secrets.token_urlsafe(16)
 
 # ── Database config ─────────────────────────────────────────────────
 DB = dict(
     dbname="temp_monitor",
     user="postgres",
-    password="11111111",
+    password=os.environ.get("DB_PASSWORD", ""),
     host="localhost",
     port="5432"
 )

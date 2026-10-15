@@ -1,3 +1,4 @@
+import os
 '''
 dash_batch_monitor.py
 Run with: python dash_batch_monitor.py
@@ -22,7 +23,7 @@ import dash_bootstrap_components as dbc
 DB = dict(
     dbname='temp_trial',
     user='postgres',
-    password='11111111',
+    password=os.environ.get("DB_PASSWORD", ""),
     host='localhost',
     port='5432',
 )
@@ -30,7 +31,7 @@ DB = dict(
 def get_conn():
     return psycopg2.connect(**DB)
 
-engine = create_engine('postgresql://postgres:11111111@localhost:5432/temp_trial')
+engine = create_engine(f"postgresql://postgres:{os.environ.get('DB_PASSWORD', '')}@localhost:5432/temp_trial")
 
 # ── Ensure tables exist (run once) ──────────────────────────────────
 with get_conn() as con, con.cursor() as cur:

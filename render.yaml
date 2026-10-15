@@ -8,8 +8,10 @@ services:
       - key: DB_NAME
         value: postgres
       - key: DB_USER
-        value: postgres.vdpptixwogcrbcipselj
+        sync: false
       - key: DB_PASSWORD
-        value: J@ja0602ian0827
+        sync: false
       - key: DB_HOST
         value: aws-0-ap-southeast-1.pooler.supabase.com
+      - key: DASH_PASS
+        sync: false
