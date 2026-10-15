@@ -28,3 +28,17 @@ test("categoryFor: clear courses win, the title decides otherwise", () => {
   assert.equal(categoryFor("How to Make Sinamak", null), "Sauce & Condiment");
   assert.equal(categoryFor("Chili Garlic Oil Recipe", null), "Sauce & Condiment");
 });
+
+test("splitHidden: recipes with an ingredient not in the catalog are hidden, not dropped silently", () => {
+  const src = read("app.js");
+  const ctx = vm.createContext({});
+  vm.runInContext(`${src.slice(src.indexOf("function splitHidden"), src.indexOf("async function loadData"))};globalThis.splitHidden = splitHidden;`, ctx);
+  const recipes = [1, 2, 3, 4, 5].map((id) => ({ id, ingredients: id === 5 ? [] : [{ name: "x" }] }));
+  const compiled = new Map([
+    [1, { id: 1, hidden: false }], [2, { id: 2, hidden: true, unknownLines: 1 }],
+    [3, { id: 3, hidden: false, isArticle: true }], [4, { id: 4, hidden: true, isCollection: true }], [5, { id: 5, hidden: false }],
+  ]);
+  const { shown, hidden } = ctx.splitHidden(recipes, compiled);
+  assert.deepEqual(Array.from(shown, (r) => r.id), [1]);
+  assert.deepEqual(Array.from(hidden, (r) => r.id), [2]); // articles, round-ups and empty lists are neither
+});

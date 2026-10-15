@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { compileRecipe, sectionOf } from "./compile.ts";
+import { compileRecipe, isHidden, sectionOf, unknownLineCount } from "./compile.ts";
 import { testContext } from "./test-context.ts";
 
 const ctx = testContext();
@@ -309,4 +309,13 @@ test("long-tail foods: FNRI where FNRI has them, USDA otherwise, priced from DA 
   assert.equal(kraut.slug, "sauerkraut");
   assert.equal(kraut.priced, false); // no source sells it: left unpriced rather than guessed
   assert.equal(pandan.gEaten, 0); // removed before serving
+});
+
+test("isHidden: any ingredient not in the catalog hides the recipe", () => {
+  const known = compileRecipe({ id: 80, title: "Adobo", servings: 4, ingredients: [ing("1", "lb", "pork belly"), ing("1/2", "cup", "soy sauce")] }, ctx);
+  const unknown = compileRecipe({ id: 81, title: "Adobo", servings: 4, ingredients: [ing("1", "lb", "pork belly"), ing("1", "cup", "zzz unknown thing")] }, ctx);
+  assert.equal(unknownLineCount(known), 0);
+  assert.equal(isHidden(known), false);
+  assert.equal(unknownLineCount(unknown), 1);
+  assert.equal(isHidden(unknown), true);
 });

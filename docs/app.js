@@ -132,6 +132,18 @@ function priceGroup(daCategory, name) {
   return "condiments"; // OTHER BASIC COMMODITIES: sugar, salt, cooking oil
 }
 
+// Single recipes only (articles and round-up posts are not), split into the ones shown and
+// the ones hidden because an ingredient isn't in the catalog yet (counted, never deleted).
+function splitHidden(recipes, compiled) {
+  const shown = [], hidden = [];
+  for (const r of recipes) {
+    const c = compiled.get(r.id);
+    if (!c || c.isArticle || c.isCollection || !(r.ingredients || []).length) continue;
+    (c.hidden ? hidden : shown).push(r);
+  }
+  return { shown, hidden };
+}
+
 async function loadData() {
   const get = (path) => fetch(`${API_BASE}${path}`).then((r) => { if (!r.ok) throw new Error(`${path}: HTTP ${r.status}`); return r.json(); });
   const [comRes, recRes, compRes, nutRes] = await Promise.all([
@@ -152,11 +164,14 @@ async function loadData() {
   });
 
   const compiled = new Map((compRes.recipes || []).map((c) => [c.id, c]));
-  RECIPES = (recRes.recipes || [])
-    // Articles ("What is Broccoli?") and round-up posts with several recipes in one card are not single recipes.
-    .filter((r) => (r.ingredients || []).length > 0)
-    .filter((r) => { const c = compiled.get(r.id); return c && !c.isArticle && !c.isCollection; })
-    .map((r) => buildRecipe(r, compiled.get(r.id)));
+  // Articles ("What is Broccoli?") and round-up posts with several recipes in one card are not single recipes.
+  const { shown, hidden } = splitHidden(recRes.recipes || [], compiled);
+  RECIPES = shown.map((r) => buildRecipe(r, compiled.get(r.id)));
+  const note = document.getElementById("hidden-note");
+  if (note && hidden.length) {
+    note.textContent = `${hidden.length.toLocaleString()} recipe${hidden.length !== 1 ? "s" : ""} hidden: ingredients not in our catalog yet.`;
+    note.classList.remove("hidden");
+  }
 
   setText("stat-recipes", RECIPES.length.toLocaleString());
   setText("stat-foods", nutRes.count != null ? nutRes.count.toLocaleString() : "—");

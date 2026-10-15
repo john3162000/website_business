@@ -4,7 +4,7 @@ import { isMalformedName, parsePriceBasis } from "@/lib/da-units";
 import { compareDate } from "@/lib/price-history";
 import { yieldCount, type RefNutrition } from "@/lib/scrapers/recipe-structured";
 import { ALIASES, CANONICALS, EXTRA_NUTRIENTS, MANUAL_PRICES } from "./catalog.generated.ts";
-import { compileRecipe, type CompileContext, type CompiledRecipe, type DaPrice, type FnriFood, type PsaPrice } from "./compile.ts";
+import { compileRecipe, unknownLineCount, type CompileContext, type CompiledRecipe, type DaPrice, type FnriFood, type PsaPrice } from "./compile.ts";
 
 const DAY = 86400000;
 /** A DA price older than this (before the snapshot day) is too stale to use. */
@@ -149,6 +149,9 @@ export function summarize(c: CompiledRecipe & { course?: string | null; referenc
     id: c.id,
     isArticle: c.isArticle,
     isCollection: c.isCollection,
+    // Ingredients not in the catalog yet: the site hides these recipes (they stay in the database).
+    unknownLines: unknownLineCount(c),
+    hidden: unknownLineCount(c) > 0,
     servings: c.servings,
     servingsAssumed: c.servingsAssumed,
     course: c.course ?? null,
