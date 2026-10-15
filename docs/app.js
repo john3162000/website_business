@@ -17,6 +17,7 @@ let RECIPES = [];
 let DA_PRICES = [];
 let LATEST_DA_DATE = null;
 let COMPARE_DATE = null; // "a month ago" for price changes (see /api/commodities compareDate)
+let DATA_READY = null; // loadData() promise, for sections that need RECIPES
 
 // ═══════════════ UTILITY ═══════════════
 
@@ -419,6 +420,9 @@ async function loadMovers() {
     const res = await fetch(`${API_BASE}/api/recipes/price-movers?limit=8`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const m = await res.json();
+    // Rows link to recipes in RECIPES, which may still be loading if the tab
+    // was opened right away; a failed load just leaves the rows unlinked.
+    await DATA_READY?.catch(() => {});
     if (!m.compareDate) {
       summary.textContent = m.note || "Not enough price history yet.";
       return;
@@ -511,7 +515,8 @@ function showSection(name) {
 
 (async function init() {
   try {
-    await loadData();
+    DATA_READY = loadData();
+    await DATA_READY;
   } catch (e) {
     document.getElementById("top-recipes-grid").innerHTML =
       `<p class="col-span-4 text-center text-red-600 py-10">Couldn’t load data from the server (${escapeHtml(e.message)}). Please refresh in a moment.</p>`;
