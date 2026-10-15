@@ -16,6 +16,7 @@ const TOP_MIN_NUTRITION_SCORE = 20;  // keep plain rice sides off "Top Value Dis
 let RECIPES = [];
 let DA_PRICES = [];
 let LATEST_DA_DATE = null;
+let COMPARE_DATE = null; // "a month ago" for price changes (see /api/commodities compareDate)
 
 // ═══════════════ UTILITY ═══════════════
 
@@ -31,6 +32,14 @@ function scoreColor(val) {
   if (val >= 7) return "bg-lime-100 text-lime-700";
   if (val >= 4) return "bg-yellow-100 text-yellow-700";
   return "bg-red-100 text-red-700";
+}
+function shortDate(d) {
+  return d ? d.toLocaleDateString("en-PH", { month: "short", day: "numeric", timeZone: "UTC" }) : "—";
+}
+function pctText(v) {
+  if (v == null) return "—";
+  const p = v * 100;
+  return `${p > 0 ? "+" : ""}${p.toFixed(Math.abs(p) < 10 ? 1 : 0)}%`;
 }
 function formatDate(d) {
   return d ? d.toLocaleDateString("en-PH", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" }) : "—";
@@ -125,6 +134,7 @@ async function loadData() {
   ]);
 
   LATEST_DA_DATE = comRes.latestDate ? new Date(comRes.latestDate) : null;
+  COMPARE_DATE = comRes.compareDate ? new Date(comRes.compareDate) : null;
   DA_PRICES = (comRes.commodities || []).map((c) => {
     let trend = "stable";
     if (c.price != null && c.prevPrice != null) trend = c.price > c.prevPrice ? "up" : c.price < c.prevPrice ? "down" : "stable";
@@ -132,6 +142,7 @@ async function loadData() {
       name: c.name, local: c.localName || "", group: priceGroup(c.category, c.name),
       unit: (c.unit && c.unit.label ? c.unit.label : "₱/kg").replace("₱/", ""),
       low: c.low, high: c.high, avg: c.price, trend,
+      monthAgo: c.monthAgoPrice ?? null, monthChange: c.monthChange ?? null,
     };
   });
 
@@ -146,6 +157,7 @@ async function loadData() {
   setText("stat-foods", nutRes.count != null ? nutRes.count.toLocaleString() : "—");
   setText("stat-commodities", DA_PRICES.filter((p) => p.avg != null).length.toLocaleString());
   document.querySelectorAll("[data-da-date]").forEach((el) => { el.textContent = formatDate(LATEST_DA_DATE); });
+  document.querySelectorAll("[data-compare-date]").forEach((el) => { el.textContent = COMPARE_DATE ? shortDate(COMPARE_DATE) : "month ago"; });
 }
 
 function setText(id, v) { const el = document.getElementById(id); if (el) el.textContent = v; }
@@ -339,8 +351,11 @@ let currentPriceCat = "all";
 
 function renderPrices(cat) {
   currentPriceCat = cat;
+  const sort = (document.getElementById("price-sort") || {}).value || "name";
+  // Items without a month-ago price go last in either change order.
+  const byChange = (dir) => (a, b) => (a.monthChange == null) - (b.monthChange == null) || dir * ((b.monthChange || 0) - (a.monthChange || 0));
   const filtered = (cat === "all" ? DA_PRICES : DA_PRICES.filter((p) => p.group === cat))
-    .slice().sort((a, b) => a.name.localeCompare(b.name));
+    .slice().sort(sort === "up" ? byChange(1) : sort === "down" ? byChange(-1) : (a, b) => a.name.localeCompare(b.name));
   const trendIcon = { up: "▲", down: "▼", stable: "–" };
   const trendColor = { up: "price-up", down: "price-down", stable: "text-gray-400" };
   const money = (v) => (v != null ? Number(v).toFixed(2) : "—");
@@ -353,10 +368,12 @@ function renderPrices(cat) {
       <td class="px-3 py-3 text-right text-gray-600 tabular-nums">${money(p.low)}</td>
       <td class="px-3 py-3 text-right text-gray-600 tabular-nums">${money(p.high)}</td>
       <td class="px-5 py-3 text-right font-bold tabular-nums">${p.avg != null ? "₱" + money(p.avg) : '<span class="text-gray-400 font-normal">n/a</span>'}</td>
+      <td class="px-3 py-3 text-right tabular-nums ${p.monthChange > 0 ? "price-up" : p.monthChange < 0 ? "price-down" : "text-gray-400"}"
+          title="${p.monthAgo != null ? "₱" + money(p.monthAgo) + " on " + shortDate(COMPARE_DATE) : "no price a month ago"}">${pctText(p.monthChange)}</td>
       <td class="px-3 py-3 text-center hidden md:table-cell">
         <span class="text-xs font-bold ${trendColor[p.trend]}">${trendIcon[p.trend]}</span>
       </td>
-    </tr>`).join("") : `<tr><td colspan="7" class="text-center py-10 text-gray-400">No commodities in this group.</td></tr>`;
+    </tr>`).join("") : `<tr><td colspan="8" class="text-center py-10 text-gray-400">No commodities in this group.</td></tr>`;
 
   document.querySelectorAll(".price-cat-btn").forEach((b) => {
     b.classList.remove("bg-green-700", "text-white");
@@ -370,6 +387,50 @@ function renderPrices(cat) {
 }
 
 function filterPrices(cat) { renderPrices(cat); }
+
+// ═══════════════ DISH PRICE MOVERS ═══════════════
+// Loaded the first time the Prices tab opens: the server compiles every recipe twice.
+
+let moversLoaded = false;
+
+function moverRow(m) {
+  const known = RECIPES.some((r) => r.id === m.id);
+  const drivers = (m.drivers || [])
+    .filter((d) => d.change != null && Math.abs(d.change) >= 0.05)
+    .map((d) => `${escapeHtml(d.label)} ${pctText(d.change)}`).join(", ");
+  return `
+    <div class="flex items-start justify-between gap-3 rounded-lg px-2 py-1.5 ${known ? "cursor-pointer hover:bg-gray-50" : ""}" ${known ? `onclick="openModal(${m.id})"` : ""}>
+      <div class="min-w-0">
+        <p class="font-medium truncate">${escapeHtml(m.title)}</p>
+        ${drivers ? `<p class="text-xs text-gray-400 truncate">${drivers}</p>` : ""}
+      </div>
+      <div class="text-right whitespace-nowrap">
+        <p class="font-bold ${m.change > 0 ? "price-up" : "price-down"}">${pctText(m.change)}</p>
+        <p class="text-xs text-gray-400">₱${m.then.toFixed(0)} → ₱${m.now.toFixed(0)}/serving</p>
+      </div>
+    </div>`;
+}
+
+async function loadMovers() {
+  if (moversLoaded) return;
+  moversLoaded = true;
+  const summary = document.getElementById("movers-summary");
+  try {
+    const res = await fetch(`${API_BASE}/api/recipes/price-movers?limit=8`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const m = await res.json();
+    if (!m.compareDate) {
+      summary.textContent = m.note || "Not enough price history yet.";
+      return;
+    }
+    summary.textContent = `Since ${shortDate(new Date(m.compareDate))} · ${m.compared.toLocaleString()} dishes compared · typical dish ${pctText(m.medianChange)} · ${m.rising} pricier, ${m.falling} cheaper by 10% or more`;
+    document.getElementById("movers-rose").innerHTML = m.rose.map(moverRow).join("") || `<p class="text-gray-400 px-2 py-1.5">No dish rose by 10% or more.</p>`;
+    document.getElementById("movers-fell").innerHTML = m.fell.map(moverRow).join("") || `<p class="text-gray-400 px-2 py-1.5">No dish fell by 10% or more.</p>`;
+  } catch (e) {
+    moversLoaded = false; // try again next time the tab opens
+    summary.textContent = `Couldn’t load price changes (${e.message}).`;
+  }
+}
 
 function filterRecipes() {
   const sort = document.getElementById("sort-select").value;
@@ -443,6 +504,7 @@ function showSection(name) {
   });
   window.scrollTo(0, 0);
   if (name === "browse") filterRecipes();
+  if (name === "prices") loadMovers();
 }
 
 // ═══════════════ INIT ═══════════════
