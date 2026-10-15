@@ -159,7 +159,7 @@ black_beans_salted	Salted black beans (tausi)	C062	Soybean seed, black, fermente
 chili_powder	Chili powder			not in FNRI		DA does not sell it	PLANT	128										100		normal	high			
 chorizo_bilbao	Chorizo de Bilbao	F250	Sausage, chorizo, Bilbao style	Sausage, chorizo, Bilbao style		DA does not sell it	MEAT		50									100		normal	high	gEach 50 g per link ?		
 cilantro	Cilantro (wansoy)	D060	Coriander lvs	Coriander lvs raw		DA does not sell it	PLANT	16										100	cup-measured; FNRI EP 84	normal	high			
-egg_yolk	Egg yolk	H005	Egg, chicken, yolk	Egg, chicken, yolk		DA does not sell it (DA sells whole eggs only)	EGG		17									100		normal	high			
+egg_yolk	Egg yolk	H005	Egg, chicken, yolk	Egg, chicken, yolk	Chicken Egg (White, Medium) 56-60 grams/pc	each yolk costs one whole egg (17 g of 58 g)	EGG		17									100		normal	high			0.293
 flour_glutinous_rice	Glutinous rice flour	A181	Rice flour	no glutinous rice flour; regular rice flour nearest		DA does not sell it	PLANT	158										100		normal	medium	gPerCup 158 (USDA rice flour), spooned glutinous flour may be ~130 ?		
 beef_shank	Beef shank (kenchi)	F035	Beef shank	raw beef shank	Beef Fore Limb, Local	DA has no shank item; fore limb includes the shank (kenchi)	MEAT											89	FNRI EP (bone)	normal	medium	verify DA Fore Limb = shank region		
 chayote	Chayote (sayote)	D050	Chayote fruit	Chayote fruit raw	Chayote Medium (301-400 g)	DA chayote medium	PLANT		350									79	FNRI EP (peel/seed)	normal	high	gEach from DA medium 301-400 g		
@@ -212,7 +212,7 @@ tinapa	Tinapa flakes (smoked fish)	G208	Scad, round, smoked	galunggong tinapa, m
 vinegar_white_wine	White wine vinegar			no wine vinegar in FNRI		not in DA	PLANT	239										100	liquid	normal	high	nutritionally negligible		
 banana_blossom	Banana blossom (puso ng saging)	D013	Banana heart, butuan	raw banana heart		not in DA	PLANT											100	grams given for prepared/sliced blossom ?	normal	medium	FNRI EP 52 if whole heart as purchased		
 barbecue_sauce	Barbecue sauce	N005	Catsup, tomato	no barbecue sauce row		not in DA	PLANT	286										100	liquid	normal	high			
-chicken_gizzard	Chicken gizzard	F096	Chicken gizzard	raw chicken gizzard		not in DA	POULTRY											100	FNRI F096 EP 100	normal	high			
+chicken_gizzard	Chicken gizzard	F096	Chicken gizzard	raw chicken gizzard	Chicken Liver, Local	stand-in: DA doesn't list gizzard; similar price	POULTRY											100	FNRI F096 EP 100	normal	high			
 chili_serrano	Serrano pepper	D164	Pepper, chili fruit	no serrano row; fresh chili (labuyo) closest		serrano not sold by DA	PLANT		6									95	stem only	normal	medium	gEach ~6 g (USDA)		
 fettuccine	Fettuccine (dry)	A153	Pasta, spaghetti	dry durum pasta; spaghetti row same composition		not in DA	PLANT											100	dry pasta	normal	high			
 fish_whole	Whole fish (tilapia)	G145	Tilapia	generic whole fish; tilapia most common	Tilapia Medium (5-6 pcs/kg)	medium size	FISH		180									46	FNRI G145 EP 46 (whole fish)	normal	low	species unknown; gEach ~180 g ?		
@@ -228,7 +228,7 @@ shortening	Vegetable shortening	K009	Oil, corn	no shortening row; pork fat (lard
 soy_sauce_low_sodium	Low sodium soy sauce	N023	Soy sauce	soy sauce (regular)		not in DA	PLANT	255										100	liquid	normal	medium	sodium ~40% lower than N023		
 squid_balls	Squid balls	G161	Fish ball	no squid ball row; fish ball same product type		not in DA	SEAFOOD		12									100	no refuse	normal	medium	gEach ~12 g ?		
 taro	Taro (gabi)	B015	Taro	raw taro corm		not in DA	PLANT		80									77	FNRI B015 EP 77 (peel)	normal	high	gEach ~80 g ? (small gabi)		
-beef_neck_bone	Beef neck bones	F006	Beef chuck	no neck row; beef chuck (adjacent forequarter meat) for the meat portion		DA beef cuts are meat cuts, not bones	MEAT											45	bone-in neck; meat ~45% ?	normal	low	epPct 45 ?		
+beef_neck_bone	Beef neck bones	F006	Beef chuck	no neck row; beef chuck (adjacent forequarter meat) for the meat portion	Beef Brisket, Local Meat with Bones	stand-in: bone-in beef; DA doesn't list neck bones	MEAT											45	bone-in neck; meat ~45% ?	normal	low	epPct 45 ?		
 cassava	Cassava (grated)	B001	Cassava	raw cassava		not in DA	PLANT	200										100	usually bought grated (frozen); FNRI EP 74 for whole root	normal	high	cup grated ~200 g ?		
 cheese_swiss	Swiss cheese	J004	Cheese, native	no Swiss cheese row; processed cheddar not close enough		not in DA	DAIRY		28								28	100	no refuse	normal	medium	slice ~28 g (1 oz)		
 cloves_ground	Ground cloves			no clove spice row		not in DA	PLANT	104	0.1									100	volume measured	normal	medium	1 tsp ~2.1 g; whole clove ~0.1 g ?		
@@ -256,7 +256,7 @@ hot_sauce	Hot sauce			no hot sauce row		not in DA	PLANT	240										100	liquid	
 jackfruit_unripe	Unripe jackfruit	D104	Jackfruit fruit, unripe	raw unripe jackfruit		not in DA	PLANT	165										100	usually bought peeled/sliced; FNRI EP 60 whole	normal	medium	cup ~165 g ?		
 lechon_sauce	Lechon sauce	N013	Lechon sauce	exact		not in DA	ANIMAL_CONDIMENT	270										100	liquid	normal	high	contains liver; cup ~270 g ?		
 noodles_pancit_canton	Pancit canton (dry)	A140	Noodles, wheat, canton, dry	dry canton noodles		not in DA	PLANT											100	dry noodles	normal	high			
-pork_fat	Pork fat (back fat)	F146	Pork back fat	raw diced pork fat = back fat, not rendered lard		not in DA	MEAT	200										100	diced, trimmed	normal	medium	cup ~200 g ?		
+pork_fat	Pork fat (back fat)	F146	Pork back fat	raw diced pork fat = back fat, not rendered lard	Pork Rind/Skin, Local	stand-in: DA doesn't list back fat	MEAT	200										100	diced, trimmed	normal	medium	cup ~200 g ?		
 sardines_tomato_sauce	Sardines in tomato sauce	G203	Sardines, in tomato sce, cnd	exact		canned not in DA	FISH											100	canned, whole content	normal	high	"""cans"" unit used (155 g PH standard) but no can column"		
 seasoning_liquid_savorrich_chicken	Knorr SavorRich chicken liquid seasoning			no liquid seasoning row		not in DA	ANIMAL_CONDIMENT	272										100	liquid	normal	medium	density ~1.15 ?		
 sweet_potato	Sweet potato (kamote)	B013	Sweet potato, yellow	raw yellow kamote (most common)		not in DA	PLANT	133	180									88	FNRI B013 EP 88 (peel)	normal	high	gEach ~180 g ?		
@@ -269,16 +269,16 @@ chili_jalapeno	Jalapeno pepper			FNRI has only labuyo chili (D164, 75 kcal), not
 clam_juice	Clam juice			no bottled clam juice/broth in FNRI		DA does not sell it	ANIMAL_CONDIMENT	240										100	liquid	normal	high			
 cream_of_tartar	Cream of tartar			not in FNRI		not a DA commodity	PLANT	144										100	volume-measured powder	normal	high	3 g/tsp		
 garlic_roasted	Roasted garlic	D084	Garlic bulb	raw garlic bulb (no roasted/fried garlic row)	Garlic, Native/Local	made at home from fresh garlic; Local preferred	PLANT	120										100	tbsp-measured peeled cloves	garnish_typical	low	"PH ""roasted garlic for topping"" usually means fried toasted bits (oil + water loss not in D084); gPerCup 120?"		
-goat_meat	Goat meat (chevon)	F088	Chevon shoulder	raw chevon shoulder, typical stewing cut for kaldereta		DA lists lamb, not goat	MEAT											85	bone-in cubes typical in PH; FNRI EP blank	normal	medium	epPct 85?; chevon cut unspecified in recipes		
-lechon	Lechon (roast pork)	F269	Pork belly, seasoned, roasted	seasoned roasted pork belly (litson)		DA sells raw pork only; lechon bought prepared	MEAT											85	serving pieces with some bone; FNRI F269 EP 99 is belly	normal	medium	epPct 85?		
-lechon_kawali	Lechon kawali	F149	Pork belly, fried	fried pork belly		bought/prepared fried; raw liempo is a different form	MEAT											100	boneless fried belly pieces	normal	high			
+goat_meat	Goat meat (chevon)	F088	Chevon shoulder	raw chevon shoulder, typical stewing cut for kaldereta	Lamb Meat	stand-in: DA lists lamb, not goat	MEAT											85	bone-in cubes typical in PH; FNRI EP blank	normal	medium	epPct 85?; chevon cut unspecified in recipes		
+lechon	Lechon (roast pork)	F269	Pork belly, seasoned, roasted	seasoned roasted pork belly (litson)	Pork Belly (Liempo), Local	roast pork priced as raw belly ÷ 0.6 cooked yield	MEAT											85	serving pieces with some bone; FNRI F269 EP 99 is belly	normal	medium	epPct 85?		0.6
+lechon_kawali	Lechon kawali	F149	Pork belly, fried	fried pork belly	Pork Belly (Liempo), Local	fried belly priced as raw belly ÷ 0.6 cooked yield	MEAT											100	boneless fried belly pieces	normal	high			0.6
 mirin	Mirin			no rice wine/mirin in FNRI		not sold by DA	PLANT	260										100	liquid	normal	high	gPerCup 260? (sweet, dense)		
 miso_paste	Miso paste	C067	Soybean paste, miso	soybean paste, miso		not sold by DA	PLANT	275										100	volume-measured paste	normal	high			
 nata_de_coco	Nata de coco	M035	Nata de coco, sweetn	sweetened nata de coco		not sold by DA	PLANT	200										100	drained cubes	normal	high	gPerCup 200?		
 nutmeg_ground	Ground nutmeg			no nutmeg in FNRI		spice not tracked by DA	PLANT	106										100	volume-measured powder	normal	high	2.2 g/tsp		
 olives_black	Black olives	D284	Olive, ripe, in brine	ripe olives in brine		not sold by DA	PLANT	134										100	pitted sliced; FNRI EP 78 includes pits	normal	high			
 pico_de_gallo	Pico de gallo	D257	Tomato	raw tomato as main component (no salsa row)		prepared salsa, not a DA item	PLANT	165										100	prepared, volume-measured	normal	low	approximation: tomato+onion+chili; gPerCup 165?		
-pork_adobo	Pork adobo	R050	Pork adobo, cnd	canned pork adobo (the dish itself)		prepared dish	MEAT	140										100	chopped cooked meat	normal	medium	homemade leftover adobo vs canned; gPerCup 140?		
+pork_adobo	Pork adobo	R050	Pork adobo, cnd	canned pork adobo (the dish itself)	Pork Picnic Shoulder (Kasim), Local	leftover adobo priced as raw kasim ÷ 0.7 cooked yield	MEAT	140										100	chopped cooked meat	normal	medium	homemade leftover adobo vs canned; gPerCup 140?		0.7
 spaghetti_sauce_filipino	Filipino-style spaghetti sauce	N025	Tomato sauce	tomato sauce (closest; no sweet-style row)		not sold by DA	PLANT											100	packaged sauce	normal	low	Filipino sweet sauce has more sugar (~80-100 kcal/100g?) than N025 45 kcal		
 sugar_powdered	Powdered sugar	M045	Sugar, pwdr	powdered/confectioner's sugar		DA sells only refined/washed/brown granulated sugar	PLANT	120										100	volume-measured	normal	high			
 winged_bean	Winged bean (sigarilyas)	D272	Winged bean pod	raw winged bean pods		not in DA list	PLANT	44	17									97	FNRI EP 97 (pod tips)	normal	high	gEach 17? per pod		
@@ -306,7 +306,7 @@ luncheon_meat	Luncheon meat	F235	Luncheon meat, cnd	canned luncheon meat		not so
 lye_water	Lye water (lihiya)			not in FNRI (alkaline solution, no energy)		not a DA commodity	PLANT	240										100	liquid	normal	high	gPerCup 240?		
 mix_crab_corn_soup	Knorr crab and corn soup mix			no instant soup powder of this kind in FNRI		branded mix, not DA	ANIMAL_CONDIMENT											100	packet weighed in grams	normal	high			
 orange_juice	Orange juice	Q046	Juice, orange, unsweetn, cnd	unsweetened orange juice		not sold by DA	PLANT	248										100	liquid	normal	high			
-oxtail	Oxtail	F045	Beef tail	raw beef tail		DA does not list oxtail	MEAT											70	FNRI EP 70 (bone)	normal	high			
+oxtail	Oxtail	F045	Beef tail	raw beef tail	Beef Short Ribs, Local	stand-in: bone-in beef cut; DA doesn't list oxtail	MEAT											70	FNRI EP 70 (bone)	normal	high			
 penne	Penne pasta (dry)	A152	Pasta, macaroni	dry macaroni-type pasta		not sold by DA	PLANT											100	dry pasta by weight	normal	high			
 pimiento	Pimiento (bottled)	D290	Pimiento, cnd	canned pimiento		not sold by DA	PLANT	190	115									100	drained, chopped	normal	high	gEach = one 4-oz jar?; gPerCup 190?		
 pork_loin	Pork loin	F187	Pork tenderloin	raw pork lomo (loin); F161 center loin lists 52% fat, implausible	Pork Loin, Local	local loin	MEAT											100	boneless	normal	medium	check F161 vs F187 choice		
@@ -322,20 +322,20 @@ apple	Apple	E002	Apple, red	raw red apple		not in DA list	PLANT		182									76	
 apple_juice	Apple juice	Q043	Juice, apple, cnd	canned apple juice		not sold by DA	PLANT	248										100	liquid	normal	high			
 asparagus	Asparagus (fresh)			FNRI has only canned asparagus (D274); recipes use fresh bunches		not in DA list	PLANT		16						450			75	woody ends trimmed (USDA refuse up to 47%)	normal	medium	epPct 75?; gBunch 450?		
 bacon_bits	Bacon bits	F213	Bacon	bacon (no cooked bacon bits row)		not sold by DA	MEAT	100										100	ready-to-use	garnish_typical	low	cooked crisp bits differ from raw bacon; gPerCup 100?		
-bagnet	Bagnet	F149	Pork belly, fried	fried pork belly (bagnet is double-fried liempo)		prepared; raw liempo is different form	MEAT											100	boneless fried belly	normal	medium			
+bagnet	Bagnet	F149	Pork belly, fried	fried pork belly (bagnet is double-fried liempo)	Pork Belly (Liempo), Local	fried belly priced as raw belly ÷ 0.6 cooked yield	MEAT											100	boneless fried belly	normal	medium			0.6
 bamboo_shoots	Bamboo shoots	D010	Bamboo shoot	raw bamboo shoot (labong)		not in DA list	PLANT	150										100	cup-measured cleaned shoots; FNRI EP 22 is with sheaths	normal	medium	may be canned (D275) in some recipes		
 banana_lakatan	Banana (lakatan)	E011	Banana, lacatan	raw lakatan banana	Banana (Lakatan) 8-10 pcs/kg	same variety	PLANT		110									69	FNRI EP 69 (peel)	normal	high			
 beef_brisket	Beef brisket	F005	Beef brisket	raw beef brisket	Beef Brisket, Local Meat with Bones	local brisket	MEAT											84	FNRI EP 84 (bone)	normal	high			
 beef_short_ribs	Beef short ribs	F037	Beef short rib	raw beef short rib	Beef Short Ribs, Local	local short ribs	MEAT											79	FNRI EP 79 (bone)	normal	high			
 cheese_american	American cheese (processed slices)	J001	Cheese, cheddar, pasteurized, processed	processed cheddar cheese		dairy not tracked by DA	DAIRY										21	100	slices	normal	high			
 chicken_feet	Chicken feet	F094	Chicken feet	raw chicken feet	Chicken Feet, Local	local chicken feet	POULTRY											34	FNRI EP 34 (bones)	normal	high			
-chicken_heart	Chicken heart	F099	Chicken heart	raw chicken heart		DA does not list hearts	POULTRY											100	FNRI EP 100	normal	high			
+chicken_heart	Chicken heart	F099	Chicken heart	raw chicken heart	Chicken Liver, Local	stand-in: DA doesn't list chicken heart	POULTRY											100	FNRI EP 100	normal	high			
 chili_garlic_oil	Chili garlic oil	K008	Oil, coconut	no chili oil row in FNRI (mostly oil + garlic + chili)		not sold by DA	PLANT	220										100	volume-measured	normal	high	gPerCup 220?		
 clams	Clams (halaan)	G021	Clam, halaan	raw halaan, the common PH clam		DA does not list clams	SEAFOOD		15									31	FNRI EP 31 (shell)	normal	high	gEach 15?		
 cornmeal	Cornmeal	A007	Cornmeal, yellow	yellow cornmeal	Corn Grits (Yellow, Food Grade)	DA lists corn grits, not cornmeal	PLANT	157										100	dry, volume-measured	normal	high			
 crab_meat	Crab meat	G157	Crab, mud/mangrove, meat, cnd	canned crab meat (picked meat)		not sold by DA	SEAFOOD	135										100	picked meat	normal	high			
 crab_stick	Crab stick (kani)			no imitation crab/surimi row in FNRI		not sold by DA	FISH		17									100	ready-to-eat	normal	high	gEach 17?		
-grouper	Grouper (lapu-lapu)	G063	Grouper, whitespotted	raw whitespotted grouper		DA does not list lapu-lapu	FISH											75	cleaned and sliced steaks; FNRI EP 49 is whole fish	normal	medium	epPct 75?		
+grouper	Grouper (lapu-lapu)	G063	Grouper, whitespotted	raw whitespotted grouper	Pampano, Local	stand-in: DA doesn't list lapu-lapu	FISH											75	cleaned and sliced steaks; FNRI EP 49 is whole fish	normal	medium	epPct 75?		
 guacamole	Guacamole	E004	Avocado, green	raw avocado as main ingredient (no guacamole row)		prepared dip	PLANT	230										100	prepared	normal	low	approximation		
 mix_sinigang_tamarind_miso	Knorr sinigang sa sampaloc with miso mix			no seasoning-mix row in FNRI		branded mix, not DA	ANIMAL_CONDIMENT											100	packet weighed in grams	normal	high	check label for shrimp/fish ingredients?		
 onion_fried	French fried onions			no fried onion row in FNRI		packaged product	PLANT	56										100	ready-to-use	garnish_typical	high			
@@ -353,9 +353,9 @@ upo	Upo (bottle gourd)	D025	Bottle gourd fruit	raw upo			PLANT	120	1000	600	1500
 longganisa	Longganisa	F249	Sausage, chorizo	FNRI Longanisa, chorizo; no plain pork longganisa row			MEAT		40									100		normal	low	SM price is pork longganisa; chorizo nutrition is denser than fresh longganisa		
 miswa	Miswa (wheat vermicelli)	A144	Noodles, wheat, thin	FNRI Misua/Miswa, dry			PLANT		50						50			100		normal	medium	sold in ~50 g bundles		
 galunggong	Galunggong (round scad)	G105	Scad, round	FNRI Galunggong	Galunggong, Local Male, Medium (12-14 pcs/kg)	DA local medium	FISH		75									60	whole fish, head and bones [heur]	normal	medium			
-tulingan	Tulingan (frigate tuna)	G146	Tuna, frigate	FNRI frigate tuna	Bonito (Frigate Tuna)	DA frigate tuna (often unpriced)	FISH		300									60	whole fish [heur]	normal	medium			
+tulingan	Tulingan (frigate tuna)	G146	Tuna, frigate	FNRI frigate tuna	Tambakol (Yellow-Fin Tuna), Local Medium, Fresh or Chilled	stand-in: DA's frigate tuna is usually unpriced	FISH		300									60	whole fish [heur]	normal	medium			
 singkamas	Singkamas (jicama)	D260	Yam bean	raw yam bean root			PLANT	130	300									85	peeled	normal	medium			
 camote_tops	Talbos ng kamote (sweet potato leaves)	D244	Sweet potato lvs	raw camote tops			PLANT	35							150			70	tough stems removed [heur]	normal	medium			
 mango_ripe	Mango, ripe (carabao)	E051	Mango, Manila super, ripe	carabao mango, ripe	Mango (Carabao) Ripe, 3-4 pcs/kg	DA carabao mango	PLANT	165	280									65	peel and seed	normal	medium			
-red_snapper	Red snapper (maya-maya)	G098	Red snapper/Malabar	FNRI red snapper			FISH		700									55	whole fish [heur]	normal	medium			
+red_snapper	Red snapper (maya-maya)	G098	Red snapper/Malabar	FNRI red snapper	Pampano, Local	stand-in: DA doesn't list maya-maya	FISH		700									55	whole fish [heur]	normal	medium			
 tapioca_pearls	Tapioca pearls (sago)	B035	Tapioca starch ball	dry tapioca pearls			PLANT	152										100		normal	medium			
