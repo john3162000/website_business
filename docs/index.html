@@ -40,6 +40,9 @@
     body.rainy .text-green-700 { color: #2f5d8c !important; }
     body.rainy .bar-fill { background: #2f5d8c; }
     body.rainy ::-webkit-scrollbar-thumb { background: #2f5d8c; }
+    /* Header tabs scroll sideways on phones instead of widening the page */
+    .nav-scroll { scrollbar-width: none; } .nav-scroll::-webkit-scrollbar { display: none; }
+
     /* Weekly planner */
     .plan-dish { display: flex; gap: .6rem; align-items: center; padding: .4rem; border-radius: .75rem; border: 1px solid #f3f4f6; cursor: grab; background: #fff; transition: background .15s, border-color .15s; }
     .plan-dish:hover { background: #f0fdf4; }
@@ -82,15 +85,15 @@
 <!-- NAV -->
 <header class="bg-green-800 text-white shadow-lg sticky top-0 z-50">
   <div class="max-w-6xl mx-auto px-4 flex items-center justify-between h-16">
-    <a href="#" class="flex items-center gap-2 font-bold text-xl" onclick="showSection('home')">
+    <a href="#" class="flex items-center gap-2 font-bold text-xl shrink-0" onclick="showSection('home')">
       <span class="text-2xl">🍚</span> SarapSulit
     </a>
-    <nav class="flex gap-1 text-sm font-medium">
-      <button onclick="showSection('home')" id="nav-home" class="tab-btn active px-4 py-2 rounded-md transition-colors hover:bg-green-700 text-green-100">Home</button>
-      <button onclick="showSection('browse')" id="nav-browse" class="tab-btn px-4 py-2 rounded-md transition-colors hover:bg-green-700 text-green-100">Browse Recipes</button>
-      <button onclick="showSection('prices')" id="nav-prices" class="tab-btn px-4 py-2 rounded-md transition-colors hover:bg-green-700 text-green-100">DA Prices</button>
-      <button onclick="showSection('mydish')" id="nav-mydish" class="tab-btn px-4 py-2 rounded-md transition-colors hover:bg-green-700 text-green-100">My Dish</button>
-      <button onclick="showSection('planner')" id="nav-planner" class="tab-btn px-4 py-2 rounded-md transition-colors hover:bg-green-700 text-green-100">Planner</button>
+    <nav class="flex gap-1 text-sm font-medium overflow-x-auto min-w-0 ml-3 nav-scroll">
+      <button onclick="showSection('home')" id="nav-home" class="tab-btn active px-3 sm:px-4 py-2 whitespace-nowrap shrink-0 rounded-md transition-colors hover:bg-green-700 text-green-100">Home</button>
+      <button onclick="showSection('browse')" id="nav-browse" class="tab-btn px-3 sm:px-4 py-2 whitespace-nowrap shrink-0 rounded-md transition-colors hover:bg-green-700 text-green-100">Browse Recipes</button>
+      <button onclick="showSection('prices')" id="nav-prices" class="tab-btn px-3 sm:px-4 py-2 whitespace-nowrap shrink-0 rounded-md transition-colors hover:bg-green-700 text-green-100">DA Prices</button>
+      <button onclick="showSection('mydish')" id="nav-mydish" class="tab-btn px-3 sm:px-4 py-2 whitespace-nowrap shrink-0 rounded-md transition-colors hover:bg-green-700 text-green-100">My Dish</button>
+      <button onclick="showSection('planner')" id="nav-planner" class="tab-btn px-3 sm:px-4 py-2 whitespace-nowrap shrink-0 rounded-md transition-colors hover:bg-green-700 text-green-100">Planner</button>
     </nav>
   </div>
 </header>
