@@ -3,6 +3,7 @@ import { corsJson, corsPreflight } from "@/lib/cors";
 import { isMalformedName, parsePriceBasis, type PriceBasis } from "@/lib/da-units";
 import { CANONICALS } from "@/lib/recipe-compile/catalog.generated.ts";
 import { ensureNutritionColumns } from "@/lib/ensure-schema";
+import { compareDate, pctChange, priceOn } from "@/lib/price-history";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +11,8 @@ export const dynamic = "force-dynamic";
  * Live DA commodity prices for the SarapSulit site.
  * Returns the latest snapshot price for each commodity plus its full
  * recent price history (so the client can show trend vs. the previous day
- * and, optionally, a sparkline).
+ * and, optionally, a sparkline), and the change since `compareDate`: about a
+ * month back, or the earliest stored day while history is shorter than that.
  */
 export async function GET() {
   // All rows from the last ~35 days, oldest first, so we can fold them into
@@ -35,6 +37,10 @@ export async function GET() {
     localName: string | null;
     low: number | null;
     high: number | null;
+    /** Price on compareDate (or the last surveyed day the week before it). */
+    monthAgoPrice: number | null;
+    /** (price − monthAgoPrice) ÷ monthAgoPrice, e.g. 0.12 = +12%. */
+    monthChange: number | null;
   }
 
   const byName = new Map<string, Entry>();
@@ -60,6 +66,8 @@ export async function GET() {
         localName: null,
         low: null,
         high: null,
+        monthAgoPrice: null,
+        monthChange: null,
       };
       byName.set(r.name, e);
     }
@@ -86,6 +94,14 @@ export async function GET() {
     }
   }
 
+  const compare = latestDate ? compareDate(rows.map((r) => r.sourceDate.toISOString()), latestDate) : null;
+  if (compare) {
+    for (const e of byName.values()) {
+      e.monthAgoPrice = priceOn(e.history, compare);
+      e.monthChange = pctChange(e.price != null && e.price > 0 ? e.price : null, e.monthAgoPrice);
+    }
+  }
+
   // Filipino name: the FNRI alternate name of the catalog ingredient priced by this DA item.
   const codeByDa = new Map<string, string>();
   for (const c of Object.values(CANONICALS)) if (c.daName && c.fnriCode && !codeByDa.has(c.daName)) codeByDa.set(c.daName, c.fnriCode);
@@ -107,7 +123,7 @@ export async function GET() {
 
   const commodities = [...byName.values()].sort((a, b) => a.name.localeCompare(b.name));
 
-  return corsJson({ latestDate, count: commodities.length, commodities });
+  return corsJson({ latestDate, compareDate: compare, count: commodities.length, commodities });
 }
 
 export function OPTIONS() {

@@ -164,6 +164,27 @@
     </div>
     <p class="text-sm text-gray-500 mb-6">Source: Department of Agriculture Daily Price Index, NCR prevailing retail prices · updated automatically every day</p>
 
+    <!-- Dishes whose cost moved since about a month ago -->
+    <div class="mb-8">
+      <div class="flex items-baseline justify-between mb-3 flex-wrap gap-2">
+        <h2 class="text-xl font-bold">Dishes whose cost changed</h2>
+        <span id="movers-summary" class="text-xs text-gray-500">Loading…</span>
+      </div>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="bg-white rounded-2xl shadow p-4">
+          <h3 class="font-semibold price-up mb-2">▲ Mas mahal na <span class="text-gray-400 font-normal text-sm">(pricier)</span></h3>
+          <div id="movers-rose" class="space-y-1 text-sm"></div>
+        </div>
+        <div class="bg-white rounded-2xl shadow p-4">
+          <h3 class="font-semibold price-down mb-2">▼ Mas mura na <span class="text-gray-400 font-normal text-sm">(cheaper)</span></h3>
+          <div id="movers-fell" class="space-y-1 text-sm"></div>
+        </div>
+      </div>
+      <p class="text-xs text-gray-400 mt-2">Cost per serving from ingredients priced on both dates. Only DA prices change day to day; SM and DTI reference prices are fixed.</p>
+    </div>
+
+    <h2 class="text-xl font-bold mb-3">Commodity prices</h2>
+
     <div class="flex gap-2 mb-5 flex-wrap">
       <button onclick="filterPrices('all')" id="cat-all" class="price-cat-btn bg-green-700 text-white text-xs px-4 py-1.5 rounded-full font-medium">All</button>
       <button onclick="filterPrices('vegetables')" id="cat-vegetables" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50">Vegetables</button>
@@ -172,6 +193,11 @@
       <button onclick="filterPrices('staple')" id="cat-staple" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50">Rice & Staples</button>
       <button onclick="filterPrices('fruits')" id="cat-fruits" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50">Fruits</button>
       <button onclick="filterPrices('condiments')" id="cat-condiments" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50">Sugar, Salt &amp; Oil</button>
+      <select id="price-sort" onchange="renderPrices(currentPriceCat)" class="ml-auto border border-gray-200 rounded-full px-3 py-1.5 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500">
+        <option value="name">Sort: A–Z</option>
+        <option value="up">Biggest increase vs month ago</option>
+        <option value="down">Biggest drop vs month ago</option>
+      </select>
     </div>
 
     <div class="bg-white rounded-2xl shadow overflow-hidden">
@@ -185,6 +211,7 @@
               <th class="text-right px-3 py-3 font-semibold">30-day Low (₱)</th>
               <th class="text-right px-3 py-3 font-semibold">30-day High (₱)</th>
               <th class="text-right px-5 py-3 font-semibold">Latest (₱)</th>
+              <th class="text-right px-3 py-3 font-semibold whitespace-nowrap">vs <span data-compare-date>month ago</span></th>
               <th class="text-center px-3 py-3 font-semibold hidden md:table-cell">Trend</th>
             </tr>
           </thead>
@@ -192,7 +219,7 @@
         </table>
       </div>
     </div>
-    <p class="text-xs text-gray-400 mt-3">* Prevailing retail prices in Metro Manila markets, from the DA Daily Price Index. Low and high are the range over the last 30 days.</p>
+    <p class="text-xs text-gray-400 mt-3">* Prevailing retail prices in Metro Manila markets, from the DA Daily Price Index. Low and high are the range over the last 30 days. The change column compares the latest price with the price about a month earlier (the date in its heading).</p>
   </div>
 </section>
 
