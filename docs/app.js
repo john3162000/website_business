@@ -36,8 +36,14 @@ function formatDate(d) {
   return d ? d.toLocaleDateString("en-PH", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" }) : "—";
 }
 
-// The scraped recipes carry no category; derive one from the title.
-function categoryFor(title) {
+// Category from the title, unless Panlasang Pinoy's own course says it clearly.
+// Their courses are patchy ("Chicken", "Dinner", sopas as "Appetizer"), so only
+// soups, desserts and sauces are taken from them.
+function categoryFor(title, course) {
+  const c = (course || "").toLowerCase();
+  if (/(desserts?|kakanin|cakes?|cookies|candy|sweets|drinks?|beverages?)/.test(c)) return "Dessert";
+  if (/(sauces?|condiments?|dips?|dressings?)/.test(c)) return "Sauce & Condiment";
+  if (/soups?/.test(c)) return "Soup";
   const t = title.toLowerCase();
   if (/\b(sinigang|tinola|nilaga|bulalo|soup|sopas|molo|lomi|mami|goto|arroz caldo|lugaw|batchoy|pochero|cansi)\b/.test(t)) return "Soup";
   if (/\b(sauce|dip|dipping|dressing|gravy|marinade|vinaigrette|spread|salsa|chutney|syrup)\b/.test(t)) return "Sauce & Condiment";
@@ -72,7 +78,7 @@ function buildRecipe(raw, c) {
     title: raw.title,
     url: raw.url,
     img: raw.imageUrl && /^https?:/.test(raw.imageUrl) ? raw.imageUrl : null,
-    category: categoryFor(raw.title),
+    category: categoryFor(raw.title, n.course),
     servings,
     servingsAssumed: !!n.servingsAssumed,
     prepTime: raw.prepTime,
@@ -88,6 +94,7 @@ function buildRecipe(raw, c) {
     kcalHigh: n.kcalHigh != null ? Math.round(n.kcalHigh) : null,
     frying: n.frying || null,
     sodium: n.sodium ?? null,
+    refKcal: n.refKcal ?? null,
     protein: round1(perServing.protein),
     fiber: round1(perServing.fiber),
     cost: { total: round1(costPerServing * servings), perServing: costPerServing },
@@ -179,7 +186,13 @@ function buildRecipeCard(r) {
 
 // One row per ingredient line, from the server engine: what was counted as eaten, and why.
 function ingredientRows(lines) {
-  return lines.map((l) => {
+  let lastGroup = null;
+  // Heading lines ("Marinade ingredients:") are shown as group headings instead.
+  return lines.filter((l) => !(l.status === "skipped" && /header/.test(l.reason || ""))).map((l) => {
+    const heading = l.group && l.group !== lastGroup
+      ? `<p class="text-xs font-semibold uppercase tracking-wide text-gray-500 pt-2">${escapeHtml(l.group.replace(/:\s*$/, ""))}</p>`
+      : "";
+    lastGroup = l.group;
     const grams = l.gEaten != null && l.gAP != null
       ? (Math.round(l.gEaten) === Math.round(l.gAP) ? `≈${Math.round(l.gAP)} g` : `≈${Math.round(l.gAP)} g bought · ≈${Math.round(l.gEaten)} g eaten`)
       : "";
@@ -187,7 +200,7 @@ function ingredientRows(lines) {
     const muted = ["to-taste", "optional", "water", "skipped"].includes(l.status);
     const note = l.reason || (l.status === "unmatched" ? "not matched to FNRI/DA yet" : l.status === "no-weight" ? "amount unclear" : "");
     const source = l.cost != null ? (l.priceSource === "DA" ? "DA" : l.priceSource && l.priceSource.startsWith("SM") ? "SM Markets" : "DTI SRP") : "";
-    return `
+    return `${heading}
     <div class="flex items-start justify-between gap-3 bg-gray-50 rounded-xl px-4 py-3 ${muted ? "opacity-60" : ""}">
       <div class="min-w-0">
         <p class="font-medium text-sm">${escapeHtml(l.text)}</p>
@@ -303,6 +316,7 @@ function buildModal(r, instructions, lines) {
           </div>
           <div class="space-y-2">${nutriBars}</div>
           ${r.sodium != null ? `<p class="text-xs text-gray-600 mt-2">Sodium ≈ ${Math.round(r.sodium).toLocaleString()} mg</p>` : ""}
+          ${r.refKcal ? `<p class="text-xs text-gray-500 mt-2">Panlasang Pinoy’s own estimate: ≈ ${Math.round(r.refKcal).toLocaleString()} kcal per serving (it counts all frying oil and marinade)</p>` : ""}
           <p class="text-xs text-gray-400 mt-3">Source: FNRI FCT · per serving estimate · edible portion and cooking losses applied</p>
         </div>
         ${insight}

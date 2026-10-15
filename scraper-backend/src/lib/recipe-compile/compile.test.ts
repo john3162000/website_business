@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { compileRecipe } from "./compile.ts";
+import { compileRecipe, sectionOf } from "./compile.ts";
 import { testContext } from "./test-context.ts";
 
 const ctx = testContext();
@@ -65,4 +65,87 @@ test("to-taste, water and headers are not counted; missing servings assumed 4", 
   }, ctx);
   assert.equal(r.servingsAssumed, true);
   assert.deepEqual(r.lines.map((l) => l.status), ["to-taste", "water", "skipped", "ok"]);
+});
+
+// ── Marinades, brines and dredging (ingredient groups) ──
+const grouped = (group: string | null, amount: string | null, unit: string | null, name: string) => ({ amount, unit, name, group });
+const line = (r: ReturnType<typeof compileRecipe>, slug: string) => r.lines.find((l) => l.slug === slug)!;
+
+test("sectionOf: group headings and line notes", () => {
+  assert.equal(sectionOf("Marinade ingredients"), "marinade");
+  assert.equal(sectionOf("Brine ingredients:"), "brine");
+  assert.equal(sectionOf("Breading ingredients:"), "dredge");
+  assert.equal(sectionOf("Batter Ingredients"), null);
+  assert.equal(sectionOf("Sauce ingredients"), null);
+  assert.equal(sectionOf(null, "1 cup all-purpose flour for dredging"), "dredge");
+  assert.equal(sectionOf("Sauce", "3 tbsp soy sauce for the marinade"), "marinade");
+});
+
+test("discarded marinade: only ≈20% eaten, cost unchanged, meat untouched", () => {
+  const r = compileRecipe({
+    id: 10, title: "Chicken Inasal", servings: 4,
+    ingredients: [grouped(null, "2", "lbs", "chicken"), grouped("Marinade ingredients", "1/2", "cup", "soy sauce"), grouped("Marinade ingredients", "1/4", "cup", "calamansi juice")],
+    instructions: ["Marinate the chicken overnight.", "Remove the chicken and discard the marinade.", "Grill until done."],
+  }, ctx);
+  const soy = line(r, "soy_sauce");
+  assert.equal(soy.group, "Marinade ingredients");
+  assert.ok(Math.abs(soy.gEaten! - 0.2 * soy.gAP!) < 1e-9, soy.reason ?? "");
+  assert.match(soy.reason!, /discarded/);
+  const chicken = line(r, "chicken_whole_cut");
+  assert.ok(Math.abs(chicken.gEaten! - chicken.gAP! * (ctx.canonicals.chicken_whole_cut.epPct ?? 100) / 100) < 1e-6);
+});
+
+test("marinade poured into the pan is eaten in full", () => {
+  const r = compileRecipe({
+    id: 11, title: "Pork Adobo", servings: 4,
+    ingredients: [grouped(null, "2", "lbs", "pork belly"), grouped("Marinade", "1/2", "cup", "soy sauce")],
+    instructions: ["Marinate the pork for 1 hour.", "Brown the pork, then pour-in the marinade and simmer for 45 minutes."],
+  }, ctx);
+  assert.equal(line(r, "soy_sauce").gEaten, line(r, "soy_sauce").gAP);
+});
+
+test("heading written as an ingredient line groups the lines below it", () => {
+  const r = compileRecipe({
+    id: 12, title: "Fried Chicken", servings: 4,
+    ingredients: [ing(null, null, "Marinade ingredients:"), ing("1/2", "cup", "soy sauce"), ing("2", "lbs", "chicken"), ing("3", "cups", "cooking oil")],
+    instructions: ["Marinate the chicken.", "Deep fry until golden brown."],
+  }, ctx);
+  const soy = line(r, "soy_sauce");
+  assert.equal(soy.group, "Marinade ingredients");
+  assert.ok(Math.abs(soy.gEaten! - 0.3 * soy.gAP!) < 1e-9, soy.reason ?? "");
+  assert.equal(r.lines[0].group, null);
+});
+
+test("dredging: dry coating ≈30%, egg wash ≈60%; brine salt ≈10%", () => {
+  const r = compileRecipe({
+    id: 13, title: "Crispy Fried Chicken", servings: 4,
+    ingredients: [
+      grouped(null, "2", "lbs", "chicken"),
+      grouped("Brine ingredients:", "1/4", "cup", "salt"), grouped("Brine ingredients:", "4", "cups", "water"),
+      grouped("Breading ingredients:", "1", "cup", "all-purpose flour"), grouped("Breading ingredients:", "2", null, "eggs"),
+      grouped(null, "4", "cups", "cooking oil"),
+    ],
+    instructions: ["Soak the chicken in the brine.", "Dredge in flour, dip in egg.", "Deep fry until golden."],
+  }, ctx);
+  const flour = line(r, "flour_all_purpose"), egg = line(r, "egg_chicken"), salt = line(r, "salt");
+  assert.ok(Math.abs(flour.gEaten! - 0.3 * flour.gAP!) < 1e-9);
+  assert.ok(Math.abs(egg.gEaten! - 0.6 * egg.gAP! * (ctx.canonicals.egg_chicken.epPct ?? 100) / 100) < 1e-9);
+  assert.ok(Math.abs(salt.gEaten! - 0.1 * salt.gAP!) < 1e-9);
+});
+
+test("marinating steps are not mistaken for cooking with the marinade", () => {
+  const soyKept = (steps: string[], title = "Pork Ribs") => {
+    const r = compileRecipe({
+      id: 14, title, servings: 4,
+      ingredients: [grouped(null, "2", "lbs", "pork belly"), grouped("Marinade ingredients", "1/2", "cup", "soy sauce")],
+      instructions: steps,
+    }, ctx);
+    const soy = line(r, "soy_sauce");
+    return Math.round((soy.gEaten! / soy.gAP!) * 100) / 100;
+  };
+  assert.equal(soyKept(["Add the marinade ingredients and mix well. Marinate for 30 minutes.", "Fry the marinated pork ribs."], "No-Grill Pork Ribs Barbecue"), 0.3);
+  assert.equal(soyKept(["Add the pork to the marinade.", "Fry until brown."]), 0.3);
+  assert.equal(soyKept(["Marinate overnight.", "Add-in the reserved marinade and simmer."]), 1);
+  assert.equal(soyKept(["Marinate overnight.", "Grill, basting with the marinade."]), 0.5);
+  assert.equal(soyKept(["Marinate overnight.", "Cook everything in a pot for an hour."], "Pork Stew"), 1);
 });

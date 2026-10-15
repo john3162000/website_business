@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/admin-auth";
+import { ensureRecipeColumns } from "@/lib/ensure-schema";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -15,6 +16,7 @@ const PARALLEL = 5;
 export async function POST(request: Request) {
   const denied = requireAdmin(request);
   if (denied) return denied;
+  await ensureRecipeColumns();
 
   const todo = await prisma.recipe.findMany({
     where: { OR: [{ imageUrl: null }, { imageUrl: { startsWith: "data:" } }] },

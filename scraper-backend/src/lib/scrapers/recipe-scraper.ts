@@ -7,6 +7,8 @@
 
 import * as cheerio from "cheerio";
 import { prisma } from "@/lib/db";
+import { ensureRecipeColumns } from "@/lib/ensure-schema";
+import { parseStructured, type RefNutrition } from "./recipe-structured";
 
 const BASE_URL = "https://panlasangpinoy.com";
 // The "/recipes/" landing page only lists a small curated subset (~68
@@ -52,6 +54,7 @@ interface ScrapedIngredient {
   name: string;
   amount?: string;
   unit?: string;
+  groupName?: string;
 }
 
 interface ScrapedRecipe {
@@ -62,6 +65,10 @@ interface ScrapedRecipe {
   servings?: number;
   prepTime?: number;
   cookTime?: number;
+  course?: string;
+  cuisine?: string;
+  yieldText?: string;
+  refNutrition?: RefNutrition;
   ingredients: ScrapedIngredient[];
   instructions: string[];
 }
@@ -93,8 +100,10 @@ async function scrapeRecipePage(url: string): Promise<ScrapedRecipe | null> {
     pickImage("article img") ||
     undefined;
 
+  const structured = parseStructured(html);
+
   const servingsText = $(".wprm-recipe-servings").first().text().trim();
-  const servings = servingsText ? parseInt(servingsText) || undefined : undefined;
+  const servings = (servingsText ? parseInt(servingsText) || undefined : undefined) ?? structured.yieldServings ?? undefined;
 
   const prepTime = parseTime($(".wprm-recipe-prep_time-container").text()) ?? undefined;
   const cookTime = parseTime($(".wprm-recipe-cook_time-container").text()) ?? undefined;
@@ -106,7 +115,9 @@ async function scrapeRecipePage(url: string): Promise<ScrapedRecipe | null> {
     const amount = $(el).find(".wprm-recipe-ingredient-amount").text().trim() || undefined;
     const unit = $(el).find(".wprm-recipe-ingredient-unit").text().trim() || undefined;
     const name = $(el).find(".wprm-recipe-ingredient-name").text().trim() || rawText;
-    ingredients.push({ rawText, name, amount, unit });
+    // parseStructured walks the same non-empty lines in the same order.
+    const groupName = structured.ingredients[ingredients.length]?.group ?? undefined;
+    ingredients.push({ rawText, name, amount, unit, groupName });
   });
 
   const instructions: string[] = [];
@@ -115,7 +126,14 @@ async function scrapeRecipePage(url: string): Promise<ScrapedRecipe | null> {
     if (text) instructions.push(text);
   });
 
-  return { title, url, imageUrl, description, servings, prepTime, cookTime, ingredients, instructions };
+  return {
+    title, url, imageUrl, description, servings, prepTime, cookTime,
+    course: structured.courses.join(", ") || undefined,
+    cuisine: structured.cuisines.join(", ") || undefined,
+    yieldText: structured.yieldText ?? undefined,
+    refNutrition: structured.nutrition ?? undefined,
+    ingredients, instructions,
+  };
 }
 
 async function getRecipeUrlsFromSitemap(sitemapUrl: string): Promise<string[]> {
@@ -161,6 +179,7 @@ export async function scrapeRecipeChunk(
     return { saved: 0, cursor, done: true };
   }
 
+  await ensureRecipeColumns();
   const sitemapUrl = POST_SITEMAPS[sitemapIndex];
   onProgress?.(`Fetching sitemap: ${sitemapUrl}...`);
 
@@ -218,6 +237,11 @@ export async function scrapeRecipeChunk(
         servings: scraped.servings,
         prepTime: scraped.prepTime,
         cookTime: scraped.cookTime,
+        course: scraped.course,
+        cuisine: scraped.cuisine,
+        yieldText: scraped.yieldText,
+        refNutrition: scraped.refNutrition ? { ...scraped.refNutrition } : undefined,
+        structuredAt: new Date(),
         sourceSite: "PanlasangPinoy",
         ingredients: {
           create: scraped.ingredients.map((ing) => ({
@@ -225,6 +249,7 @@ export async function scrapeRecipeChunk(
             name: ing.name,
             amount: ing.amount,
             unit: ing.unit,
+            groupName: ing.groupName,
           })),
         },
         instructions: {
