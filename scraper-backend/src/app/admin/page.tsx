@@ -188,17 +188,21 @@ function Section({ type, label, desc, chunked }: { type: string; label: string; 
 
 const TOKEN_KEY = "adminToken";
 
+// In-memory copy, so the token still works for this page view when storage is blocked.
+let memoryToken = "";
+
 function readAdminToken(): string {
   try {
-    return localStorage.getItem(TOKEN_KEY) ?? "";
+    return localStorage.getItem(TOKEN_KEY) ?? memoryToken;
   } catch {
-    return "";
+    return memoryToken;
   }
 }
 
 function AdminTokenField() {
   // Uncontrolled input filled after mount: localStorage isn't available during SSR.
   const ref = useRef<HTMLInputElement>(null);
+  const [saved, setSaved] = useState(false);
   useEffect(() => {
     if (ref.current) ref.current.value = readAdminToken();
   }, []);
@@ -211,15 +215,20 @@ function AdminTokenField() {
         ref={ref}
         defaultValue=""
         onChange={(e) => {
+          memoryToken = e.target.value;
           try {
             localStorage.setItem(TOKEN_KEY, e.target.value);
           } catch {
-            // storage blocked: the token still works for this page view only
+            // storage blocked: memoryToken still covers this page view
           }
+          setSaved(e.target.value.length > 0);
         }}
         placeholder="Required once ADMIN_TOKEN is set in Vercel"
         className="border rounded-lg px-3 py-1.5 min-w-0 flex-1"
       />
+      <span className="text-xs text-gray-500 w-full">
+        {saved ? "✓ Saved. No need to press Enter: the Run buttons use it." : "Saved automatically as you type."}
+      </span>
     </label>
   );
 }
