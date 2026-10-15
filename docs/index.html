@@ -33,6 +33,7 @@
       <button onclick="showSection('home')" id="nav-home" class="tab-btn active px-4 py-2 rounded-md transition-colors hover:bg-green-700 text-green-100">Home</button>
       <button onclick="showSection('browse')" id="nav-browse" class="tab-btn px-4 py-2 rounded-md transition-colors hover:bg-green-700 text-green-100">Browse Recipes</button>
       <button onclick="showSection('prices')" id="nav-prices" class="tab-btn px-4 py-2 rounded-md transition-colors hover:bg-green-700 text-green-100">DA Prices</button>
+      <button onclick="showSection('mydish')" id="nav-mydish" class="tab-btn px-4 py-2 rounded-md transition-colors hover:bg-green-700 text-green-100">My Dish</button>
     </nav>
   </div>
 </header>
@@ -253,6 +254,18 @@
   </div>
 </section>
 
+<!-- ═══════════════════════════════════ MY DISH ═══════════════════════════════════ -->
+<section id="section-mydish" class="hidden flex-col flex-1">
+  <div class="max-w-6xl mx-auto px-4 py-10 w-full">
+    <h1 class="text-3xl font-bold mb-1">My Dish</h1>
+    <p class="text-gray-500 mb-6 text-sm">Build your own dish, or tap “Customize this dish” on any recipe to change its ingredients. See its cost per serving, nutrition and how its price moved. Dishes are saved on this device only.</p>
+    <div id="mydish-list" class="mb-8"></div>
+    <div id="mydish-editor"></div>
+  </div>
+  <datalist id="ingredient-options"></datalist>
+  <datalist id="unit-options"><option value="g"></option><option value="kg"></option><option value="cup"></option><option value="tbsp"></option><option value="tsp"></option><option value="piece"></option><option value="clove"></option><option value="head"></option><option value="bunch"></option><option value="stalk"></option><option value="slice"></option><option value="thumb"></option><option value="lb"></option><option value="oz"></option><option value="ml"></option><option value="can"></option><option value="pack"></option></datalist>
+</section>
+
 <!-- ═══════════════════════════════════ RECIPE MODAL ═══════════════════════════════════ -->
 <div class="modal-bg" id="recipe-modal" onclick="closeModal(event)">
   <div class="bg-white rounded-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
@@ -267,6 +280,7 @@
 </footer>
 
 <script src="weather.js"></script>
+<script src="mydish.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

@@ -39,8 +39,11 @@ export interface RecipeInput {
   id: number;
   title: string;
   servings: number | null;
-  /** group: the ingredient group heading on the page ("Marinade ingredients"), when there is one. */
-  ingredients: { id?: number; name: string; amount: string | null; unit: string | null; rawText?: string | null; group?: string | null }[];
+  /**
+   * group: the ingredient group heading on the page ("Marinade ingredients"), when there is one.
+   * slug: a catalog ingredient chosen directly (the personal dish builder), skipping name matching.
+   */
+  ingredients: { id?: number; name: string; amount: string | null; unit: string | null; rawText?: string | null; group?: string | null; slug?: string | null }[];
   instructions?: string[];
 }
 
@@ -303,7 +306,8 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
       headingLine = ing.name.trim().replace(/:\s*$/, "");
       lines.push({ ...base, group: null, status: "skipped", reason: "section header" }); continue;
     }
-    const alias = ctx.aliases[nameKey(ing.name)]
+    const picked: Alias | null = ing.slug && ctx.canonicals[ing.slug] ? { lineClass: "FOOD", slugs: [ing.slug], size: null, note: null } : null;
+    const alias = picked ?? ctx.aliases[nameKey(ing.name)]
       ?? lookupAlias(parseQuantity(ing.amount, ing.unit, ing.name).name, ctx.aliases)
       ?? lookupAlias(ing.name, ctx.aliases);
     if (!alias) { lines.push({ ...base, status: "unmatched", reason: "ingredient not in catalog yet" }); continue; }

@@ -113,3 +113,93 @@ export async function compileNowAndMonthAgo(): Promise<{
   const then = compare ? compileAll(recipes, fnri, daSnapshot(priceRows, compare).da) : [];
   return { latestDate, compareDate: compare, now, then };
 }
+
+const round = (v: number | null | undefined, d = 0) => (v == null ? null : Math.round(v * 10 ** d) / 10 ** d);
+
+/** The per-recipe summary the site reads (/api/recipes/compiled list, and personal dishes). */
+export function summarize(c: CompiledRecipe & { course?: string | null; reference?: RefNutrition | null }) {
+  return {
+    id: c.id,
+    isArticle: c.isArticle,
+    isCollection: c.isCollection,
+    servings: c.servings,
+    servingsAssumed: c.servingsAssumed,
+    course: c.course ?? null,
+    frying: c.method.frying,
+    kcal: round(c.perServing.kcal),
+    kcalLow: round(c.perServing.kcalLow),
+    kcalHigh: round(c.perServing.kcalHigh),
+    protein: round(c.perServing.protein, 1),
+    fat: round(c.perServing.fat, 1),
+    carbs: round(c.perServing.carbs, 1),
+    sodium: round(c.perServing.sodium),
+    fiber: round(c.perServing.fiber, 1),
+    calcium: round(c.perServing.calcium),
+    iron: round(c.perServing.iron, 1),
+    vitaminA: round(c.perServing.vitaminA),
+    vitaminC: round(c.perServing.vitaminC, 1),
+    cost: round(c.costPerServing, 2),
+    nutritionCoverage: round(c.nutritionCoverage, 2),
+    costCoverage: round(c.costCoverage, 2),
+    nutritionCoverageByWeight: round(c.nutritionCoverageByWeight, 2),
+    costCoverageByWeight: round(c.costCoverageByWeight, 2),
+    // Panlasang Pinoy's own estimate per serving as counted here (reference only).
+    refKcal: round(c.reference?.kcal),
+  };
+}
+
+/**
+ * Catalog ingredients for the personal dish picker: label, slug, the units it can
+ * be measured in, and where its price comes from today.
+ */
+export async function ingredientList() {
+  const since = new Date(Date.now() - PRICE_WINDOW_DAYS * DAY);
+  const rows = await prisma.commodity.findMany({ where: { sourceDate: { gte: since }, price: { not: null } }, orderBy: { sourceDate: "asc" }, select: { name: true, price: true, sourceDate: true } });
+  const { da } = daSnapshot(rows);
+  return Object.entries(CANONICALS)
+    .filter(([, c]) => c.role !== "water")
+    .map(([slug, c]) => ({
+      slug,
+      label: c.label,
+      units: [
+        "g", "kg",
+        ...(c.gPerCup ? ["cup", "tbsp", "tsp"] : []),
+        ...(c.gEach ? ["piece"] : []),
+        ...(c.gClove ? ["clove"] : []), ...(c.gHead ? ["head"] : []), ...(c.gBunch ? ["bunch"] : []),
+        ...(c.gStalk ? ["stalk"] : []), ...(c.gSlice ? ["slice"] : []), ...(c.gThumb ? ["thumb"] : []),
+      ],
+      priceSource: c.daName && da.get(c.daName) ? "DA" : MANUAL_PRICES[slug]?.price != null ? MANUAL_PRICES[slug].source : null,
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+}
+
+export type DishInput = { title: string; servings: number | null; ingredients: { name: string; amount: string | null; unit: string | null; slug?: string | null }[]; instructions?: string[] };
+
+/**
+ * A personal dish compiled with today's prices, plus its cost per serving on
+ * every day of stored DA history (SM/DTI reference prices stay fixed).
+ */
+export async function compileDish(dish: DishInput) {
+  await ensureNutritionColumns();
+  const [foods, priceRows] = await Promise.all([
+    prisma.nutritionFact.findMany({
+      select: { foodCode: true, calories: true, protein: true, fat: true, carbohydrates: true, sodium: true, fiber: true, calcium: true, iron: true, vitaminA: true, vitaminC: true },
+    }),
+    prisma.commodity.findMany({
+      where: { sourceDate: { gte: new Date(Date.now() - 50 * DAY) }, price: { not: null } },
+      orderBy: { sourceDate: "asc" },
+      select: { name: true, price: true, sourceDate: true },
+    }),
+  ]);
+  const fnri = new Map<string, FnriFood>(foods.map((f) => [f.foodCode, f]));
+  const ctx = (da: Map<string, DaPrice>): CompileContext => ({ aliases: ALIASES, canonicals: CANONICALS, extraNutrients: EXTRA_NUTRIENTS, manualPrices: MANUAL_PRICES, fnri, da });
+  const input = { id: 0, ...dish };
+  const now = daSnapshot(priceRows);
+  const compiled = compileRecipe(input, ctx(now.da));
+  const days = [...new Set(priceRows.filter((p) => p.price != null && p.price > 0).map((p) => p.sourceDate.toISOString()))];
+  const history = days.map((date) => {
+    const c = compileRecipe(input, ctx(daSnapshot(priceRows, date).da));
+    return { date, cost: round(c.costPerServing, 2), costCoverage: round(c.costCoverageByWeight, 2) };
+  });
+  return { priceDate: now.priceDate, summary: summarize(compiled), lines: compiled.lines, history };
+}

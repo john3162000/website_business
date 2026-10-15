@@ -187,3 +187,13 @@ test("broth from cubes and shrimp are priced from SM Markets", () => {
   assert.ok(broth.cost! > 5 && broth.cost! < 20, `4 cups broth ₱${broth.cost}`);
   assert.equal(shrimp.priced, true);
 });
+
+test("personal dish: a picked catalog slug skips name matching", () => {
+  const r = compileRecipe({
+    id: 0, title: "My dish", servings: 2,
+    ingredients: [{ amount: "300", unit: "g", name: "Liempo ko", slug: "pork_belly" }, { amount: "1", unit: "cup", name: "zzz unknown" }],
+  }, ctx);
+  assert.equal(r.lines[0].slug, "pork_belly");
+  assert.equal(r.lines[0].gAP, 300);
+  assert.equal(r.lines[1].status, "unmatched");
+});
