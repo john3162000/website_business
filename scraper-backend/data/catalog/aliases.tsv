@@ -765,3 +765,14 @@ sago	FOOD	tapioca_pearls
 pig leg	FOOD	pork_hock		
 pork leg	FOOD	pork_hock		
 pig legs	FOOD	pork_hock		
+sinigang powder	FOOD	mix_sinigang_tamarind		
+sinigang mix powder	FOOD	mix_sinigang_tamarind		
+sinigang sa sampalok mix	FOOD	mix_sinigang_tamarind		
+sinigang base	FOOD	mix_sinigang_tamarind		
+tamarind soup base	FOOD	mix_sinigang_tamarind		
+tamarind powder	FOOD	mix_sinigang_tamarind		
+crab fat	FOOD	crab_meat		
+hibi	FOOD	shrimp_dried		
+bulalo beef shank	FOOD	beef_shank		
+beef bones with meat	FOOD	beef_neck_bone		
+pig tails	FOOD	pork_hock		
