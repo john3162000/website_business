@@ -19,6 +19,30 @@
     .modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:100; align-items:center; justify-content:center; }
     .modal-bg.open { display:flex; }
     ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #f1f5f9; } ::-webkit-scrollbar-thumb { background: #15803d; border-radius: 3px; }
+
+    /* Weather and sort toggles */
+    .wx-btn { border: 1px solid #e5e7eb; background: #fff; color: #4b5563; font-size: .75rem; font-weight: 500; padding: .35rem .8rem; border-radius: 9999px; transition: background .15s, color .15s; }
+    .wx-btn:hover { background: #f0fdf4; }
+    .wx-btn.on { background: #15803d; border-color: #15803d; color: #fff; }
+
+    /* Rainy look: applied while the picks are rainy (live weather or the Rainy button) */
+    body { transition: background-color .4s ease; }
+    body.rainy { background-color: #e3eaf2 !important; }
+    body.rainy header { background-color: #1e3a5f !important; }
+    body.rainy .tab-btn.active, body.rainy .wx-btn.on { background: #2f5d8c; border-color: #2f5d8c; }
+    body.rainy .tab-btn:hover, body.rainy .wx-btn:hover { background-color: #dbe7f3; }
+    body.rainy header .tab-btn:hover { background-color: #2f5d8c; }
+    body.rainy .from-green-800 { background-image: linear-gradient(to bottom right, #1e293b, #36557a) !important; }
+    body.rainy .bg-green-700 { background-color: #2f5d8c !important; }
+    body.rainy .hover\:bg-green-600:hover { background-color: #3d6fa3 !important; }
+    body.rainy .text-amber-300 { color: #bae6fd !important; }
+    body.rainy .bg-green-900 { background-color: #0f2236 !important; }
+    body.rainy .text-green-700 { color: #2f5d8c !important; }
+    body.rainy .bar-fill { background: #2f5d8c; }
+    body.rainy ::-webkit-scrollbar-thumb { background: #2f5d8c; }
+    #rain { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 40; }
+    #rain i { position: absolute; top: -30px; width: 1.5px; border-radius: 1px; background: linear-gradient(to bottom, rgba(186,206,232,0), rgba(140,170,210,.75)); animation: rain-fall linear infinite; }
+    @keyframes rain-fall { to { transform: translate3d(-40px, 110vh, 0); } }
   </style>
 </head>
 <body class="bg-amber-50 text-gray-900 min-h-screen flex flex-col">
@@ -81,6 +105,20 @@
       <h2 class="text-2xl font-bold"><span id="weather-icon">🌤️</span> <span id="weather-title">Today’s weather picks</span></h2>
       <p class="text-sm text-gray-500 mt-1" id="weather-sub">Checking the weather…</p>
       <p class="text-sm text-gray-500" id="weather-desc"></p>
+      <div class="flex flex-wrap items-center gap-2 mt-4">
+        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-16">Weather</span>
+        <button class="wx-btn" data-mode="auto" onclick="setWeatherMode('auto')">📍 Auto</button>
+        <button class="wx-btn" data-mode="sunny" onclick="setWeatherMode('sunny')">☀️ Sunny</button>
+        <button class="wx-btn" data-mode="rainy" onclick="setWeatherMode('rainy')">🌧️ Rainy</button>
+        <button class="wx-btn" data-mode="cool" onclick="setWeatherMode('cool')">🌥️ Cool</button>
+      </div>
+      <div class="flex flex-wrap items-center gap-2 mt-2">
+        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-16">Sort</span>
+        <button class="wx-btn" data-sort="value" onclick="setPickSort('value')">Best value</button>
+        <button class="wx-btn" data-sort="cheap" onclick="setPickSort('cheap')">Cheapest</button>
+        <button class="wx-btn" data-sort="protein" onclick="setPickSort('protein')">Most protein</button>
+        <button class="wx-btn" data-sort="kcal" onclick="setPickSort('kcal')">Fewest calories</button>
+      </div>
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5" id="weather-grid"></div>
     <p class="text-xs text-gray-400 mt-3">Weather by <a href="https://open-meteo.com/" target="_blank" rel="noopener" class="underline">Open-Meteo</a>. Your location is rounded to about 1 km and only used to look up the weather.</p>
@@ -143,6 +181,7 @@
           <option value="calories">Highest Calories</option>
           <option value="caloriesAsc">Lowest Calories</option>
           <option value="proteinPerPeso">Most Protein per ₱</option>
+          <option value="proteinPer100kcal">Most Protein per Calorie</option>
         </select>
       </div>
       <div>
@@ -170,6 +209,7 @@
           <button onclick="setPreset('light')" class="bg-white border border-gray-200 text-gray-600 text-xs px-3 py-1.5 rounded-full font-medium hover:bg-green-50">Light (≤ 400 kcal)</button>
           <button onclick="setPreset('regular')" class="bg-white border border-gray-200 text-gray-600 text-xs px-3 py-1.5 rounded-full font-medium hover:bg-green-50">Regular (400–700)</button>
           <button onclick="setPreset('hearty')" class="bg-white border border-gray-200 text-gray-600 text-xs px-3 py-1.5 rounded-full font-medium hover:bg-green-50">Hearty (700+)</button>
+          <button onclick="rankByProteinPerKcal()" class="bg-green-700 hover:bg-green-600 text-white text-xs px-3 py-1.5 rounded-full font-medium">💪 Rank by protein per calorie</button>
           <button onclick="setPreset('protein')" class="bg-white border border-gray-200 text-gray-600 text-xs px-3 py-1.5 rounded-full font-medium hover:bg-green-50">High protein (25 g+)</button>
           <button onclick="setPreset('clear')" class="text-xs text-gray-400 hover:text-gray-600 px-2 py-1.5">Clear</button>
         </div>

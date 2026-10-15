@@ -58,3 +58,16 @@ test("sunny: cold treats; hot ginataang halo-halo and adobo sa buko left out", (
   assert.deepEqual(picks, ["Buko Pandan", "Sago at Gulaman", "Filipino Fruit Salad", "Kinilaw na Tanigue"]);
   assert.equal(weatherPicks("mild", RECIPES), null);
 });
+
+test("sorting the picks: cheapest, most protein, fewest calories; merienda stays last", () => {
+  const { weatherPicks: picks } = ctx.api;
+  const D = (title, cost, protein, calories, extra = {}) => ({ title, category: "Soup", ranked: true, valueScore: 1, nutritionScore: 30, costPerServing: cost, protein, calories, nutritionCoverage: 1, ...extra });
+  const list = [
+    D("Bulalo Recipe", 120, 40, 700), D("Bulalo Budget", 60, 25, 500),
+    D("Sinigang na Baboy", 70, 30, 450), D("Chicken Tinola", 50, 28, 300),
+    D("Ginataang Bilo bilo", 20, 3, 350, { category: "Dessert" }),
+  ];
+  assert.deepEqual(titles(picks("rainy", list, 4, 0, "cheap")), ["Chicken Tinola", "Bulalo Budget", "Sinigang na Baboy", "Ginataang Bilo bilo"]);
+  assert.deepEqual(titles(picks("rainy", list, 4, 0, "protein")), ["Bulalo Recipe", "Sinigang na Baboy", "Chicken Tinola", "Ginataang Bilo bilo"]);
+  assert.deepEqual(titles(picks("rainy", list, 4, 0, "kcal")), ["Chicken Tinola", "Sinigang na Baboy", "Bulalo Budget", "Ginataang Bilo bilo"]);
+});
