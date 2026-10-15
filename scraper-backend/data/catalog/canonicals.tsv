@@ -108,7 +108,7 @@ milk_condensed	Sweetened condensed milk	J025	Milk, sweetn, cond, filled	Milk, sw
 mushroom_button	Button mushroom, fresh	D133	Mushroom, fresh	Mushroom, fresh		DA does not sell it	PLANT	70										100	cup-measured; FNRI EP 94	normal	medium	some recipes may use canned (D279)			
 bacon	Bacon	F213	Bacon	Bacon raw		DA does not sell it	MEAT		23								23	100		normal	medium	gEach/gSlice = one strip ~23 g ?; F213 603 kcal looks high for raw bacon			
 garlic_toasted	Toasted (fried) garlic			FNRI has only raw garlic (D084); fried garlic not listed		DA does not sell it (DA garlic is raw bulbs)	PLANT	110										100		normal	low	gPerCup ~110 ?			
-milk_evaporated	Evaporated milk	J016	Milk, evaporated, filled	Milk, evaporated		DA does not sell it	DAIRY	252										100		normal	high	J016 filled evap is alt for PH brands			
+milk_evaporated	Evaporated milk	J016	Milk, evaporated, filled	Milk, evaporated		DA does not sell it	DAIRY	252	380									100		normal	high	J016 filled evap is alt for PH brands; gEach = one 370 mL can ≈ 380 g			
 mussels	Mussels (tahong), in shell	G085	Mussel, green	Mussel, green (tahong) raw		DA does not sell it	SEAFOOD		25									56	FNRI EP (shell)	normal	high	gEach 25 g in shell ?			FRESH SHELLS, TAHONG, 1 KG
 thyme_dried	Thyme, dried			FNRI has only fresh thyme (D303)		DA does not sell it	PLANT	43										100		normal	medium	gPerCup ~43 (≈0.9 g/tsp) ?; a few recipes use fresh sprigs			
 coconut_cream	Coconut cream	K002	Coconut milk	Coconut milk (undiluted gata, 34.8% fat ~ cream)		DA does not sell it	PLANT	240										100		normal	medium	K002 fat matches coconut cream			
@@ -234,7 +234,7 @@ cheese_swiss	Swiss cheese	J004	Cheese, native	no Swiss cheese row; processed che
 cloves_ground	Ground cloves			no clove spice row		not in DA	PLANT	104	0.1									100	volume measured	normal	medium	1 tsp ~2.1 g; whole clove ~0.1 g ?			
 corn_kernel_canned	Canned whole kernel corn	A109	Corn, whole kernel, cnd	exact (canned whole kernel)		canned not in DA	PLANT	164										85	FNRI A109 EP 85 (can liquid drained)	normal	high	cup = drained kernels			
 corn_sweet	Sweet corn	A109	Corn, whole kernel, cnd	raw yellow corn (kernels)	Corn (Yellow) Cob, Sweet Corn	DA sells sweet corn on the cob; kernels cut from it	PLANT	150	200									39	kernels by cup; FNRI A004 EP 39 when whole cob	normal	medium	pieces = cobs (~200 g ?) whose EP is ~39 not 100; DA price is per cob weight			
-corned_beef	Corned beef (canned)	F226	Corned beef, cnd	canned corned beef		not in DA	MEAT	225										100	no refuse	normal	high	cup ~225 g ?			
+corned_beef	Corned beef (canned)	F226	Corned beef, cnd	canned corned beef		not in DA	MEAT	225	150									100	no refuse	normal	high	cup ~225 g ?; gEach = one DTI 150 g can			
 egg_fried	Fried egg	H004	Egg, chicken, whole, boiled	no fried egg row; raw whole egg (frying oil not included)	Chicken Egg (White, Medium) 56-60 grams/pc	DA egg is raw	EGG		50									100	shelled, cooked	normal	low	gEach ~50 g ?			
 lasagna_noodles	Lasagna noodles (dry)	A153	Pasta, spaghetti	dry pasta; spaghetti row same composition		not in DA	PLANT		20									100	dry pasta	normal	high	sheet ~20 g ?			
 linguine	Linguine (dry)	A153	Pasta, spaghetti	dry pasta; spaghetti row same composition		not in DA	PLANT											100	dry pasta	normal	high				
@@ -257,7 +257,7 @@ jackfruit_unripe	Unripe jackfruit	D104	Jackfruit fruit, unripe	raw unripe jackfr
 lechon_sauce	Lechon sauce	N013	Lechon sauce	exact		not in DA	ANIMAL_CONDIMENT	270										100	liquid	normal	high	contains liver; cup ~270 g ?			
 noodles_pancit_canton	Pancit canton (dry)	A140	Noodles, wheat, canton, dry	dry canton noodles		not in DA	PLANT											100	dry noodles	normal	high				
 pork_fat	Pork fat (back fat)	F146	Pork back fat	raw diced pork fat = back fat, not rendered lard	Pork Rind/Skin, Local	stand-in: DA doesn't list back fat	MEAT	200										100	diced, trimmed	normal	medium	cup ~200 g ?			
-sardines_tomato_sauce	Sardines in tomato sauce	G203	Sardines, in tomato sce, cnd	exact		canned not in DA	FISH											100	canned, whole content	normal	high	"""cans"" unit used (155 g PH standard) but no can column"			
+sardines_tomato_sauce	Sardines in tomato sauce	G203	Sardines, in tomato sce, cnd	exact		canned not in DA	FISH		155									100	canned, whole content	normal	high	"""cans"" unit used (155 g PH standard) but no can column"; gEach = one DTI 155 g can			
 seasoning_liquid_savorrich_chicken	Knorr SavorRich chicken liquid seasoning			no liquid seasoning row		not in DA	ANIMAL_CONDIMENT	272										100	liquid	normal	medium	density ~1.15 ?			
 sweet_potato	Sweet potato (kamote)	B013	Sweet potato, yellow	raw yellow kamote (most common)		not in DA	PLANT	133	180									88	FNRI B013 EP 88 (peel)	normal	high	gEach ~180 g ?			
 ampalaya_leaves	Ampalaya leaves	D020	Bitter melon/gourd lvs	raw bitter gourd leaves		DA sells only ampalaya fruit	PLANT	30							100			100	cup-measured picked leaves; FNRI EP 42 is for whole sprigs	normal	high	gPerCup 30? loosely packed; gBunch 100?			
@@ -293,7 +293,7 @@ blueberries	Blueberries			no blueberry row in FNRI		not sold by DA	PLANT	148				
 bottle_gourd	Bottle gourd (upo)	D025	Bottle gourd fruit	raw upo fruit		not in DA list	PLANT	116										100	cup-measured sliced; FNRI EP 90 whole	normal	high				
 chicken_leg_quarter	Chicken leg quarter	F108	Chicken thigh & leg	raw chicken thigh & leg	Chicken Leg Quarter Unbranded, Fresh	local unbranded fresh	POULTRY		300									74	FNRI EP 74 (bone)	normal	high	gEach 300?			
 coconut_grated	Grated coconut	C006	Coconut meat, mature	raw mature coconut meat		DA does not sell coconut	PLANT	80										100	grated meat; FNRI EP 56 is whole nut	normal	high				
-creamer_evaporated	Evaporated creamer (filled milk)	J016	Milk, evaporated, filled	filled evaporated milk, which Carnation Everyday creamer is		dairy not tracked by DA	DAIRY	252										100	liquid, ml-measured	normal	high				
+creamer_evaporated	Evaporated creamer (filled milk)	J016	Milk, evaporated, filled	filled evaporated milk, which Carnation Everyday creamer is		dairy not tracked by DA	DAIRY	252	380									100	liquid, ml-measured	normal	high	gEach = one 370 mL can ≈ 380 g			
 cucumber	Cucumber	D069	Cucumber	raw cucumber		not in DA list	PLANT	133	250									100	mostly cup-measured; FNRI EP 88 whole	normal	high	gEach 250? PH cucumbers vary 150-300 g			CUCUMBER (PIPINO), 1 KG
 curing_salt_prague	Curing salt (Prague powder #1)	N019	Salt, coarse	no curing salt in FNRI (approx 94% salt, 6% nitrite)		not a DA commodity	PLANT	290										100	volume-measured	normal	high	gPerCup 290?; sodium ~37 g/100 g if needed			
 fish_dried	Dried fish (daing/tuyo)	G199	Sardine, Indian, dried	dried split Indian sardine (tamban daing), common daing		DA sells only fresh fish	FISH	50	25									77	FNRI EP 77 (head, bones)	normal	low	recipes mix daing pieces and dulong (cup); species unknown; gPerCup 50?, gEach 25?			
@@ -302,7 +302,7 @@ fruit_cocktail	Fruit cocktail (canned)	E107	Fruit cocktail, tropical, in syrup, 
 half_and_half	Half and half	J015	Milk, evaporated	FNRI has only cream (J007, 23.9% fat) and milk; half-and-half (~12% fat) not close		dairy not tracked by DA	DAIRY	242										100	liquid	normal	medium	could approximate as 50/50 J014 milk + J007 cream			
 kamias	Kamias (bilimbi)	E019	Bilimbi	raw bilimbi fruit		not in DA list	PLANT		12									100	FNRI EP 100	normal	high	gEach 12?			
 lettuce_romaine	Romaine lettuce	D115	Lettuce lvs & petioles	raw lettuce leaves & petioles	Lettuce (Romaine)	exact variety	PLANT	47	15									100	leaves/shredded; FNRI EP 79 for whole head	normal	high	gEach (one leaf) 15?			
-luncheon_meat	Luncheon meat	F235	Luncheon meat, cnd	canned luncheon meat		not sold by DA	MEAT											100	canned, no refuse	normal	high				
+luncheon_meat	Luncheon meat	F235	Luncheon meat, cnd	canned luncheon meat		not sold by DA	MEAT		165									100	canned, no refuse	normal	high	gEach = one DTI 165 g can			
 lye_water	Lye water (lihiya)			not in FNRI (alkaline solution, no energy)		not a DA commodity	PLANT	240										100	liquid	normal	high	gPerCup 240?			
 mix_crab_corn_soup	Knorr crab and corn soup mix			no instant soup powder of this kind in FNRI		branded mix, not DA	ANIMAL_CONDIMENT											100	packet weighed in grams	normal	high				
 orange_juice	Orange juice	Q046	Juice, orange, unsweetn, cnd	unsweetened orange juice		not sold by DA	PLANT	248										100	liquid	normal	high				
