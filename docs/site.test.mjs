@@ -9,7 +9,7 @@ const read = (f) => readFileSync(new URL(`./${f}`, import.meta.url), "utf8");
 test("site scripts have no stray control characters", () => {
   // A regex written through an unescaped string once turned \b into a backspace
   // byte (0x08), and the course-based categories silently never matched.
-  for (const f of ["app.js", "weather.js", "mydish.js"]) {
+  for (const f of ["app.js", "weather.js", "mydish.js", "planner.js"]) {
     const bad = [...read(f).matchAll(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g)];
     assert.equal(bad.length, 0, `${f}: control character at offset ${bad[0]?.index}`);
   }

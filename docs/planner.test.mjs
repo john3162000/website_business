@@ -6,8 +6,8 @@ import vm from "node:vm";
 
 const ctx = vm.createContext({});
 vm.runInContext(`${readFileSync(new URL("./planner.js", import.meta.url), "utf8")}
-;globalThis.api = { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey };`, ctx);
-const { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey } = ctx.api;
+;globalThis.api = { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal };`, ctx);
+const { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal } = ctx.api;
 const plain = (v) => JSON.parse(JSON.stringify(v));
 
 test("slots: add without duplicates, at most 3, remove clears empty slots", () => {
@@ -65,4 +65,20 @@ test("saved plans round-trip; bad or blocked storage falls back to an empty plan
   assert.equal(savePlan(blocked, {}), false);
   assert.equal(formatGrams(1250), "1.3 kg");
   assert.equal(formatGrams(350), "350 g");
+});
+
+test("mealTypes: meryenda, almusal and ulam series from title, category and course", () => {
+  const t = (title, category = "Main Dish", course = null) => [...mealTypes({ title, category, course })].sort().join(",");
+  assert.equal(t("Turon", "Dessert"), "meryenda");
+  assert.equal(t("Pancit Canton", "Rice & Noodles"), "meryenda,ulam");
+  assert.equal(t("Kwek-kwek", "Main Dish", "Appetizer, Snack"), "meryenda");
+  assert.equal(t("Tapsilog"), "almusal,ulam");
+  assert.equal(t("Champorado", "Dessert", "Breakfast"), "almusal,meryenda");
+  assert.equal(t("Sinigang na Baboy", "Soup", "Main Course"), "ulam");
+  assert.equal(t("Pinakbet", "Vegetable Dish"), "ulam");
+  assert.equal(t("Leche Flan", "Dessert", "Dessert"), "meryenda");
+  assert.equal(t("Mang Tomas Copycat", "Sauce & Condiment", "Sauce, Condiment"), "");
+  assert.equal(seriesForMeal("Almusal"), "almusal");
+  assert.equal(seriesForMeal("Hapunan"), "ulam");
+  assert.equal(seriesForMeal("Meryenda"), "meryenda");
 });

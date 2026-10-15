@@ -98,6 +98,42 @@ function receiptByIngredient(plan, details) {
   return { items: list, total, unpriced: list.filter((x) => !x.priced).length };
 }
 
+// ── Meal types: which slots a dish suits (a dish can suit several) ──
+
+const MERYENDA_TITLE = /\b(turon|banana ?cue|camote ?cue|kamote ?cue|maruya|lumpia|lumpiang|shanghai|okoy|ukoy|fish ?balls?|kwek[- ]?kwek|tokneneng|siomai|siopao|empanadas?|pancit|palabok|puto|kutsinta|bibingka|suman|biko|palitaw|sapin[- ]?sapin|kakanin|maja|cassava cake|bilo[- ]?bilo|ginataang mais|ginataang halo|binignit|halo[- ]?halo|mais con yelo|sago|gulaman|buko pandan|fruit salad|ensaymada|pandesal|pan de sal|sandwich(es)?|burgers?|spaghetti|arroz caldo|lugaw|goto|champorado|cakes?|cupcakes?|cookies|brownies?|leche flan|flan|polvoron|pastillas|turrones|donuts?|doughnuts?|muffins?|bread|banana loaf|hopia|cheese sticks|french fries|nachos|camote fries)\b/i;
+const ALMUSAL_TITLE = /(silog\b|\b(tapa|tocino|longg?anisa|daing|tuyo|danggit|champorado|lugaw|arroz caldo|goto|pandesal|pan de sal|omelet(te)?|torta|tortang|scrambled eggs?|sinangag|fried rice|garlic rice|hotcakes?|pancakes?|french toast|corned beef hash)\b)/i;
+const SNACK_COURSE = /\b(snacks?|desserts?|appetizers?|merienda|meryenda)\b/i;
+const MEAL_COURSE = /\b(main|dinner|lunch|entree|soup|side dish)\b/i;
+
+/**
+ * The slot series a dish fits: "almusal", "ulam" (Tanghalian / Hapunan) and/or "meryenda".
+ * From the title, the site category and Panlasang Pinoy's course. Sauces fit none.
+ */
+function mealTypes(recipe) {
+  const title = recipe.title || "", course = recipe.course || "", cat = recipe.category || "";
+  const out = new Set();
+  if (cat === "Sauce & Condiment") return out;
+  if (/\bbreakfast\b/i.test(course) || ALMUSAL_TITLE.test(title)) out.add("almusal");
+  if (cat === "Dessert" || SNACK_COURSE.test(course) || MERYENDA_TITLE.test(title)) out.add("meryenda");
+  // Anything that is a meal: mains, soups, fish, vegetables, rice and noodles. Not desserts,
+  // and not dishes whose course is only a snack or appetizer (kwek-kwek, fishballs).
+  const snackOnly = SNACK_COURSE.test(course) && !MEAL_COURSE.test(course);
+  if (cat !== "Dessert" && !snackOnly) out.add("ulam");
+  return out;
+}
+
+const SERIES = [
+  { key: "all", label: "Lahat" },
+  { key: "almusal", label: "Almusal" },
+  { key: "ulam", label: "Tanghalian / Hapunan" },
+  { key: "meryenda", label: "Meryenda" },
+];
+
+/** The series a slot asks for. */
+function seriesForMeal(meal) {
+  return meal === "Almusal" ? "almusal" : meal === "Meryenda" ? "meryenda" : "ulam";
+}
+
 /** "1.2 kg" / "350 g". */
 function formatGrams(g) {
   return g >= 1000 ? `${(g / 1000).toFixed(g >= 10000 ? 0 : 1)} kg` : `${Math.round(g)} g`;
@@ -114,10 +150,19 @@ function plannerStore() {
   try { return window.localStorage; } catch { return null; }
 }
 
-function initPlanner() {
+async function initPlanner() {
   const s = plannerStore();
   plan = s ? loadPlan(s) : emptyPlan();
   document.getElementById("plan-people").value = plan.people;
+  const cats = document.getElementById("plan-cat");
+  if (cats.options.length <= 1) {
+    for (const c of ["Main Dish", "Soup", "Fish & Seafood", "Vegetable Dish", "Rice & Noodles", "Dessert"]) cats.add(new Option(c, c));
+  }
+  // The dish list needs RECIPES, which may still be loading on a first visit.
+  if (!RECIPES.length) {
+    document.getElementById("plan-picker").innerHTML = `<p class="text-sm text-gray-400 p-2">Loading dishes…</p>`;
+    await DATA_READY?.catch(() => {});
+  }
   renderPicker();
   renderGrid();
   renderReceipt();
@@ -132,26 +177,51 @@ function plannerRecipes() {
   return new Map(RECIPES.map((r) => [r.id, { title: r.title, img: r.img, costPerServing: r.costPerServing, priced: r.costPerServing > 0, partial: r.costCoverage < 1 }]));
 }
 
+let series = "all";
+let targetSlot = null; // slot tapped first (phones): the next dish tapped goes there
+const HINT = "Drag a dish into a slot, or tap a dish then tap a slot.";
+
+function setSeries(key) {
+  series = key;
+  renderPicker();
+}
+
 function renderPicker() {
   const q = (document.getElementById("plan-search").value || "").toLowerCase();
   const cat = document.getElementById("plan-cat").value;
-  const list = RECIPES
-    .filter((r) => r.costPerServing > 0 && (!q || r.title.toLowerCase().includes(q)) && (!cat || r.category === cat))
-    .sort((a, b) => (b.ranked - a.ranked) || (b.valueScore - a.valueScore))
-    .slice(0, 60);
-  document.getElementById("plan-picker").innerHTML = list.map((r) => `
+  const types = new Map(RECIPES.map((r) => [r.id, mealTypes(r)]));
+  const inSeries = (r) => series === "all" || types.get(r.id).has(series);
+  const pool = RECIPES.filter((r) => r.costPerServing > 0);
+  document.getElementById("plan-series").innerHTML = SERIES.map((s) =>
+    `<button class="wx-btn ${s.key === series ? "on" : ""}" onclick="setSeries('${s.key}')">${s.label}</button>`).join("");
+  const matches = pool
+    .filter((r) => inSeries(r) && (!q || r.title.toLowerCase().includes(q)) && (!cat || r.category === cat))
+    .sort((a, b) => (b.ranked - a.ranked) || (b.valueScore - a.valueScore));
+  const label = SERIES.find((s) => s.key === series).label;
+  document.getElementById("plan-count").textContent = `${label} · ${matches.length.toLocaleString()} dish${matches.length !== 1 ? "es" : ""}`;
+  document.getElementById("plan-picker").innerHTML = matches.slice(0, 60).map((r) => `
     <div class="plan-dish ${picked === r.id ? "picked" : ""}" draggable="true" data-id="${r.id}"
          ondragstart="event.dataTransfer.setData('text/plain','${r.id}')" onclick="pickDish(${r.id})" title="Drag to a day, or tap then tap a slot">
       ${r.img ? `<img src="${escapeHtml(r.img)}" alt="" loading="lazy">` : `<div class="plan-noimg">🍽️</div>`}
       <div class="min-w-0"><p class="plan-dish-title">${escapeHtml(r.title)}</p>
-      <p class="plan-dish-sub">₱${r.costPerServing}${r.costCoverage < 1 ? "+" : ""}/serving · ${r.category}</p></div>
+      <p class="plan-dish-sub">₱${r.costPerServing}${r.costCoverage < 1 ? "+" : ""}/serving · ${r.category}
+        ${series !== "meryenda" && types.get(r.id).has("meryenda") ? `<span class="plan-badge">Meryenda</span>` : ""}</p></div>
     </div>`).join("") || `<p class="text-sm text-gray-400 p-2">No matching dishes.</p>`;
 }
 
 function pickDish(id) {
+  if (targetSlot) { const key = targetSlot; targetSlot = null; markTarget(); place(key, id); hint(HINT); return; }
   picked = picked === id ? null : id;
   document.querySelectorAll(".plan-dish").forEach((el) => el.classList.toggle("picked", Number(el.dataset.id) === picked));
-  document.getElementById("plan-hint").textContent = picked ? "Now tap a slot to place it." : "Drag a dish into a slot, or tap a dish then tap a slot.";
+  hint(picked ? "Now tap a slot to place it." : HINT);
+}
+
+function hint(text) {
+  document.getElementById("plan-hint").textContent = text;
+}
+
+function markTarget() {
+  document.querySelectorAll(".plan-cell").forEach((el) => el.classList.toggle("target", el.dataset.key === targetSlot));
 }
 
 function renderGrid() {
@@ -160,7 +230,7 @@ function renderGrid() {
   const body = MEALS.map((meal) => `<div class="plan-meal">${meal}</div>` + DAYS.map((day) => {
     const key = slotKey(day, meal);
     const ids = plan.slots[key] || [];
-    return `<div class="plan-cell" data-key="${key}" ondragover="event.preventDefault();this.classList.add('over')"
+    return `<div class="plan-cell ${key === targetSlot ? "target" : ""}" data-key="${key}" ondragover="event.preventDefault();this.classList.add('over')"
               ondragleave="this.classList.remove('over')" ondrop="dropDish(event,'${key}')" onclick="placePicked('${key}')">
       ${ids.map((id) => {
         const r = recipes.get(id);
@@ -178,10 +248,20 @@ function dropDish(e, key) {
   e.currentTarget.classList.remove("over");
   const id = Number(e.dataTransfer.getData("text/plain"));
   if (id) place(key, id);
+  setSeries(seriesForMeal(key.split("|")[1]));
 }
 
+/** A slot was tapped: place the picked dish, or show that slot's series and wait for a dish. */
 function placePicked(key) {
-  if (picked) { place(key, picked); pickDish(picked); }
+  const meal = key.split("|")[1];
+  if (picked) { const id = picked; pickDish(id); place(key, id); setSeries(seriesForMeal(meal)); return; }
+  targetSlot = targetSlot === key ? null : key;
+  markTarget();
+  if (!targetSlot) { hint(HINT); return; }
+  setSeries(seriesForMeal(meal));
+  hint(`Tap a dish to put it in ${key.replace("|", " · ")}.`);
+  // Phones: the picker sits above the grid.
+  if (window.matchMedia && window.matchMedia("(max-width: 1023px)").matches) document.getElementById("plan-picker-card").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function place(key, id) {

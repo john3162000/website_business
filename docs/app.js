@@ -89,6 +89,7 @@ function buildRecipe(raw, c) {
     url: raw.url,
     img: raw.imageUrl && /^https?:/.test(raw.imageUrl) ? raw.imageUrl : null,
     category: categoryFor(raw.title, n.course),
+    course: n.course || null,
     servings,
     servingsAssumed: !!n.servingsAssumed,
     prepTime: raw.prepTime,
@@ -652,7 +653,7 @@ function closeModalBtn() { closeModal(); }
 // ═══════════════ NAVIGATION ═══════════════
 
 function showSection(name) {
-  ["home", "browse", "prices", "mydish"].forEach((s) => {
+  ["home", "browse", "prices", "mydish", "planner"].forEach((s) => {
     document.getElementById(`section-${s}`).classList.toggle("hidden", s !== name);
     document.getElementById(`section-${s}`).classList.toggle("flex", s === name);
     const btn = document.getElementById(`nav-${s}`);
@@ -662,6 +663,7 @@ function showSection(name) {
   if (name === "browse") filterRecipes();
   if (name === "prices") loadMovers();
   if (name === "mydish") initMyDish();
+  if (name === "planner") initPlanner();
 }
 
 // ═══════════════ INIT ═══════════════
