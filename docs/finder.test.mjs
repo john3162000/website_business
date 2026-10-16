@@ -48,6 +48,8 @@ test("finder: 'any pork' matches every pork cut; reposts appear once", () => {
   assert.equal(out.filter((d) => d.title === "Adobong Kangkong").length, 1);
   assert.equal(hasIngredient(new Set(["any:chicken"]), "chicken_thigh", false), true);
   assert.equal(hasIngredient(new Set(), "garlic", true), true);
+  assert.equal(hasIngredient(new Set(["any:banana"]), "banana_ketchup", false), false);
+  assert.equal(hasIngredient(new Set(["any:fish"]), "fish_sauce", false), false);
   assert.deepEqual(plain(matchDishes(INDEX, new Set(), RECIPES)), []);
 });
 
