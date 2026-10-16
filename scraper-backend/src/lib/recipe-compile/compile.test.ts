@@ -307,7 +307,7 @@ test("long-tail foods: FNRI where FNRI has them, USDA otherwise, priced from DA 
   assert.ok(soup.flags.some((f) => /nutrition≈USDA/.test(f)), "USDA nutrition is flagged as approximate");
   assert.equal(bituka.slug, "pork_intestine_large");
   assert.equal(kraut.slug, "sauerkraut");
-  assert.equal(kraut.priced, false); // no source sells it: left unpriced rather than guessed
+  assert.match(kraut.priceSource ?? "", /^SM Markets/); // a jarred brand (Sig Sel) at SM
   assert.equal(pandan.gEaten, 0); // removed before serving
 });
 
@@ -376,4 +376,36 @@ test("whole animals get a standard weight: whole chicken, half a rotisserie chic
   assert.equal(franks.slug, "hotdog");
   assert.equal(cleaned.slug, "chicken_whole");
   assert.deepEqual(r.costGaps.items, []);
+});
+
+test("'1 US pint of whipping cream or 473 ml' is 473 ml of cream, priced", () => {
+  const r = compileRecipe({ id: 95, title: "How to Make Butter", servings: 5, ingredients: [ing("1", null, "US pint of whipping cream or 473 ml")] }, ctx);
+  const [cream] = r.lines;
+  assert.equal(cream.slug, "cream_heavy");
+  assert.ok(cream.gAP && Math.abs(cream.gAP - 473 * (238 / 236.6)) < 15, `≈473 ml of cream, got ${cream.gAP} g`);
+  assert.ok(cream.priced);
+});
+
+test("recheck: juice of half a lemon, cloved garlic, sprigs, sticks, and bare seasonings", () => {
+  const r = compileRecipe({ id: 96, title: "Test", servings: 4, ingredients: [
+    ing(null, null, "Juice from 1/2 lemon"), ing("2", "cloved", "garlic minced"), ing("2", "sprigs", "fresh rosemary"),
+    ing("1", null, "stick butter"), ing(null, null, "Ground black pepper"), ing("1", "head", "broccoli")] }, ctx);
+  const [juice, garlic, rosemary, butter, pepper, broccoli] = r.lines;
+  assert.equal(juice.slug, "lemon_juice");
+  assert.ok(juice.gAP && juice.gAP > 0);
+  assert.equal(garlic.gAP, 10);
+  assert.equal(rosemary.gAP, 2);
+  assert.equal(butter.gAP, 113);
+  assert.equal(pepper.status, "to-taste");
+  assert.equal(broccoli.gAP, 450);
+});
+
+test("recheck: every derived price points at a parent that has its own price source", () => {
+  const { derivedPrices, canonicals, manualPrices } = ctx;
+  for (const [slug, d] of Object.entries(derivedPrices ?? {})) {
+    const p = canonicals[d.from];
+    assert.ok(p, `${slug}: parent ${d.from} is in the catalog`);
+    assert.ok(p.daName || p.psaName || manualPrices?.[d.from], `${slug}: parent ${d.from} has a DA, PSA or shop price`);
+    assert.ok(d.factor && d.factor > 0 && d.why, `${slug}: factor and reason`);
+  }
 });

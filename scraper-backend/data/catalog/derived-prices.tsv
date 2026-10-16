@@ -48,3 +48,67 @@ soy_sauce_low_sodium	soy_sauce	1	stand-in	regular soy sauce price
 beef_heart	beef_tripe	1	stand-in	beef offal: tripe price per kg
 beef_intestine_small	beef_tripe	1	stand-in	beef offal: tripe price per kg
 pigeon_pea	mung_beans	1	stand-in	dried legumes: monggo price per kg
+calamansi_juice	calamansi	3.3	conversion	calamansi gives about 30% of its weight as juice
+taro_leaves_dried	taro_leaves_fresh	5	conversion	fresh gabi leaves are about 80% water: 1 g dried is about 5 g fresh
+tinapa	galunggong	2	conversion	tinapa flakes are smoked, deboned galunggong: about half the fresh weight
+half_and_half	cream_all_purpose	0.72	stand-in	half all-purpose cream, half fresh milk
+chives	green_onion	1	stand-in	green onion price per kg
+shallots	onion_red	1.5	stand-in	sibuyas tagalog sells for about 1.5x red onion
+annatto_oil	oil_cooking	1.1	stand-in	cooking oil coloured with a little atsuete
+octopus	squid	1	stand-in	squid price per kg
+snow_peas	beans_baguio	1.5	stand-in	sitsaro sells for about 1.5x Baguio beans
+winged_bean	sitaw	1	stand-in	sitaw price per kg
+mustard_powder	cinnamon_ground	1	stand-in	ground spice jar: cinnamon price per g
+cloves_ground	cinnamon_ground	1	stand-in	ground spice jar: cinnamon price per g
+cardamom	cinnamon_ground	1	stand-in	ground spice jar: cinnamon price per g
+fennel_seeds	cinnamon_ground	1	stand-in	ground spice jar: cinnamon price per g
+sage_dried	oregano_dried	1	stand-in	dried herb jar: oregano price per g
+dill_dried	oregano_dried	1	stand-in	dried herb jar: oregano price per g
+tarragon_dried	oregano_dried	1	stand-in	dried herb jar: oregano price per g
+poultry_seasoning	oregano_dried	1	stand-in	dried herb jar: oregano price per g
+dill_fresh	celery	1	stand-in	fresh herb bunch: celery price per kg
+mint	celery	1	stand-in	fresh herb bunch: celery price per kg
+curry_leaves	celery	1	stand-in	fresh herb bunch: celery price per kg
+lime_leaves	celery	1	stand-in	fresh herb bunch: celery price per kg
+pandan_leaves	malunggay	1	stand-in	leafy palengke herb: malunggay price per kg
+saluyot	malunggay	1	stand-in	leafy greens: malunggay price per kg
+bago_leaves	malunggay	1	stand-in	leafy greens: malunggay price per kg
+amaranth_leaves	malunggay	1	stand-in	leafy greens: malunggay price per kg
+tamarind_leaves	malunggay	1	stand-in	leafy greens: malunggay price per kg
+kale	pechay	1	stand-in	pechay price per kg
+collard_greens	pechay	1	stand-in	pechay price per kg
+arugula	pechay	1	stand-in	pechay price per kg
+turmeric_fresh	ginger	1	stand-in	ginger price per kg
+water_chestnuts	singkamas	1	stand-in	singkamas price per kg
+pumpkin_canned	squash_kalabasa	1	stand-in	kalabasa price per kg
+baby_corn	corn_kernel_canned	1	stand-in	canned corn price per kg
+hominy	corn_kernel_canned	1	stand-in	canned corn price per kg
+cannellini_beans	chickpeas	1	stand-in	canned chickpeas price per kg
+bagoong_isda	shrimp_paste	1	stand-in	bagoong alamang price per kg
+sweet_sour_sauce	sweet_chili_sauce	1	stand-in	sweet chili sauce price per kg
+enchilada_sauce	tomato_sauce	1	stand-in	tomato sauce price per kg
+taco_seasoning	chili_powder	1	stand-in	chili powder price per g
+onion_soup_mix	mix_crab_corn_soup	1	stand-in	Knorr soup mix price per g
+guacamole	avocado	1	stand-in	avocado price per kg
+graham_pie_crust	graham_cracker	1	stand-in	graham crackers price per kg
+chocolate_pie_crust	graham_cracker	1	stand-in	graham crackers price per kg
+tortilla_corn	tortilla_flour	1	stand-in	flour tortilla price per kg
+shortening	oil_cooking	1	stand-in	vegetable fat: cooking oil price per kg
+molasses	sugar_brown	1.5	stand-in	about 1.5x brown sugar per kg
+turkey_whole	chicken_whole	2	stand-in	imported turkey sells for about twice the price of chicken per kg
+turkey_cooked	chicken_whole	2	stand-in	imported turkey sells for about twice the price of chicken per kg
+turkey_ground	chicken_whole	2	stand-in	imported turkey sells for about twice the price of chicken per kg
+turkey_breast	chicken_whole	2	stand-in	imported turkey sells for about twice the price of chicken per kg
+lobster	shrimp	3	stand-in	lobster sells for about 3x shrimp per kg
+lobster_tail	shrimp	3	stand-in	lobster sells for about 3x shrimp per kg
+crawfish	shrimp	1.5	stand-in	about 1.5x shrimp per kg
+oyster_meat	mussel_meat	1.5	stand-in	shucked talaba sells for about 1.5x tahong meat
+horse_meat	beef_chuck	1	stand-in	beef chuck price per kg
+rabbit	chicken_whole	2	stand-in	about twice the price of chicken per kg
+butterfish	tilapia	1	stand-in	tilapia price per kg
+smelt	galunggong	1	stand-in	galunggong price per kg
+moonfish	galunggong	1	stand-in	galunggong price per kg
+kamias	calamansi	1	stand-in	sour palengke fruit: calamansi price per kg
+tamarind	calamansi	1	stand-in	sour palengke fruit: calamansi price per kg
+vinegar_white_wine	vinegar_apple_cider	1	stand-in	apple cider vinegar price per litre
+vinegar_red_wine	vinegar_apple_cider	1	stand-in	apple cider vinegar price per litre
