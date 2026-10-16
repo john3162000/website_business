@@ -104,10 +104,10 @@ const MERYENDA_TITLE = /\b(turon|banana ?cue|camote ?cue|kamote ?cue|maruya|lump
 const ALMUSAL_TITLE = /(silog\b|\b(tapa|tocino|longg?anisa|daing|tuyo|danggit|champorado|lugaw|arroz caldo|goto|pandesal|pan de sal|omelet(te)?|torta|tortang|scrambled eggs?|sinangag|fried rice|garlic rice|hotcakes?|pancakes?|french toast|corned beef hash)\b)/i;
 const SNACK_COURSE = /\b(snacks?|desserts?|appetizers?|merienda|meryenda)\b/i;
 const MEAL_COURSE = /\b(main|dinner|lunch|entree|soup|side dish)\b/i;
-const SNACK_TITLE = /\b(chips|fries|nachos|popcorn|crackers?|chicharon|chicharron|tokneneng|kwek[- ]?kwek|fish ?balls?|squid ?balls?|kikiam|tornado|corndogs?|deviled eggs?|nuggets?)\b/i;
-const SIDE_TITLE = /\b(pickled?|pickles|atchara|achara|burong|buro|dip|dressing|salsa|jam|syrup)\b/i;
+const SNACK_TITLE = /\b(chips|fries|nachos|popcorn|crackers?|chicharon|chicharron|tokneneng|kwek[- ]?kwek|fish ?balls?|squid ?balls?|kikiam|tornado|corndogs?|deviled eggs?|nuggets?|adobong mani|mani|(?:roasted|boiled|fried|garlic|spicy|salted) peanuts?|kropek|kornik|cornick)\b/i;
+const SIDE_TITLE = /\b(pickled?|pickles|atchara|achara|burong|buro|dip|dressing|salsa|jam|syrup|salads?|ensalada|ensaladang|sandwich(es)?|burgers?|egg rolls?|spring rolls?|lettuce wraps?|wraps?|tacos?|quesadillas?|nachos|pandesal|pan de sal|bread|buns?|toasts?|potato wedges|wedges|onion rings|lugaw|arroz caldo|goto|congee|porridge|champorado)\b/i;
 // Sweets and kakanin are never an ulam, even when the recipe data calls them a main dish.
-const SWEET_TITLE = /\b(minatamis|matamis|pastimallows?|marshmallows?|brazo|pancakes?|hotcakes?|waffles?|french toast|nilupak|pichi[- ]?pichi|puto|kutsinta|bibingka|suman|biko|palitaw|sapin[- ]?sapin|kakanin|maja|cassava cake|bilo[- ]?bilo|ginataang mais|ginataang halo|binignit|halo[- ]?halo|mais con yelo|sago|gulaman|buko pandan|fruit salad|ensaymada|cakes?|cupcakes?|cookies|brownies?|leche flan|flan|polvoron|pastillas|turrones|donuts?|doughnuts?|muffins?|banana loaf|hopia|turon|maruya|banana ?cue|camote ?cue|kamote ?cue|yema|tsokolate|champorado|espasol|tikoy|kalamay|ube halaya|halaya|jelly|gelatin|pudding|ice cream)\b/i;
+const SWEET_TITLE = /\b(mamon|ensaymada|silvanas?|sans rival|food for the gods|minatamis|matamis|pastimallows?|marshmallows?|brazo|pancakes?|hotcakes?|waffles?|french toast|nilupak|pichi[- ]?pichi|puto|kutsinta|bibingka|suman|biko|palitaw|sapin[- ]?sapin|kakanin|maja|cassava cake|bilo[- ]?bilo|ginataang mais|ginataang halo|binignit|halo[- ]?halo|mais con yelo|sago|gulaman|buko pandan|fruit salad|ensaymada|cakes?|cupcakes?|cookies|brownies?|leche flan|flan|polvoron|pastillas|turrones|donuts?|doughnuts?|muffins?|banana loaf|hopia|turon|maruya|banana ?cue|camote ?cue|kamote ?cue|yema|tsokolate|champorado|espasol|tikoy|kalamay|ube halaya|halaya|jelly|gelatin|pudding|ice cream)\b/i;
 
 /**
  * The slot series a dish fits: "almusal", "ulam" (Tanghalian / Hapunan) and/or "meryenda".
@@ -135,6 +135,7 @@ const SERIES = [
   { key: "almusal", label: "Almusal" },
   { key: "ulam", label: "Tanghalian / Hapunan" },
   { key: "meryenda", label: "Meryenda" },
+  { key: "fav", label: "⭐ Favorites" },
 ];
 
 /** The series a slot asks for. */
@@ -146,9 +147,12 @@ function seriesForMeal(meal) {
  * A random week: dishes for each meal in `meals`, from `pools` (series → dish ids, best value
  * first): `ulamPerMeal` for Tanghalian and Hapunan, one for Almusal and Meryenda. Picks lean
  * toward the top of the pool, and no dish repeats in the week while the pool lasts. Slots of
- * other meals are left as they are; with `keep`, filled slots too.
+ * other meals are left as they are; with `keep`, filled slots too. With `alternate`, ulam take
+ * turns gulay → isda → karne from `pools.gulay/isda/karne` (cheapest first, so picks lean cheap).
  */
-function randomWeek(plan, pools, { meals = MEALS, keep = false, rng = Math.random, ulamPerMeal = 1 } = {}) {
+const KIND_CYCLE = ["gulay", "isda", "karne"];
+
+function randomWeek(plan, pools, { meals = MEALS, keep = false, rng = Math.random, ulamPerMeal = 1, alternate = false } = {}) {
   const slots = { ...plan.slots };
   const fill = [];
   for (const day of DAYS) for (const meal of meals) {
@@ -158,21 +162,26 @@ function randomWeek(plan, pools, { meals = MEALS, keep = false, rng = Math.rando
     fill.push({ key, meal });
   }
   const used = new Set(Object.values(slots).flat());
+  let turn = 0; // next kind in the gulay → isda → karne cycle
   for (const { key, meal } of fill) {
-    const pool = pools[seriesForMeal(meal)] || [];
-    if (!pool.length) continue;
-    const n = seriesForMeal(meal) === "ulam" ? Math.max(1, Math.min(MAX_PER_SLOT, ulamPerMeal)) : 1;
+    const isUlam = seriesForMeal(meal) === "ulam";
+    const n = isUlam ? Math.max(1, Math.min(MAX_PER_SLOT, ulamPerMeal)) : 1;
     const picks = [];
     for (let k = 0; k < n; k++) {
+      const kind = isUlam && alternate ? KIND_CYCLE[turn++ % KIND_CYCLE.length] : null;
+      const pool = (kind && pools[kind] && pools[kind].length ? pools[kind] : pools[seriesForMeal(meal)]) || [];
+      if (!pool.length) continue;
       const fresh = pool.filter((id) => !used.has(id) && !picks.includes(id));
-      const from = fresh.length ? fresh : pool.filter((id) => !picks.includes(id));
+      const left = fresh.length ? fresh : pool.filter((id) => !picks.includes(id));
+      // Gulay / isda / karne turns: only among the 12 cheapest still unused ("pinakamura muna").
+      const from = kind ? left.slice(0, 12) : left;
       if (!from.length) break;
       // rng² leans toward the start of the list (the better-value dishes).
       const id = from[Math.min(from.length - 1, Math.floor(rng() ** 2 * from.length))];
       used.add(id);
       picks.push(id);
     }
-    slots[key] = picks;
+    if (picks.length) slots[key] = picks;
   }
   return { ...plan, slots };
 }
@@ -241,6 +250,88 @@ function isMainUlam(r) {
   return MAIN_CATEGORIES.has(r.category) && (r.protein ?? 0) >= 8 && !TECHNIQUE_TITLE.test(r.title || "");
 }
 
+// ── Gulay, isda or karne ──
+
+const FISH_WORDS = /\b(fish|isda|bangus|milkfish|tilapia|galunggong|tuna|salmon|sardin\w*|dilis|tuyo|daing|danggit|tinapa|hipon|shrimps?|prawns?|sugpo|pusit|squid|calamares|alimasag|crabs?|alimango|tahong|mussels?|halaan|clams?|talaba|oysters?|lapu[- ]?lapu|tanigue|maya[- ]?maya|mackerel|alumahan|hito|dalag|bakalaw|cod|seafood|octopus|pugita|scallops?|lobsters?)\b/i;
+const MEAT_WORDS = /\b(pork|baboy|liempo|pata|beef|baka|bulalo|chicken|manok|turkey|duck|pato|goat|kambing|lamb|carabeef|liver|atay|isaw|tripe|tuwalya|lengua|tongue|oxtail|giniling|hotdogs?|longg?anisa|tocino|tapa|ham|bacon|sausages?|corned beef|chorizo|meatballs?|bola[- ]?bola|lechon|sisig|dinuguan|menudo|kaldereta|caldereta|mechado|afritada|embutido|steak|spam|luncheon meat)\b/i;
+
+const GULAY_WORDS = /\b(gulay|vegetables?|veggies?|monggo|munggo|mung ?beans?|pinakbet|pakbet|laing|chop ?suey|tofu|tokwa|talong|eggplant|ampalaya|bitter ?(gourd|melon)|sitaw|string beans|kalabasa|squash|upo|bottle gourd|sayote|chayote|kangkong|pechay|bok ?choy|repolyo|cabbage|togue|bean sprouts|malunggay|okra|gabi|taro|langka|jackfruit|puso ng saging|banana blossom|bataw|patani|sigarilyas|labong|bamboo shoots?|broccoli|cauliflower|mushrooms?|kabute|alugbati|saluyot|dahon|camote tops|talbos|munggo)\b/i;
+const CONDIMENT_WORDS = /\b(fish|oyster|shrimp|anchovy|crab) (sauce|paste|cubes?|bouillon|powder)\b|\bpatis\b|\bbagoong\w*|\balamang\b|\bdried shrimps?\b|\bknorr\b[^|]*/gi;
+
+/**
+ * What kind of ulam a dish is: "gulay", "isda" or "karne". Vegetable and fish categories win,
+ * then the title, then the ingredients (pinakbet with a little pork is still gulay).
+ */
+function proteinKind(r) {
+  const title = r.title || "";
+  const veg = GULAY_WORDS.test(title);
+  // Fish or meat named in the title wins (Ginisang Sardinas), unless a vegetable is named too.
+  if (!veg && (r.category === "Fish & Seafood" || FISH_WORDS.test(title))) return "isda";
+  if (!veg && MEAT_WORDS.test(title)) return "karne";
+  if (r.category === "Vegetable Dish" || veg) return "gulay";
+  if (r.category === "Fish & Seafood") return "isda";
+  // Condiments made from fish or shrimp (patis, bagoong) don't make a dish an isda ulam.
+  const ings = (r.ingredientNames || []).join(" | ").replace(CONDIMENT_WORDS, " ");
+  if (FISH_WORDS.test(ings)) return "isda";
+  if (MEAT_WORDS.test(ings)) return "karne";
+  // Gulay has to look like a vegetable dish; anything else (breads, snacks, egg dishes) is "other".
+  return GULAY_WORDS.test(title) ? "gulay" : "other";
+}
+
+/** The cheapest dishes of each kind today (complete prices only): { gulay, isda, karne } → recipes. */
+function cheapestByKind(recipes, n = 3, ok = () => true) {
+  const out = { gulay: [], isda: [], karne: [] };
+  const seen = new Set();
+  const pool = recipes.filter((r) => r.ranked && !r.costIncomplete && r.costPerServing > 0 && isMainUlam(r) && mealTypes(r).has("ulam") && ok(r))
+    .sort((a, b) => a.costPerServing - b.costPerServing);
+  for (const r of pool) {
+    const t = r.title.trim().toLowerCase();
+    if (seen.has(t)) continue;
+    seen.add(t);
+    const k = proteinKind(r);
+    if (out[k] && out[k].length < n) out[k].push(r);
+  }
+  return out;
+}
+
+// ── Diet filters (general guidance, not medical advice) ──
+
+const DIETS = [
+  { key: "all", label: "Lahat", note: "" },
+  { key: "protein", label: "High protein", note: "25 g protein pataas bawat serving." },
+  { key: "diabetic", label: "Diabetic", note: "45 g carbs pababa, walang matamis, walang kanin o pancit na ulam." },
+  { key: "heart", label: "Heart / altapresyon", note: "600 mg sodium pababa, 20 g fat pababa, hindi prito, walang lechon, processed o lamang-loob." },
+  { key: "kidney", label: "Kidney", note: "500 mg sodium pababa, 20 g protein pababa, walang processed o lamang-loob." },
+  { key: "gout", label: "Gout / uric acid", note: "Walang lamang-loob, shellfish, sardinas, dilis o tuyo." },
+  { key: "lowcal", label: "Low calorie", note: "450 kcal pababa bawat serving." },
+];
+const PROCESSED_WORDS = /\b(hotdogs?|longg?anisa|tocino|ham|bacon|sausages?|corned beef|spam|luncheon|chorizo|tapa|tuyo|daing|danggit|tinapa|instant|cup noodles?|franks?)\b/i;
+const ORGAN_WORDS = /\b(liver|atay|isaw|bituka|intestines?|tripe|tuwalya|gizzards?|balunbalunan|dinuguan|blood|kidneys?|lengua|tongue|bopis|sisig|papaitan|brains?|chicharon bulaklak)\b/i;
+const FATTY_WORDS = /\b(lechon|chicharon|chicharron|crispy|bagnet|liempo|pata|kawali|fried|prito|pritong|deep[- ]fried|carbonara|creamy)\b/i;
+const SHELL_WORDS = /\b(shrimps?|hipon|sugpo|prawns?|crabs?|alimasag|alimango|tahong|mussels?|halaan|clams?|talaba|oysters?|scallops?|lobsters?|squid|pusit|sardin\w*|dilis|anchov\w*|tuyo|tinapa)\b/i;
+
+/**
+ * Whether a dish suits a diet (see DIETS). Number rules need trustworthy nutrition (80% of the
+ * weight matched); an unknown sodium fails the sodium rules rather than passing them.
+ */
+function dietOk(r, diet) {
+  if (!diet || diet === "all") return true;
+  const n = r.nutrition || {};
+  const known = (r.nutritionCoverage ?? 0) >= 0.8;
+  const title = r.title || "";
+  const words = `${title} | ${(r.ingredientNames || []).join(" | ")}`;
+  switch (diet) {
+    case "protein": return known && (r.protein ?? 0) >= 25;
+    case "diabetic": return known && (n.carbs ?? 99) <= 45 && r.category !== "Dessert" && r.category !== "Rice & Noodles" && !SWEET_TITLE.test(title);
+    case "heart": return known && r.sodium != null && r.sodium <= 600 && (n.fat ?? 99) <= 20 && !r.frying
+      && !FATTY_WORDS.test(title) && !PROCESSED_WORDS.test(words) && !ORGAN_WORDS.test(title);
+    case "kidney": return known && r.sodium != null && r.sodium <= 500 && (r.protein ?? 99) <= 20 && !PROCESSED_WORDS.test(words) && !ORGAN_WORDS.test(words);
+    case "gout": return !ORGAN_WORDS.test(words) && !SHELL_WORDS.test(words);
+    case "lowcal": return known && r.calories > 0 && r.calories <= 450;
+    default: return true;
+  }
+}
+
 /** "1.2 kg" / "350 g". */
 function formatGrams(g) {
   return g >= 1000 ? `${(g / 1000).toFixed(g >= 10000 ? 0 : 1)} kg` : `${Math.round(g)} g`;
@@ -297,9 +388,10 @@ function renderPicker() {
   const q = (document.getElementById("plan-search").value || "").toLowerCase();
   const cat = document.getElementById("plan-cat").value;
   const types = new Map(RECIPES.map((r) => [r.id, mealTypes(r)]));
-  const inSeries = (r) => series === "all" || types.get(r.id).has(series);
-  // Sauces and condiments fit no meal slot: not offered.
-  const pool = RECIPES.filter((r) => r.costPerServing > 0 && types.get(r.id).size > 0);
+  const favs = typeof favIds === "function" ? favIds() : new Set();
+  const inSeries = (r) => series === "all" || (series === "fav" ? favs.has(r.id) : types.get(r.id).has(series));
+  // Sauces and condiments fit no meal slot: not offered. The diet filter applies here too.
+  const pool = RECIPES.filter((r) => r.costPerServing > 0 && types.get(r.id).size > 0 && dietOk(r, activeDiet));
   document.getElementById("plan-series").innerHTML = SERIES.map((s) =>
     `<button class="wx-btn ${s.key === series ? "on" : ""}" onclick="setSeries('${s.key}')">${s.label}</button>`).join("");
   const matches = pool
@@ -312,9 +404,47 @@ function renderPicker() {
          ondragstart="event.dataTransfer.setData('text/plain','${r.id}')" onclick="pickDish(${r.id})" title="Drag to a day, or tap then tap a slot">
       ${r.img ? `<img src="${escapeHtml(r.img)}" alt="" loading="lazy">` : `<div class="plan-noimg">🍽️</div>`}
       <div class="min-w-0"><p class="plan-dish-title">${escapeHtml(r.title)}</p>
-      <p class="plan-dish-sub">₱${r.costPerServing}${r.costCoverage < 1 ? "+" : ""}/serving · ${r.category}
+      <p class="plan-dish-sub">${favs.has(r.id) ? "⭐ " : ""}₱${r.costPerServing}${r.costCoverage < 1 ? "+" : ""}/serving · ${r.category}
         ${series !== "meryenda" && types.get(r.id).has("meryenda") ? `<span class="plan-badge">Meryenda</span>` : ""}</p></div>
-    </div>`).join("") || `<p class="text-sm text-gray-400 p-2">No matching dishes.</p>`;
+    </div>`).join("") || `<p class="text-sm text-gray-400 p-2">${series === "fav"
+      ? "Wala pang favorites. I-tap ang ☆ sa recipe, sa DA Prices o sa “Anong lulutuin?”."
+      : "No matching dishes."}</p>`;
+  renderCheapest();
+}
+
+// ── Diet, randomizer style, and the cheapest dishes today ──
+
+let activeDiet = "all";
+let randomStyle = "mix"; // "mix": best value; "alternate": gulay → isda → karne, cheapest first
+
+function setDiet(key) {
+  activeDiet = key;
+  document.querySelectorAll("[data-diet]").forEach((b) => b.classList.toggle("on", b.dataset.diet === key));
+  const d = DIETS.find((x) => x.key === key);
+  document.getElementById("diet-note").textContent = d && d.note
+    ? `${d.label}: ${d.note} Gabay lang ito; sundin pa rin ang payo ng doktor o dietitian.`
+    : "";
+  renderPicker();
+}
+
+function setRandomStyle(v) {
+  randomStyle = v;
+  document.querySelectorAll("[data-style]").forEach((b) => b.classList.toggle("on", b.dataset.style === v));
+}
+
+const KIND_LABEL = { gulay: "🥬 Gulay", isda: "🐟 Isda", karne: "🥩 Karne" };
+
+function renderCheapest() {
+  const box = document.getElementById("plan-cheapest");
+  if (!box) return;
+  const c = cheapestByKind(RECIPES, 3, (r) => dietOk(r, activeDiet));
+  box.innerHTML = Object.entries(c).map(([k, list]) => `
+    <div class="min-w-0">
+      <p class="text-xs font-bold text-gray-500 mb-1">${KIND_LABEL[k]}</p>
+      ${list.map((r) => `<button class="cheap-row" draggable="true" ondragstart="event.dataTransfer.setData('text/plain','${r.id}')" onclick="pickDish(${r.id})" title="Tap, then tap a slot (or drag)">
+        <span class="truncate">${escapeHtml(r.title.replace(/ Recipe$/i, ""))}</span><b>₱${r.costPerServing}</b></button>`).join("")
+        || `<p class="text-xs text-gray-400">Wala sa diet na ito.</p>`}
+    </div>`).join("");
 }
 
 function pickDish(id) {
@@ -400,24 +530,32 @@ function setRandomMeals(v) {
   document.querySelectorAll("[data-random]").forEach((b) => b.classList.toggle("on", b.dataset.random === v));
 }
 
-/** Dish ids per series for the randomizer: value-ranked dishes first, one per title (reposts share a title). */
+/**
+ * Dish ids per series for the randomizer, within the chosen diet: value-ranked first, one per
+ * title (reposts share a title). Also gulay / isda / karne ulam pools, cheapest first.
+ */
 function randomPools() {
   const pools = {};
+  const onePerTitle = () => { const seen = new Set(); return (r) => { const t = r.title.trim().toLowerCase(); if (seen.has(t)) return false; seen.add(t); return true; }; };
+  const fits = RECIPES.filter((r) => r.costPerServing > 0 && dietOk(r, activeDiet));
   for (const s of ["almusal", "ulam", "meryenda"]) {
-    const seen = new Set();
-    pools[s] = RECIPES
-      .filter((r) => r.costPerServing > 0 && mealTypes(r).has(s) && (s !== "ulam" || isMainUlam(r)))
+    pools[s] = fits
+      .filter((r) => mealTypes(r).has(s) && (s !== "ulam" || isMainUlam(r)))
       .sort((a, b) => (b.ranked - a.ranked) || (b.valueScore - a.valueScore))
-      .filter((r) => { const t = r.title.trim().toLowerCase(); if (seen.has(t)) return false; seen.add(t); return true; })
+      .filter(onePerTitle())
       .map((r) => r.id);
   }
+  // Today's prices: the cheapest complete-price ulam of each kind come first.
+  const ulam = fits.filter((r) => mealTypes(r).has("ulam") && isMainUlam(r) && r.ranked && !r.costIncomplete)
+    .sort((a, b) => a.costPerServing - b.costPerServing);
+  for (const k of KIND_CYCLE) pools[k] = ulam.filter((r) => proteinKind(r) === k).filter(onePerTitle()).map((r) => r.id);
   return pools;
 }
 
 function randomizeWeek() {
   const meals = randomMeals === "ulam" ? ["Tanghalian", "Hapunan"] : MEALS;
   const keep = document.getElementById("plan-keep").checked;
-  plan = randomWeek(plan, randomPools(), { meals, keep, ulamPerMeal });
+  plan = randomWeek(plan, randomPools(), { meals, keep, ulamPerMeal, alternate: randomStyle === "alternate" });
   persist(); renderGrid(); renderReceipt();
 }
 

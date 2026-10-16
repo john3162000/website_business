@@ -26,10 +26,12 @@ docs/                         static site, no build step (Tailwind CDN, plain br
   index.html                  all sections, styles, theme (forest and cream + dark mode)
   app.js                      data loading, Browse, Prices, recipe pop-up, nav, sulit meter, dark toggle
   weather.js                  weather picks (Open-Meteo)       mydish.js   "My Dish" builder
-  planner.js                  weekly planner, Random week, budget planner, mealTypes()
+  planner.js                  weekly planner, Random week (incl. gulay→isda→karne), budget planner,
+                              mealTypes(), proteinKind(), dietOk() diet filters, Pinakamura ngayon
   finder.js                   "Anong lulutuin?" ingredient finder + d3 graph
   alerts.js                   price alerts (localStorage + browser notifications)
   share.js                    share a recipe as a PNG (canvas) → share sheet / Messenger
+  tour.js                     first-time tour (Taglish), replay with the "?" header button
   *.test.mjs                  node:test files; run each script's pure helpers in node:vm
   logo.png, favicon.png       FARM2FIGURE logo
 scraper-backend/
@@ -72,6 +74,7 @@ Line statuses are `ok`, `to-taste`, `optional`, `water`, `skipped`, `unmatched`,
 | `/api/recipes/compiled?id=` | One recipe with every line's grams, cost and price source |
 | `/api/recipes/price-movers?days=7\|14\|30` | Dishes whose cost moved most |
 | `/api/recipes/ingredient-index` | What each recipe needs, used by the finder |
+| `/api/recipes/[id]/video` | The recipe's own YouTube/TikTok video from its page (JSON-LD VideoObject) plus search links |
 | `/api/commodities` | DA prices, with `changes` for a week, 2 weeks and a month back |
 | `/api/store-prices`, `/api/ingredients`, `/api/nutrition` | SM products, catalog ingredients, FNRI foods |
 | `POST /api/dish` | Prices a personal dish (My Dish) |
@@ -119,7 +122,8 @@ required on `main`.
 - **Catalog TSVs use CRLF line endings.** `build-catalog.mjs` splits on `/\r?\n/`. Append rows
   with CRLF.
 - **One global scope:** all `docs/*.js` files are classic scripts that share globals. Script
-  order in `index.html`: weather, mydish, planner, finder, alerts, share, then app last. Give new
+  order in `index.html`: weather, mydish, planner, finder, alerts, share, tour, then app last.
+  Favourites (`favIds`, `toggleFav`, key `sarapsulit.favs.v1`) live in `app.js`. Give new
   top-level names a prefix (`SHARE_W`, `FINDER_KEY`) so they can't clash.
 - **The theme comes from the Tailwind config:** `index.html` re-points Tailwind's `green` to
   forest green and `amber` to the logo's gold. Dark mode is `html.dark` overrides plus `--bg`,

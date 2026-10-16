@@ -361,6 +361,7 @@ function buildModal(r, instructions, lines) {
         <span class="text-sm text-gray-500">${r.category} · ${r.servings} servings${r.servingsAssumed ? " (assumed: the recipe doesn’t say)" : ""}${(r.prepTime || 0) + (r.cookTime || 0) > 0 ? ` · ${(r.prepTime || 0) + (r.cookTime || 0)} min` : ""}</span>
         ${r.url ? `<a href="${escapeHtml(r.url)}" target="_blank" rel="noopener" class="block text-xs text-green-700 hover:underline mt-1">View original on Panlasang Pinoy ↗</a>` : ""}
         <div class="flex flex-wrap gap-2 mt-2">
+          ${r.id ? favButton(r.id, "pill") : ""}
           ${r.id ? `<button id="share-btn" onclick="shareRecipe(${r.id})" class="text-xs font-semibold bg-green-800 hover:bg-green-700 text-amber-50 px-3 py-1 rounded-full">💬 Share to Messenger</button>` : ""}
           ${r.id ? `<button onclick="customizeRecipe(${r.id})" class="text-xs font-medium bg-amber-100 hover:bg-amber-200 text-amber-800 px-3 py-1 rounded-full">✏️ Customize this dish</button>` : ""}
         </div>
@@ -405,6 +406,7 @@ function buildModal(r, instructions, lines) {
 
         <div>
           <h3 class="font-bold text-lg mb-3">Instructions</h3>
+          <div id="video-links" class="flex flex-wrap gap-2 mb-4" data-recipe="${r.id}"></div>
           <ol class="space-y-4">${steps}</ol>
         </div>
       </div>
@@ -508,6 +510,36 @@ function setPricePeriod(key) {
 
 let moversLoaded = false;
 
+// ═══════════════ FAVOURITES ═══════════════
+// Starred dishes, saved on this device; the Planner lists them under ⭐ Favorites.
+
+const FAV_KEY = "sarapsulit.favs.v1";
+
+function favIds() {
+  try { return new Set(JSON.parse(localStorage.getItem(FAV_KEY) || "[]").filter(Number.isInteger)); } catch { return new Set(); }
+}
+
+/** Star button for a dish; `pill` is the labelled version for the recipe pop-up. */
+function favButton(id, style) {
+  const on = favIds().has(id);
+  return style === "pill"
+    ? `<button class="fav-btn ${on ? "on" : ""} text-xs font-semibold px-3 py-1 rounded-full border border-amber-300 ${on ? "bg-amber-100 text-amber-800" : "text-amber-700"}" data-fav="${id}" onclick="event.stopPropagation(); toggleFav(${id})">${on ? "★ Favorite" : "☆ Add to favorites"}</button>`
+    : `<button class="fav-btn ${on ? "on" : ""} text-amber-500" data-fav="${id}" onclick="event.stopPropagation(); toggleFav(${id})" aria-label="${on ? "Remove from" : "Add to"} favorites" title="${on ? "Favorite" : "Add to favorites"}">${on ? "★" : "☆"}</button>`;
+}
+
+function toggleFav(id) {
+  const favs = favIds();
+  if (favs.has(id)) favs.delete(id); else favs.add(id);
+  try { localStorage.setItem(FAV_KEY, JSON.stringify([...favs])); } catch { /* not saved */ }
+  // Redraw every star for this dish in place.
+  document.querySelectorAll(`[data-fav="${id}"]`).forEach((b) => {
+    const tmp = document.createElement("div");
+    tmp.innerHTML = favButton(id, b.classList.contains("rounded-full") ? "pill" : "");
+    b.replaceWith(tmp.firstElementChild);
+  });
+  if (typeof renderPicker === "function" && document.getElementById("plan-picker")) renderPicker();
+}
+
 const MEAL_TAGS = [["almusal", "Almusal"], ["ulam", "Tanghalian · Hapunan"], ["meryenda", "Meryenda"]];
 
 /** Small meal labels for a dish (Almusal, Tanghalian · Hapunan, Meryenda), from planner.js mealTypes. */
@@ -527,7 +559,7 @@ function moverRow(m) {
   return `
     <div class="flex items-start justify-between gap-3 rounded-lg px-2 py-1.5 ${known ? "cursor-pointer hover:bg-gray-50" : ""}" ${known ? `onclick="openModal(${m.id})"` : ""}>
       <div class="min-w-0">
-        <p class="font-medium truncate">${escapeHtml(m.title)}</p>
+        <p class="font-medium truncate">${known ? favButton(m.id) : ""} ${escapeHtml(m.title)}</p>
         ${mealTags(m.id)}
         ${drivers ? `<p class="text-xs text-gray-400 truncate">${drivers}</p>` : ""}
       </div>
@@ -761,6 +793,43 @@ async function openModal(id) {
   if (MODAL_DATA && MODAL_DATA.id === id) MODAL_DATA = { id, instructions, lines };
   if (!document.getElementById("recipe-modal").classList.contains("open")) return;
   document.getElementById("modal-content").innerHTML = buildModal(r, instructions, lines);
+  loadVideoLinks(r);
+}
+
+// ═══════════════ HOW-TO-COOK VIDEOS ═══════════════
+
+const videoCache = new Map();
+
+/** YouTube / TikTok search pages for a dish, used until (or when) the recipe has no video of its own. */
+function videoSearch(title) {
+  const t = title.replace(/\s+recipe$/i, "");
+  return {
+    youtube: `https://www.youtube.com/results?search_query=${encodeURIComponent(`${t} recipe panlasang pinoy`)}`,
+    tiktok: `https://www.tiktok.com/search?q=${encodeURIComponent(`${t} recipe`)}`,
+  };
+}
+
+/** Fill the pop-up's video row: the recipe's own YouTube / TikTok video when its page has one. */
+async function loadVideoLinks(r) {
+  const box = () => document.querySelector(`#video-links[data-recipe="${r.id}"]`);
+  const draw = (v) => {
+    const el = box();
+    if (!el) return;
+    const s = v.search || videoSearch(r.title);
+    el.innerHTML = [
+      v.youtube ? `<a href="${escapeHtml(v.youtube)}" target="_blank" rel="noopener" class="video-btn yt">▶ Panoorin sa YouTube</a>` : `<a href="${escapeHtml(s.youtube)}" target="_blank" rel="noopener" class="video-btn">🔎 Hanapin sa YouTube</a>`,
+      v.tiktok ? `<a href="${escapeHtml(v.tiktok)}" target="_blank" rel="noopener" class="video-btn tt">▶ Panoorin sa TikTok</a>` : `<a href="${escapeHtml(s.tiktok)}" target="_blank" rel="noopener" class="video-btn">🔎 Hanapin sa TikTok</a>`,
+    ].join("");
+  };
+  if (videoCache.has(r.id)) return draw(videoCache.get(r.id));
+  draw({ youtube: null, tiktok: null });
+  try {
+    const res = await fetch(`${API_BASE}/api/recipes/${r.id}/video`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const v = await res.json();
+    videoCache.set(r.id, v);
+    draw(v);
+  } catch { /* search links stay */ }
 }
 
 function closeModal() {

@@ -285,8 +285,8 @@
     .bell-btn { opacity: .45; transition: opacity .15s, transform .15s; }
     tr:hover .bell-btn, .bell-btn:focus { opacity: 1; }
     .bell-btn:active { transform: rotate(-15deg); }
-    .app-toast { position: fixed; left: 50%; bottom: 1.5rem; transform: translateX(-50%); z-index: 120; background: #163F2E; color: #F8F4EA; padding: .75rem 1.1rem; border-radius: 1rem; font-size: .875rem; box-shadow: 0 10px 30px rgba(0, 0, 0, .25); max-width: calc(100vw - 2rem); animation: rise .35s ease both; transition: opacity .4s, transform .4s; }
-    .app-toast.out { opacity: 0; transform: translate(-50%, 10px); }
+    .app-toast { position: fixed; left: 0; right: 0; margin: 0 auto; width: fit-content; bottom: 1.5rem; z-index: 120; background: #163F2E; color: #F8F4EA; padding: .75rem 1.1rem; border-radius: 1rem; font-size: .875rem; box-shadow: 0 10px 30px rgba(0, 0, 0, .25); max-width: calc(100vw - 2rem); animation: rise .35s ease both; transition: opacity .4s, transform .4s; }
+    .app-toast.out { opacity: 0; transform: translateY(10px); }
     @media (max-width: 639px) { .app-toast { bottom: 5.5rem; } }
     html.dark .app-toast { background: #7CE0A3; color: #0B1712; }
 
@@ -298,6 +298,29 @@
     html.dark .meal-almusal { background: #3A2E10; color: #F5B841; }
     html.dark .meal-ulam { background: #173A28; color: #7CE0A3; }
     html.dark .meal-meryenda { background: #3A1F17; color: #F0A08A; }
+
+    .cheap-card { background: #F8F4EA; border: 1px solid #E7DFCB; border-radius: .9rem; padding: .7rem; }
+    .cheap-row { width: 100%; display: flex; justify-content: space-between; gap: .5rem; align-items: center; font-size: .78rem; padding: .25rem .45rem; border-radius: .5rem; text-align: left; color: #22251F; }
+    .cheap-row:hover { background: #E9E2CF; }
+    .cheap-row b { color: #1D5239; white-space: nowrap; }
+    html.dark .cheap-card { background: var(--s2); border-color: var(--line); }
+    html.dark .cheap-row { color: var(--tx); } html.dark .cheap-row:hover { background: #173A28; } html.dark .cheap-row b { color: var(--mint); }
+    /* First-time tour */
+    #tour.dim::before { content: ""; position: fixed; inset: 0; background: rgba(15, 31, 24, .55); z-index: 150; }
+    .tour-lit { position: relative; z-index: 151; border-radius: 1rem; box-shadow: 0 0 0 4px #DDAE2B, 0 0 0 9999px rgba(15, 31, 24, .55) !important; transition: box-shadow .3s; }
+    .tour-card { position: fixed; z-index: 160; left: 0; right: 0; margin: 0 auto; bottom: 1.25rem; width: min(26rem, calc(100vw - 1.5rem)); background: #fff; border-radius: 1.25rem; padding: 1.1rem 1.2rem; box-shadow: 0 20px 50px rgba(0, 0, 0, .3); animation: rise .3s ease both; }
+    @media (max-width: 639px) { .tour-card { bottom: 5.25rem; } }
+    .tour-dots { display: flex; gap: .3rem; } .tour-dots i { width: .45rem; height: .45rem; border-radius: 9999px; background: #E7DFCB; display: block; } .tour-dots i.on { background: #1D5239; width: 1.1rem; }
+    html.dark .tour-card { background: #16291F; color: #E6F4EC; } html.dark .tour-dots i { background: #24402F; } html.dark .tour-dots i.on { background: #7CE0A3; }
+    .video-btn { font-size: .8rem; font-weight: 600; padding: .35rem .85rem; border-radius: 9999px; border: 1px solid #E7DFCB; color: #1D5239; }
+    .video-btn:hover { background: #EFF5F0; }
+    .video-btn.yt { background: #C4302B; border-color: #C4302B; color: #fff; }
+    .video-btn.tt { background: #111; border-color: #111; color: #fff; }
+    html.dark .video-btn { border-color: var(--line); color: var(--mint); }
+    .fav-btn { font-size: 1.05rem; line-height: 1; transition: transform .15s; }
+    .fav-btn:active { transform: scale(1.3); }
+    .fav-btn.on { animation: fav-pop .35s ease; }
+    @keyframes fav-pop { 50% { transform: scale(1.4); } }
 
     #rain { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 40; }
     #rain i { position: absolute; top: -30px; width: 1.5px; border-radius: 1px; background: linear-gradient(to bottom, rgba(186,206,232,0), rgba(140,170,210,.75)); animation: rain-fall linear infinite; }
@@ -321,6 +344,7 @@
       <button onclick="showSection('planner')" id="nav-planner" class="tab-btn px-3 sm:px-4 py-2 whitespace-nowrap shrink-0 rounded-full transition-colors">Planner</button>
       <button onclick="showSection('finder')" id="nav-finder" class="tab-btn px-3 sm:px-4 py-2 whitespace-nowrap shrink-0 rounded-full transition-colors">Anong lulutuin?</button>
     </nav>
+    <button class="theme-btn shrink-0 ml-2 font-bold" onclick="startTour()" aria-label="Quick tour" title="Paano gamitin? (quick tour)">?</button>
     <button class="theme-btn shrink-0 ml-2" onclick="toggleTheme()" aria-label="Switch light or dark mode" title="Light / dark mode">
       <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
       <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
@@ -594,6 +618,10 @@
     <div class="grid gap-5 lg:grid-cols-[17rem_minmax(0,1fr)_19rem] items-start">
       <!-- Dish picker -->
       <div id="plan-picker-card" class="bg-white rounded-2xl shadow p-4 flex flex-col gap-3 min-w-0">
+        <div class="cheap-card">
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">💸 Pinakamura ngayon <span class="normal-case font-normal">(DA <span data-da-date>…</span>)</span></p>
+          <div id="plan-cheapest" class="grid grid-cols-1 gap-2"></div>
+        </div>
         <input id="plan-search" type="search" oninput="renderPicker()" placeholder="Search dishes…" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
         <select id="plan-cat" onchange="renderPicker()" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"><option value="">All categories</option></select>
         <div id="plan-series" class="flex flex-wrap gap-1.5"></div>
@@ -613,6 +641,22 @@
           <button class="wx-btn" data-ulam-n="3" onclick="setUlamPerMeal(3)">3</button>
           <label class="text-xs text-gray-500 flex items-center gap-1.5"><input id="plan-keep" type="checkbox" class="accent-green-600"> Keep dishes already in the week</label>
         </div>
+        <div class="flex flex-wrap items-center gap-2 mb-2">
+          <span class="text-xs text-gray-500">Style</span>
+          <button class="wx-btn on" data-style="mix" onclick="setRandomStyle('mix')">Halo-halo (best value)</button>
+          <button class="wx-btn" data-style="alternate" onclick="setRandomStyle('alternate')">🥬 → 🐟 → 🥩 Gulay, isda, karne · pinakamura muna</button>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 mb-1">
+          <span class="text-xs text-gray-500">Diet</span>
+          <button class="wx-btn on" data-diet="all" onclick="setDiet('all')">Lahat</button>
+          <button class="wx-btn" data-diet="protein" onclick="setDiet('protein')">💪 High protein</button>
+          <button class="wx-btn" data-diet="diabetic" onclick="setDiet('diabetic')">🩸 Diabetic</button>
+          <button class="wx-btn" data-diet="heart" onclick="setDiet('heart')">❤️ Heart / altapresyon</button>
+          <button class="wx-btn" data-diet="kidney" onclick="setDiet('kidney')">🫘 Kidney</button>
+          <button class="wx-btn" data-diet="gout" onclick="setDiet('gout')">🦶 Gout</button>
+          <button class="wx-btn" data-diet="lowcal" onclick="setDiet('lowcal')">🔥 Low calorie</button>
+        </div>
+        <p id="diet-note" class="text-xs text-amber-700 mb-3"></p>
         <form class="flex flex-wrap items-center gap-2 mb-1" onsubmit="event.preventDefault(); planOnBudget()">
           <input id="budget-text" type="text" placeholder="₱1,500 for the week, 4 people" class="flex-1 min-w-[12rem] border border-gray-200 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Weekly budget and people">
           <button class="bg-green-800 hover:bg-green-700 text-amber-50 font-semibold text-sm px-4 py-2 rounded-full transition-colors">₱ Plan within budget</button>
@@ -673,6 +717,22 @@
   </div>
 </section>
 
+<div id="tour" class="hidden" role="dialog" aria-modal="true" aria-labelledby="tour-title">
+  <div class="tour-card">
+    <div class="flex items-center justify-between gap-2 mb-1">
+      <span id="tour-count" class="text-xs font-semibold text-gray-500"></span>
+      <button onclick="endTour()" class="text-xs text-gray-500 hover:text-gray-800 underline">Skip</button>
+    </div>
+    <p id="tour-title" class="font-display text-xl font-semibold mb-1"></p>
+    <p id="tour-text" class="text-sm text-gray-600 leading-relaxed"></p>
+    <div class="flex items-center justify-between gap-2 mt-4">
+      <button id="tour-back" onclick="tourNext(-1)" class="text-sm text-gray-500 hover:text-gray-800">← Back</button>
+      <div id="tour-dots" class="tour-dots"></div>
+      <button id="tour-next" onclick="tourNext(1)" class="px-4 py-2 rounded-full text-sm font-semibold bg-green-800 text-amber-50 hover:bg-green-700">Next →</button>
+    </div>
+  </div>
+</div>
+
 <dialog id="alert-dialog" class="alert-dialog" onclick="if (event.target === this) this.close()">
   <form method="dialog" onsubmit="event.preventDefault(); saveAlertFromDialog()" class="p-5 flex flex-col gap-3">
     <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">🔔 Price alert</p>
@@ -730,6 +790,7 @@
 <script src="finder.js"></script>
 <script src="alerts.js"></script>
 <script src="share.js"></script>
+<script src="tour.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

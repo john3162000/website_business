@@ -6,8 +6,8 @@ import vm from "node:vm";
 
 const ctx = vm.createContext({});
 vm.runInContext(`${readFileSync(new URL("./planner.js", import.meta.url), "utf8")}
-;globalThis.api = { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, isMainUlam };`, ctx);
-const { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, isMainUlam } = ctx.api;
+;globalThis.api = { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, isMainUlam, proteinKind, dietOk, cheapestByKind };`, ctx);
+const { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, isMainUlam, proteinKind, dietOk, cheapestByKind } = ctx.api;
 const plain = (v) => JSON.parse(JSON.stringify(v));
 
 test("slots: add without duplicates, at most 5, remove clears empty slots", () => {
@@ -171,4 +171,68 @@ test("main ulam: real mains with protein; not sides of rice, egg how-tos or swee
     assert.equal(mealTypes({ title: t, category: "Main Dish" }).has("ulam"), false, t);
   }
   assert.equal(mealTypes({ title: "Yummy Blueberry Pancake", category: "Main Dish" }).has("almusal"), true);
+});
+
+test("ulam kind: gulay, isda or karne", () => {
+  assert.equal(proteinKind({ title: "Pinakbet", category: "Vegetable Dish", ingredientNames: ["pork belly", "bagoong"] }), "gulay");
+  assert.equal(proteinKind({ title: "Sinigang na Bangus", category: "Soup" }), "isda");
+  assert.equal(proteinKind({ title: "Pork Adobo", category: "Main Dish" }), "karne");
+  assert.equal(proteinKind({ title: "Ginataang Sitaw", category: "Main Dish", ingredientNames: ["string beans", "shrimp"] }), "gulay", "sitaw named: a gulay dish");
+  assert.equal(proteinKind({ title: "Paksiw", category: "Main Dish", ingredientNames: ["bangus", "vinegar"] }), "isda");
+  assert.equal(proteinKind({ title: "Tortang Talong", category: "Main Dish", ingredientNames: ["eggplant", "egg"] }), "gulay");
+  assert.equal(proteinKind({ title: "Sotanghon and Egg Noodle Soup", category: "Soup", ingredientNames: ["sotanghon", "egg", "fish sauce"] }), "other", "patis isn't fish; noodle soup isn't gulay");
+  assert.equal(proteinKind({ title: "Mamon", category: "Main Dish" }), "other");
+  assert.equal(mealTypes({ title: "Mamon", category: "Main Dish" }).has("ulam"), false);
+  assert.equal(mealTypes({ title: "Yellow Arroz Caldo", category: "Soup" }).has("ulam"), false);
+  assert.equal(proteinKind({ title: "Ginisang Upo", category: "Main Dish" }), "gulay");
+  assert.equal(proteinKind({ title: "Ginisang Sardinas", category: "Vegetable Dish" }), "isda");
+  assert.equal(proteinKind({ title: "Ginisang Upo with Shrimp", category: "Main Dish" }), "gulay");
+  assert.equal(proteinKind({ title: "Sinigang na Hipon", category: "Fish & Seafood" }), "isda");
+  for (const t of ["Pandesal", "Crispy Potato Wedges", "Spam and Egg Sandwich", "Fried Chicken Potato Salad"]) {
+    assert.equal(mealTypes({ title: t, category: "Main Dish" }).has("ulam"), false, t);
+  }
+  // Adobong mani is a snack, not an ulam.
+  assert.equal(mealTypes({ title: "Adobong Mani Recipe", category: "Main Dish" }).has("ulam"), false);
+});
+
+test("diets: each rule keeps the dishes that fit", () => {
+  const base = { nutritionCoverage: 1, category: "Main Dish", ingredientNames: [], nutrition: { carbs: 20, fat: 10 }, protein: 30, calories: 400, sodium: 450, frying: null };
+  const R = (o) => ({ ...base, ...o, nutrition: { ...base.nutrition, ...(o.nutrition || {}) } });
+  assert.equal(dietOk(R({ title: "Chicken Tinola" }), "protein"), true);
+  assert.equal(dietOk(R({ title: "Ginisang Sayote", protein: 6 }), "protein"), false);
+  assert.equal(dietOk(R({ title: "Leche Flan", category: "Dessert" }), "diabetic"), false);
+  assert.equal(dietOk(R({ title: "Pancit Bihon", category: "Rice & Noodles" }), "diabetic"), false);
+  assert.equal(dietOk(R({ title: "Lechon Kawali", frying: "deep" }), "heart"), false);
+  assert.equal(dietOk(R({ title: "Steamed Fish", sodium: null }), "heart"), false, "unknown sodium doesn't pass");
+  assert.equal(dietOk(R({ title: "Steamed Fish", protein: 18 }), "kidney"), true);
+  assert.equal(dietOk(R({ title: "Hotdog with Egg", protein: 15 }), "kidney"), false);
+  assert.equal(dietOk(R({ title: "Adobong Atay" }), "gout"), false);
+  assert.equal(dietOk(R({ title: "Ginataang Hipon" }), "gout"), false);
+  assert.equal(dietOk(R({ title: "Chicken Tinola" }), "gout"), true);
+  assert.equal(dietOk(R({ title: "Bulalo", calories: 700 }), "lowcal"), false);
+  assert.equal(dietOk(R({ title: "Anything", nutritionCoverage: 0.3 }), "protein"), false, "thin nutrition data");
+  assert.equal(dietOk(R({ title: "Anything" }), "all"), true);
+});
+
+test("cheapest today: three of each kind, complete prices only, cheapest first", () => {
+  const R = (id, title, category, cost, o = {}) => ({ id, title, category, costPerServing: cost, ranked: true, costIncomplete: false, protein: 15, ingredientNames: [], ...o });
+  const list = [
+    R(1, "Ginisang Monggo", "Vegetable Dish", 18), R(2, "Pinakbet", "Vegetable Dish", 25), R(3, "Ginisang Sayote", "Vegetable Dish", 15),
+    R(4, "Paksiw na Galunggong", "Fish & Seafood", 30), R(5, "Fried Tilapia", "Fish & Seafood", 28),
+    R(6, "Pork Adobo", "Main Dish", 45), R(7, "Chicken Tinola", "Soup", 40), R(8, "Beef Steak", "Main Dish", 20, { costIncomplete: true }),
+    R(9, "Ginisang Upo", "Vegetable Dish", 12), R(10, "Ginisang Upo", "Vegetable Dish", 11),
+  ];
+  const c = plain(cheapestByKind(list, 3));
+  assert.deepEqual(c.gulay.map((r) => r.id), [10, 3, 1], "one Ginisang Upo, cheapest first");
+  assert.deepEqual(c.isda.map((r) => r.id), [5, 4]);
+  assert.deepEqual(c.karne.map((r) => r.id), [7, 6], "incomplete price left out");
+});
+
+test("random week: gulay → isda → karne take turns, leaning to the cheapest", () => {
+  const pools = { ulam: [1, 2, 3], gulay: [10, 11, 12, 13, 14, 15, 16], isda: [20, 21, 22, 23, 24, 25, 26], karne: [30, 31, 32, 33, 34, 35, 36] };
+  const p = randomWeek({ people: 4, slots: {} }, pools, { meals: ["Tanghalian", "Hapunan"], alternate: true, rng: () => 0 });
+  const ids = plain(plannedDishes(p)).map((d) => d.id);
+  const kind = (id) => (id < 20 ? "g" : id < 30 ? "i" : "k");
+  assert.equal(ids.map(kind).join(""), "gikgikgikgikgi");
+  assert.equal(ids[0], 10, "cheapest gulay first");
 });
