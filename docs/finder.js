@@ -311,7 +311,9 @@ function renderGraph(dishes, recipes) {
     svg.call(d3.zoom().scaleExtent([0.4, 3]).on("zoom", (e) => zoom.attr("transform", e.transform)));
   }
 
-  const { nodes, links } = graphData(finderHave, dishes);
+  // Phones: fewer dishes and missing nodes, so the graph stays readable.
+  const narrow = W < 640;
+  const { nodes, links } = graphData(finderHave, dishes, narrow ? { maxDishes: 8, ghostsPerDish: 1 } : {});
   // Keep where existing nodes are; new ones sprout from a node they link to.
   const old = new Map(graphNodes.map((n) => [n.id, n]));
   const byId = new Map(nodes.map((n) => [n.id, n]));
@@ -377,8 +379,8 @@ function renderGraph(dishes, recipes) {
 
   if (graphSim) graphSim.stop();
   graphSim = d3.forceSimulation(nodes)
-    .force("link", d3.forceLink(links).id((n) => n.id).distance((l) => (l.kind === "missing" ? 60 : 130)).strength((l) => (l.kind === "missing" ? 0.5 : 0.3)))
-    .force("charge", d3.forceManyBody().strength((n) => (n.kind === "missing" ? -80 : -420)))
+    .force("link", d3.forceLink(links).id((n) => n.id).distance((l) => (l.kind === "missing" ? 60 : narrow ? 95 : 130)).strength((l) => (l.kind === "missing" ? 0.5 : 0.3)))
+    .force("charge", d3.forceManyBody().strength((n) => (n.kind === "missing" ? -80 : narrow ? -260 : -420)))
     .force("x", d3.forceX(W / 2).strength(0.05)).force("y", d3.forceY(H / 2).strength(0.07))
     .force("collide", d3.forceCollide((n) => nodeRadius(n) + (n.kind === "missing" ? 10 : 22)))
     .alpha(old.size ? 0.6 : 1)
