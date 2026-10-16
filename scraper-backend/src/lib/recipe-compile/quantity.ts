@@ -62,7 +62,7 @@ const UNITS: Record<string, UnitDef> = {
   gallon: V("ml", 3785.41), gallons: V("ml", 3785.41),
   "fl oz": V("ml", 29.5735), "fluid ounce": V("ml", 29.5735), "fluid ounces": V("ml", 29.5735),
   piece: C("piece"), pieces: C("piece"), pc: C("piece"), pcs: C("piece"), whole: C("piece"),
-  clove: C("clove"), cloves: C("clove"),
+  clove: C("clove"), cloves: C("clove"), cloved: C("clove"),
   head: C("head"), heads: C("head"),
   thumb: C("thumb"), thumbs: C("thumb"), knob: C("knob"), knobs: C("knob"),
   stalk: C("stalk"), stalks: C("stalk"), stem: C("stalk"), stems: C("stalk"), rib: C("stalk"), ribs: C("stalk"),

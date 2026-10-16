@@ -187,15 +187,17 @@ function lookupAlias(name: string, aliases: Record<string, Alias>, contained = t
 // "1 slab 2 pounds pork belly" was split as name "slab", "3 tablespoons butter" as name
 // "tablespoons", "A pinch of nutmeg" has no amount span. These words are re-read as the
 // amount and unit, and the food is taken from the rest of the line.
-const FILLER = /^(a|an|one|of|thick|thin|small|medium|large|big|jumbo|slabs?|servings?|hint|drops?|envelopes?|sheets?|cobs?|bags?|jars?|sticks?)$/;
+const FILLER = /^(a|an|one|of|us|u\.s\.|thick|thin|small|medium|large|big|jumbo|slabs?|servings?|hint|drops?|envelopes?|sheets?|cobs?|bags?|jars?|sticks?)$/;
 const MODIFIER = /^(dried|fresh|organic)$/;
 const SIZE = /^(small|medium|large|big|jumbo)$/;
 // Water with only adjectives or a purpose around it: "lukewarm water", "additional water
 // for boiling", "of ice cold water placed in a large bowl", "water enough to cover the leg".
 const WATER_NAME = /^(?:(?:a|of|additional|extra|more|some|warm|lukewarm|tepid|hot|cold|ice|ice-cold|iced|boiling|clean|tap|distilled|filtered|plain|enough|rice|annatto|soaking)\s+)*water\b(?!\s*(?:chestnuts?|spinach|melons?|cress|crackers?))/;
 const WATER_ALIAS: Alias = { lineClass: "WATER", slugs: [], size: null, note: null };
-// "Juice of 2 lemons", "juice from 8 limes": a count of fruit, juiced.
-const JUICE_OF = /^juice (?:of|from) (?:the )?(\d+(?:\.\d+)?|an?|one) (lemon|lime|orange|calamansi)(?:e?s)?\b/;
+// "Juice of 2 lemons", "juice from 8 limes", "juice from 1/2 lemon", "juice of 5 pieces lime": a count of fruit, juiced.
+const JUICE_OF = /^juice (?:of|from) (?:the )?(\d+(?:[./]\d+)?|an?|one) (?:pieces? |pcs? )?(lemon|lime|orange|calamansi)(?:e?s)?\b/;
+// Seasonings written with no amount at all ("Ground black pepper", "Salt") are to taste.
+const SEASONING_ONLY = new Set(["salt", "salt_sea", "salt_kosher", "black_pepper", "peppercorn_whole", "msg"]);
 
 interface LineSource { amount: string | null; unit: string | null; name: string }
 
@@ -481,7 +483,7 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
     if (!c) { lines.push({ ...base, status: "unmatched", reason: `no catalog entry for ${slug}` }); continue; }
     const q = parseQuantity(src.amount, src.unit, src.name);
     flags.push(...q.flags);
-    if (q.unit === "to-taste" || (q.value === null && /\bto taste\b|\bas needed\b/i.test(text))) { lines.push({ ...base, slug, label: c.label, status: "to-taste", reason: "to taste: not counted" }); continue; }
+    if (q.unit === "to-taste" || (q.value === null && (/\bto taste\b|\bas needed\b/i.test(text) || (!q.unit && SEASONING_ONLY.has(slug))))) { lines.push({ ...base, slug, label: c.label, status: "to-taste", reason: "to taste: not counted" }); continue; }
     const gAP = gramsAP(q, c, alias, flags, text);
     // Edible portion applies to weighed and counted items; volume lines are already trimmed.
     const ep = q.kind === "volume" ? 1 : (c.epPct ?? 100) / 100;
