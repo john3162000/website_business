@@ -6,8 +6,8 @@ import vm from "node:vm";
 
 const ctx = vm.createContext({});
 vm.runInContext(`${readFileSync(new URL("./planner.js", import.meta.url), "utf8")}
-;globalThis.api = { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal };`, ctx);
-const { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal } = ctx.api;
+;globalThis.api = { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek };`, ctx);
+const { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek } = ctx.api;
 const plain = (v) => JSON.parse(JSON.stringify(v));
 
 test("slots: add without duplicates, at most 3, remove clears empty slots", () => {
@@ -81,4 +81,26 @@ test("mealTypes: meryenda, almusal and ulam series from title, category and cour
   assert.equal(seriesForMeal("Almusal"), "almusal");
   assert.equal(seriesForMeal("Hapunan"), "ulam");
   assert.equal(seriesForMeal("Meryenda"), "meryenda");
+});
+
+test("random week: ulam only fills Tanghalian and Hapunan, no repeats while the pool lasts", () => {
+  const pools = { ulam: Array.from({ length: 30 }, (_, n) => 100 + n), almusal: [1, 2], meryenda: [7] };
+  let seed = 1;
+  const rng = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const start = { people: 4, slots: { "Lunes|Almusal": [1] } };
+  const p = randomWeek(start, pools, { meals: ["Tanghalian", "Hapunan"], rng });
+  const ids = plain(plannedDishes(p)).filter((d) => d.meal !== "Almusal").map((d) => d.id);
+  assert.equal(ids.length, 14);
+  assert.equal(new Set(ids).size, 14);
+  assert.ok(ids.every((id) => id >= 100));
+  assert.deepEqual(plain(p.slots["Lunes|Almusal"]), [1], "other meals untouched");
+});
+
+test("random week: keep leaves filled slots, and a small pool repeats instead of leaving gaps", () => {
+  const p0 = { people: 2, slots: { "Lunes|Meryenda": [50] } };
+  const p = randomWeek(p0, { almusal: [1], ulam: [2, 3], meryenda: [7] }, { keep: true, rng: () => 0.5 });
+  assert.deepEqual(plain(p.slots["Lunes|Meryenda"]), [50]);
+  assert.deepEqual(plain(p.slots["Martes|Meryenda"]), [7]);
+  assert.equal(plain(plannedDishes(p)).length, 28);
+  assert.deepEqual(plain(randomWeek(p0, { ulam: [] }, { meals: ["Hapunan"] }).slots), { "Lunes|Meryenda": [50] });
 });

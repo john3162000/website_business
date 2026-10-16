@@ -75,6 +75,18 @@
     body.rainy .plan-cell.over, body.rainy .plan-cell.target { border-color: #2f5d8c; background: #e8f0f8; }
     body.rainy .plan-badge { background: #dbe7f3; color: #1e3a5f; }
 
+    /* Ingredient finder */
+    .finder-chip { display: inline-flex; align-items: center; gap: .35rem; padding: .3rem .7rem; border-radius: 9999px; border: 1px solid #d1d5db; background: #fff; font-size: .8rem; color: #374151; transition: background .15s, border-color .15s; }
+    .finder-chip:hover { border-color: #15803d; background: #f0fdf4; }
+    .finder-chip.on { background: #dcfce7; border-color: #15803d; color: #14532d; font-weight: 600; }
+    .finder-chip button { color: #6b7280; font-size: .75rem; }
+    .finder-chip button:hover { color: #dc2626; }
+    .finder-card { display: flex; gap: .75rem; align-items: flex-start; padding: .75rem; border-radius: 1rem; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.08); cursor: pointer; transition: box-shadow .15s; }
+    .finder-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.12); }
+    .finder-card img, .finder-card .plan-noimg { width: 4.5rem; height: 4.5rem; border-radius: .75rem; object-fit: cover; flex-shrink: 0; }
+    body.rainy .finder-chip.on { background: #dbe7f3; border-color: #2f5d8c; color: #1e3a5f; }
+    body.rainy .finder-chip:hover { border-color: #2f5d8c; background: #e8f0f8; }
+
     #rain { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 40; }
     #rain i { position: absolute; top: -30px; width: 1.5px; border-radius: 1px; background: linear-gradient(to bottom, rgba(186,206,232,0), rgba(140,170,210,.75)); animation: rain-fall linear infinite; }
     @keyframes rain-fall { to { transform: translate3d(-40px, 110vh, 0); } }
@@ -94,6 +106,7 @@
       <button onclick="showSection('prices')" id="nav-prices" class="tab-btn px-3 sm:px-4 py-2 whitespace-nowrap shrink-0 rounded-md transition-colors hover:bg-green-700 text-green-100">DA Prices</button>
       <button onclick="showSection('mydish')" id="nav-mydish" class="tab-btn px-3 sm:px-4 py-2 whitespace-nowrap shrink-0 rounded-md transition-colors hover:bg-green-700 text-green-100">My Dish</button>
       <button onclick="showSection('planner')" id="nav-planner" class="tab-btn px-3 sm:px-4 py-2 whitespace-nowrap shrink-0 rounded-md transition-colors hover:bg-green-700 text-green-100">Planner</button>
+      <button onclick="showSection('finder')" id="nav-finder" class="tab-btn px-3 sm:px-4 py-2 whitespace-nowrap shrink-0 rounded-md transition-colors hover:bg-green-700 text-green-100">Anong lulutuin?</button>
     </nav>
   </div>
 </header>
@@ -362,6 +375,12 @@
       </div>
       <!-- Week grid -->
       <div class="bg-white rounded-2xl shadow p-4 min-w-0">
+        <div class="flex flex-wrap items-center gap-2 mb-3">
+          <button onclick="randomizeWeek()" class="bg-amber-400 hover:bg-amber-300 text-gray-900 font-bold text-sm px-4 py-2 rounded-full shadow transition-colors">🎲 Random week</button>
+          <button class="wx-btn on" data-random="ulam" onclick="setRandomMeals('ulam')">Ulam lang</button>
+          <button class="wx-btn" data-random="all" onclick="setRandomMeals('all')">Lahat ng kain</button>
+          <label class="text-xs text-gray-500 flex items-center gap-1.5"><input id="plan-keep" type="checkbox" class="accent-green-600"> Keep dishes already in the week</label>
+        </div>
         <div class="overflow-x-auto"><div id="plan-grid" class="plan-grid"></div></div>
       </div>
       <!-- Receipt -->
@@ -383,6 +402,33 @@
   </div>
 </section>
 
+<!-- ═══════════════════════════════════ INGREDIENT FINDER ═══════════════════════════════════ -->
+<section id="section-finder" class="hidden flex-col flex-1">
+  <div class="max-w-5xl mx-auto px-4 py-10 w-full">
+    <h1 class="text-3xl font-bold mb-1">Anong lulutuin?</h1>
+    <p class="text-gray-500 mb-6 text-sm">Pick the ingredients you have and see which dishes you can cook, what is still missing and what the rest would cost. Saved on this device only.</p>
+    <div class="bg-white rounded-2xl shadow p-4 flex flex-col gap-3 mb-6">
+      <input id="finder-search" type="search" oninput="renderFinderSuggest()" onkeydown="finderKey(event)" placeholder="Type an ingredient: pork, kangkong, eggplant…" autocomplete="off" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+      <div id="finder-suggest" class="flex flex-wrap gap-1.5"></div>
+      <div>
+        <div class="flex items-center justify-between gap-2 mb-1.5">
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Meron ako</p>
+          <button onclick="finderClear()" class="text-xs text-gray-500 hover:text-red-600 underline">Clear</button>
+        </div>
+        <div id="finder-have" class="flex flex-wrap gap-1.5"></div>
+      </div>
+      <div>
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Common</p>
+        <div id="finder-common" class="flex flex-wrap gap-1.5"></div>
+      </div>
+      <label class="text-sm text-gray-600 flex items-center gap-2"><input id="finder-staples" type="checkbox" checked onchange="setFinderStaples(this.checked)" class="accent-green-600">
+        I have the basics: salt, pepper, oil, garlic, onion, soy sauce, patis, vinegar, sugar, bay leaf</label>
+    </div>
+    <p id="finder-count" class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2"></p>
+    <div id="finder-results" class="grid gap-3 md:grid-cols-2"></div>
+  </div>
+</section>
+
 <!-- ═══════════════════════════════════ RECIPE MODAL ═══════════════════════════════════ -->
 <div class="modal-bg" id="recipe-modal" onclick="closeModal(event)">
   <div class="bg-white rounded-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
@@ -399,6 +445,7 @@
 <script src="weather.js"></script>
 <script src="mydish.js"></script>
 <script src="planner.js"></script>
+<script src="finder.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
