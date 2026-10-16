@@ -134,6 +134,34 @@ function seriesForMeal(meal) {
   return meal === "Almusal" ? "almusal" : meal === "Meryenda" ? "meryenda" : "ulam";
 }
 
+/**
+ * A random week: one dish per slot for each meal in `meals`, from `pools` (series → dish ids,
+ * best value first). Picks lean toward the top of the pool, and no dish repeats in the week
+ * while the pool lasts. Slots of other meals are left as they are; with `keep`, filled slots too.
+ */
+function randomWeek(plan, pools, { meals = MEALS, keep = false, rng = Math.random } = {}) {
+  const slots = { ...plan.slots };
+  const fill = [];
+  for (const day of DAYS) for (const meal of meals) {
+    const key = slotKey(day, meal);
+    if (keep && (slots[key] || []).length) continue;
+    delete slots[key];
+    fill.push({ key, meal });
+  }
+  const used = new Set(Object.values(slots).flat());
+  for (const { key, meal } of fill) {
+    const pool = pools[seriesForMeal(meal)] || [];
+    if (!pool.length) continue;
+    const fresh = pool.filter((id) => !used.has(id));
+    const from = fresh.length ? fresh : pool;
+    // rng² leans toward the start of the list (the better-value dishes).
+    const id = from[Math.min(from.length - 1, Math.floor(rng() ** 2 * from.length))];
+    used.add(id);
+    slots[key] = [id];
+  }
+  return { ...plan, slots };
+}
+
 /** "1.2 kg" / "350 g". */
 function formatGrams(g) {
   return g >= 1000 ? `${(g / 1000).toFixed(g >= 10000 ? 0 : 1)} kg` : `${Math.round(g)} g`;
@@ -278,6 +306,34 @@ function unplan(key, id) {
 function setPeople(v) {
   plan = { ...plan, people: Math.max(1, Math.min(30, parseInt(v, 10) || 1)) };
   persist(); renderReceipt();
+}
+
+let randomMeals = "ulam"; // "ulam": Tanghalian and Hapunan only; "all": every meal
+
+function setRandomMeals(v) {
+  randomMeals = v;
+  document.querySelectorAll("[data-random]").forEach((b) => b.classList.toggle("on", b.dataset.random === v));
+}
+
+/** Dish ids per series for the randomizer: value-ranked dishes first, one per title (reposts share a title). */
+function randomPools() {
+  const pools = {};
+  for (const s of ["almusal", "ulam", "meryenda"]) {
+    const seen = new Set();
+    pools[s] = RECIPES
+      .filter((r) => r.costPerServing > 0 && mealTypes(r).has(s))
+      .sort((a, b) => (b.ranked - a.ranked) || (b.valueScore - a.valueScore))
+      .filter((r) => { const t = r.title.trim().toLowerCase(); if (seen.has(t)) return false; seen.add(t); return true; })
+      .map((r) => r.id);
+  }
+  return pools;
+}
+
+function randomizeWeek() {
+  const meals = randomMeals === "ulam" ? ["Tanghalian", "Hapunan"] : MEALS;
+  const keep = document.getElementById("plan-keep").checked;
+  plan = randomWeek(plan, randomPools(), { meals, keep });
+  persist(); renderGrid(); renderReceipt();
 }
 
 function clearPlan() {
