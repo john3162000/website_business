@@ -20,7 +20,9 @@ const STAPLES = new Set([
 
 // ── Pure helpers ──
 
-const familyOf = (slug) => { const f = slug.split("_")[0]; return f in FAMILIES ? f : null; };
+// Things named after a family that aren't that food: fish sauce isn't fish, banana ketchup and blossom aren't bananas.
+const NOT_FAMILY = /_(bouillon|cube|broth|stock|sauce|powder|seasoning|flavor|paste|oil|extract|ketchup|blossom|and_beans|nuggets)(_|$)/;
+const familyOf = (slug) => { const f = slug.split("_")[0]; return f in FAMILIES && !NOT_FAMILY.test(slug) ? f : null; };
 
 /** Does the pantry `have` (slugs and "any:<family>" tokens) cover this slug? */
 function hasIngredient(have, slug, staples) {

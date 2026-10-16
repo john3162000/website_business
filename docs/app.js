@@ -658,6 +658,8 @@ function showSection(name) {
     document.getElementById(`section-${s}`).classList.toggle("flex", s === name);
     const btn = document.getElementById(`nav-${s}`);
     if (btn) btn.classList.toggle("active", s === name);
+    // Phones: the nav scrolls sideways; keep the open tab in view.
+    if (btn && s === name && btn.scrollIntoView) btn.scrollIntoView({ block: "nearest", inline: "nearest" });
   });
   window.scrollTo(0, 0);
   if (name === "browse") filterRecipes();
