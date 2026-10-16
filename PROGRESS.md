@@ -93,6 +93,22 @@ Result: 895 of 2,031 meals fully priced (44%), and 91% of food lines priced.
   lists.
 - `CLAUDE.md` and this file.
 
+- **#33 (2026-10-16):** shipped the share picture, recipe links, meal labels on the price movers, and these two files.
+
+## Waiting for the owner's go-ahead (branch `claude/planner-diets-favorites`)
+
+- **Planner:**
+  - 💸 Pinakamura ngayon: the cheapest gulay, isda and karne at today's prices.
+  - Random week style "Gulay → Isda → Karne, pinakamura muna", which picks among the 12 cheapest of each kind.
+  - Diet filters (high protein, diabetic, heart/altapresyon, kidney, gout, low calorie) with a "guidance only" note. They apply to the dish list, the randomizer and the budget planner.
+- **⭐ Favourites:** on recipes, DA Prices movers and finder cards; they show in the Planner's Favorites series.
+- **First-time tour:** 8 steps in Taglish, with "?" to replay.
+- **How-to-cook videos:** `/api/recipes/[id]/video` gets the recipe's own YouTube video; YouTube and TikTok search links otherwise.
+- **Ulam rules:**
+  - Adobong mani, sandwiches, salads, breads, wedges, lugaw and mamon are not ulam.
+  - Gulay must look like a vegetable dish.
+  - Patis and bagoong don't make a dish "isda".
+
 ## Known gaps and ideas not done yet
 
 - **Brand and data clean-up:**

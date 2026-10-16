@@ -278,7 +278,7 @@ function renderFinder() {
     return `<div class="finder-card" onclick="openModal(${d.id})" onmouseenter="graphFocus('d:${d.id}')" onmouseleave="graphFocus(null)">
       ${r.img ? `<img src="${escapeHtml(r.img)}" alt="" loading="lazy">` : `<div class="plan-noimg">🍽️</div>`}
       <div class="min-w-0 flex flex-col gap-1">
-        <p class="font-semibold text-gray-900 leading-snug">${escapeHtml(d.title)}</p>
+        <p class="font-semibold text-gray-900 leading-snug">${typeof favButton === "function" ? favButton(d.id) : ""} ${escapeHtml(d.title)}</p>
         <p class="text-xs text-gray-500">₱${r.costPerServing}${r.costCoverage < 1 ? "+" : ""}/serving · ${escapeHtml(r.category)} · uses your ${d.used.map(escapeHtml).join(", ")}</p>
         ${miss}
       </div></div>`;
