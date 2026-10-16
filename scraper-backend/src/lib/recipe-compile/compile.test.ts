@@ -360,3 +360,20 @@ test("cost gaps: a small unpriced herb doesn't flag the dish; a big unpriced veg
   assert.deepEqual(costGaps(lines([{ slug: "pork_blood", label: "Pork blood", gAP: 20 }]), 200, ctx).items, []);
   assert.deepEqual(costGaps([], 0, ctx), { items: [], share: 0 });
 });
+
+test("whole animals get a standard weight: whole chicken, half a rotisserie chicken, a can of tuna, a slab of ribs", () => {
+  const r = compileRecipe({ id: 94, title: "Test", servings: 4, ingredients: [
+    ing("1", "whole", "chicken"), ing("1/2", null, "rotisserie chicken"), ing("1", null, "can of tuna"),
+    ing("2", null, "chicken quarters"), ing("6", null, "CDO Chicken Franks"), ing("1", "whole", "chicken cleaned")] }, ctx);
+  const [whole, rotisserie, tuna, quarters, franks, cleaned] = r.lines;
+  assert.equal(whole.slug, "chicken_whole");
+  assert.equal(whole.gAP, 1400);
+  assert.ok(whole.priced, "a whole chicken has a DA price");
+  assert.equal(rotisserie.gAP, 700);
+  assert.equal(tuna.slug, "tuna_canned");
+  assert.equal(tuna.gAP, 155);
+  assert.equal(quarters.slug, "chicken_leg_quarter");
+  assert.equal(franks.slug, "hotdog");
+  assert.equal(cleaned.slug, "chicken_whole");
+  assert.deepEqual(r.costGaps.items, []);
+});

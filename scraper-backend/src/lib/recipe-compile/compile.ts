@@ -448,7 +448,10 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
       lines.push({ ...base, group: null, status: "skipped", reason: "section header" }); continue;
     }
     const picked: Alias | null = ing.slug && ctx.canonicals[ing.slug] ? { lineClass: "FOOD", slugs: [ing.slug], size: null, note: null } : null;
-    const direct = picked ?? ctx.aliases[nameKey(ing.name)];
+    // "1 whole chicken" often arrives as unit "whole", name "chicken": look up "whole chicken"
+    // first, so it is the whole bird (with its weight), not cut-up chicken pieces.
+    const whole = !picked && /^whole$/i.test((ing.unit ?? "").trim()) ? lookupAlias(`whole ${ing.name}`, ctx.aliases) : null;
+    const direct = picked ?? (whole && whole.lineClass === "FOOD" ? whole : null) ?? ctx.aliases[nameKey(ing.name)];
     const reparsed = direct && direct.lineClass !== "UNIT_ONLY" && !JUICE_OF.test(nameKey(ing.name)) ? null : reread({ name: ing.name, amount: ing.amount, unit: ing.unit }, text);
     const src: LineSource = reparsed ?? { name: ing.name, amount: ing.amount, unit: ing.unit };
     if (reparsed && !reparsed.name) { lines.push({ ...base, status: "skipped", reason: "unit only" }); continue; }

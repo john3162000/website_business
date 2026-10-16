@@ -1070,7 +1070,7 @@ apple cider	FOOD	apple_juice		US cider = unfiltered apple juice [exact]
 bilimbi	FOOD	kamias		
 dried or fresh bilimbi	FOOD	kamias		
 fresh or dried bilimbi	FOOD	kamias		
-cornish game hens	FOOD	chicken_whole		small whole chicken
+cornish game hens	FOOD	chicken_whole	small	small whole chicken
 buko juice	WATER			buko juice = young coconut water
 white pepper powder to taste	TO_TASTE	white_pepper		
 avocado	FOOD	avocado		step 3
@@ -1592,3 +1592,26 @@ beef small intestine	FOOD	beef_intestine_small
 dill relish	FOOD	pickles_dill		
 pan drippings from roast turkey	TO_TASTE			
 head lettuce	FOOD	lettuce		unit:head
+rotisserie chicken	FOOD	chicken_whole		whole roast chicken
+lechon manok	FOOD	chicken_whole		whole roast chicken
+baked chicken meat	FOOD	chicken_whole		whole roast chicken
+whole dressed chicken	FOOD	chicken_whole		
+dressed chicken	FOOD	chicken_whole		
+spring chicken	FOOD	chicken_whole	small	small whole chicken
+whole spring chicken	FOOD	chicken_whole	small	small whole chicken
+chicken quarters	FOOD	chicken_leg_quarter		
+chicken quarter	FOOD	chicken_leg_quarter		
+chicken franks	FOOD	hotdog		
+cdo chicken franks	FOOD	hotdog		
+beef franks	FOOD	hotdog		
+beef frank	FOOD	hotdog		
+chicken hotdog	FOOD	hotdog		
+chicken or turkey hotdog	FOOD	hotdog		
+chicken egg	FOOD	egg_chicken		
+chicken eggs	FOOD	egg_chicken		
+raw chicken egg	FOOD	egg_chicken		
+hard boiled chicken eggs	FOOD	egg_hard_boiled		
+chicken eggs boiled	FOOD	egg_hard_boiled		
+egg roll wrapper	FOOD	lumpia_wrapper		
+egg roll or spring roll wrapper	FOOD	lumpia_wrapper		
+egg roll or sprig roll wrapper	FOOD	lumpia_wrapper		
