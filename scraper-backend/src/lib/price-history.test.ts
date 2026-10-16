@@ -31,3 +31,11 @@ test("pctChange", () => {
   assert.equal(pctChange(100, 0), null);
   assert.equal(pctChange(null, 100), null);
 });
+
+test("compareDate: a week and two weeks back, with their own minimum history", () => {
+  const dates = [d("2026-09-28"), d("2026-10-02"), d("2026-10-06"), d("2026-10-09"), d("2026-10-16")];
+  assert.equal(compareDate(dates, d("2026-10-16"), 7, 5), d("2026-10-09"));
+  assert.equal(compareDate(dates, d("2026-10-16"), 14, 10), d("2026-10-02"));
+  // Only 4 days stored: not enough for "last week".
+  assert.equal(compareDate([d("2026-10-12"), d("2026-10-16")], d("2026-10-16"), 7, 5), null);
+});

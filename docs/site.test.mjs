@@ -9,7 +9,7 @@ const read = (f) => readFileSync(new URL(`./${f}`, import.meta.url), "utf8");
 test("site scripts have no stray control characters", () => {
   // A regex written through an unescaped string once turned \b into a backspace
   // byte (0x08), and the course-based categories silently never matched.
-  for (const f of ["app.js", "weather.js", "mydish.js", "planner.js", "finder.js"]) {
+  for (const f of ["app.js", "weather.js", "mydish.js", "planner.js", "finder.js", "alerts.js"]) {
     const bad = [...read(f).matchAll(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g)];
     assert.equal(bad.length, 0, `${f}: control character at offset ${bad[0]?.index}`);
   }
@@ -41,4 +41,17 @@ test("splitHidden: recipes with an ingredient not in the catalog are hidden, not
   const { shown, hidden } = ctx.splitHidden(recipes, compiled);
   assert.deepEqual(Array.from(shown, (r) => r.id), [1]);
   assert.deepEqual(Array.from(hidden, (r) => r.id), [2]); // articles, round-ups and empty lists are neither
+});
+
+test("sulit meter: dishes are placed by how they rank against all others", () => {
+  const src = read("app.js");
+  const ctx = vm.createContext({});
+  vm.runInContext(`${src.slice(src.indexOf("let SULIT_SCORES"), src.indexOf("/** Five-segment meter"))};globalThis.sulitLevel = sulitLevel;`, ctx);
+  const scores = Array.from({ length: 100 }, (_, i) => i + 1); // 1..100
+  assert.equal(ctx.sulitLevel(100, scores).label, "Super sulit"); // better than 99%
+  assert.equal(ctx.sulitLevel(75, scores).segs, 4);
+  assert.equal(ctx.sulitLevel(50, scores).label, "Okay");
+  assert.equal(ctx.sulitLevel(20, scores).label, "Medyo mahal");
+  assert.equal(ctx.sulitLevel(1, scores).segs, 1);
+  assert.equal(ctx.sulitLevel(5, []), null);
 });

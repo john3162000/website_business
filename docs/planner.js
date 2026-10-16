@@ -6,7 +6,7 @@
 const PLAN_KEY = "sarapsulit.planner.v1";
 const DAYS = ["Lunes", "Martes", "Miyerkules", "Huwebes", "Biyernes", "Sabado", "Linggo"];
 const MEALS = ["Almusal", "Tanghalian", "Meryenda", "Hapunan"];
-const MAX_PER_SLOT = 3;
+const MAX_PER_SLOT = 5;
 
 // ── Pure helpers ──
 
@@ -104,6 +104,10 @@ const MERYENDA_TITLE = /\b(turon|banana ?cue|camote ?cue|kamote ?cue|maruya|lump
 const ALMUSAL_TITLE = /(silog\b|\b(tapa|tocino|longg?anisa|daing|tuyo|danggit|champorado|lugaw|arroz caldo|goto|pandesal|pan de sal|omelet(te)?|torta|tortang|scrambled eggs?|sinangag|fried rice|garlic rice|hotcakes?|pancakes?|french toast|corned beef hash)\b)/i;
 const SNACK_COURSE = /\b(snacks?|desserts?|appetizers?|merienda|meryenda)\b/i;
 const MEAL_COURSE = /\b(main|dinner|lunch|entree|soup|side dish)\b/i;
+const SNACK_TITLE = /\b(chips|fries|nachos|popcorn|crackers?|chicharon|chicharron|tokneneng|kwek[- ]?kwek|fish ?balls?|squid ?balls?|kikiam|tornado|corndogs?|deviled eggs?|nuggets?)\b/i;
+const SIDE_TITLE = /\b(pickled?|pickles|atchara|achara|burong|buro|dip|dressing|salsa|jam|syrup)\b/i;
+// Sweets and kakanin are never an ulam, even when the recipe data calls them a main dish.
+const SWEET_TITLE = /\b(minatamis|matamis|pastimallows?|marshmallows?|brazo|pancakes?|hotcakes?|waffles?|french toast|nilupak|pichi[- ]?pichi|puto|kutsinta|bibingka|suman|biko|palitaw|sapin[- ]?sapin|kakanin|maja|cassava cake|bilo[- ]?bilo|ginataang mais|ginataang halo|binignit|halo[- ]?halo|mais con yelo|sago|gulaman|buko pandan|fruit salad|ensaymada|cakes?|cupcakes?|cookies|brownies?|leche flan|flan|polvoron|pastillas|turrones|donuts?|doughnuts?|muffins?|banana loaf|hopia|turon|maruya|banana ?cue|camote ?cue|kamote ?cue|yema|tsokolate|champorado|espasol|tikoy|kalamay|ube halaya|halaya|jelly|gelatin|pudding|ice cream)\b/i;
 
 /**
  * The slot series a dish fits: "almusal", "ulam" (Tanghalian / Hapunan) and/or "meryenda".
@@ -114,11 +118,15 @@ function mealTypes(recipe) {
   const out = new Set();
   if (cat === "Sauce & Condiment") return out;
   if (/\bbreakfast\b/i.test(course) || ALMUSAL_TITLE.test(title)) out.add("almusal");
-  if (cat === "Dessert" || SNACK_COURSE.test(course) || MERYENDA_TITLE.test(title)) out.add("meryenda");
-  // Anything that is a meal: mains, soups, fish, vegetables, rice and noodles. Not desserts,
-  // and not dishes whose course is only a snack or appetizer (kwek-kwek, fishballs).
+  const sweet = SWEET_TITLE.test(title);
+  const snackish = SNACK_TITLE.test(title);
+  if (cat === "Dessert" || sweet || snackish || SNACK_COURSE.test(course) || MERYENDA_TITLE.test(title)) out.add("meryenda");
+  // Pickles, dips and dressings go with a meal but aren't the ulam; chips and fries are meryenda.
+  if (snackish || SIDE_TITLE.test(title)) return out;
+  // Anything that is a meal: mains, soups, fish, vegetables, rice and noodles. Not desserts or
+  // kakanin, and not dishes whose course is only a snack or appetizer (kwek-kwek, fishballs).
   const snackOnly = SNACK_COURSE.test(course) && !MEAL_COURSE.test(course);
-  if (cat !== "Dessert" && !snackOnly) out.add("ulam");
+  if (cat !== "Dessert" && !sweet && !snackOnly) out.add("ulam");
   return out;
 }
 
@@ -135,11 +143,12 @@ function seriesForMeal(meal) {
 }
 
 /**
- * A random week: one dish per slot for each meal in `meals`, from `pools` (series → dish ids,
- * best value first). Picks lean toward the top of the pool, and no dish repeats in the week
- * while the pool lasts. Slots of other meals are left as they are; with `keep`, filled slots too.
+ * A random week: dishes for each meal in `meals`, from `pools` (series → dish ids, best value
+ * first): `ulamPerMeal` for Tanghalian and Hapunan, one for Almusal and Meryenda. Picks lean
+ * toward the top of the pool, and no dish repeats in the week while the pool lasts. Slots of
+ * other meals are left as they are; with `keep`, filled slots too.
  */
-function randomWeek(plan, pools, { meals = MEALS, keep = false, rng = Math.random } = {}) {
+function randomWeek(plan, pools, { meals = MEALS, keep = false, rng = Math.random, ulamPerMeal = 1 } = {}) {
   const slots = { ...plan.slots };
   const fill = [];
   for (const day of DAYS) for (const meal of meals) {
@@ -152,14 +161,84 @@ function randomWeek(plan, pools, { meals = MEALS, keep = false, rng = Math.rando
   for (const { key, meal } of fill) {
     const pool = pools[seriesForMeal(meal)] || [];
     if (!pool.length) continue;
-    const fresh = pool.filter((id) => !used.has(id));
-    const from = fresh.length ? fresh : pool;
-    // rng² leans toward the start of the list (the better-value dishes).
-    const id = from[Math.min(from.length - 1, Math.floor(rng() ** 2 * from.length))];
-    used.add(id);
-    slots[key] = [id];
+    const n = seriesForMeal(meal) === "ulam" ? Math.max(1, Math.min(MAX_PER_SLOT, ulamPerMeal)) : 1;
+    const picks = [];
+    for (let k = 0; k < n; k++) {
+      const fresh = pool.filter((id) => !used.has(id) && !picks.includes(id));
+      const from = fresh.length ? fresh : pool.filter((id) => !picks.includes(id));
+      if (!from.length) break;
+      // rng² leans toward the start of the list (the better-value dishes).
+      const id = from[Math.min(from.length - 1, Math.floor(rng() ** 2 * from.length))];
+      used.add(id);
+      picks.push(id);
+    }
+    slots[key] = picks;
   }
   return { ...plan, slots };
+}
+
+/**
+ * Reads "₱1,500 for the week, 4 people" (or "1500 pesos 4 tao", "budget 2k for 5"):
+ * { budget, people }, either null when not given. The first money-like number is the
+ * budget; a number before people/persons/tao/katao (or after "for") is the household.
+ */
+function parseBudgetText(text) {
+  const t = String(text || "").toLowerCase().replace(/,(?=\d{3})/g, "");
+  let people = null;
+  const pm = t.match(/(\d+)\s*(?:people|persons?|pax|tao|katao|members?)/) || t.match(/\bfor\s+(\d+)\b(?!\s*(?:days?|weeks?))/);
+  if (pm) people = Number(pm[1]);
+  const rest = pm ? t.replace(pm[0], " ") : t;
+  const bm = rest.match(/(?:₱|php|p)?\s*(\d+(?:\.\d+)?)\s*(k)?/);
+  const budget = bm ? Number(bm[1]) * (bm[2] ? 1000 : 1) : null;
+  return {
+    budget: budget && budget >= 50 ? budget : null,
+    people: people && people >= 1 && people <= 30 ? people : null,
+  };
+}
+
+/**
+ * A week that fits `budget` (₱, for `people`), most nutritious first. Slot by slot, each takes
+ * the dish with the best nutrition score whose cost fits what is left per remaining dish;
+ * when nothing fits, the cheapest. `recipes` maps id → { costPerServing, nutritionScore,
+ * valueScore }; `pools` maps series → ids. Only Tanghalian/Hapunan get `ulamPerMeal` dishes.
+ * Returns { plan, total, fits }.
+ */
+function budgetWeek(pools, recipes, { budget, people, meals = MEALS, ulamPerMeal = 1 }) {
+  const want = [];
+  for (const day of DAYS) for (const meal of meals) {
+    const n = seriesForMeal(meal) === "ulam" ? Math.max(1, Math.min(MAX_PER_SLOT, ulamPerMeal)) : 1;
+    for (let k = 0; k < n; k++) want.push({ key: slotKey(day, meal), series: seriesForMeal(meal) });
+  }
+  const cost = (id) => recipes.get(id).costPerServing * people;
+  const better = (a, b) => recipes.get(b).nutritionScore - recipes.get(a).nutritionScore || recipes.get(b).valueScore - recipes.get(a).valueScore;
+  const slots = {};
+  const used = new Set();
+  let left = budget;
+  want.forEach(({ key, series }, i) => {
+    const pool = (pools[series] || []).filter((id) => recipes.has(id) && !(slots[key] || []).includes(id));
+    if (!pool.length) return;
+    const fresh = pool.filter((id) => !used.has(id));
+    const from = fresh.length ? fresh : pool;
+    const cap = left / (want.length - i);
+    const fitting = from.filter((id) => cost(id) <= cap).sort(better);
+    const id = fitting[0] ?? [...from].sort((a, b) => cost(a) - cost(b))[0];
+    used.add(id);
+    slots[key] = [...(slots[key] || []), id];
+    left -= cost(id);
+  });
+  const total = budget - left;
+  return { plan: { people, slots }, total, fits: total <= budget + 0.005 };
+}
+
+const MAIN_CATEGORIES = new Set(["Main Dish", "Soup", "Fish & Seafood", "Vegetable Dish"]);
+const TECHNIQUE_TITLE = /\b(how to (make|cook|boil|poach|fry)|perfect|basic|homemade)\b.*\b(eggs?|rice|stock|broth)\b|\brice$/i;
+
+/**
+ * A main ulam for the randomizer and the budget planner: a main dish, soup, fish or vegetable
+ * dish with at least 8 g protein per serving, not a side of rice or a how-to for eggs or stock.
+ */
+function isMainUlam(r) {
+  return MAIN_CATEGORIES.has(r.category) && (r.protein ?? 0) >= 8 && !TECHNIQUE_TITLE.test(r.title || "");
 }
 
 /** "1.2 kg" / "350 g". */
@@ -309,6 +388,12 @@ function setPeople(v) {
 }
 
 let randomMeals = "ulam"; // "ulam": Tanghalian and Hapunan only; "all": every meal
+let ulamPerMeal = 1;
+
+function setUlamPerMeal(n) {
+  ulamPerMeal = n;
+  document.querySelectorAll("[data-ulam-n]").forEach((b) => b.classList.toggle("on", Number(b.dataset.ulamN) === n));
+}
 
 function setRandomMeals(v) {
   randomMeals = v;
@@ -321,7 +406,7 @@ function randomPools() {
   for (const s of ["almusal", "ulam", "meryenda"]) {
     const seen = new Set();
     pools[s] = RECIPES
-      .filter((r) => r.costPerServing > 0 && mealTypes(r).has(s))
+      .filter((r) => r.costPerServing > 0 && mealTypes(r).has(s) && (s !== "ulam" || isMainUlam(r)))
       .sort((a, b) => (b.ranked - a.ranked) || (b.valueScore - a.valueScore))
       .filter((r) => { const t = r.title.trim().toLowerCase(); if (seen.has(t)) return false; seen.add(t); return true; })
       .map((r) => r.id);
@@ -332,8 +417,30 @@ function randomPools() {
 function randomizeWeek() {
   const meals = randomMeals === "ulam" ? ["Tanghalian", "Hapunan"] : MEALS;
   const keep = document.getElementById("plan-keep").checked;
-  plan = randomWeek(plan, randomPools(), { meals, keep });
+  plan = randomWeek(plan, randomPools(), { meals, keep, ulamPerMeal });
   persist(); renderGrid(); renderReceipt();
+}
+
+/** The budget box: parse it, fill the week within budget, and say how it went. */
+function planOnBudget() {
+  const out = document.getElementById("budget-result");
+  const { budget, people } = parseBudgetText(document.getElementById("budget-text").value);
+  if (!budget) { out.textContent = "Type a budget, for example “₱1,500 for the week, 4 people”."; out.className = "text-xs text-red-600"; return; }
+  const n = people ?? plan.people;
+  const meals = randomMeals === "ulam" ? ["Tanghalian", "Hapunan"] : MEALS;
+  // Only dishes with a complete, ranked price, so the total can be trusted.
+  const recipes = new Map(RECIPES.filter((r) => r.ranked && !r.costIncomplete && r.costPerServing > 0).map((r) => [r.id, r]));
+  const pools = randomPools();
+  for (const k of Object.keys(pools)) pools[k] = pools[k].filter((id) => recipes.has(id));
+  const r = budgetWeek(pools, recipes, { budget, people: n, meals, ulamPerMeal });
+  plan = { ...plan, people: n, slots: r.plan.slots };
+  document.getElementById("plan-people").value = n;
+  persist(); renderGrid(); renderReceipt();
+  const peso = (v) => `₱${Math.round(v).toLocaleString()}`;
+  out.className = r.fits ? "text-xs text-green-700" : "text-xs text-amber-700";
+  out.textContent = r.fits
+    ? `Planned ${peso(r.total)} of ${peso(budget)} for ${n} ${n === 1 ? "person" : "people"}: most nutritious dishes that fit.`
+    : `The cheapest week still costs ${peso(r.total)}, over ${peso(budget)}. Try “Ulam lang”, 1 ulam per meal, or a bigger budget.`;
 }
 
 function clearPlan() {

@@ -116,13 +116,14 @@ export async function compileFromDb(onlyId: number | null): Promise<{ priceDate:
  * the month-ago compare date (see price-history.ts). `compareDate` is null, and
  * `then` empty, while less than three weeks of prices are stored.
  */
-export async function compileNowAndMonthAgo(): Promise<{
+export async function compileNowAndMonthAgo(days = 30): Promise<{
   latestDate: string | null; compareDate: string | null; now: CompiledFromDb[]; then: CompiledFromDb[];
 }> {
   const { fnri, priceRows, recipes } = await loadInputs(null, new Date(Date.now() - 50 * DAY));
   const dates = priceRows.filter((p) => p.price != null && p.price > 0).map((p) => p.sourceDate.toISOString());
   const latestDate = dates.length ? dates[dates.length - 1] : null;
-  const compare = latestDate ? compareDate(dates, latestDate) : null;
+  // A week or two back needs at least 5 or 10 days of history; a month back, 21.
+  const compare = latestDate ? compareDate(dates, latestDate, days, days >= 30 ? 21 : Math.round(days * 0.7)) : null;
   const psaRows = await loadPsa();
   const now = compileAll(recipes, fnri, daSnapshot(priceRows, latestDate ?? undefined).da, psaSnapshot(psaRows, latestDate ?? undefined));
   const then = compare ? compileAll(recipes, fnri, daSnapshot(priceRows, compare).da, psaSnapshot(psaRows, compare)) : [];

@@ -26,6 +26,6 @@ jobs:
       - run: npm test
       - run: npx tsc --noEmit
       - name: Site scripts parse
-        run: node --check ../docs/app.js && node --check ../docs/weather.js && node --check ../docs/mydish.js && node --check ../docs/planner.js && node --check ../docs/finder.js
+        run: node --check ../docs/app.js && node --check ../docs/weather.js && node --check ../docs/mydish.js && node --check ../docs/planner.js && node --check ../docs/finder.js && node --check ../docs/alerts.js
       - name: Site tests
         run: node --test ../docs/*.test.mjs
