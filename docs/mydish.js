@@ -318,7 +318,7 @@ function priceChartHtml(data, r) {
         <span class="text-sm font-bold ${change > 0 ? "price-up" : change < 0 ? "price-down" : "text-gray-500"}">${pctText(change)} since ${shortDate(new Date(first.date))}</span>
       </div>
       <svg viewBox="0 0 300 64" class="w-full h-20 mt-2" preserveAspectRatio="none" role="img" aria-label="Cost per serving over time">
-        <path d="${path}" fill="none" stroke="#15803d" stroke-width="2" vector-effect="non-scaling-stroke"/>
+        <path d="${path}" fill="none" stroke="#1D5239" stroke-width="2" vector-effect="non-scaling-stroke"/>
       </svg>
       <p class="text-xs text-gray-400">₱${first.cost.toFixed(2)} → ₱${last.cost.toFixed(2)} per serving · low ₱${Math.min(...ys).toFixed(2)}, high ₱${Math.max(...ys).toFixed(2)} · DA prices change daily; SM and DTI reference prices are fixed</p>
     </div>`;

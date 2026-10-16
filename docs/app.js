@@ -178,14 +178,35 @@ async function loadData() {
     note.classList.remove("hidden");
   }
 
-  setText("stat-recipes", RECIPES.length.toLocaleString());
-  setText("stat-foods", nutRes.count != null ? nutRes.count.toLocaleString() : "—");
-  setText("stat-commodities", DA_PRICES.filter((p) => p.avg != null).length.toLocaleString());
+  countUp("stat-recipes", RECIPES.length);
+  if (nutRes.count != null) countUp("stat-foods", nutRes.count); else setText("stat-foods", "—");
+  countUp("stat-commodities", DA_PRICES.filter((p) => p.avg != null).length);
   document.querySelectorAll("[data-da-date]").forEach((el) => { el.textContent = formatDate(LATEST_DA_DATE); });
   document.querySelectorAll("[data-compare-date]").forEach((el) => { el.textContent = COMPARE_DATE ? shortDate(COMPARE_DATE) : "month ago"; });
 }
 
 function setText(id, v) { const el = document.getElementById(id); if (el) el.textContent = v; }
+
+/** A home-page number that counts up from 0 (straight to the value when motion is reduced). */
+function countUp(id, n) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduce || !window.requestAnimationFrame) { el.textContent = n.toLocaleString(); return; }
+  const t0 = performance.now(), ms = 900;
+  const step = (t) => {
+    const k = Math.min(1, (t - t0) / ms);
+    el.textContent = Math.round(n * (1 - Math.pow(1 - k, 3))).toLocaleString();
+    if (k < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+/** The hero search box: open Browse with the words typed. */
+function heroSearch(q) {
+  document.getElementById("search-input").value = q.trim();
+  showSection("browse");
+}
 
 // ═══════════════ RENDER ═══════════════
 
@@ -669,6 +690,7 @@ function showSection(name) {
     document.getElementById(`section-${s}`).classList.toggle("flex", s === name);
     const btn = document.getElementById(`nav-${s}`);
     if (btn) btn.classList.toggle("active", s === name);
+    document.querySelectorAll(`[data-nav="${s}"]`).forEach((b) => b.classList.toggle("active", s === name));
     // Phones: the nav scrolls sideways; keep the open tab in view.
     if (btn && s === name && btn.scrollIntoView) btn.scrollIntoView({ block: "nearest", inline: "nearest" });
   });
