@@ -360,7 +360,10 @@ function buildModal(r, instructions, lines) {
         <h2 class="text-2xl font-bold">${escapeHtml(r.title)}</h2>
         <span class="text-sm text-gray-500">${r.category} · ${r.servings} servings${r.servingsAssumed ? " (assumed: the recipe doesn’t say)" : ""}${(r.prepTime || 0) + (r.cookTime || 0) > 0 ? ` · ${(r.prepTime || 0) + (r.cookTime || 0)} min` : ""}</span>
         ${r.url ? `<a href="${escapeHtml(r.url)}" target="_blank" rel="noopener" class="block text-xs text-green-700 hover:underline mt-1">View original on Panlasang Pinoy ↗</a>` : ""}
-        ${r.id ? `<button onclick="customizeRecipe(${r.id})" class="mt-2 text-xs font-medium bg-amber-100 hover:bg-amber-200 text-amber-800 px-3 py-1 rounded-full">✏️ Customize this dish</button>` : ""}
+        <div class="flex flex-wrap gap-2 mt-2">
+          ${r.id ? `<button id="share-btn" onclick="shareRecipe(${r.id})" class="text-xs font-semibold bg-green-800 hover:bg-green-700 text-amber-50 px-3 py-1 rounded-full">💬 Share to Messenger</button>` : ""}
+          ${r.id ? `<button onclick="customizeRecipe(${r.id})" class="text-xs font-medium bg-amber-100 hover:bg-amber-200 text-amber-800 px-3 py-1 rounded-full">✏️ Customize this dish</button>` : ""}
+        </div>
       </div>
       <button onclick="closeModalBtn()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">✕</button>
     </div>
@@ -505,6 +508,17 @@ function setPricePeriod(key) {
 
 let moversLoaded = false;
 
+const MEAL_TAGS = [["almusal", "Almusal"], ["ulam", "Tanghalian · Hapunan"], ["meryenda", "Meryenda"]];
+
+/** Small meal labels for a dish (Almusal, Tanghalian · Hapunan, Meryenda), from planner.js mealTypes. */
+function mealTags(id) {
+  const r = RECIPES.find((x) => x.id === id);
+  if (!r || typeof mealTypes !== "function") return "";
+  const types = mealTypes(r);
+  const tags = MEAL_TAGS.filter(([k]) => types.has(k));
+  return tags.length ? `<p class="flex flex-wrap gap-1 mt-0.5">${tags.map(([k, label]) => `<span class="meal-tag meal-${k}">${label}</span>`).join("")}</p>` : "";
+}
+
 function moverRow(m) {
   const known = RECIPES.some((r) => r.id === m.id);
   const drivers = (m.drivers || [])
@@ -514,6 +528,7 @@ function moverRow(m) {
     <div class="flex items-start justify-between gap-3 rounded-lg px-2 py-1.5 ${known ? "cursor-pointer hover:bg-gray-50" : ""}" ${known ? `onclick="openModal(${m.id})"` : ""}>
       <div class="min-w-0">
         <p class="font-medium truncate">${escapeHtml(m.title)}</p>
+        ${mealTags(m.id)}
         ${drivers ? `<p class="text-xs text-gray-400 truncate">${drivers}</p>` : ""}
       </div>
       <div class="text-right whitespace-nowrap">
@@ -727,9 +742,13 @@ async function loadWeatherPicks() {
 
 // ═══════════════ MODAL ═══════════════
 
+let MODAL_DATA = null; // { id, instructions, lines } of the open recipe, for the share picture
+
 async function openModal(id) {
   const r = RECIPES.find((x) => x.id === id);
   if (!r) return;
+  MODAL_DATA = { id, instructions: [], lines: [] };
+  if (history.replaceState) history.replaceState(null, "", `#recipe=${id}`);
   document.getElementById("modal-content").innerHTML = buildModal(r, ["Loading instructions…"], null);
   document.getElementById("recipe-modal").classList.add("open");
   document.body.style.overflow = "hidden";
@@ -739,6 +758,7 @@ async function openModal(id) {
   ]);
   const instructions = detail && detail.recipe ? (detail.recipe.instructions || []).map((s) => s.text) : [];
   const lines = compiled && compiled.recipe ? compiled.recipe.lines : [];
+  if (MODAL_DATA && MODAL_DATA.id === id) MODAL_DATA = { id, instructions, lines };
   if (!document.getElementById("recipe-modal").classList.contains("open")) return;
   document.getElementById("modal-content").innerHTML = buildModal(r, instructions, lines);
 }
@@ -746,6 +766,7 @@ async function openModal(id) {
 function closeModal() {
   document.getElementById("recipe-modal").classList.remove("open");
   document.body.style.overflow = "";
+  if (history.replaceState && location.hash.startsWith("#recipe=")) history.replaceState(null, "", location.pathname + location.search);
 }
 function closeModalBtn() { closeModal(); }
 
@@ -788,6 +809,8 @@ function toggleTheme() {
   renderWeather();
   if (weatherMode !== "auto") DATA_READY.then(renderWeather, () => {});
   loadWeatherPicks();
+  const sharedId = recipeIdFromHash(location.hash);
+  if (sharedId) DATA_READY.then(() => openModal(sharedId), () => {});
   try {
     await DATA_READY;
   } catch (e) {

@@ -290,6 +290,15 @@
     @media (max-width: 639px) { .app-toast { bottom: 5.5rem; } }
     html.dark .app-toast { background: #7CE0A3; color: #0B1712; }
 
+    .share-dialog { width: min(32rem, calc(100vw - 2rem)); }
+    .meal-tag { font-size: .62rem; font-weight: 700; padding: 0 .45rem; border-radius: 9999px; line-height: 1.1rem; }
+    .meal-almusal { background: #F6EBCD; color: #855F0E; }
+    .meal-ulam { background: #D9E8DD; color: #163F2E; }
+    .meal-meryenda { background: #F5DCD3; color: #8A3B22; }
+    html.dark .meal-almusal { background: #3A2E10; color: #F5B841; }
+    html.dark .meal-ulam { background: #173A28; color: #7CE0A3; }
+    html.dark .meal-meryenda { background: #3A1F17; color: #F0A08A; }
+
     #rain { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 40; }
     #rain i { position: absolute; top: -30px; width: 1.5px; border-radius: 1px; background: linear-gradient(to bottom, rgba(186,206,232,0), rgba(140,170,210,.75)); animation: rain-fall linear infinite; }
     @keyframes rain-fall { to { transform: translate3d(-40px, 110vh, 0); } }
@@ -680,6 +689,22 @@
   </form>
 </dialog>
 
+<dialog id="share-dialog" class="alert-dialog share-dialog" onclick="if (event.target === this) this.close()">
+  <div class="p-5 flex flex-col gap-3">
+    <div class="flex items-center justify-between">
+      <p class="font-display text-xl font-semibold">Share this recipe</p>
+      <button onclick="document.getElementById('share-dialog').close()" class="text-gray-400 hover:text-gray-600 text-xl" aria-label="Close">✕</button>
+    </div>
+    <p class="text-sm text-gray-500">Save the picture, then send it in Messenger with the link. On a phone, the Share button sends it to Messenger directly.</p>
+    <img id="share-preview" alt="Recipe picture to share" class="w-full max-h-[50vh] object-contain rounded-xl border border-gray-200 bg-amber-50">
+    <div class="flex flex-wrap gap-2">
+      <a id="share-download" class="px-4 py-2 rounded-full text-sm font-semibold bg-green-800 text-amber-50 hover:bg-green-700">⬇ Save picture</a>
+      <button id="share-copy" class="px-4 py-2 rounded-full text-sm font-semibold border border-gray-200 hover:bg-gray-50">Copy link</button>
+      <a href="https://www.messenger.com/" target="_blank" rel="noopener" class="px-4 py-2 rounded-full text-sm font-semibold border border-gray-200 hover:bg-gray-50">Open Messenger ↗</a>
+    </div>
+  </div>
+</dialog>
+
 <!-- ═══════════════════════════════════ RECIPE MODAL ═══════════════════════════════════ -->
 <div class="modal-bg" id="recipe-modal" onclick="closeModal(event)">
   <div class="bg-white rounded-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
@@ -704,6 +729,7 @@
 <script src="planner.js"></script>
 <script src="finder.js"></script>
 <script src="alerts.js"></script>
+<script src="share.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
