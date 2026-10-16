@@ -328,8 +328,10 @@ function renderGraph(dishes, recipes) {
   }
   graphNodes = nodes;
 
+  // Anything still fading out from the last change goes now, so quick picks don't leave leftovers.
+  svg.selectAll(".fx-exiting").interrupt().remove();
   const link = svg.select("g.fx-links").selectAll("line").data(links, (l) => `${l.source.id ?? l.source}>${l.target.id ?? l.target}`);
-  link.exit().transition().duration(250).attr("opacity", 0).remove();
+  link.exit().classed("fx-exiting", true).transition().duration(250).attr("opacity", 0).remove();
   const linkEnter = link.enter().append("line")
     .attr("class", (l) => `fx-link ${l.kind}`).attr("pathLength", 1)
     .attr("stroke-dasharray", 1).attr("stroke-dashoffset", 1);
@@ -338,8 +340,9 @@ function renderGraph(dishes, recipes) {
   const linkAll = linkEnter.merge(link);
 
   const node = svg.select("g.fx-nodes").selectAll("g.fx-node").data(nodes, (n) => n.id);
-  node.exit().select(".fx-pop").transition().duration(250).attr("transform", "scale(0)");
-  node.exit().transition().duration(260).remove();
+  const gone = node.exit().classed("fx-exiting", true);
+  gone.select(".fx-pop").transition().duration(250).attr("transform", "scale(0)");
+  gone.transition().duration(260).remove();
   const enter = node.enter().append("g").attr("class", (n) => `fx-node ${n.kind}`)
     .on("mouseenter", (e, n) => graphFocus(n.id)).on("mouseleave", () => graphFocus(null))
     .on("click", (e, n) => { if (n.kind === "dish") openModal(n.dishId); });
