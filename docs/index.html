@@ -86,6 +86,53 @@
     .finder-card img, .finder-card .plan-noimg { width: 4.5rem; height: 4.5rem; border-radius: .75rem; object-fit: cover; flex-shrink: 0; }
     body.rainy .finder-chip.on { background: #dbe7f3; border-color: #2f5d8c; color: #1e3a5f; }
     body.rainy .finder-chip:hover { border-color: #2f5d8c; background: #e8f0f8; }
+    .fx-cat { border-radius: .75rem; border: 1px solid #f3f4f6; overflow: hidden; }
+    .fx-cat.open { border-color: #bbf7d0; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+    .fx-cat-btn { width: 100%; display: flex; align-items: center; gap: .5rem; padding: .55rem .7rem; font-size: .85rem; font-weight: 600; color: #374151; background: #fff; }
+    .fx-cat-btn:hover { background: #f9fafb; }
+    .fx-caret { color: #9ca3af; transition: transform .2s; }
+    .fx-cat.open .fx-caret { transform: rotate(180deg); }
+    .fx-dot { width: .6rem; height: .6rem; border-radius: 9999px; flex-shrink: 0; display: inline-block; }
+    .fx-count { background: #15803d; color: #fff; border-radius: 9999px; font-size: .65rem; padding: 0 .45rem; line-height: 1.2rem; }
+    .fx-menu { padding: .4rem .5rem .5rem; border-top: 1px solid #f3f4f6; background: #fcfcfd; animation: fx-drop .18s ease-out; }
+    @keyframes fx-drop { from { opacity: 0; transform: translateY(-4px); } }
+    .fx-menu input { width: 100%; border: 1px solid #e5e7eb; border-radius: .5rem; padding: .35rem .6rem; font-size: .8rem; margin-bottom: .35rem; }
+    .fx-menu input:focus { outline: none; box-shadow: 0 0 0 2px #22c55e; }
+    .fx-list { max-height: 15rem; overflow-y: auto; display: flex; flex-direction: column; }
+    .fx-opt { display: flex; align-items: center; gap: .45rem; padding: .35rem .4rem; border-radius: .4rem; font-size: .8rem; color: #374151; }
+    .fx-opt:hover { background: #f0fdf4; }
+    .fx-opt.on { background: #dcfce7; font-weight: 600; color: #14532d; }
+    .fx-check { width: .9rem; color: #15803d; font-weight: 800; }
+    .fx-uses { font-size: .65rem; color: #9ca3af; white-space: nowrap; }
+    .fx-have { display: flex; align-items: center; gap: .5rem; font-size: .85rem; padding: .3rem .4rem; border-radius: .5rem; animation: fx-drop .2s ease-out; }
+    .fx-have:hover { background: #f9fafb; }
+    .fx-have button { color: #9ca3af; font-size: .75rem; }
+    .fx-have button:hover { color: #dc2626; }
+    .fx-graph-card { position: relative; border-radius: 1rem; overflow: hidden; background: radial-gradient(ellipse at center, #262b3a 0%, #161a24 75%); box-shadow: 0 4px 16px rgba(0,0,0,.18); }
+    .fx-graph { width: 100%; height: 34rem; display: block; cursor: grab; }
+    @media (max-width: 640px) { .fx-graph { height: 24rem; } }
+    .fx-graph-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 2rem; color: #94a3b8; font-size: .9rem; pointer-events: none; }
+    .fx-legend { padding: .5rem .9rem .7rem; border-top: 1px solid #262b3a; display: flex; flex-wrap: wrap; gap: .3rem .8rem; font-size: .65rem; color: #94a3b8; pointer-events: none; }
+    .fx-legend i { display: inline-block; width: .6rem; height: .6rem; border-radius: 9999px; margin-right: .3rem; vertical-align: -1px; }
+    .fx-legend i.ring { background: transparent; border: 2px solid; }
+    .fx-legend i.ring.ok { border-color: #4ade80; } .fx-legend i.ring.part { border-color: #fbbf24; }
+    .fx-legend i.ghost { background: #475569; width: .4rem; height: .4rem; }
+    .fx-link { stroke: #64748b; stroke-opacity: .55; stroke-width: 1.4; transition: stroke-opacity .2s, stroke .2s; }
+    .fx-link.missing { stroke: #475569; stroke-opacity: .35; stroke-width: 1; }
+    .fx-node { cursor: pointer; transition: opacity .2s; }
+    .fx-node .fx-pop { transition: filter .2s; }
+    .fx-ring { fill: #161a24; stroke-width: 3; }
+    .fx-ring.complete { stroke: #4ade80; } .fx-ring.partial { stroke: #fbbf24; }
+    .fx-icon { font-size: 14px; pointer-events: none; }
+    .fx-label { font-size: 10.5px; fill: #cbd5e1; pointer-events: none; paint-order: stroke; stroke: #161a24; stroke-width: 3px; }
+    .fx-label.ing { font-size: 11.5px; font-weight: 700; fill: #f1f5f9; }
+    .fx-label.ghost { font-size: 9px; fill: #64748b; }
+    .fx-badge { font-size: 10px; font-weight: 800; fill: #fbbf24; paint-order: stroke; stroke: #161a24; stroke-width: 3px; }
+    .fx-ghost { fill: #475569; }
+    .fx-focus .fx-node:not(.lit) { opacity: .15; }
+    .fx-focus .fx-link:not(.lit) { stroke-opacity: .05; }
+    .fx-focus .fx-link.lit { stroke: #a5b4fc; stroke-opacity: .95; stroke-width: 2; }
+    .fx-focus .fx-node.lit .fx-label { fill: #fff; }
 
     #rain { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 40; }
     #rain i { position: absolute; top: -30px; width: 1.5px; border-radius: 1px; background: linear-gradient(to bottom, rgba(186,206,232,0), rgba(140,170,210,.75)); animation: rain-fall linear infinite; }
@@ -404,28 +451,35 @@
 
 <!-- ═══════════════════════════════════ INGREDIENT FINDER ═══════════════════════════════════ -->
 <section id="section-finder" class="hidden flex-col flex-1">
-  <div class="max-w-5xl mx-auto px-4 py-10 w-full">
+  <div class="max-w-7xl mx-auto px-4 py-10 w-full">
     <h1 class="text-3xl font-bold mb-1">Anong lulutuin?</h1>
-    <p class="text-gray-500 mb-6 text-sm">Pick the ingredients you have and see which dishes you can cook, what is still missing and what the rest would cost. Saved on this device only.</p>
-    <div class="bg-white rounded-2xl shadow p-4 flex flex-col gap-3 mb-6">
-      <input id="finder-search" type="search" oninput="renderFinderSuggest()" onkeydown="finderKey(event)" placeholder="Type an ingredient: pork, kangkong, eggplant…" autocomplete="off" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
-      <div id="finder-suggest" class="flex flex-wrap gap-1.5"></div>
-      <div>
-        <div class="flex items-center justify-between gap-2 mb-1.5">
-          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Meron ako</p>
-          <button onclick="finderClear()" class="text-xs text-gray-500 hover:text-red-600 underline">Clear</button>
+    <p class="text-gray-500 mb-6 text-sm">Pick what you have from each group. Every ingredient becomes a node, linked to the dishes you can cook with it. Hover a node to see its links; tap a dish to open the recipe. Saved on this device only.</p>
+    <div class="grid gap-5 lg:grid-cols-[19rem_minmax(0,1fr)] items-start">
+      <div class="flex flex-col gap-4 min-w-0">
+        <div class="bg-white rounded-2xl shadow p-3">
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide px-1 mb-2">Mga sangkap</p>
+          <div id="finder-cats" class="flex flex-col gap-1.5"></div>
         </div>
-        <div id="finder-have" class="flex flex-wrap gap-1.5"></div>
+        <div class="bg-white rounded-2xl shadow p-4">
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Meron ako</p>
+            <button onclick="finderClear()" class="text-xs text-gray-500 hover:text-red-600 underline">Clear</button>
+          </div>
+          <ul id="finder-have" class="flex flex-col gap-1"></ul>
+          <label class="text-xs text-gray-600 flex items-start gap-2 mt-3"><input id="finder-staples" type="checkbox" checked onchange="setFinderStaples(this.checked)" class="accent-green-600 mt-0.5">
+            I have the basics: salt, pepper, oil, garlic, onion, soy sauce, patis, vinegar, sugar, bay leaf</label>
+        </div>
       </div>
-      <div>
-        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Common</p>
-        <div id="finder-common" class="flex flex-wrap gap-1.5"></div>
+      <div class="flex flex-col gap-4 min-w-0">
+        <div class="fx-graph-card">
+          <svg id="finder-graph" class="fx-graph"></svg>
+          <p id="finder-graph-empty" class="fx-graph-empty">Pick an ingredient on the left: it appears here as a node, and the dishes you can cook grow out of it.</p>
+          <div class="fx-legend"><span><i style="background:#4ade80"></i>ingredient you have</span><span><i class="ring ok"></i>kumpleto</span><span><i class="ring part"></i>may kulang (−n)</span><span><i class="ghost"></i>kulang na sangkap</span></div>
+        </div>
+        <p id="finder-count" class="text-xs font-semibold text-gray-500 uppercase tracking-wide"></p>
+        <div id="finder-results" class="grid gap-3 md:grid-cols-2"></div>
       </div>
-      <label class="text-sm text-gray-600 flex items-center gap-2"><input id="finder-staples" type="checkbox" checked onchange="setFinderStaples(this.checked)" class="accent-green-600">
-        I have the basics: salt, pepper, oil, garlic, onion, soy sauce, patis, vinegar, sugar, bay leaf</label>
     </div>
-    <p id="finder-count" class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2"></p>
-    <div id="finder-results" class="grid gap-3 md:grid-cols-2"></div>
   </div>
 </section>
 

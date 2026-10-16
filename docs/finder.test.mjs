@@ -6,8 +6,8 @@ import vm from "node:vm";
 
 const ctx = vm.createContext({});
 vm.runInContext(`${readFileSync(new URL("./finder.js", import.meta.url), "utf8")}
-;globalThis.api = { matchDishes, suggestIngredients, hasIngredient };`, ctx);
-const { matchDishes, suggestIngredients, hasIngredient } = ctx.api;
+;globalThis.api = { matchDishes, hasIngredient, ingredientCategory, categoryOptions, graphData };`, ctx);
+const { matchDishes, hasIngredient, ingredientCategory, categoryOptions, graphData } = ctx.api;
 const plain = (v) => JSON.parse(JSON.stringify(v));
 
 const INDEX = {
@@ -53,8 +53,33 @@ test("finder: 'any pork' matches every pork cut; reposts appear once", () => {
   assert.deepEqual(plain(matchDishes(INDEX, new Set(), RECIPES)), []);
 });
 
-test("finder: search suggests families first and skips what you already have", () => {
-  assert.deepEqual(plain(suggestIngredients(INDEX, "pork", new Set())).map((s) => s.token), ["any:pork", "pork_belly"]);
-  assert.deepEqual(plain(suggestIngredients(INDEX, "kang", new Set(["kangkong"]))), []);
-  assert.deepEqual(plain(suggestIngredients(INDEX, "  ", new Set())), []);
+test("finder: dropdown groups put each ingredient in one list, families first", () => {
+  const cat = (t) => ingredientCategory(t).key;
+  assert.equal(cat("pork_belly"), "karne");
+  assert.equal(cat("any:chicken"), "karne");
+  assert.equal(cat("fish_sauce"), "sarsa");
+  assert.equal(cat("shrimp_paste"), "sarsa");
+  assert.equal(cat("tilapia"), "dagat");
+  assert.equal(cat("egg_chicken"), "itlog");
+  assert.equal(cat("noodles_bihon"), "kanin");
+  assert.equal(cat("kangkong"), "gulay");
+  assert.equal(cat("eggplant"), "gulay", "not an egg");
+  assert.deepEqual(plain(categoryOptions(INDEX, "karne")).map((o) => o.token), ["any:pork", "any:chicken", "any:beef", "pork_belly", "chicken_thigh"]);
+  assert.deepEqual(plain(categoryOptions(INDEX, "karne", "thigh")).map((o) => o.token), ["chicken_thigh"]);
+});
+
+test("finder graph: a node per pick and per dish, links for what each dish uses, shared missing nodes merge", () => {
+  const dishes = matchDishes(INDEX, new Set(["kangkong"]), RECIPES, { staples: false });
+  const g = plain(graphData(new Set(["kangkong"]), dishes, { ghostsPerDish: 3 }));
+  assert.deepEqual(g.nodes.filter((n) => n.kind === "ing").map((n) => n.id), ["i:kangkong"]);
+  assert.deepEqual(g.nodes.filter((n) => n.kind === "dish").map((n) => n.id), ["d:2", "d:1"]);
+  assert.equal(g.links.filter((l) => l.kind === "have").length, 2);
+  assert.equal(g.nodes.filter((n) => n.id === "m:garlic").length, 1, "garlic is missing from both, one node");
+  assert.equal(g.links.filter((l) => l.source === "m:garlic").length, 2);
+  assert.deepEqual(plain(graphData(new Set(["kangkong"]), dishes, { maxDishes: 1, ghostsPerDish: 0 })).nodes.length, 2);
+  // A dish that joins two picks is drawn even when single-pick dishes rank higher.
+  const two = matchDishes(INDEX, new Set(["kangkong", "any:pork"]), RECIPES);
+  const g2 = plain(graphData(new Set(["kangkong", "any:pork"]), two, { maxDishes: 2 }));
+  assert.equal(g2.nodes.some((n) => n.id === "d:1"), true);
+  assert.equal(g2.links.filter((l) => l.target === "d:1" && l.kind === "have").length, 2);
 });
