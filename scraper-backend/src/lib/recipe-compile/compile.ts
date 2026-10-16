@@ -36,6 +36,8 @@ export interface CompileContext {
   da: Map<string, DaPrice>;
   /** PSA monthly NCR retail prices by PSA commodity name; used when DA has no price. */
   psa?: Map<string, PsaPrice>;
+  /** Last resort: price an item from another one (catalog derived-prices.tsv). */
+  derivedPrices?: Record<string, { from: string; factor: number | null; kind: string; why: string }>;
 }
 export interface PsaPrice {
   price: number;
@@ -83,6 +85,12 @@ export interface CompiledLine {
 
 export interface CompiledRecipe {
   id: number;
+  /**
+   * Unpriced ingredients that probably carry much of the cost: an unpriced meat or fish line
+   * worth ≥10% of the dish, or unpriced lines worth ≥30% together (rough ₱/kg by food type).
+   * The site flags these dishes and ranks them last: their cost per serving is too low.
+   */
+  costGaps: { items: string[]; share: number };
   /** No ingredient lines: an article or guide, not a recipe. */
   isArticle: boolean;
   /** Round-up post holding several recipes in one card ("Easy Sisig Recipes"): totals are combined. */
@@ -290,6 +298,48 @@ function lineCost(c: Canonical, gUsed: number, da: DaPrice | undefined, isOil: b
     return da.unit.bottleMl ? (da.price / da.unit.bottleMl) * ml : null;
   }
   return null;
+}
+
+/** A slug's cost for `used` grams (`gAP` for packs): DA, then PSA, then the SM / DTI reference prices. */
+function priceOf(slug: string, c: Canonical, used: number, gAP: number, ctx: CompileContext): { cost: number; source: string } | null {
+  const da = c.daName ? lineCost(c, used, ctx.da.get(c.daName), c.role === "frying_oil_candidate") : null;
+  if (da !== null) return { cost: da, source: "DA" };
+  const p = c.psaName ? ctx.psa?.get(c.psaName) : undefined;
+  const g = c.cookedPerRaw ? used / c.cookedPerRaw : used;
+  const psa = p ? (p.per === "kg" ? (p.price / 1000) * g : c.gEach ? (p.price / c.gEach) * g : null) : null;
+  if (psa !== null && p) return { cost: psa, source: `PSA ${p.national ? "PH avg " : ""}${new Date(p.period).toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "UTC" })}` };
+  const m = ctx.manualPrices?.[slug];
+  if (m && m.price != null && m.packAmount) {
+    // Packs sold by volume: grams → ml through the catalog's grams-per-cup.
+    const amount = m.packUnit === "ml" ? (c.gPerCup ? gAP / (c.gPerCup / CUP_ML) : gAP) : gAP;
+    return { cost: (m.price / m.packAmount) * amount, source: m.source };
+  }
+  return null;
+}
+
+// Rough retail ₱/kg by food type, only to guess how much an unpriced line would add.
+const TYPICAL_PER_KG: Record<string, number> = { MEAT: 380, POULTRY: 220, FISH: 260, SEAFOOD: 400, EGG: 180, DAIRY: 450, ANIMAL_CONDIMENT: 300, PLANT: 150 };
+const NO_WEIGHT_PROTEIN_G = 500; // "1 whole chicken", "a slab of pork": at least half a kilo
+const PROTEIN_GAP = 0.1, TOTAL_GAP = 0.3;
+
+/** See CompiledRecipe.costGaps. `pricedCost` is the recipe's priced total (₱). */
+export function costGaps(lines: CompiledLine[], pricedCost: number, ctx: Pick<CompileContext, "canonicals">): { items: string[]; share: number } {
+  const gaps: { label: string; est: number; protein: boolean }[] = [];
+  for (const l of lines) {
+    if (!l.slug || l.priced || !["ok", "no-nutrition", "no-weight"].includes(l.status)) continue;
+    const diet = ctx.canonicals[l.slug]?.dietClass ?? "PLANT";
+    const protein = PROTEIN_DIET.test(diet);
+    const grams = l.gAP ?? (protein ? NO_WEIGHT_PROTEIN_G : 0);
+    gaps.push({ label: l.label || l.slug, est: (grams / 1000) * (TYPICAL_PER_KG[diet] ?? TYPICAL_PER_KG.PLANT), protein });
+  }
+  const unpriced = gaps.reduce((a, g) => a + g.est, 0);
+  const total = pricedCost + unpriced;
+  if (!total) return { items: [], share: 0 };
+  const share = unpriced / total;
+  const items = gaps
+    .filter((g) => (g.protein && g.est / total >= PROTEIN_GAP) || (share >= TOTAL_GAP && g.est / total >= PROTEIN_GAP))
+    .sort((a, b) => b.est - a.est).map((g) => g.label);
+  return { items: [...new Set(items)], share: Math.round(share * 100) / 100 };
 }
 
 // ── Frying detection (proposal §5.2), from title, instructions and oil volume ──
@@ -543,17 +593,15 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
     const setCost = (lc: number, source: string) => { line.cost = lc; line.priced = true; line.priceSource = source; priced++; cost += lc; };
     if (line.gAP !== null) {
       const used = w === medium && absorbed ? (absorbed[0] + absorbed[1]) / 2 + (line.gAP - (absorbed[0] + absorbed[1]) / 2) / OIL_REUSES : line.gAP;
-      const da = c.daName ? lineCost(c, used, ctx.da.get(c.daName), c.role === "frying_oil_candidate") : null;
-      const p = c.psaName ? ctx.psa?.get(c.psaName) : undefined;
-      const g = c.cookedPerRaw ? used / c.cookedPerRaw : used;
-      const psa = p ? (p.per === "kg" ? (p.price / 1000) * g : c.gEach ? (p.price / c.gEach) * g : null) : null;
-      const m = line.slug ? ctx.manualPrices?.[line.slug] : undefined;
-      if (da !== null) setCost(da, "DA");
-      else if (psa !== null && p) setCost(psa, `PSA ${p.national ? "PH avg " : ""}${new Date(p.period).toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "UTC" })}`);
-      else if (m && m.price != null && m.packAmount) {
-        // Packs sold by volume: grams → ml through the catalog's grams-per-cup.
-        const amount = m.packUnit === "ml" ? (c.gPerCup ? line.gAP / (c.gPerCup / CUP_ML) : line.gAP) : line.gAP;
-        setCost((m.price / m.packAmount) * amount, m.source);
+      const direct = line.slug ? priceOf(line.slug, c, used, line.gAP, ctx) : null;
+      const d = line.slug && !direct ? ctx.derivedPrices?.[line.slug] : undefined;
+      const parent = d && d.factor ? ctx.canonicals[d.from] : undefined;
+      // No source sells it: price it from its parent (a yield conversion or a similar product), marked "≈".
+      const derived = d && d.factor && parent ? priceOf(d.from, parent, used * d.factor, line.gAP * d.factor, ctx) : null;
+      if (direct) setCost(direct.cost, direct.source);
+      else if (derived && d && parent) {
+        setCost(derived.cost, `≈ ${parent.label} ×${d.factor} (${derived.source})`);
+        line.flags.push(`price-${d.kind}: ${d.why}`);
       }
     }
     if (line.gAP !== null) {
@@ -574,6 +622,7 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
   const isCollection = /\b(recipes|ways|variations)\b/i.test(r.title) || repeats >= 3;
   return {
     id: r.id,
+    costGaps: costGaps(lines, cost, ctx),
     isArticle: r.ingredients.length === 0,
     isCollection,
     servings,

@@ -84,13 +84,14 @@ function matchDishes(index, have, recipes, { staples = true, limit = 60 } = {}) 
     });
     if (!used.length) continue;
     const missingCost = missing.reduce((s, m) => s + (m.cost || 0), 0);
-    out.push({ id: r.id, title: info.title, used, tokens: [...tokens], missing, missingCost,
+    out.push({ id: r.id, title: info.title, used, tokens: [...tokens], missing, missingCost, costIncomplete: !!info.costIncomplete,
       unpricedMissing: missing.some((m) => m.cost == null), value: info.valueScore || 0 });
   }
   // Reposts share a title: keep the best match of each.
   const seen = new Set();
   return out
-    .sort((a, b) => a.missing.length - b.missing.length || b.tokens.length - a.tokens.length || b.used.length - a.used.length || b.value - a.value)
+    // Dishes with incomplete price data go last.
+    .sort((a, b) => (a.costIncomplete - b.costIncomplete) || a.missing.length - b.missing.length || b.tokens.length - a.tokens.length || b.used.length - a.used.length || b.value - a.value)
     .filter((d) => { const t = d.title.trim().toLowerCase(); if (seen.has(t)) return false; seen.add(t); return true; })
     .slice(0, limit);
 }

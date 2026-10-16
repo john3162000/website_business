@@ -151,7 +151,7 @@ cream_cheese	Cream cheese	J004	Cheese, native	not in FNRI		DA does not sell it	D
 hoisin_sauce	Hoisin sauce			not in FNRI		DA does not sell it	PLANT	256										100		normal	high				
 margarine	Margarine	K004	Margarine	Margarine		DA does not sell it	PLANT	227										100		normal	high	sauteing fat but not in frying-oil list			
 noodles_egg	Egg noodles	A153	Pasta, spaghetti	FNRI canton/miki dry (A140/A146) are fried-type (22% fat), poor match for egg noodles		DA does not sell it	EGG											100		normal	low	dietClass EGG because noodles contain egg; may be fresh miki in PH recipes			
-papaya_green	Green papaya	D154	Papaya fruit, unripe	Papaya fruit, unripe raw		DA does not sell it (DA papaya is ripe Solo)	PLANT		800	500								64	FNRI EP (peel/seeds)	normal	high	gEach 800 / small 500 ?			
+papaya_green	Green papaya	D154	Papaya fruit, unripe	Papaya fruit, unripe raw		DA does not sell it (DA papaya is ripe Solo)	PLANT		800	500								64	FNRI EP (peel/seeds)	normal	high	gEach 800 / small 500 ?; priced from PSA papaya (any ripeness), a stand-in for green papaya			FRESH FRUIT, PAPAYA, MEDIUM, 1 KG
 peanut_butter	Peanut butter	C058	Peanut butter	Peanut butter		DA does not sell it	PLANT	258										100		normal	high				
 pork_hock	Pork hock (pata)	F173	Pork leg	Pork leg (Baboy pata) raw	Pork Hind Shank, Local	pata = shank/hock; hind shank	MEAT		1200									58	FNRI EP (bone/skin)	normal	medium	gEach whole pata ~1.2 kg ?; Pork Fore Shank, Local is alt			
 wine_white	White wine			not in FNRI		DA does not sell it	PLANT	235										100		normal	high				
@@ -241,7 +241,7 @@ linguine	Linguine (dry)	A153	Pasta, spaghetti	dry pasta; spaghetti row same comp
 misua	Misua (thin wheat noodles)	A144	Noodles, wheat, thin	exact		not in DA	PLANT											100	dry noodles	normal	high				
 mixed_vegetables	Frozen mixed vegetables			no mixed veg row (carrot/pea/corn mix)		not in DA	PLANT	134										100	frozen, no refuse	normal	high	cup ~134 g ?			
 olives_green	Green olives	D283	Olive, green, in brine	green olives in brine		not in DA	PLANT	135										100	pitted; FNRI EP 70 with pits	normal	high	cup ~135 g ?			
-peanut_raw	Raw peanuts (shelled)	C037	Peanut w/o skin	raw shelled peanuts		not in DA	PLANT	146										100	shelled	normal	high	may have red skins (no raw w/ skin row)			
+peanut_raw	Raw peanuts (shelled)	C037	Peanut w/o skin	raw shelled peanuts		not in DA	PLANT	146										100	shelled	normal	high	may have red skins (no raw w/ skin row)			RAW PEANUT, SHELLED, 1 KG
 pig_ears	Pig ears	F163	Pork ear	raw pork ear	Pork Head, Local	not in DA (offals generic)	MEAT											100	FNRI F163 EP 100	normal	high				
 pork_tenderloin	Pork tenderloin	F187	Pork tenderloin	exact (baboy lomo)	Pork Loin, Local	tenderloin sold within loin; local	MEAT											100	boneless	normal	medium	DA loin price may differ from tenderloin			
 sriracha	Sriracha sauce			no chili sauce row		not in DA	PLANT	240										100	liquid	normal	high				
@@ -259,7 +259,7 @@ noodles_pancit_canton	Pancit canton (dry)	A140	Noodles, wheat, canton, dry	dry c
 pork_fat	Pork fat (back fat)	F146	Pork back fat	raw diced pork fat = back fat, not rendered lard	Pork Rind/Skin, Local	stand-in: DA doesn't list back fat	MEAT	200										100	diced, trimmed	normal	medium	cup ~200 g ?			
 sardines_tomato_sauce	Sardines in tomato sauce	G203	Sardines, in tomato sce, cnd	exact		canned not in DA	FISH		155									100	canned, whole content	normal	high	"""cans"" unit used (155 g PH standard) but no can column"; gEach = one DTI 155 g can			
 seasoning_liquid_savorrich_chicken	Knorr SavorRich chicken liquid seasoning			no liquid seasoning row		not in DA	ANIMAL_CONDIMENT	272										100	liquid	normal	medium	density ~1.15 ?			
-sweet_potato	Sweet potato (kamote)	B013	Sweet potato, yellow	raw yellow kamote (most common)		not in DA	PLANT	133	180									88	FNRI B013 EP 88 (peel)	normal	high	gEach ~180 g ?			
+sweet_potato	Sweet potato (kamote)	B013	Sweet potato, yellow	raw yellow kamote (most common)		not in DA	PLANT	133	180									88	FNRI B013 EP 88 (peel)	normal	high	gEach ~180 g ?			SWEET POTATO (CAMOTE), 1 KG
 ampalaya_leaves	Ampalaya leaves	D020	Bitter melon/gourd lvs	raw bitter gourd leaves		DA sells only ampalaya fruit	PLANT	30							100			100	cup-measured picked leaves; FNRI EP 42 is for whole sprigs	normal	high	gPerCup 30? loosely packed; gBunch 100?			
 beans_baguio	Baguio beans (green beans)	D206	Snap bean pod, green	raw green snap bean pods	Habichuelas/Baguio Beans, Local	local snap beans	PLANT	100	5									100	mostly cup-measured sliced; FNRI EP 96 for whole pods	normal	high	gEach 5? per pod			
 beef_tenderloin	Beef tenderloin	F046	Beef tenderloin	raw beef tenderloin	Beef Tenderloin, Local	local cut, same name	MEAT											100	boneless cut; FNRI EP 100	normal	high				
@@ -544,3 +544,4 @@ tater_tots	Tater tots			FNRI has no tater tots; USDA SR Legacy 170047		no DA/PSA
 additive_trace	Food additive (trace amount)			≈0 kcal (removed before serving, or a trace additive)		no DA/PSA price	PLANT											100		normal	medium	used in pinches; ≈0 kcal			
 gelatin_dessert	Gelatin dessert (prepared jelly)			FNRI has no gelatin dessert (prepared jelly); USDA SR Legacy 169596		no DA/PSA price	PLANT	270										100		normal	medium	prepared gelatin cubes			
 salted_duck_egg	Salted duck egg (itlog na pula)	H021	Egg, duck, whole, salted	FNRI Egg, duck, whole, salted / Itlog, pato, maalat		no DA/PSA price	EGG		65									83		normal	medium				
+egg_duck	Duck egg, fresh						EGG		70									88		normal	medium	price parent for salted duck egg; 70 g each			FRESH EGG, DUCK, MEDIUM, 1 PC

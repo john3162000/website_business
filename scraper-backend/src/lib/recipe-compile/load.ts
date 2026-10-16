@@ -3,7 +3,7 @@ import { ensureNutritionColumns, ensurePsaTable, ensureRecipeColumns } from "@/l
 import { isMalformedName, parsePriceBasis } from "@/lib/da-units";
 import { compareDate } from "@/lib/price-history";
 import { yieldCount, type RefNutrition } from "@/lib/scrapers/recipe-structured";
-import { ALIASES, CANONICALS, EXTRA_NUTRIENTS, MANUAL_PRICES } from "./catalog.generated.ts";
+import { ALIASES, CANONICALS, DERIVED_PRICES, EXTRA_NUTRIENTS, MANUAL_PRICES } from "./catalog.generated.ts";
 import { psaSnapshot, type PsaRow } from "./psa-snapshot.ts";
 import { compileRecipe, unknownLineCount, type CompileContext, type CompiledRecipe, type DaPrice, type FnriFood, type PsaPrice } from "./compile.ts";
 
@@ -85,7 +85,7 @@ async function loadPsa(): Promise<PsaRow[]> {
 
 
 function compileAll(recipes: Recipes, fnri: Map<string, FnriFood>, da: Map<string, DaPrice>, psa: Map<string, PsaPrice>): CompiledFromDb[] {
-  const ctx: CompileContext = { aliases: ALIASES, canonicals: CANONICALS, extraNutrients: EXTRA_NUTRIENTS, manualPrices: MANUAL_PRICES, fnri, da, psa };
+  const ctx: CompileContext = { aliases: ALIASES, canonicals: CANONICALS, extraNutrients: EXTRA_NUTRIENTS, manualPrices: MANUAL_PRICES, derivedPrices: DERIVED_PRICES, fnri, da, psa };
   return recipes.map((r): CompiledFromDb => {
     const c = compileRecipe({
       id: r.id, title: r.title, servings: r.servings,
@@ -140,6 +140,10 @@ export function summarize(c: CompiledRecipe & { course?: string | null; referenc
     // Ingredients not in the catalog yet: the site hides these recipes (they stay in the database).
     unknownLines: unknownLineCount(c),
     hidden: unknownLineCount(c) > 0,
+    // An unpriced protein or a big unpriced share: the cost shown is too low (ranked last on the site).
+    costIncomplete: c.costGaps.items.length > 0,
+    costGaps: c.costGaps.items.slice(0, 3),
+    unpricedShare: c.costGaps.share,
     servings: c.servings,
     servingsAssumed: c.servingsAssumed,
     course: c.course ?? null,
@@ -212,7 +216,7 @@ export async function compileDish(dish: DishInput) {
   ]);
   const fnri = new Map<string, FnriFood>(foods.map((f) => [f.foodCode, f]));
   const psaRows = await loadPsa();
-  const ctx = (da: Map<string, DaPrice>, psa: Map<string, PsaPrice>): CompileContext => ({ aliases: ALIASES, canonicals: CANONICALS, extraNutrients: EXTRA_NUTRIENTS, manualPrices: MANUAL_PRICES, fnri, da, psa });
+  const ctx = (da: Map<string, DaPrice>, psa: Map<string, PsaPrice>): CompileContext => ({ aliases: ALIASES, canonicals: CANONICALS, extraNutrients: EXTRA_NUTRIENTS, manualPrices: MANUAL_PRICES, derivedPrices: DERIVED_PRICES, fnri, da, psa });
   const input = { id: 0, ...dish };
   const now = daSnapshot(priceRows);
   const compiled = compileRecipe(input, ctx(now.da, psaSnapshot(psaRows)));

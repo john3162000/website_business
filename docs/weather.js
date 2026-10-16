@@ -58,7 +58,7 @@ const COLD = [
   [/\b(kinilaw|kilawin|kilawing|ceviche)\b/i], [/\bensaladang?\b|\bsalad\b/i, /\bmacaroni\b/i],
 ];
 
-const byValue = (a, b) => (b.ranked - a.ranked) || (b.valueScore - a.valueScore) || (b.nutritionScore - a.nutritionScore);
+const byValue = (a, b) => ((a.costIncomplete || 0) - (b.costIncomplete || 0)) || (b.ranked - a.ranked) || (b.valueScore - a.valueScore) || (b.nutritionScore - a.nutritionScore);
 // Unknown cost or calories sort last.
 const costOf = (r) => (r.ranked && r.costPerServing > 0 ? r.costPerServing : Infinity);
 const kcalOf = (r) => (r.calories > 0 && r.nutritionCoverage >= 0.8 ? r.calories : Infinity);
@@ -102,7 +102,9 @@ function rotate(families, day) {
  * family's recipe; any sort but "value" also reorders. The warm merienda stays last.
  */
 function weatherPicks(mood, recipes, n = 4, day = Math.floor(Date.now() / 86400000), sort = "value") {
-  const cmp = (PICK_SORTS[sort] || PICK_SORTS.value).cmp;
+  const base = (PICK_SORTS[sort] || PICK_SORTS.value).cmp;
+  // Dishes with incomplete price data go last whatever the sort.
+  const cmp = (a, b) => ((a.costIncomplete || 0) - (b.costIncomplete || 0)) || base(a, b);
   const taken = new Set();
   if (mood === "rainy" || mood === "cool") {
     const sweet = fromFamilies(WARM_SWEET, recipes, 1, taken, cmp);
