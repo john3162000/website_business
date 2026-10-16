@@ -1,0 +1,50 @@
+slug	from	factor	kind	why
+lemon_juice	lemon	2.3	conversion	1 medium lemon (about 108 g bought) gives about 3 tbsp (47 g) juice: USDA FoodData Central SR Legacy 09150 / 09152
+garlic_toasted	garlic	2.5	conversion	garlic is 59% water and 13% peel (USDA SR Legacy 11215); fried crisp it keeps about 40% of the bought weight
+ginger_powder	ginger	5	conversion	fresh ginger is about 79% water (USDA SR Legacy 11216 vs 02021 ground ginger): 1 g dried is about 5 g fresh
+chili_dried	chili_bird	7	conversion	fresh hot chili is about 88% water (USDA SR Legacy 11670); dried to about 10% moisture, 1 g dried is about 7 g fresh
+garlic_salt	garlic_powder	0.25	conversion	garlic salt is about 1 part garlic powder to 3 parts salt; the salt's cost is left out
+peanut_roasted	peanut_raw	1.1	conversion	dry roasting removes about 5% water plus the skins (USDA SR Legacy 16087 raw 6.5% water vs 16090 roasted 1.6%)
+rice_garlic_fried	rice_white_cooked	1	conversion	sinangag is cooked rice; the garlic and oil add little
+cheese_ricotta	milk_fresh	8	conversion	home-made ricotta yields about 250 g per 2 L of milk
+buttermilk	milk_fresh	1	conversion	the usual substitute is milk soured with 1 tbsp lemon juice per cup
+mung_bean_sprouts	mung_beans	0.5	stand-in	1 kg dried monggo grows about 5 kg togue, but togue sells for more than that yield suggests: priced at half the dried-monggo price per kg
+salted_duck_egg	egg_duck	1.5	stand-in	salted (itlog na pula) eggs sell for about 1.5x a fresh duck egg
+pork_blood	pork_kidney	0.5	stand-in	pork blood sells for about half the price of mixed pork offal per kg
+lime	lemon	1	stand-in	lemon price per kg
+wine_sherry	wine_rice_cooking	1	stand-in	Shaoxing rice wine is the usual stand-in for dry sherry
+wine_red	wine_white	1	stand-in	white wine price per litre
+seasoning_beef_powder	seasoning_chicken_powder	1	stand-in	beef and chicken bouillon powders sell at the same price
+broth_vegetable	broth_chicken	1	stand-in	chicken broth price per litre
+marinara_sauce	tomato_sauce	1	stand-in	tomato sauce price per kg
+spaghetti_sauce_filipino	tomato_sauce	1	stand-in	tomato sauce price per kg
+barbecue_sauce	ketchup_tomato	1	stand-in	tomato ketchup price per kg
+fettuccine	spaghetti	1	stand-in	dry spaghetti price per kg
+misua	spaghetti	1	stand-in	dry wheat pasta price per kg
+flour_cake	flour_all_purpose	1	stand-in	all-purpose flour price per kg
+cheese_swiss	cheese_cheddar	1	stand-in	cheddar price per kg
+cheese_american	cheese_processed	1	stand-in	processed cheese price per kg
+chili_jalapeno	chili_long_green	1	stand-in	siling haba price per kg
+chili_serrano	chili_long_green	1	stand-in	siling haba price per kg
+chili_leaves	malunggay	1	stand-in	leafy greens: malunggay price per kg
+ampalaya_leaves	malunggay	1	stand-in	leafy greens: malunggay price per kg
+lemongrass	malunggay	1	stand-in	cheap palengke herb: malunggay price per kg
+mustard_greens	pechay	1	stand-in	pechay price per kg
+zucchini	patola	1	stand-in	patola price per kg
+bottle_gourd	upo	1	stand-in	the same vegetable (upo)
+jackfruit_unripe	jackfruit_ripe	1	stand-in	ripe langka price per kg
+bell_pepper_yellow	bell_pepper_red	1	stand-in	red bell pepper price per kg
+mushroom_shiitake	mushroom_button	1.5	stand-in	fresh shiitake sells for about 1.5x button mushrooms
+italian_seasoning	oregano_dried	1	stand-in	dried herb jar: oregano price per g
+basil_dried	oregano_dried	1	stand-in	dried herb jar: oregano price per g
+rosemary_dried	oregano_dried	1	stand-in	dried herb jar: oregano price per g
+five_spice_powder	cinnamon_ground	1	stand-in	ground spice jar: cinnamon price per g
+nutmeg_ground	cinnamon_ground	1	stand-in	ground spice jar: cinnamon price per g
+cilantro	celery	1	stand-in	fresh herb bunch: celery price per kg
+rosemary	celery	1	stand-in	fresh herb bunch: celery price per kg
+thyme_fresh	celery	1	stand-in	fresh herb bunch: celery price per kg
+sugar_powdered	sugar_white	1	stand-in	white sugar price per kg
+soy_sauce_low_sodium	soy_sauce	1	stand-in	regular soy sauce price
+beef_heart	beef_tripe	1	stand-in	beef offal: tripe price per kg
+beef_intestine_small	beef_tripe	1	stand-in	beef offal: tripe price per kg
+pigeon_pea	mung_beans	1	stand-in	dried legumes: monggo price per kg

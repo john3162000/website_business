@@ -83,3 +83,12 @@ test("finder graph: a node per pick and per dish, links for what each dish uses,
   assert.equal(g2.nodes.some((n) => n.id === "d:1"), true);
   assert.equal(g2.links.filter((l) => l.target === "d:1" && l.kind === "have").length, 2);
 });
+
+test("finder: dishes with incomplete price data go last", () => {
+  const flagged = new Map([...RECIPES].map(([id, r]) => [id, id === 2 ? { ...r, costIncomplete: true } : r]));
+  const out = plain(matchDishes(INDEX, new Set(["kangkong"]), flagged));
+  // #2 is flagged, so its unflagged repost (#4, same title) takes its place, ahead of the sinigang.
+  assert.deepEqual(out.map((d) => d.id), [4, 1]);
+  const solo = plain(matchDishes({ ...INDEX, recipes: INDEX.recipes.filter((r) => r.id !== 4) }, new Set(["kangkong"]), flagged));
+  assert.deepEqual(solo.map((d) => d.id), [1, 2], "flagged dish last even with nothing missing");
+});

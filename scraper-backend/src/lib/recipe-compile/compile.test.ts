@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { compileRecipe, isHidden, sectionOf, unknownLineCount } from "./compile.ts";
+import { compileRecipe, costGaps, isHidden, sectionOf, unknownLineCount } from "./compile.ts";
 import { testContext } from "./test-context.ts";
 
 const ctx = testContext();
@@ -318,4 +318,45 @@ test("isHidden: any ingredient not in the catalog hides the recipe", () => {
   assert.equal(isHidden(known), false);
   assert.equal(unknownLineCount(unknown), 1);
   assert.equal(isHidden(unknown), true);
+});
+
+test("derived prices: toasted garlic is priced from fresh garlic ×2.5 and marked as an assumption", () => {
+  const r = compileRecipe({ id: 90, title: "Arroz Caldo", servings: 4, ingredients: [ing("100", "grams", "toasted garlic"), ing("100", "grams", "garlic")] }, ctx);
+  const [toasted, fresh] = r.lines;
+  assert.equal(toasted.slug, "garlic_toasted");
+  assert.ok(fresh.cost && fresh.priceSource === "DA", "fresh garlic has a DA price in the test context");
+  assert.ok(Math.abs((toasted.cost ?? 0) - fresh.cost! * 2.5) < 0.01, `toasted ${toasted.cost} vs fresh ${fresh.cost}`);
+  assert.match(toasted.priceSource ?? "", /^≈ Garlic ×2\.5 \(DA\)$/);
+  assert.ok(toasted.flags.some((f) => f.startsWith("price-conversion:")));
+});
+
+test("derived prices: a direct price always wins, and a parent without a price leaves the line unpriced", () => {
+  const lemon = compileRecipe({ id: 91, title: "Lemonade", servings: 2, ingredients: [ing("1", "cup", "lemon juice")] }, { ...ctx, manualPrices: { ...ctx.manualPrices, lemon_juice: { price: 100, packAmount: 1000, packUnit: "g", source: "test shop" } } });
+  assert.equal(lemon.lines[0].priceSource, "test shop");
+  const noParent = compileRecipe({ id: 92, title: "Lemonade", servings: 2, ingredients: [ing("1", "cup", "lemon juice")] }, { ...ctx, derivedPrices: { lemon_juice: { from: "nonexistent_slug", factor: 2, kind: "conversion", why: "test" } } });
+  assert.equal(noParent.lines[0].priced, false);
+});
+
+test("cost gaps: an unpriced main protein flags the dish; a priced one doesn't", () => {
+  const noPrices = { ...ctx, da: new Map(), psa: new Map(), manualPrices: {}, derivedPrices: {} };
+  const adobo = { id: 93, title: "Chicken Adobo", servings: 4, ingredients: [ing("2", "lbs", "chicken thighs"), ing("1/2", "cup", "soy sauce"), ing("6", "cloves", "garlic")] };
+  const priced = compileRecipe(adobo, ctx);
+  assert.deepEqual(priced.costGaps.items, [], "chicken priced by DA");
+  // Same recipe with only the chicken unpriced.
+  const onlyChicken = { ...ctx, da: new Map([...ctx.da].filter(([k]) => !/chicken/i.test(k))), psa: new Map() };
+  const gap = compileRecipe(adobo, onlyChicken);
+  assert.equal(gap.lines[0].priced, false);
+  assert.deepEqual(gap.costGaps.items, [gap.lines[0].label]);
+  assert.ok(gap.costGaps.share > 0.5, `chicken is most of the cost (${gap.costGaps.share})`);
+  // Nothing priced at all still names the protein.
+  assert.ok(compileRecipe(adobo, noPrices).costGaps.items.includes(gap.lines[0].label!));
+});
+
+test("cost gaps: a small unpriced herb doesn't flag the dish; a big unpriced vegetable share does", () => {
+  const lines = (over: object[]) => over.map((o) => ({ slug: "lemongrass", label: "Lemongrass", status: "ok", priced: false, gAP: 10, ...o })) as never[];
+  assert.deepEqual(costGaps(lines([{}]), 200, ctx).items, []);
+  assert.deepEqual(costGaps(lines([{ slug: "zucchini", label: "Zucchini", gAP: 1000 }]), 100, ctx).items, ["Zucchini"]);
+  // A protein garnish (5% of the cost) isn't enough on its own.
+  assert.deepEqual(costGaps(lines([{ slug: "pork_blood", label: "Pork blood", gAP: 20 }]), 200, ctx).items, []);
+  assert.deepEqual(costGaps([], 0, ctx), { items: [], share: 0 });
 });

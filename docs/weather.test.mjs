@@ -71,3 +71,10 @@ test("sorting the picks: cheapest, most protein, fewest calories; merienda stays
   assert.deepEqual(titles(picks("rainy", list, 4, 0, "protein")), ["Bulalo Recipe", "Sinigang na Baboy", "Chicken Tinola", "Ginataang Bilo bilo"]);
   assert.deepEqual(titles(picks("rainy", list, 4, 0, "kcal")), ["Chicken Tinola", "Sinigang na Baboy", "Bulalo Budget", "Ginataang Bilo bilo"]);
 });
+
+test("weather picks: a dish with incomplete price data loses to its family's other dishes, whatever the sort", () => {
+  const list = [R("Bulalo Recipe", 9, { costIncomplete: true, protein: 60 }), R("How to Cook Bulalo", 1, { protein: 10 }), ...RECIPES.slice(2)];
+  for (const sort of ["value", "protein", "cheap"]) {
+    assert.equal(titles(weatherPicks("rainy", list, 4, 0, sort)).includes("Bulalo Recipe"), false, sort);
+  }
+});

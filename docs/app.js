@@ -81,7 +81,9 @@ function buildRecipe(raw, c) {
   );
   const costCoverage = n.costCoverageByWeight ?? n.costCoverage ?? 0;
   const nutritionCoverage = n.nutritionCoverageByWeight ?? n.nutritionCoverage ?? 0;
-  const ranked = costCoverage >= MIN_COST_COVERAGE && nutritionCoverage >= MIN_NUTRITION_COVERAGE && costPerServing >= MIN_COST_PER_SERVING;
+  // An unpriced protein or big unpriced share: the cost is too low to rank, so the dish goes last.
+  const costIncomplete = !!n.costIncomplete;
+  const ranked = !costIncomplete && costCoverage >= MIN_COST_COVERAGE && nutritionCoverage >= MIN_NUTRITION_COVERAGE && costPerServing >= MIN_COST_PER_SERVING;
   const valueScore = ranked ? round1((nutritionScore / costPerServing) * 3) : 0;
   return {
     id: raw.id,
@@ -112,6 +114,8 @@ function buildRecipe(raw, c) {
     costPerServing,
     costCoverage,
     nutritionCoverage,
+    costIncomplete,
+    costGaps: n.costGaps || [],
     ranked,
     nutritionScore,
     valueScore,
@@ -204,6 +208,7 @@ function buildRecipeCard(r) {
       <div class="relative h-44 bg-amber-100 overflow-hidden">
         ${img}
         ${r.ranked ? `<div class="absolute top-2 right-2 bg-green-700 text-white text-xs font-bold px-2 py-1 rounded-full shadow">★ ${r.valueScore} sulit</div>` : ""}
+        ${r.costIncomplete ? `<div class="absolute top-2 left-2 bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow" title="No price yet for ${escapeHtml(r.costGaps.join(", "))}">⚠ Incomplete price</div>` : ""}
       </div>
       <div class="p-4 flex flex-col gap-2 flex-1">
         <h3 class="font-semibold text-gray-900 leading-snug group-hover:text-green-700 transition-colors">${escapeHtml(r.title)}</h3>
@@ -233,14 +238,17 @@ function ingredientRows(lines) {
     const muted = ["to-taste", "optional", "water", "skipped"].includes(l.status);
     const note = l.reason || (l.status === "unmatched" ? "not matched to FNRI/DA yet" : l.status === "no-weight" ? "amount unclear" : "");
     const ps = l.priceSource || "";
-    const source = l.cost != null ? (ps === "DA" ? "DA" : ps.startsWith("PSA") ? `${ps} (palengke)` : ps.startsWith("SM") ? "SM Markets" : "DTI SRP") : "";
+    // "≈ Garlic ×2.5 (DA)": no shop sells it, so it is priced from a parent item (an assumption).
+    const derived = ps.startsWith("≈");
+    const why = derived ? (l.flags || []).find((f) => f.startsWith("price-")) || "" : "";
+    const source = l.cost != null ? (derived ? ps : ps === "DA" ? "DA" : ps.startsWith("PSA") ? `${ps} (palengke)` : ps.startsWith("SM") ? "SM Markets" : "DTI SRP") : "";
     return `${heading}
     <div class="flex items-start justify-between gap-3 bg-gray-50 rounded-xl px-4 py-3 ${muted ? "opacity-60" : ""}">
       <div class="min-w-0">
         <p class="font-medium text-sm">${escapeHtml(l.text)}</p>
         <p class="text-xs text-gray-400">${escapeHtml(grams + kcal)}${note ? ` · ${escapeHtml(note)}` : ""}</p>
       </div>
-      <p class="text-sm font-semibold text-amber-700 whitespace-nowrap text-right">${l.cost != null ? "₱" + l.cost.toFixed(2) : ""}${source ? `<span class="block text-[10px] font-normal text-gray-400">${source}</span>` : ""}</p>
+      <p class="text-sm font-semibold text-amber-700 whitespace-nowrap text-right"${why ? ` title="${escapeHtml(why.replace(/^price-[a-z-]+: /, "Assumed: "))}"` : ""}>${l.cost != null ? (derived ? "≈₱" : "₱") + l.cost.toFixed(2) : ""}${source ? `<span class="block text-[10px] font-normal ${derived ? "text-amber-600" : "text-gray-400"}">${escapeHtml(source)}</span>` : ""}</p>
     </div>`;
   }).join("");
 }
@@ -328,6 +336,7 @@ function buildModal(r, instructions, lines) {
               <p class="text-xs text-gray-400">${costText(r)}/serving × ${r.servings} servings${r.costCoverage < 1 ? ` · ${Math.round(r.costCoverage * 100)}% of ingredients (by weight) priced` : ""}</p>
             </div>
           </div>
+          ${r.costIncomplete ? `<p class="mt-2 text-xs bg-amber-100 text-amber-900 rounded-xl px-4 py-2">⚠ <strong>Incomplete price data:</strong> no price yet for ${escapeHtml(r.costGaps.join(", "))}. The real cost is higher than shown, so this dish is listed last.</p>` : ""}
         </div>
 
         <div>
@@ -481,12 +490,14 @@ function filterRecipes() {
     return true;
   });
 
-  filtered.sort((a, b) => {
+  // Dishes with incomplete price data always go last.
+  filtered.sort((a, b) => (a.costIncomplete - b.costIncomplete) || browseCmp(a, b));
+  function browseCmp(a, b) {
     if (sort === "costPerServing") return (a.ranked ? a.costPerServing : Infinity) - (b.ranked ? b.costPerServing : Infinity);
     if (sort === "caloriesAsc") return (kcalKnown(a) ? a.calories : Infinity) - (kcalKnown(b) ? b.calories : Infinity);
     if (sort === "proteinPer100kcal") return (kcalKnown(b) ? b.proteinPer100kcal : -1) - (kcalKnown(a) ? a.proteinPer100kcal : -1);
     return (b[sort] || 0) - (a[sort] || 0);
-  });
+  }
 
   document.getElementById("result-count").textContent = `${filtered.length.toLocaleString()} recipe${filtered.length !== 1 ? "s" : ""} found`;
   // Render in pages so 2,000 cards don't block the page.
