@@ -7,6 +7,10 @@ import { compareDate, pctChange, priceOn } from "@/lib/price-history";
 
 export const dynamic = "force-dynamic";
 
+type Period = "week" | "twoWeeks" | "month";
+/** [key, days back, fewest days of history that still count]. */
+const PERIODS: [Period, number, number][] = [["week", 7, 5], ["twoWeeks", 14, 10], ["month", 30, 21]];
+
 /**
  * Live DA commodity prices for the SarapSulit site.
  * Returns the latest snapshot price for each commodity plus its full
@@ -41,6 +45,8 @@ export async function GET() {
     monthAgoPrice: number | null;
     /** (price − monthAgoPrice) ÷ monthAgoPrice, e.g. 0.12 = +12%. */
     monthChange: number | null;
+    /** Price and change about 1 week, 2 weeks and 1 month back (see `compares`). */
+    changes: Record<Period, { price: number | null; change: number | null }>;
   }
 
   const byName = new Map<string, Entry>();
@@ -68,6 +74,7 @@ export async function GET() {
         high: null,
         monthAgoPrice: null,
         monthChange: null,
+        changes: { week: { price: null, change: null }, twoWeeks: { price: null, change: null }, month: { price: null, change: null } },
       };
       byName.set(r.name, e);
     }
@@ -94,7 +101,17 @@ export async function GET() {
     }
   }
 
-  const compare = latestDate ? compareDate(rows.map((r) => r.sourceDate.toISOString()), latestDate) : null;
+  const dates = rows.map((r) => r.sourceDate.toISOString());
+  const compare = latestDate ? compareDate(dates, latestDate) : null;
+  // Last week, two weeks and a month back: the last surveyed day on or before each.
+  const compares = Object.fromEntries(PERIODS.map(([k, days, min]) => [k, latestDate ? compareDate(dates, latestDate, days, min) : null])) as Record<Period, string | null>;
+  for (const e of byName.values()) {
+    const now = e.price != null && e.price > 0 ? e.price : null;
+    for (const [k] of PERIODS) {
+      const then = compares[k] ? priceOn(e.history, compares[k]!) : null;
+      e.changes[k] = { price: then, change: pctChange(now, then) };
+    }
+  }
   if (compare) {
     for (const e of byName.values()) {
       e.monthAgoPrice = priceOn(e.history, compare);
@@ -123,7 +140,7 @@ export async function GET() {
 
   const commodities = [...byName.values()].sort((a, b) => a.name.localeCompare(b.name));
 
-  return corsJson({ latestDate, compareDate: compare, count: commodities.length, commodities });
+  return corsJson({ latestDate, compareDate: compare, compares, count: commodities.length, commodities });
 }
 
 export function OPTIONS() {

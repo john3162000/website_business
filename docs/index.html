@@ -4,26 +4,49 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SarapSulit — Masarap, Masustansya, Sulit!</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <script>
+    (function () {
+      var t = null;
+      try { t = localStorage.getItem("sarapsulit.theme"); } catch (e) {}
+      if (t !== "light" && t !== "dark") t = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      document.documentElement.classList.toggle("dark", t === "dark");
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Forest and cream: Tailwind's green and amber scales are re-pointed at the brand colours,
+    // so every bg-green-*/text-amber-* class on the site follows the theme.
+    tailwind.config = { theme: { extend: {
+      colors: {
+        green: { 50: "#EFF5F0", 100: "#D9E8DD", 200: "#B5D2BE", 300: "#87B597", 400: "#559370", 500: "#2F7A55", 600: "#256647", 700: "#1D5239", 800: "#163F2E", 900: "#0F2E21", 950: "#081B13" },
+        amber: { 50: "#F8F4EA", 100: "#F6EBCD", 200: "#EED79A", 300: "#E6C265", 400: "#DDAE2B", 500: "#C9961A", 600: "#A87A12", 700: "#855F0E", 800: "#634610", 900: "#47330C" },
+        leaf: "#4E9F3A",
+      },
+      fontFamily: { display: ["Fraunces", "Georgia", "serif"] },
+    } } };
+  </script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
     * { font-family: 'Inter', sans-serif; }
-    .tab-btn.active { background: #15803d; color: white; }
+    h1, h2, h3, .font-display { font-family: 'Fraunces', Georgia, serif !important; letter-spacing: -0.01em; }
+    .tab-btn.active { background: #163F2E; color: #F8F4EA; }
     .recipe-card:hover .recipe-img { transform: scale(1.05); }
     .fade-in { animation: fadeIn .3s ease; }
     @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
     .price-up { color: #dc2626; }
-    .price-down { color: #16a34a; }
+    .price-down { color: #2F7A55; }
     .bar { height: 6px; border-radius: 9999px; background: #e5e7eb; overflow: hidden; }
-    .bar-fill { height: 100%; border-radius: 9999px; background: #15803d; transition: width .5s ease; }
+    .bar-fill { height: 100%; border-radius: 9999px; background: #1D5239; transition: width .5s ease; }
     .modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:100; align-items:center; justify-content:center; }
     .modal-bg.open { display:flex; }
-    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #f1f5f9; } ::-webkit-scrollbar-thumb { background: #15803d; border-radius: 3px; }
+    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #f1f5f9; } ::-webkit-scrollbar-thumb { background: #1D5239; border-radius: 3px; }
 
     /* Weather and sort toggles */
     .wx-btn { border: 1px solid #e5e7eb; background: #fff; color: #4b5563; font-size: .75rem; font-weight: 500; padding: .35rem .8rem; border-radius: 9999px; transition: background .15s, color .15s; }
-    .wx-btn:hover { background: #f0fdf4; }
-    .wx-btn.on { background: #15803d; border-color: #15803d; color: #fff; }
+    .wx-btn:hover { background: #EFF5F0; }
+    .wx-btn.on { background: #1D5239; border-color: #1D5239; color: #fff; }
 
     /* Rainy look: applied while the picks are rainy (live weather or the Rainy button) */
     body { transition: background-color .4s ease; }
@@ -45,8 +68,8 @@
 
     /* Weekly planner */
     .plan-dish { display: flex; gap: .6rem; align-items: center; padding: .4rem; border-radius: .75rem; border: 1px solid #f3f4f6; cursor: grab; background: #fff; transition: background .15s, border-color .15s; }
-    .plan-dish:hover { background: #f0fdf4; }
-    .plan-dish.picked { border-color: #15803d; background: #dcfce7; }
+    .plan-dish:hover { background: #EFF5F0; }
+    .plan-dish.picked { border-color: #1D5239; background: #D9E8DD; }
     .plan-dish img, .plan-noimg { width: 2.75rem; height: 2.75rem; border-radius: .5rem; object-fit: cover; flex-shrink: 0; background: #fef3c7; display: flex; align-items: center; justify-content: center; }
     .plan-dish-title { font-size: .8rem; font-weight: 600; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .plan-dish-sub { font-size: .7rem; color: #9ca3af; margin-top: .1rem; }
@@ -56,8 +79,8 @@
     .plan-meal { font-size: .7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: .03em; display: flex; align-items: center; }
     .plan-cell { min-height: 4.5rem; border: 1.5px dashed #d1d5db; border-radius: .75rem; padding: .25rem; display: flex; flex-direction: column; gap: .25rem; cursor: pointer; transition: background .15s, border-color .15s; }
     .plan-cell:hover { background: #f9fafb; }
-    .plan-cell.over, .plan-cell.target { border-color: #15803d; background: #f0fdf4; }
-    .plan-chip { display: flex; align-items: center; gap: .3rem; background: #f0fdf4; border-radius: .5rem; padding: .2rem .3rem; font-size: .7rem; line-height: 1.15; cursor: pointer; }
+    .plan-cell.over, .plan-cell.target { border-color: #1D5239; background: #EFF5F0; }
+    .plan-chip { display: flex; align-items: center; gap: .3rem; background: #EFF5F0; border-radius: .5rem; padding: .2rem .3rem; font-size: .7rem; line-height: 1.15; cursor: pointer; }
     .plan-chip img { width: 1.6rem; height: 1.6rem; border-radius: .35rem; object-fit: cover; flex-shrink: 0; }
     .plan-chip span { flex: 1; min-width: 0; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
     .plan-chip button { color: #9ca3af; font-size: .7rem; padding: 0 .15rem; }
@@ -77,8 +100,8 @@
 
     /* Ingredient finder */
     .finder-chip { display: inline-flex; align-items: center; gap: .35rem; padding: .3rem .7rem; border-radius: 9999px; border: 1px solid #d1d5db; background: #fff; font-size: .8rem; color: #374151; transition: background .15s, border-color .15s; }
-    .finder-chip:hover { border-color: #15803d; background: #f0fdf4; }
-    .finder-chip.on { background: #dcfce7; border-color: #15803d; color: #14532d; font-weight: 600; }
+    .finder-chip:hover { border-color: #1D5239; background: #EFF5F0; }
+    .finder-chip.on { background: #D9E8DD; border-color: #1D5239; color: #163F2E; font-weight: 600; }
     .finder-chip button { color: #6b7280; font-size: .75rem; }
     .finder-chip button:hover { color: #dc2626; }
     .finder-card { display: flex; gap: .75rem; align-items: flex-start; padding: .75rem; border-radius: 1rem; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.08); cursor: pointer; transition: box-shadow .15s; }
@@ -87,22 +110,22 @@
     body.rainy .finder-chip.on { background: #dbe7f3; border-color: #2f5d8c; color: #1e3a5f; }
     body.rainy .finder-chip:hover { border-color: #2f5d8c; background: #e8f0f8; }
     .fx-cat { border-radius: .75rem; border: 1px solid #f3f4f6; overflow: hidden; }
-    .fx-cat.open { border-color: #bbf7d0; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+    .fx-cat.open { border-color: #B5D2BE; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
     .fx-cat-btn { width: 100%; display: flex; align-items: center; gap: .5rem; padding: .55rem .7rem; font-size: .85rem; font-weight: 600; color: #374151; background: #fff; }
     .fx-cat-btn:hover { background: #f9fafb; }
     .fx-caret { color: #9ca3af; transition: transform .2s; }
     .fx-cat.open .fx-caret { transform: rotate(180deg); }
     .fx-dot { width: .6rem; height: .6rem; border-radius: 9999px; flex-shrink: 0; display: inline-block; }
-    .fx-count { background: #15803d; color: #fff; border-radius: 9999px; font-size: .65rem; padding: 0 .45rem; line-height: 1.2rem; }
+    .fx-count { background: #1D5239; color: #fff; border-radius: 9999px; font-size: .65rem; padding: 0 .45rem; line-height: 1.2rem; }
     .fx-menu { padding: .4rem .5rem .5rem; border-top: 1px solid #f3f4f6; background: #fcfcfd; animation: fx-drop .18s ease-out; }
     @keyframes fx-drop { from { opacity: 0; transform: translateY(-4px); } }
     .fx-menu input { width: 100%; border: 1px solid #e5e7eb; border-radius: .5rem; padding: .35rem .6rem; font-size: .8rem; margin-bottom: .35rem; }
-    .fx-menu input:focus { outline: none; box-shadow: 0 0 0 2px #22c55e; }
+    .fx-menu input:focus { outline: none; box-shadow: 0 0 0 2px #559370; }
     .fx-list { max-height: 15rem; overflow-y: auto; display: flex; flex-direction: column; }
     .fx-opt { display: flex; align-items: center; gap: .45rem; padding: .35rem .4rem; border-radius: .4rem; font-size: .8rem; color: #374151; }
-    .fx-opt:hover { background: #f0fdf4; }
-    .fx-opt.on { background: #dcfce7; font-weight: 600; color: #14532d; }
-    .fx-check { width: .9rem; color: #15803d; font-weight: 800; }
+    .fx-opt:hover { background: #EFF5F0; }
+    .fx-opt.on { background: #D9E8DD; font-weight: 600; color: #163F2E; }
+    .fx-check { width: .9rem; color: #1D5239; font-weight: 800; }
     .fx-uses { font-size: .65rem; color: #9ca3af; white-space: nowrap; }
     .fx-have { display: flex; align-items: center; gap: .5rem; font-size: .85rem; padding: .3rem .4rem; border-radius: .5rem; animation: fx-drop .2s ease-out; }
     .fx-have:hover { background: #f9fafb; }
@@ -134,6 +157,139 @@
     .fx-focus .fx-link.lit { stroke: #a5b4fc; stroke-opacity: .95; stroke-width: 2; }
     .fx-focus .fx-node.lit .fx-label { fill: #fff; }
 
+    /* ── Forest and cream ── */
+    .brand-word { font-family: 'Inter', sans-serif !important; font-weight: 800; letter-spacing: .14em; font-size: .62rem; color: #163F2E; }
+    .site-header { background: rgba(248, 244, 234, .92); backdrop-filter: saturate(1.4) blur(8px); border-bottom: 1px solid #E7DFCB; }
+    .site-header .tab-btn { color: #1D5239; }
+    .site-header .tab-btn:hover { background: #E9E2CF; }
+    .site-header .tab-btn.active, .site-header .tab-btn.active:hover { background: #163F2E; color: #F8F4EA; }
+    .hero-band { background: #163F2E; background-image: radial-gradient(ellipse 60% 80% at 85% 10%, rgba(78, 159, 58, .28), transparent 60%), radial-gradient(ellipse 50% 70% at 5% 100%, rgba(221, 174, 43, .16), transparent 60%); }
+    .hero-search { background: #F8F4EA; border-radius: 9999px; display: flex; align-items: center; padding: .35rem .35rem .35rem 1.1rem; box-shadow: 0 10px 30px rgba(0, 0, 0, .18); }
+    .hero-search input { flex: 1; min-width: 0; background: transparent; border: 0; outline: none; color: #163F2E; font-size: 1rem; }
+    .hero-stat b { display: block; font-family: 'Fraunces', serif; font-size: 1.6rem; line-height: 1.15; margin-bottom: .2rem; color: #E6C265; font-weight: 600; }
+    .recipe-card, .finder-card { transition: transform .2s ease, box-shadow .2s ease; }
+    .recipe-card:hover, .finder-card:hover { transform: translateY(-3px); }
+    /* Cards rise in one after another as a grid fills. */
+    @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+    #top-recipes-grid > *, #weather-grid > *, #browse-grid > .recipe-card { animation: rise .45s cubic-bezier(.2, .7, .3, 1) both; }
+    #top-recipes-grid > :nth-child(2), #weather-grid > :nth-child(2), #browse-grid > .recipe-card:nth-child(2) { animation-delay: .06s; }
+    #top-recipes-grid > :nth-child(3), #weather-grid > :nth-child(3), #browse-grid > .recipe-card:nth-child(3) { animation-delay: .12s; }
+    #top-recipes-grid > :nth-child(4), #weather-grid > :nth-child(4), #browse-grid > .recipe-card:nth-child(4) { animation-delay: .18s; }
+    #top-recipes-grid > :nth-child(n+5), #browse-grid > .recipe-card:nth-child(n+5) { animation-delay: .24s; }
+    /* Skeleton cards while recipes and prices load. */
+    .skel { border-radius: 1rem; background: #fff; overflow: hidden; box-shadow: 0 1px 3px rgba(0, 0, 0, .06); }
+    .skel i { display: block; background: linear-gradient(90deg, #EFE9DA 0%, #F8F4EA 40%, #EFE9DA 80%); background-size: 200% 100%; animation: shimmer 1.3s linear infinite; border-radius: .4rem; }
+    @keyframes shimmer { to { background-position: -200% 0; } }
+    /* The logo's leaf sways once when the page opens. */
+    @keyframes sway { 0% { transform: rotate(-8deg) scale(.9); opacity: 0; } 60% { transform: rotate(3deg) scale(1.02); opacity: 1; } 100% { transform: none; } }
+    .logo-mark { animation: sway .9s cubic-bezier(.2, .7, .3, 1) both; transform-origin: 50% 90%; }
+    section:not(.hidden) { animation: fadeIn .25s ease; }
+    /* Phones: a tab bar at the bottom instead of the header tabs. */
+    .bottom-nav { display: none; }
+    @media (max-width: 639px) {
+      .site-header nav { display: none; }
+      .bottom-nav { display: grid; grid-template-columns: repeat(6, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; background: rgba(248, 244, 234, .96); backdrop-filter: blur(8px); border-top: 1px solid #E7DFCB; padding: .3rem .25rem calc(.3rem + env(safe-area-inset-bottom)); }
+      .bottom-nav button { display: flex; flex-direction: column; align-items: center; gap: .15rem; font-size: .6rem; font-weight: 600; color: #6B7F70; padding: .3rem 0; border-radius: .75rem; }
+      .bottom-nav button svg { width: 1.3rem; height: 1.3rem; }
+      .bottom-nav button.active { color: #163F2E; background: #E3EDE3; }
+      body { padding-bottom: 4.5rem; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+    body.rainy .site-header { background: rgba(227, 234, 242, .94) !important; }
+    body.rainy .hero-band { background: #1e3a5f; }
+
+    /* ── Dark mode: Night market (dark green, mint and mango) ── */
+    html.dark { color-scheme: dark; --bg: #0F1F18; --s1: #16291F; --s2: #1C3326; --line: #24402F; --tx: #E6F4EC; --tx2: #B4CCBE; --tx3: #8FB3A0; --mint: #7CE0A3; --mango: #F5B841; }
+    html.dark body { background: var(--bg) !important; color: var(--tx); }
+    html.dark .bg-white, html.dark .skel, html.dark .finder-card, html.dark .fx-cat-btn { background-color: var(--s1) !important; }
+    html.dark .bg-gray-50, html.dark .bg-amber-50, html.dark .fx-menu, html.dark .hover\:bg-gray-50:hover, html.dark .hover\:bg-green-50:hover, html.dark .fx-cat-btn:hover, html.dark .fx-opt:hover, html.dark .fx-have:hover { background-color: var(--s2) !important; }
+    html.dark .bg-green-50, html.dark .bg-green-100 { background-color: #173A28 !important; }
+    html.dark .bg-amber-100, html.dark .bg-yellow-100 { background-color: #3A2E10 !important; color: var(--mango) !important; }
+    html.dark .bg-blue-50 { background-color: #14283A !important; }
+    html.dark .bg-red-100 { background-color: #3A1717 !important; }
+    html.dark .bg-lime-100 { background-color: #263A12 !important; }
+    html.dark .text-gray-900, html.dark .text-gray-800, html.dark .text-gray-700, html.dark h1, html.dark h2, html.dark h3 { color: var(--tx) !important; }
+    html.dark .text-gray-600, html.dark .text-gray-500 { color: var(--tx2) !important; }
+    html.dark .text-gray-400, html.dark .text-gray-300 { color: var(--tx3) !important; }
+    html.dark .text-green-700, html.dark .text-green-800, html.dark .text-green-600, html.dark .hover\:text-green-700:hover { color: var(--mint) !important; }
+    html.dark .text-amber-700, html.dark .text-amber-800, html.dark .text-amber-900, html.dark .text-amber-600, html.dark .text-yellow-700 { color: var(--mango) !important; }
+    html.dark .text-blue-700, html.dark .text-blue-600 { color: #8CC4F2 !important; }
+    html.dark .text-red-600, html.dark .text-red-700, html.dark .price-up { color: #F08A8A !important; }
+    html.dark .price-down, html.dark .text-lime-700 { color: var(--mint) !important; }
+    html.dark .border-gray-200, html.dark .border-gray-100, html.dark .border-gray-300, html.dark .border-green-200, html.dark .border-amber-200, html.dark .border-amber-100, html.dark .border-blue-200, html.dark .divide-gray-100 > * + *, html.dark .fx-cat, html.dark .plan-dish, html.dark .plan-cell { border-color: var(--line) !important; }
+    html.dark .shadow, html.dark .shadow-lg, html.dark .skel, html.dark .finder-card { box-shadow: 0 1px 0 rgba(255, 255, 255, .03), 0 4px 16px rgba(0, 0, 0, .35) !important; }
+    html.dark input, html.dark select, html.dark textarea { background-color: var(--s2) !important; color: var(--tx) !important; border-color: var(--line) !important; }
+    html.dark input::placeholder { color: var(--tx3) !important; }
+    html.dark .hero-search { background: var(--s2); } html.dark .hero-search input { background: transparent !important; }
+    html.dark .site-header { background: rgba(11, 23, 18, .9); border-color: var(--line); }
+    html.dark .site-header .tab-btn { color: var(--tx2); }
+    html.dark .site-header .tab-btn:hover { background: var(--s2); }
+    html.dark .site-header .tab-btn.active, html.dark .site-header .tab-btn.active:hover { background: var(--mint); color: #0B1712; }
+    html.dark .brand-word { color: var(--tx) !important; }
+    html.dark .logo-mark { filter: drop-shadow(0 0 6px rgba(124, 224, 163, .15)); }
+    html.dark .hero-band { background: #0B1712; background-image: radial-gradient(ellipse 60% 80% at 85% 10%, rgba(124, 224, 163, .14), transparent 60%), radial-gradient(ellipse 50% 70% at 5% 100%, rgba(245, 184, 65, .10), transparent 60%); }
+    html.dark .wx-btn { background: var(--s1); border-color: var(--line); color: var(--tx2); }
+    html.dark .wx-btn:hover { background: var(--s2); }
+    html.dark .wx-btn.on, html.dark .bg-green-700, html.dark .fx-count { background: var(--mint) !important; border-color: var(--mint) !important; color: #0B1712 !important; }
+    html.dark .hover\:bg-green-600:hover { background: #9BEABA !important; }
+    html.dark .bg-green-800, html.dark .bg-green-900 { background-color: #0B1712 !important; }
+    html.dark .skel i { background: linear-gradient(90deg, #1C3326 0%, #24402F 40%, #1C3326 80%); background-size: 200% 100%; }
+    html.dark .bottom-nav { background: rgba(11, 23, 18, .96); border-color: var(--line); }
+    html.dark .bottom-nav button { color: var(--tx3); }
+    html.dark .bottom-nav button.active { color: var(--mint); background: #173A28; }
+    html.dark .plan-chip, html.dark .fx-opt.on, html.dark .fx-have { background: #173A28; color: var(--tx); }
+    html.dark .plan-cell:hover, html.dark .plan-dish:hover { background: var(--s2); }
+    html.dark .plan-cell.over, html.dark .plan-cell.target, html.dark .plan-dish.picked { border-color: var(--mint) !important; background: #173A28; }
+    html.dark .plan-dish, html.dark .plan-receipt { color: var(--tx); }
+    html.dark .plan-dish { background: var(--s1); }
+    html.dark .plan-dish-sub { color: var(--tx3); }
+    html.dark .plan-badge { background: #3A2E10; color: var(--mango); }
+    html.dark .rc-name { color: var(--tx2); } html.dark .rc-day, html.dark .rc-total { border-color: var(--line); }
+    html.dark .bar { background: var(--line); } html.dark .bar-fill { background: var(--mint); }
+    html.dark .modal-bg { background: rgba(0, 0, 0, .7); }
+    html.dark ::-webkit-scrollbar-track { background: var(--bg); } html.dark ::-webkit-scrollbar-thumb { background: #2F5A43; }
+    html.dark body.rainy { background-color: #0E1A26 !important; }
+    html.dark body.rainy .site-header { background: rgba(10, 20, 32, .92) !important; }
+    html.dark body.rainy .hero-band { background: #0E1A26; }
+    html.dark tr.bg-white:hover, html.dark tr.bg-gray-50:hover { background-color: #173A28 !important; }
+    .theme-btn { width: 2.25rem; height: 2.25rem; border-radius: 9999px; display: inline-flex; align-items: center; justify-content: center; color: #1D5239; border: 1px solid #E7DFCB; background: transparent; transition: background .15s, transform .3s; }
+    .theme-btn:hover { background: #E9E2CF; }
+    .theme-btn:active { transform: rotate(-25deg) scale(.92); }
+    .theme-btn svg { width: 1.1rem; height: 1.1rem; }
+    .theme-btn .moon, html.dark .theme-btn .sun { display: none; }
+    html.dark .theme-btn .moon { display: block; }
+    html.dark .theme-btn { color: var(--mango); border-color: var(--line); }
+    html.dark .theme-btn:hover { background: var(--s2); }
+    html.theme-anim, html.theme-anim * { transition: background-color .35s ease, color .35s ease, border-color .35s ease !important; }
+
+    /* Sulit meter: five segments, filled by how a dish ranks against all others. */
+    .sulit-meter { display: flex; align-items: center; gap: 3px; }
+    .sulit-meter i { width: 1.1rem; height: .4rem; border-radius: 9999px; background: #E7DFCB; display: block; }
+    .sulit-meter.big i { width: 1.8rem; height: .55rem; }
+    .sulit-meter span { margin-left: .4rem; font-size: .7rem; font-weight: 700; color: #1D5239; }
+    .sulit-meter.big span { font-size: .85rem; }
+    .sulit-meter.l5 i.on { background: #2F7A55; } .sulit-meter.l4 i.on { background: #559370; }
+    .sulit-meter.l3 i.on { background: #DDAE2B; } .sulit-meter.l2 i.on { background: #D98A2B; } .sulit-meter.l1 i.on { background: #C8553D; }
+    .sulit-meter.l5 span, .sulit-meter.l4 span { color: #1D5239; } .sulit-meter.l3 span { color: #855F0E; } .sulit-meter.l2 span, .sulit-meter.l1 span { color: #9A3D28; }
+    .sulit-meter.off span { color: #9CA3AF; font-weight: 600; }
+    .sulit-meter i.on { animation: seg-in .35s ease both; }
+    .sulit-meter i.on:nth-child(2) { animation-delay: .05s; } .sulit-meter i.on:nth-child(3) { animation-delay: .1s; } .sulit-meter i.on:nth-child(4) { animation-delay: .15s; } .sulit-meter i.on:nth-child(5) { animation-delay: .2s; }
+    @keyframes seg-in { from { transform: scaleX(0); } to { transform: none; } }
+    html.dark .sulit-meter i { background: #24402F; }
+    html.dark .sulit-meter.l5 i.on { background: #7CE0A3; } html.dark .sulit-meter.l4 i.on { background: #5BBF86; }
+    html.dark .sulit-meter.l5 span, html.dark .sulit-meter.l4 span { color: #7CE0A3; } html.dark .sulit-meter.l3 span { color: #F5B841; } html.dark .sulit-meter.l2 span, html.dark .sulit-meter.l1 span { color: #F0A08A; }
+
+    .alert-dialog { border: 0; border-radius: 1.25rem; padding: 0; width: min(24rem, calc(100vw - 2rem)); box-shadow: 0 20px 50px rgba(0, 0, 0, .25); }
+    .alert-dialog::backdrop { background: rgba(15, 31, 24, .55); }
+    html.dark .alert-dialog { background: #16291F; color: #E6F4EC; }
+    .bell-btn { opacity: .45; transition: opacity .15s, transform .15s; }
+    tr:hover .bell-btn, .bell-btn:focus { opacity: 1; }
+    .bell-btn:active { transform: rotate(-15deg); }
+    .app-toast { position: fixed; left: 50%; bottom: 1.5rem; transform: translateX(-50%); z-index: 120; background: #163F2E; color: #F8F4EA; padding: .75rem 1.1rem; border-radius: 1rem; font-size: .875rem; box-shadow: 0 10px 30px rgba(0, 0, 0, .25); max-width: calc(100vw - 2rem); animation: rise .35s ease both; transition: opacity .4s, transform .4s; }
+    .app-toast.out { opacity: 0; transform: translate(-50%, 10px); }
+    @media (max-width: 639px) { .app-toast { bottom: 5.5rem; } }
+    html.dark .app-toast { background: #7CE0A3; color: #0B1712; }
+
     #rain { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 40; }
     #rain i { position: absolute; top: -30px; width: 1.5px; border-radius: 1px; background: linear-gradient(to bottom, rgba(186,206,232,0), rgba(140,170,210,.75)); animation: rain-fall linear infinite; }
     @keyframes rain-fall { to { transform: translate3d(-40px, 110vh, 0); } }
@@ -142,19 +298,24 @@
 <body class="bg-amber-50 text-gray-900 min-h-screen flex flex-col">
 
 <!-- NAV -->
-<header class="bg-green-800 text-white shadow-lg sticky top-0 z-50">
-  <div class="max-w-6xl mx-auto px-4 flex items-center justify-between h-16">
-    <a href="#" class="flex items-center gap-2 font-bold text-xl shrink-0" onclick="showSection('home')">
-      <span class="text-2xl">🍚</span> SarapSulit
+<header class="site-header sticky top-0 z-50">
+  <div class="max-w-6xl mx-auto px-4 flex items-center justify-between h-[4.5rem]">
+    <a href="#" class="flex flex-col items-center shrink-0 leading-none" onclick="showSection('home')" aria-label="FARM2FIGURE home">
+      <img src="logo.png" alt="" class="logo-mark h-11 w-11">
+      <span class="brand-word -mt-0.5">FARM2FIGURE</span>
     </a>
     <nav class="flex gap-1 text-sm font-medium overflow-x-auto min-w-0 ml-3 nav-scroll">
-      <button onclick="showSection('home')" id="nav-home" class="tab-btn active px-3 sm:px-4 py-2 whitespace-nowrap shrink-0 rounded-md transition-colors hover:bg-green-700 text-green-100">Home</button>
-      <button onclick="showSection('browse')" id="nav-browse" class="tab-btn px-3 sm:px-4 py-2 whitespace-nowrap shrink-0 rounded-md transition-colors hover:bg-green-700 text-green-100">Browse Recipes</button>
-      <button onclick="showSection('prices')" id="nav-prices" class="tab-btn px-3 sm:px-4 py-2 whitespace-nowrap shrink-0 rounded-md transition-colors hover:bg-green-700 text-green-100">DA Prices</button>
-      <button onclick="showSection('mydish')" id="nav-mydish" class="tab-btn px-3 sm:px-4 py-2 whitespace-nowrap shrink-0 rounded-md transition-colors hover:bg-green-700 text-green-100">My Dish</button>
-      <button onclick="showSection('planner')" id="nav-planner" class="tab-btn px-3 sm:px-4 py-2 whitespace-nowrap shrink-0 rounded-md transition-colors hover:bg-green-700 text-green-100">Planner</button>
-      <button onclick="showSection('finder')" id="nav-finder" class="tab-btn px-3 sm:px-4 py-2 whitespace-nowrap shrink-0 rounded-md transition-colors hover:bg-green-700 text-green-100">Anong lulutuin?</button>
+      <button onclick="showSection('home')" id="nav-home" class="tab-btn active px-3 sm:px-4 py-2 whitespace-nowrap shrink-0 rounded-full transition-colors">Home</button>
+      <button onclick="showSection('browse')" id="nav-browse" class="tab-btn px-3 sm:px-4 py-2 whitespace-nowrap shrink-0 rounded-full transition-colors">Browse Recipes</button>
+      <button onclick="showSection('prices')" id="nav-prices" class="tab-btn px-3 sm:px-4 py-2 whitespace-nowrap shrink-0 rounded-full transition-colors">DA Prices</button>
+      <button onclick="showSection('mydish')" id="nav-mydish" class="tab-btn px-3 sm:px-4 py-2 whitespace-nowrap shrink-0 rounded-full transition-colors">My Dish</button>
+      <button onclick="showSection('planner')" id="nav-planner" class="tab-btn px-3 sm:px-4 py-2 whitespace-nowrap shrink-0 rounded-full transition-colors">Planner</button>
+      <button onclick="showSection('finder')" id="nav-finder" class="tab-btn px-3 sm:px-4 py-2 whitespace-nowrap shrink-0 rounded-full transition-colors">Anong lulutuin?</button>
     </nav>
+    <button class="theme-btn shrink-0 ml-2" onclick="toggleTheme()" aria-label="Switch light or dark mode" title="Light / dark mode">
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
   </div>
 </header>
 
@@ -162,36 +323,28 @@
 <section id="section-home" class="flex flex-col">
 
   <!-- Hero -->
-  <div class="bg-gradient-to-br from-green-800 to-green-600 text-white py-20 px-4">
+  <div class="hero-band text-white px-4 pt-14 pb-10">
     <div class="max-w-3xl mx-auto text-center">
-      <div class="inline-block bg-amber-400 text-green-900 text-xs font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-wide">
-        📄 DA Prices updated: <span data-da-date>…</span>
-      </div>
-      <h1 class="text-4xl sm:text-5xl font-extrabold leading-tight mb-4">
-        Masarap, Masustansya,<br><span class="text-amber-300">Sulit!</span>
+      <p class="text-xs text-green-200 tracking-wide mb-4">DA market prices · updated <span data-da-date>…</span></p>
+      <h1 class="text-4xl sm:text-6xl font-semibold leading-[1.05] mb-4 text-amber-50">
+        Masarap, masustansya, <span class="text-amber-300 italic">sulit.</span>
       </h1>
-      <p class="text-lg text-green-100 mb-8 max-w-xl mx-auto">
-        Discover the best Filipino dishes to cook today — ranked by nutritional value and current
-        DA market prices. Make the most of your grocery budget.
+      <p class="text-base sm:text-lg text-green-100/90 mb-7 max-w-xl mx-auto">
+        Filipino dishes ranked by nutrition per peso, from today's palengke prices. Plan the week, use what you have, spend less.
       </p>
-      <div class="flex flex-col sm:flex-row gap-3 justify-center">
-        <button onclick="showSection('browse')" class="bg-amber-400 hover:bg-amber-300 text-gray-900 font-bold px-8 py-3 rounded-full transition-colors shadow-lg">
-          Browse Recipes
-        </button>
-        <button onclick="showSection('prices')" class="bg-white/20 hover:bg-white/30 text-white font-semibold px-8 py-3 rounded-full transition-colors border border-white/40">
-          View DA Prices
-        </button>
+      <form class="hero-search max-w-lg mx-auto" onsubmit="event.preventDefault(); heroSearch(this.q.value)">
+        <input name="q" type="search" placeholder="Anong ulam ngayon?" aria-label="Search dishes">
+        <button class="bg-green-800 hover:bg-green-700 text-amber-50 font-semibold text-sm px-5 py-2.5 rounded-full transition-colors">Search</button>
+      </form>
+      <div class="flex flex-wrap justify-center gap-2 mt-4 text-sm">
+        <button onclick="showSection('finder')" class="px-4 py-1.5 rounded-full border border-white/25 hover:bg-white/10 transition-colors">Anong lulutuin? →</button>
+        <button onclick="showSection('planner')" class="px-4 py-1.5 rounded-full border border-white/25 hover:bg-white/10 transition-colors">Plan my week →</button>
       </div>
-    </div>
-  </div>
-
-  <!-- Stats -->
-  <div class="bg-green-700 text-white py-4">
-    <div class="max-w-6xl mx-auto px-4 flex flex-wrap justify-center gap-10 text-center text-sm">
-      <div><p class="text-2xl font-bold text-amber-300" id="stat-recipes">—</p><p class="text-green-200">Recipes Indexed</p></div>
-      <div><p class="text-2xl font-bold text-amber-300" id="stat-foods">—</p><p class="text-green-200">Food Items (FNRI)</p></div>
-      <div><p class="text-2xl font-bold text-amber-300" id="stat-commodities">—</p><p class="text-green-200">Commodity Prices</p></div>
-      <div><p class="text-2xl font-bold text-amber-300"><span data-da-date>—</span></p><p class="text-green-200">Latest DA Data</p></div>
+      <div class="grid grid-cols-3 gap-4 max-w-md mx-auto mt-10 text-xs text-green-200">
+        <div class="hero-stat"><b id="stat-recipes">—</b>recipes</div>
+        <div class="hero-stat"><b id="stat-foods">—</b>FNRI foods</div>
+        <div class="hero-stat"><b id="stat-commodities">—</b>market prices</div>
+      </div>
     </div>
   </div>
 
@@ -216,7 +369,7 @@
         <button class="wx-btn" data-sort="kcal" onclick="setPickSort('kcal')">Fewest calories</button>
       </div>
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5" id="weather-grid"></div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5" id="weather-grid"><div class="skel"><i style="height:11rem;border-radius:0"></i><div style="padding:1rem"><i style="height:.9rem;width:80%"></i><i style="height:.7rem;width:45%;margin-top:.6rem"></i><i style="height:1.3rem;width:60%;margin-top:1rem;border-radius:9999px"></i></div></div><div class="skel"><i style="height:11rem;border-radius:0"></i><div style="padding:1rem"><i style="height:.9rem;width:80%"></i><i style="height:.7rem;width:45%;margin-top:.6rem"></i><i style="height:1.3rem;width:60%;margin-top:1rem;border-radius:9999px"></i></div></div><div class="skel"><i style="height:11rem;border-radius:0"></i><div style="padding:1rem"><i style="height:.9rem;width:80%"></i><i style="height:.7rem;width:45%;margin-top:.6rem"></i><i style="height:1.3rem;width:60%;margin-top:1rem;border-radius:9999px"></i></div></div><div class="skel"><i style="height:11rem;border-radius:0"></i><div style="padding:1rem"><i style="height:.9rem;width:80%"></i><i style="height:.7rem;width:45%;margin-top:.6rem"></i><i style="height:1.3rem;width:60%;margin-top:1rem;border-radius:9999px"></i></div></div></div>
     <p class="text-xs text-gray-400 mt-3">Weather by <a href="https://open-meteo.com/" target="_blank" rel="noopener" class="underline">Open-Meteo</a>. Your location is rounded to about 1 km and only used to look up the weather.</p>
   </div>
 
@@ -230,7 +383,7 @@
       <button onclick="showSection('browse')" class="text-green-700 hover:underline text-sm font-medium">View all →</button>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5" id="top-recipes-grid"><p class="col-span-4 text-center text-gray-400 py-10" data-loading>Loading recipes and today’s prices…</p></div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5" id="top-recipes-grid"><div class="skel"><i style="height:11rem;border-radius:0"></i><div style="padding:1rem"><i style="height:.9rem;width:80%"></i><i style="height:.7rem;width:45%;margin-top:.6rem"></i><i style="height:1.3rem;width:60%;margin-top:1rem;border-radius:9999px"></i></div></div><div class="skel"><i style="height:11rem;border-radius:0"></i><div style="padding:1rem"><i style="height:.9rem;width:80%"></i><i style="height:.7rem;width:45%;margin-top:.6rem"></i><i style="height:1.3rem;width:60%;margin-top:1rem;border-radius:9999px"></i></div></div><div class="skel"><i style="height:11rem;border-radius:0"></i><div style="padding:1rem"><i style="height:.9rem;width:80%"></i><i style="height:.7rem;width:45%;margin-top:.6rem"></i><i style="height:1.3rem;width:60%;margin-top:1rem;border-radius:9999px"></i></div></div><div class="skel"><i style="height:11rem;border-radius:0"></i><div style="padding:1rem"><i style="height:.9rem;width:80%"></i><i style="height:.7rem;width:45%;margin-top:.6rem"></i><i style="height:1.3rem;width:60%;margin-top:1rem;border-radius:9999px"></i></div></div></div>
   </div>
 
   <!-- How it works -->
@@ -334,10 +487,26 @@
     </div>
     <p class="text-sm text-gray-500 mb-6">Source: Department of Agriculture Daily Price Index, NCR prevailing retail prices · updated automatically every day</p>
 
-    <!-- Dishes whose cost moved since about a month ago -->
+    <div class="bg-white rounded-2xl shadow p-4 mb-6">
+      <div class="flex items-baseline justify-between gap-2 flex-wrap">
+        <h2 class="text-lg font-bold">🔔 Your price alerts</h2>
+        <span id="alerts-perm" class="text-xs text-gray-500"></span>
+      </div>
+      <div id="alerts-list" class="divide-y divide-gray-100"></div>
+      <p class="text-xs text-gray-400 mt-1">Saved on this device. Checked whenever you open the site and every hour while it's open.</p>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2 mb-5">
+      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Compare with</span>
+      <button class="wx-btn" data-period="week" onclick="setPricePeriod('week')">Last week</button>
+      <button class="wx-btn" data-period="twoWeeks" onclick="setPricePeriod('twoWeeks')">2 weeks ago</button>
+      <button class="wx-btn on" data-period="month" onclick="setPricePeriod('month')">Last month</button>
+    </div>
+
+    <!-- Dishes whose cost moved since the chosen period -->
     <div class="mb-8">
       <div class="flex items-baseline justify-between mb-3 flex-wrap gap-2">
-        <h2 class="text-xl font-bold">Dishes whose cost changed</h2>
+        <h2 class="text-xl font-bold">Dishes whose cost changed · <span data-period-label>1 month</span></h2>
         <span id="movers-summary" class="text-xs text-gray-500">Loading…</span>
       </div>
       <div class="grid md:grid-cols-2 gap-4">
@@ -365,8 +534,8 @@
       <button onclick="filterPrices('condiments')" id="cat-condiments" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50">Sugar, Salt &amp; Oil</button>
       <select id="price-sort" onchange="renderPrices(currentPriceCat)" class="ml-auto border border-gray-200 rounded-full px-3 py-1.5 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500">
         <option value="name">Sort: A–Z</option>
-        <option value="up">Biggest increase vs month ago</option>
-        <option value="down">Biggest drop vs month ago</option>
+        <option value="up">Biggest increase (chosen period)</option>
+        <option value="down">Biggest drop (chosen period)</option>
       </select>
     </div>
 
@@ -378,11 +547,14 @@
               <th class="text-left px-5 py-3 font-semibold">Commodity</th>
               <th class="text-left px-3 py-3 font-semibold hidden sm:table-cell">Local Name</th>
               <th class="text-left px-3 py-3 font-semibold">Unit</th>
-              <th class="text-right px-3 py-3 font-semibold">30-day Low (₱)</th>
-              <th class="text-right px-3 py-3 font-semibold">30-day High (₱)</th>
+              <th class="text-right px-3 py-3 font-semibold hidden lg:table-cell">30-day Low (₱)</th>
+              <th class="text-right px-3 py-3 font-semibold hidden lg:table-cell">30-day High (₱)</th>
               <th class="text-right px-5 py-3 font-semibold">Latest (₱)</th>
-              <th class="text-right px-3 py-3 font-semibold whitespace-nowrap">vs <span data-compare-date>month ago</span></th>
+              <th class="text-right px-3 py-3 font-semibold whitespace-nowrap">vs 1 wk</th>
+              <th class="text-right px-3 py-3 font-semibold whitespace-nowrap">vs 2 wks</th>
+              <th class="text-right px-3 py-3 font-semibold whitespace-nowrap">vs 1 mo</th>
               <th class="text-center px-3 py-3 font-semibold hidden md:table-cell">Trend</th>
+              <th class="px-2 py-3"><span class="sr-only">Alert</span></th>
             </tr>
           </thead>
           <tbody id="price-table-body" class="divide-y divide-gray-100"></tbody>
@@ -426,8 +598,17 @@
           <button onclick="randomizeWeek()" class="bg-amber-400 hover:bg-amber-300 text-gray-900 font-bold text-sm px-4 py-2 rounded-full shadow transition-colors">🎲 Random week</button>
           <button class="wx-btn on" data-random="ulam" onclick="setRandomMeals('ulam')">Ulam lang</button>
           <button class="wx-btn" data-random="all" onclick="setRandomMeals('all')">Lahat ng kain</button>
+          <span class="text-xs text-gray-500 ml-1">Ulam per meal</span>
+          <button class="wx-btn on" data-ulam-n="1" onclick="setUlamPerMeal(1)">1</button>
+          <button class="wx-btn" data-ulam-n="2" onclick="setUlamPerMeal(2)">2</button>
+          <button class="wx-btn" data-ulam-n="3" onclick="setUlamPerMeal(3)">3</button>
           <label class="text-xs text-gray-500 flex items-center gap-1.5"><input id="plan-keep" type="checkbox" class="accent-green-600"> Keep dishes already in the week</label>
         </div>
+        <form class="flex flex-wrap items-center gap-2 mb-1" onsubmit="event.preventDefault(); planOnBudget()">
+          <input id="budget-text" type="text" placeholder="₱1,500 for the week, 4 people" class="flex-1 min-w-[12rem] border border-gray-200 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Weekly budget and people">
+          <button class="bg-green-800 hover:bg-green-700 text-amber-50 font-semibold text-sm px-4 py-2 rounded-full transition-colors">₱ Plan within budget</button>
+        </form>
+        <p id="budget-result" class="text-xs text-gray-400 mb-3">Uses the meal and “ulam per meal” choices above; only dishes with a complete price.</p>
         <div class="overflow-x-auto"><div id="plan-grid" class="plan-grid"></div></div>
       </div>
       <!-- Receipt -->
@@ -483,6 +664,22 @@
   </div>
 </section>
 
+<dialog id="alert-dialog" class="alert-dialog" onclick="if (event.target === this) this.close()">
+  <form method="dialog" onsubmit="event.preventDefault(); saveAlertFromDialog()" class="p-5 flex flex-col gap-3">
+    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">🔔 Price alert</p>
+    <p id="alert-what" class="font-display text-xl font-semibold"></p>
+    <p id="alert-now" class="text-sm text-gray-500"></p>
+    <label class="text-sm text-gray-600">Tell me when it's below
+      <span class="flex items-center gap-2 mt-1">₱ <input id="alert-below" type="number" step="0.01" min="0.01" class="w-32 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"></span>
+    </label>
+    <p id="alert-error" class="text-xs text-red-600"></p>
+    <div class="flex justify-end gap-2">
+      <button type="button" onclick="document.getElementById('alert-dialog').close()" class="px-4 py-2 rounded-full text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
+      <button class="px-4 py-2 rounded-full text-sm font-semibold bg-green-800 text-amber-50 hover:bg-green-700">Save alert</button>
+    </div>
+  </form>
+</dialog>
+
 <!-- ═══════════════════════════════════ RECIPE MODAL ═══════════════════════════════════ -->
 <div class="modal-bg" id="recipe-modal" onclick="closeModal(event)">
   <div class="bg-white rounded-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
@@ -491,15 +688,22 @@
 </div>
 
 <!-- FOOTER -->
-<footer class="bg-green-900 text-green-100 text-center py-6 text-sm mt-auto">
-  <p>Data sources: <strong>DA Price Monitoring (<span data-da-date>latest</span>)</strong> · <strong>Panlasang Pinoy</strong> · <strong>FNRI Food Composition Table</strong></p>
-  <p class="mt-1 text-green-400">SarapSulit — Masarap, Masustansya, Sulit!</p>
+<footer class="bg-green-900 text-green-100 py-8 text-sm mt-auto">
+  <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center gap-4 sm:justify-between text-center sm:text-left">
+    <div class="flex items-center gap-3">
+      <span class="bg-amber-50 rounded-xl p-1.5"><img src="logo.png" alt="" class="h-8 w-8"></span>
+      <div><p class="brand-word" style="color:#F8F4EA;font-size:.75rem">FARM2FIGURE</p><p class="text-green-300 text-xs mt-1">Masarap, masustansya, sulit.</p></div>
+    </div>
+    <p class="text-green-300 text-xs">Data: DA Price Monitoring (<span data-da-date>latest</span>) · PSA OpenSTAT · Panlasang Pinoy · FNRI Food Composition Table</p>
+  </div>
 </footer>
+<nav class="bottom-nav" aria-label="Sections"><button data-nav="home" onclick="showSection(&#39;home&#39;)" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Home</button><button data-nav="browse" onclick="showSection(&#39;browse&#39;)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Recipes</button><button data-nav="prices" onclick="showSection(&#39;prices&#39;)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>Prices</button><button data-nav="mydish" onclick="showSection(&#39;mydish&#39;)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 13h16a8 8 0 0 1-16 0z"/><path d="M12 5v3M8 6l1 2M16 6l-1 2"/></svg>My Dish</button><button data-nav="planner" onclick="showSection(&#39;planner&#39;)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>Planner</button><button data-nav="finder" onclick="showSection(&#39;finder&#39;)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 21c0-6 3-11 12-14-1 9-5 13-11 13"/><path d="M6 21c2-4 5-7 9-10"/></svg>Lulutuin</button></nav>
 
 <script src="weather.js"></script>
 <script src="mydish.js"></script>
 <script src="planner.js"></script>
 <script src="finder.js"></script>
+<script src="alerts.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

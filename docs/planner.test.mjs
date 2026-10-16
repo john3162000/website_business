@@ -6,18 +6,18 @@ import vm from "node:vm";
 
 const ctx = vm.createContext({});
 vm.runInContext(`${readFileSync(new URL("./planner.js", import.meta.url), "utf8")}
-;globalThis.api = { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek };`, ctx);
-const { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek } = ctx.api;
+;globalThis.api = { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, isMainUlam };`, ctx);
+const { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, isMainUlam } = ctx.api;
 const plain = (v) => JSON.parse(JSON.stringify(v));
 
-test("slots: add without duplicates, at most 3, remove clears empty slots", () => {
+test("slots: add without duplicates, at most 5, remove clears empty slots", () => {
   let p = { people: 4, slots: {} };
   const k = slotKey("Lunes", "Almusal");
   p = addToSlot(addToSlot(p, k, 1), k, 1);
   assert.deepEqual(plain(p.slots[k]), [1]);
-  p = addToSlot(addToSlot(addToSlot(p, k, 2), k, 3), k, 4);
-  assert.deepEqual(plain(p.slots[k]), [1, 2, 3]);
-  for (const id of [1, 2, 3]) p = removeFromSlot(p, k, id);
+  for (const id of [2, 3, 4, 5, 6]) p = addToSlot(p, k, id);
+  assert.deepEqual(plain(p.slots[k]), [1, 2, 3, 4, 5]);
+  for (const id of [1, 2, 3, 4, 5]) p = removeFromSlot(p, k, id);
   assert.equal(k in p.slots, false);
 });
 
@@ -103,4 +103,72 @@ test("random week: keep leaves filled slots, and a small pool repeats instead of
   assert.deepEqual(plain(p.slots["Martes|Meryenda"]), [7]);
   assert.equal(plain(plannedDishes(p)).length, 28);
   assert.deepEqual(plain(randomWeek(p0, { ulam: [] }, { meals: ["Hapunan"] }).slots), { "Lunes|Meryenda": [50] });
+});
+
+test("random week: two or three ulam per meal, all different; almusal and meryenda stay one", () => {
+  const pools = { ulam: Array.from({ length: 60 }, (_, n) => 100 + n), almusal: [1, 2, 3, 4, 5, 6, 7, 8], meryenda: [20, 21, 22, 23, 24, 25, 26, 27] };
+  const p = randomWeek({ people: 4, slots: {} }, pools, { ulamPerMeal: 3, rng: () => 0.3 });
+  assert.equal(plain(p.slots["Lunes|Tanghalian"]).length, 3);
+  assert.equal(plain(p.slots["Lunes|Almusal"]).length, 1);
+  const ulam = plain(plannedDishes(p)).filter((d) => d.meal === "Tanghalian" || d.meal === "Hapunan").map((d) => d.id);
+  assert.equal(ulam.length, 42);
+  assert.equal(new Set(ulam).size, 42, "60 dishes in the pool: no repeats");
+  // A slot never holds the same dish twice, even when the pool runs out.
+  const small = randomWeek({ people: 4, slots: {} }, { ulam: [1, 2] }, { meals: ["Hapunan"], ulamPerMeal: 3 });
+  assert.deepEqual(plain(small.slots["Lunes|Hapunan"]).sort(), [1, 2]);
+});
+
+test("budget text: peso amounts, k, and people in English or Tagalog", () => {
+  assert.deepEqual(plain(parseBudgetText("₱1,500 for the week, 4 people")), { budget: 1500, people: 4 });
+  assert.deepEqual(plain(parseBudgetText("1500 pesos 4 tao")), { budget: 1500, people: 4 });
+  assert.deepEqual(plain(parseBudgetText("budget 2k for 5")), { budget: 2000, people: 5 });
+  assert.deepEqual(plain(parseBudgetText("₱800")), { budget: 800, people: null });
+  assert.deepEqual(plain(parseBudgetText("hello")), { budget: null, people: null });
+});
+
+test("budget week: most nutritious dishes that fit, total within budget", () => {
+  // 14 ulam slots (Tanghalian + Hapunan), 2 people.
+  const recipes = new Map([
+    [1, { costPerServing: 100, nutritionScore: 90, valueScore: 3 }],   // great but pricey
+    [2, { costPerServing: 30, nutritionScore: 60, valueScore: 8 }],
+    [3, { costPerServing: 25, nutritionScore: 50, valueScore: 8 }],
+    [4, { costPerServing: 20, nutritionScore: 40, valueScore: 8 }],
+    [5, { costPerServing: 15, nutritionScore: 30, valueScore: 8 }],
+  ]);
+  const pools = { ulam: [1, 2, 3, 4, 5] };
+  const r = budgetWeek(pools, recipes, { budget: 1000, people: 2, meals: ["Tanghalian", "Hapunan"] });
+  const ids = plain(plannedDishes(r.plan)).map((d) => d.id);
+  assert.equal(ids.length, 14);
+  assert.ok(r.fits && r.total <= 1000, `total ${r.total}`);
+  assert.equal(ids.includes(1), true, "the leftover pays for the best dish once");
+  // Too small a budget: the cheapest week, reported as over.
+  const tight = budgetWeek(pools, recipes, { budget: 100, people: 2, meals: ["Tanghalian", "Hapunan"] });
+  assert.equal(tight.fits, false);
+});
+
+test("meal types: kakanin and sweets are meryenda, never ulam, even when filed as a main dish", () => {
+  const t = (title, category = "Main Dish", course = null) => [...mealTypes({ title, category, course })].sort().join(",");
+  assert.equal(t("Ube Pichi Pichi Recipe"), "meryenda");
+  assert.equal(t("Cassava Suman"), "meryenda");
+  assert.equal(t("Yema Recipe"), "meryenda");
+  assert.equal(t("Chicken Pot Pie"), "ulam");
+  assert.equal(t("Pancit Canton"), "meryenda,ulam");
+  assert.equal(t("Champorado"), "almusal,meryenda");
+  assert.equal(t("Burong Mustasa (Pickled Flat Mustard Greens)"), "");
+  assert.equal(t("How to Make Potato Chips on the Stovetop", "Vegetable Dish"), "meryenda");
+  assert.equal(t("Crispy Pata"), "ulam");
+});
+
+test("main ulam: real mains with protein; not sides of rice, egg how-tos or sweets", () => {
+  const R = (title, category, protein) => ({ title, category, protein });
+  assert.equal(isMainUlam(R("Chicken Adobo", "Main Dish", 30)), true);
+  assert.equal(isMainUlam(R("Sinigang na Baboy", "Soup", 22)), true);
+  assert.equal(isMainUlam(R("Cilantro Lime Rice", "Rice & Noodles", 4)), false);
+  assert.equal(isMainUlam(R("How to Make Hard Boiled Eggs", "Main Dish", 12)), false);
+  assert.equal(isMainUlam(R("Ginisang Sitaw", "Vegetable Dish", 3)), false);
+  assert.equal(mealTypes({ title: "Minatamis na Saging", category: "Main Dish" }).has("ulam"), false);
+  for (const t of ["Brazo de Mercedes", "Yummy Blueberry Pancake", "Nilupak Recipe", "Baked Chicken Nuggets", "Tokneneng Recipe"]) {
+    assert.equal(mealTypes({ title: t, category: "Main Dish" }).has("ulam"), false, t);
+  }
+  assert.equal(mealTypes({ title: "Yummy Blueberry Pancake", category: "Main Dish" }).has("almusal"), true);
 });

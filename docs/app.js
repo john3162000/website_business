@@ -17,6 +17,10 @@ let RECIPES = [];
 let DA_PRICES = [];
 let LATEST_DA_DATE = null;
 let COMPARE_DATE = null; // "a month ago" for price changes (see /api/commodities compareDate)
+// The three comparison windows on the Prices tab, and which one sorts the table and the dish movers.
+const PRICE_PERIODS = [{ key: "week", days: 7, label: "1 week" }, { key: "twoWeeks", days: 14, label: "2 weeks" }, { key: "month", days: 30, label: "1 month" }];
+let COMPARES = {};
+let pricePeriod = "month";
 let DATA_READY = null; // loadData() promise, for sections that need RECIPES
 
 // ═══════════════ UTILITY ═══════════════
@@ -157,6 +161,7 @@ async function loadData() {
 
   LATEST_DA_DATE = comRes.latestDate ? new Date(comRes.latestDate) : null;
   COMPARE_DATE = comRes.compareDate ? new Date(comRes.compareDate) : null;
+  COMPARES = Object.fromEntries(PRICE_PERIODS.map((x) => [x.key, comRes.compares && comRes.compares[x.key] ? new Date(comRes.compares[x.key]) : null]));
   DA_PRICES = (comRes.commodities || []).map((c) => {
     let trend = "stable";
     if (c.price != null && c.prevPrice != null) trend = c.price > c.prevPrice ? "up" : c.price < c.prevPrice ? "down" : "stable";
@@ -165,6 +170,8 @@ async function loadData() {
       unit: (c.unit && c.unit.label ? c.unit.label : "₱/kg").replace("₱/", ""),
       low: c.low, high: c.high, avg: c.price, trend,
       monthAgo: c.monthAgoPrice ?? null, monthChange: c.monthChange ?? null,
+      // { week, twoWeeks, month } → { price, change }; older API: month only.
+      changes: c.changes || { month: { price: c.monthAgoPrice ?? null, change: c.monthChange ?? null } },
     };
   });
 
@@ -172,20 +179,72 @@ async function loadData() {
   // Articles ("What is Broccoli?") and round-up posts with several recipes in one card are not single recipes.
   const { shown, hidden } = splitHidden(recRes.recipes || [], compiled);
   RECIPES = shown.map((r) => buildRecipe(r, compiled.get(r.id)));
+  SULIT_SCORES = RECIPES.filter((r) => r.ranked).map((r) => r.valueScore).sort((a, b) => a - b);
   const note = document.getElementById("hidden-note");
   if (note && hidden.length) {
     note.textContent = `${hidden.length.toLocaleString()} recipe${hidden.length !== 1 ? "s" : ""} hidden: ingredients not in our catalog yet.`;
     note.classList.remove("hidden");
   }
 
-  setText("stat-recipes", RECIPES.length.toLocaleString());
-  setText("stat-foods", nutRes.count != null ? nutRes.count.toLocaleString() : "—");
-  setText("stat-commodities", DA_PRICES.filter((p) => p.avg != null).length.toLocaleString());
+  countUp("stat-recipes", RECIPES.length);
+  if (nutRes.count != null) countUp("stat-foods", nutRes.count); else setText("stat-foods", "—");
+  countUp("stat-commodities", DA_PRICES.filter((p) => p.avg != null).length);
   document.querySelectorAll("[data-da-date]").forEach((el) => { el.textContent = formatDate(LATEST_DA_DATE); });
   document.querySelectorAll("[data-compare-date]").forEach((el) => { el.textContent = COMPARE_DATE ? shortDate(COMPARE_DATE) : "month ago"; });
 }
 
 function setText(id, v) { const el = document.getElementById(id); if (el) el.textContent = v; }
+
+/** A home-page number that counts up from 0 (straight to the value when motion is reduced). */
+function countUp(id, n) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduce || !window.requestAnimationFrame) { el.textContent = n.toLocaleString(); return; }
+  const t0 = performance.now(), ms = 900;
+  const step = (t) => {
+    const k = Math.min(1, (t - t0) / ms);
+    el.textContent = Math.round(n * (1 - Math.pow(1 - k, 3))).toLocaleString();
+    if (k < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+/** The hero search box: open Browse with the words typed. */
+function heroSearch(q) {
+  document.getElementById("search-input").value = q.trim();
+  showSection("browse");
+}
+
+// ═══════════════ SULIT METER ═══════════════
+
+let SULIT_SCORES = []; // every ranked dish's Sulit Score, ascending
+
+const SULIT_LEVELS = [
+  { min: 0.9, segs: 5, label: "Super sulit" },
+  { min: 0.7, segs: 4, label: "Sulit" },
+  { min: 0.4, segs: 3, label: "Okay" },
+  { min: 0.15, segs: 2, label: "Medyo mahal" },
+  { min: 0, segs: 1, label: "Mahal" },
+];
+
+/** Where a score sits among all ranked dishes: { pct (0–1), segs (1–5), label }. */
+function sulitLevel(score, scores = SULIT_SCORES) {
+  if (!scores.length) return null;
+  let below = 0;
+  while (below < scores.length && scores[below] < score) below++;
+  const pct = below / scores.length;
+  return { pct, ...SULIT_LEVELS.find((l) => pct >= l.min) };
+}
+
+/** Five-segment meter; "Unranked" when the price or nutrition data is too thin to compare. */
+function sulitMeter(r, big = false) {
+  const lv = r.ranked ? sulitLevel(r.valueScore) : null;
+  if (!lv) return `<div class="sulit-meter off${big ? " big" : ""}" title="Not enough price or nutrition data to rank">${"<i></i>".repeat(5)}<span>${r.costIncomplete ? "Incomplete price" : "Unranked"}</span></div>`;
+  const top = Math.max(1, Math.round((1 - lv.pct) * 100));
+  return `<div class="sulit-meter l${lv.segs}${big ? " big" : ""}" title="Sulit Score ${r.valueScore}: better value than ${Math.round(lv.pct * 100)}% of dishes (top ${top}%)">${
+    Array.from({ length: 5 }, (_, i) => `<i class="${i < lv.segs ? "on" : ""}"></i>`).join("")}<span>${lv.label}</span></div>`;
+}
 
 // ═══════════════ RENDER ═══════════════
 
@@ -207,12 +266,12 @@ function buildRecipeCard(r) {
          onclick="openModal(${r.id})">
       <div class="relative h-44 bg-amber-100 overflow-hidden">
         ${img}
-        ${r.ranked ? `<div class="absolute top-2 right-2 bg-green-700 text-white text-xs font-bold px-2 py-1 rounded-full shadow">★ ${r.valueScore} sulit</div>` : ""}
         ${r.costIncomplete ? `<div class="absolute top-2 left-2 bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow" title="No price yet for ${escapeHtml(r.costGaps.join(", "))}">⚠ Incomplete price</div>` : ""}
       </div>
       <div class="p-4 flex flex-col gap-2 flex-1">
         <h3 class="font-semibold text-gray-900 leading-snug group-hover:text-green-700 transition-colors">${escapeHtml(r.title)}</h3>
         <span class="text-xs text-gray-400 uppercase tracking-wide">${r.category}</span>
+        ${sulitMeter(r)}
         <div class="flex flex-wrap gap-1 mt-auto pt-2">
           <span class="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-medium">${costText(r)}/serving</span>
           <span class="text-xs ${scoreColor(r.nutritionScore / 10)} px-2 py-0.5 rounded-full font-semibold">Nutri: ${r.nutritionScore}</span>
@@ -286,7 +345,8 @@ function buildModal(r, instructions, lines) {
   const strength = r.protein >= 20 ? "protein" : r.fiber >= 5 ? "fiber" : "vitamins";
   const insight = r.ranked
     ? `<div class="bg-green-50 border border-green-200 rounded-xl p-3 text-xs text-green-700">
-        <p class="font-bold mb-1">💡 Why this scores ${r.valueScore >= 7 ? "well" : "this way"}</p>
+        ${sulitMeter(r, true)}
+        <p class="font-bold mb-1 mt-2">💡 Why this scores ${r.valueScore >= 7 ? "well" : "this way"}</p>
         <p>Nutrition score ${r.nutritionScore} for about ₱${r.costPerServing} per serving at today’s prices. Strongest in ${strength}.</p>
       </div>`
     : `<div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-700">
@@ -336,6 +396,7 @@ function buildModal(r, instructions, lines) {
               <p class="text-xs text-gray-400">${costText(r)}/serving × ${r.servings} servings${r.costCoverage < 1 ? ` · ${Math.round(r.costCoverage * 100)}% of ingredients (by weight) priced` : ""}</p>
             </div>
           </div>
+          ${r.costPerServing > 0 ? `<button onclick="openAlertDialog('dish', ${r.id})" class="mt-2 text-xs font-semibold text-green-700 hover:underline">🔔 Alert me when this gets cheaper</button>` : ""}
           ${r.costIncomplete ? `<p class="mt-2 text-xs bg-amber-100 text-amber-900 rounded-xl px-4 py-2">⚠ <strong>Incomplete price data:</strong> no price yet for ${escapeHtml(r.costGaps.join(", "))}. The real cost is higher than shown, so this dish is listed last.</p>` : ""}
         </div>
 
@@ -387,8 +448,9 @@ let currentPriceCat = "all";
 function renderPrices(cat) {
   currentPriceCat = cat;
   const sort = (document.getElementById("price-sort") || {}).value || "name";
-  // Items without a month-ago price go last in either change order.
-  const byChange = (dir) => (a, b) => (a.monthChange == null) - (b.monthChange == null) || dir * ((b.monthChange || 0) - (a.monthChange || 0));
+  // Items without a price for the chosen period go last in either change order.
+  const ch = (p) => (p.changes[pricePeriod] || {}).change ?? null;
+  const byChange = (dir) => (a, b) => (ch(a) == null) - (ch(b) == null) || dir * ((ch(b) || 0) - (ch(a) || 0));
   const filtered = (cat === "all" ? DA_PRICES : DA_PRICES.filter((p) => p.group === cat))
     .slice().sort(sort === "up" ? byChange(1) : sort === "down" ? byChange(-1) : (a, b) => a.name.localeCompare(b.name));
   const trendIcon = { up: "▲", down: "▼", stable: "–" };
@@ -400,15 +462,19 @@ function renderPrices(cat) {
       <td class="px-5 py-3 font-medium">${escapeHtml(p.name)}</td>
       <td class="px-3 py-3 text-gray-500 hidden sm:table-cell">${escapeHtml(p.local)}</td>
       <td class="px-3 py-3 text-gray-500">/${escapeHtml(p.unit)}</td>
-      <td class="px-3 py-3 text-right text-gray-600 tabular-nums">${money(p.low)}</td>
-      <td class="px-3 py-3 text-right text-gray-600 tabular-nums">${money(p.high)}</td>
+      <td class="px-3 py-3 text-right text-gray-600 tabular-nums hidden lg:table-cell">${money(p.low)}</td>
+      <td class="px-3 py-3 text-right text-gray-600 tabular-nums hidden lg:table-cell">${money(p.high)}</td>
       <td class="px-5 py-3 text-right font-bold tabular-nums">${p.avg != null ? "₱" + money(p.avg) : '<span class="text-gray-400 font-normal">n/a</span>'}</td>
-      <td class="px-3 py-3 text-right tabular-nums ${p.monthChange > 0 ? "price-up" : p.monthChange < 0 ? "price-down" : "text-gray-400"}"
-          title="${p.monthAgo != null ? "₱" + money(p.monthAgo) + " on " + shortDate(COMPARE_DATE) : "no price a month ago"}">${pctText(p.monthChange)}</td>
+      ${PRICE_PERIODS.map((x) => {
+        const c = p.changes[x.key] || {};
+        return `<td class="px-3 py-3 text-right tabular-nums ${x.key === pricePeriod ? "font-semibold" : ""} ${c.change > 0 ? "price-up" : c.change < 0 ? "price-down" : "text-gray-400"}"
+          title="${c.price != null && COMPARES[x.key] ? "₱" + money(c.price) + " on " + shortDate(COMPARES[x.key]) : "no price " + x.label + " ago"}">${pctText(c.change ?? null)}</td>`;
+      }).join("")}
       <td class="px-3 py-3 text-center hidden md:table-cell">
         <span class="text-xs font-bold ${trendColor[p.trend]}">${trendIcon[p.trend]}</span>
       </td>
-    </tr>`).join("") : `<tr><td colspan="8" class="text-center py-10 text-gray-400">No commodities in this group.</td></tr>`;
+      <td class="px-2 py-3 text-center">${p.avg != null ? `<button class="bell-btn" data-name="${escapeHtml(p.name)}" onclick="openAlertDialog('commodity', this.dataset.name)" aria-label="Price alert for ${escapeHtml(p.name)}" title="Alert me when cheaper">🔔</button>` : ""}</td>
+    </tr>`).join("") : `<tr><td colspan="11" class="text-center py-10 text-gray-400">No commodities in this group.</td></tr>`;
 
   document.querySelectorAll(".price-cat-btn").forEach((b) => {
     b.classList.remove("bg-green-700", "text-white");
@@ -422,6 +488,17 @@ function renderPrices(cat) {
 }
 
 function filterPrices(cat) { renderPrices(cat); }
+
+/** Compare against 1 week, 2 weeks or 1 month back: re-sorts the table and reloads the dish movers. */
+function setPricePeriod(key) {
+  pricePeriod = key;
+  document.querySelectorAll("[data-period]").forEach((b) => b.classList.toggle("on", b.dataset.period === key));
+  const label = PRICE_PERIODS.find((x) => x.key === key).label;
+  document.querySelectorAll("[data-period-label]").forEach((el) => { el.textContent = label; });
+  renderPrices(currentPriceCat);
+  moversLoaded = false;
+  loadMovers();
+}
 
 // ═══════════════ DISH PRICE MOVERS ═══════════════
 // Loaded the first time the Prices tab opens: the server compiles every recipe twice.
@@ -446,14 +523,24 @@ function moverRow(m) {
     </div>`;
 }
 
+const moversCache = new Map();
+
 async function loadMovers() {
   if (moversLoaded) return;
   moversLoaded = true;
+  const period = PRICE_PERIODS.find((x) => x.key === pricePeriod);
   const summary = document.getElementById("movers-summary");
+  summary.textContent = "Loading…";
   try {
-    const res = await fetch(`${API_BASE}/api/recipes/price-movers?limit=8`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const m = await res.json();
+    // Each period is fetched once; switching back is instant.
+    let m = moversCache.get(period.days);
+    if (!m) {
+      const res = await fetch(`${API_BASE}/api/recipes/price-movers?limit=8&days=${period.days}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      m = await res.json();
+      moversCache.set(period.days, m);
+    }
+    if (period.key !== pricePeriod) return; // switched again while loading
     // Rows link to recipes in RECIPES, which may still be loading if the tab
     // was opened right away; a failed load just leaves the rows unlinked.
     await DATA_READY?.catch(() => {});
@@ -461,9 +548,10 @@ async function loadMovers() {
       summary.textContent = m.note || "Not enough price history yet.";
       return;
     }
-    summary.textContent = `Since ${shortDate(new Date(m.compareDate))} · ${m.compared.toLocaleString()} dishes compared · typical dish ${pctText(m.medianChange)} · ${m.rising} pricier, ${m.falling} cheaper by 10% or more`;
-    document.getElementById("movers-rose").innerHTML = m.rose.map(moverRow).join("") || `<p class="text-gray-400 px-2 py-1.5">No dish rose by 10% or more.</p>`;
-    document.getElementById("movers-fell").innerHTML = m.fell.map(moverRow).join("") || `<p class="text-gray-400 px-2 py-1.5">No dish fell by 10% or more.</p>`;
+    const min = `${Math.round((m.thresholds?.minChange ?? 0.1) * 100)}%`;
+    summary.textContent = `Since ${shortDate(new Date(m.compareDate))} · ${m.compared.toLocaleString()} dishes compared · typical dish ${pctText(m.medianChange)} · ${m.rising} pricier, ${m.falling} cheaper by ${min} or more`;
+    document.getElementById("movers-rose").innerHTML = m.rose.map(moverRow).join("") || `<p class="text-gray-400 px-2 py-1.5">No dish rose by ${min} or more.</p>`;
+    document.getElementById("movers-fell").innerHTML = m.fell.map(moverRow).join("") || `<p class="text-gray-400 px-2 py-1.5">No dish fell by ${min} or more.</p>`;
   } catch (e) {
     moversLoaded = false; // try again next time the tab opens
     summary.textContent = `Couldn’t load price changes (${e.message}).`;
@@ -669,15 +757,28 @@ function showSection(name) {
     document.getElementById(`section-${s}`).classList.toggle("flex", s === name);
     const btn = document.getElementById(`nav-${s}`);
     if (btn) btn.classList.toggle("active", s === name);
+    document.querySelectorAll(`[data-nav="${s}"]`).forEach((b) => b.classList.toggle("active", s === name));
     // Phones: the nav scrolls sideways; keep the open tab in view.
     if (btn && s === name && btn.scrollIntoView) btn.scrollIntoView({ block: "nearest", inline: "nearest" });
   });
   window.scrollTo(0, 0);
   if (name === "browse") filterRecipes();
-  if (name === "prices") loadMovers();
+  if (name === "prices") { loadMovers(); renderAlerts(); }
   if (name === "mydish") initMyDish();
   if (name === "planner") initPlanner();
   if (name === "finder") initFinder();
+}
+
+// ═══════════════ LIGHT / DARK ═══════════════
+
+/** Switch light and dark mode, remembered on this device. */
+function toggleTheme() {
+  const root = document.documentElement;
+  const dark = !root.classList.contains("dark");
+  root.classList.add("theme-anim");
+  root.classList.toggle("dark", dark);
+  setTimeout(() => root.classList.remove("theme-anim"), 400);
+  try { localStorage.setItem("sarapsulit.theme", dark ? "dark" : "light"); } catch { /* not saved */ }
 }
 
 // ═══════════════ INIT ═══════════════
