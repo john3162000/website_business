@@ -55,8 +55,9 @@ await pause(); await shot("browse-adobo");
 // 3. Recipe pop-up: per-line grams, cost and price source.
 await page.locator("#browse-grid [onclick^='openModal']").first().click();
 await page.waitForSelector("#recipe-modal:not(.hidden)", { timeout: 20000 });
-await pause(2500); await shot("recipe-cost");
-await page.evaluate(() => document.getElementById("modal-content")?.scrollBy({ top: 600, behavior: "smooth" }));
+await page.waitForFunction(() => !/Loading (ingredients|instructions)/.test(document.getElementById("modal-content")?.textContent || ""), null, { timeout: 30000 });
+await pause(1500); await shot("recipe-cost");
+await page.evaluate(() => document.getElementById("modal-content")?.scrollBy({ top: 900, behavior: "smooth" }));
 await pause(); await shot("recipe-ingredients");
 await page.evaluate(() => closeModal());
 await pause(800);
@@ -72,7 +73,7 @@ await go("planner");
 await page.fill("#budget-text", "₱1,500 for the week, 4 people");
 await page.evaluate(() => planOnBudget());
 await pause(2500);
-await page.evaluate(() => document.getElementById("budget-text")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+await page.evaluate(() => document.getElementById("budget-result")?.scrollIntoView({ behavior: "smooth", block: "center" }));
 await pause(); await shot("planner-budget");
 
 // 6. Ingredient finder: pick a few things from the first categories.
@@ -84,7 +85,12 @@ for (const cat of await page.locator("#finder-cats > *").all().then((a) => a.sli
   const opts = page.locator(".fx-opt:not(.on)");
   for (let i = 0; i < 2 && (await opts.count()) > 0; i++) { await opts.first().click(); await pause(700); }
 }
+await page.evaluate(() => { if (finderOpenCat) toggleFinderCat(finderOpenCat); });
+await pause(800);
+await page.evaluate(() => document.getElementById("finder-count")?.scrollIntoView({ behavior: "smooth", block: "start" }));
 await pause(2000); await shot("finder-results");
+await page.evaluate(() => document.getElementById("finder-graph")?.scrollIntoView({ behavior: "smooth", block: "center" }));
+await pause(2000); await shot("finder-graph");
 
 await context.close();
 await browser.close();
