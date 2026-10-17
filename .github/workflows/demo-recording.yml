@@ -1,0 +1,51 @@
+name: Demo recording
+
+# Records a phone-sized walkthrough of the site (demo/record-demo.mjs) and commits
+# the video and screenshots to demo/out on the same branch. Never runs on main.
+on:
+  push:
+    branches-ignore: [main]
+    paths: [demo/record-demo.mjs, .github/workflows/demo-recording.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright
+        working-directory: demo
+        run: |
+          npm init -y >/dev/null
+          npm i playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Serve the site
+        run: |
+          python3 -m http.server 5173 --directory docs &
+          sleep 2
+      - name: Record
+        working-directory: demo
+        run: node record-demo.mjs http://localhost:5173/ out
+      - name: Make an MP4 for phones
+        if: always()
+        working-directory: demo/out
+        run: |
+          if [ -f demo.webm ]; then
+            sudo apt-get install -y ffmpeg >/dev/null
+            ffmpeg -y -loglevel error -i demo.webm -c:v libx264 -pix_fmt yuv420p -movflags +faststart demo.mp4
+          fi
+      - name: Commit the recording
+        if: always()
+        run: |
+          rm -rf demo/node_modules demo/package.json demo/package-lock.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898732+github-actions[bot]@users.noreply.github.com"
+          git add demo/out
+          git commit -m "Add demo recording [skip ci]" || echo "nothing to commit"
+          git push
