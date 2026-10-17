@@ -857,6 +857,15 @@ function showSection(name) {
   if (name === "mydish") initMyDish();
   if (name === "planner") initPlanner();
   if (name === "finder") initFinder();
+  countSection(name);
+}
+
+/** Count a tab view in Google Analytics. The site is one page, so each tab is sent as its own
+ *  page view (…/#browse, …/#prices). Tour steps switch tabs by themselves, so they don't count. */
+function countSection(name) {
+  if (typeof tourStep !== "undefined" && tourStep >= 0) return;
+  if (typeof gtag !== "function") return;
+  gtag("event", "page_view", { page_title: name, page_location: `${location.origin}${location.pathname}#${name}` });
 }
 
 // ═══════════════ LIGHT / DARK ═══════════════

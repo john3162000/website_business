@@ -55,3 +55,20 @@ test("sulit meter: dishes are placed by how they rank against all others", () =>
   assert.equal(ctx.sulitLevel(1, scores).segs, 1);
   assert.equal(ctx.sulitLevel(5, []), null);
 });
+
+test("visitor counter: Google Analytics loads after app.js and tabs count as page views", () => {
+  const html = read("index.html");
+  const ga = html.indexOf('const GA_ID = "G-');
+  assert.ok(ga > html.indexOf('<script src="app.js">'), "analytics snippet missing or before app.js");
+  const src = read("app.js");
+  const sent = [];
+  const ctx = vm.createContext({
+    location: { origin: "https://x.github.io", pathname: "/website_business/" },
+    gtag: (kind, name, o) => sent.push([kind, name, o.page_location]),
+  });
+  vm.runInContext(`${src.slice(src.indexOf("function countSection"), src.indexOf("// ═══════════════ LIGHT"))};globalThis.countSection = countSection;`, ctx);
+  ctx.countSection("browse");
+  vm.runInContext("var tourStep = 2;", ctx);
+  ctx.countSection("prices"); // during the tour: not counted
+  assert.deepEqual(sent, [["event", "page_view", "https://x.github.io/website_business/#browse"]]);
+});
