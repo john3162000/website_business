@@ -47,9 +47,11 @@ await pause(); await shot("weather-picks");
 
 // 2. Browse: ranked by nutrition per peso, then search for adobo.
 await go("browse");
-await shot("browse-ranked");
+await page.evaluate(() => document.getElementById("result-count")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+await pause(); await shot("browse-ranked");
 await page.fill("#search-input", "adobo");
 await page.dispatchEvent("#search-input", "input");
+await page.evaluate(() => document.getElementById("result-count")?.scrollIntoView({ behavior: "smooth", block: "start" }));
 await pause(); await shot("browse-adobo");
 
 // 3. Recipe pop-up: per-line grams, cost and price source.
@@ -57,14 +59,20 @@ await page.locator("#browse-grid [onclick^='openModal']").first().click();
 await page.waitForSelector("#recipe-modal:not(.hidden)", { timeout: 20000 });
 await page.waitForFunction(() => !/Loading (ingredients|instructions)/.test(document.getElementById("modal-content")?.textContent || ""), null, { timeout: 30000 });
 await pause(1500); await shot("recipe-cost");
-await page.evaluate(() => document.getElementById("modal-content")?.scrollBy({ top: 900, behavior: "smooth" }));
+await page.evaluate(() => {
+  let el = document.getElementById("modal-content");
+  while (el && el.scrollHeight <= el.clientHeight + 1) el = el.parentElement;
+  (el || window).scrollBy({ top: 900, behavior: "smooth" });
+});
 await pause(); await shot("recipe-ingredients");
 await page.evaluate(() => closeModal());
 await pause(800);
 
 // 4. DA prices and price movers.
 await go("prices");
-await pause(1500); await shot("prices-movers");
+await page.waitForFunction(() => !/Loading/.test(document.getElementById("movers-summary")?.textContent || ""), null, { timeout: 60000 }).catch(() => {});
+await page.evaluate(() => document.getElementById("movers-summary")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+await pause(2000); await shot("prices-movers");
 await page.evaluate(() => document.getElementById("price-table-body")?.scrollIntoView({ behavior: "smooth" }));
 await pause(); await shot("prices-table");
 
