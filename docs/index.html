@@ -792,7 +792,20 @@
 <script src="share.js"></script>
 <script src="tour.js"></script>
 <script src="app.js"></script>
-<!-- Visitor counter: GoatCounter, no cookies, no personal data. Stats: https://farm2figure.goatcounter.com -->
-<script data-goatcounter="https://farm2figure.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+<!-- Visitor counter: Google Analytics 4. Stats: https://analytics.google.com. GA_ID is the
+     property's Measurement ID (G-…); nothing loads until it is set, or on a local preview. -->
+<script>
+  const GA_ID = "G-XXXXXXXXXX";
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { dataLayer.push(arguments); }
+  if (GA_ID !== "G-XXXXXXXXXX" && !/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
+    const s = document.createElement("script");
+    s.async = true;
+    s.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
+    document.head.appendChild(s);
+    gtag("js", new Date());
+    gtag("config", GA_ID);
+  }
+</script>
 </body>
 </html>
