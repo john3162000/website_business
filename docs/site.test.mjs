@@ -55,3 +55,17 @@ test("sulit meter: dishes are placed by how they rank against all others", () =>
   assert.equal(ctx.sulitLevel(1, scores).segs, 1);
   assert.equal(ctx.sulitLevel(5, []), null);
 });
+
+test("visitor counter: GoatCounter loads after app.js and tabs count as their own paths", () => {
+  const html = read("index.html");
+  const gc = html.indexOf('data-goatcounter="https://farm2figure.goatcounter.com/count"');
+  assert.ok(gc > html.indexOf('<script src="app.js">'), "counter script missing or before app.js");
+  const src = read("app.js");
+  const counted = [];
+  const ctx = vm.createContext({ window: { goatcounter: { count: (o) => counted.push(o.path) } } });
+  vm.runInContext(`${src.slice(src.indexOf("function countSection"), src.indexOf("// ═══════════════ LIGHT"))};globalThis.countSection = countSection;`, ctx);
+  ctx.countSection("browse");
+  vm.runInContext("var tourStep = 2;", ctx);
+  ctx.countSection("prices"); // during the tour: not counted
+  assert.deepEqual(counted, ["/browse"]);
+});

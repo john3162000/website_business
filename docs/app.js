@@ -857,6 +857,14 @@ function showSection(name) {
   if (name === "mydish") initMyDish();
   if (name === "planner") initPlanner();
   if (name === "finder") initFinder();
+  countSection(name);
+}
+
+/** Count a tab view in GoatCounter. The site is one page, so each tab counts as its own path
+ *  (/browse, /prices, …). Tour steps switch tabs by themselves, so they don't count. */
+function countSection(name) {
+  if (typeof tourStep !== "undefined" && tourStep >= 0) return;
+  if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: `/${name}`, title: name });
 }
 
 // ═══════════════ LIGHT / DARK ═══════════════
