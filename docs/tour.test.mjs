@@ -21,7 +21,7 @@ test("tour: first visit only, never over a shared recipe link", () => {
 });
 
 test("tour: every step names a real tab and has short text", () => {
-  const tabs = new Set(["home", "browse", "prices", "mydish", "planner", "finder"]);
+  const tabs = new Set(["home", "browse", "prices", "mydish", "planner", "finder", "game"]);
   assert.ok(TOUR_STEPS.length >= 6 && TOUR_STEPS.length <= 9);
   for (const st of TOUR_STEPS) {
     assert.ok(tabs.has(st.section), st.section);
