@@ -23,7 +23,9 @@ test("buildMatchups drops rounds with a missing side; every dish has a fact", ()
   const ms = buildMatchups([R(1, "Sinigang na Baboy"), R(2, "Chicken Adobo"), R(3, "Lechon Kawali")]);
   assert.equal(ms.length, 1);
   assert.equal(ms[0].a.recipe.id, 1);
-  assert.equal(GAME_MATCHUPS.length, 10);
+  const many = GAME_MATCHUPS.flatMap(([a, b], i) => [R(100 + i, a.name), R(200 + i, b.name)]);
+  assert.equal(buildMatchups(many).length, 10); // backups only fill gaps
+  assert.ok(GAME_MATCHUPS.length >= 10);
   for (const [a, b] of GAME_MATCHUPS) for (const d of [a, b]) assert.ok(GAME_FACTS[d.name], `fact for ${d.name}`);
 });
 

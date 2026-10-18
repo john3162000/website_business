@@ -15,11 +15,16 @@ const GAME_MATCHUPS = [
   [{ name: "Sisig", re: [/^pork sisig/i, /sisig/i] }, { name: "Bicol Express", re: [/bicol express/i] }],
   [{ name: "Tinola", re: [/^chicken tinola/i, /tinola/i] }, { name: "Nilaga", re: [/^nilagang baka/i, /nilaga/i] }],
   [{ name: "Pancit Canton", re: [/pancit canton/i] }, { name: "Pancit Bihon", re: [/pancit bihon/i] }],
-  [{ name: "Lumpiang Shanghai", re: [/lumpiang shanghai/i, /lumpia/i] }, { name: "Tokwa't Baboy", re: [/tokwa.?t baboy/i] }],
+  [{ name: "Lumpiang Shanghai", re: [/^lumpiang shanghai/i, /lumpiang shanghai/i, /lumpia/i] }, { name: "Tokwa't Baboy", re: [/tokwa.?t baboy/i] }],
   [{ name: "Menudo", re: [/menudo/i] }, { name: "Afritada", re: [/afritada/i] }],
-  [{ name: "Laing", re: [/^laing\b/i, /\blaing\b/i] }, { name: "Pinakbet", re: [/pinakbet/i] }],
+  [{ name: "Laing", re: [/^laing\b/i, /\blaing\b/i] }, { name: "Pinakbet", re: [/^pinakbet/i, /pinakbet/i] }],
   [{ name: "Halo-Halo", re: [/halo.?halo/i] }, { name: "Leche Flan", re: [/^leche flan/i, /leche flan/i] }],
+  // Backups, used when a round above has no recipe on the site.
+  [{ name: "Chicken Inasal", re: [/^chicken inasal/i, /inasal/i] }, { name: "Lechon Manok", re: [/^lechon manok/i, /lechon manok/i] }],
+  [{ name: "Bulalo", re: [/^bulalo/i, /bulalo/i] }, { name: "Batchoy", re: [/^batchoy/i, /batchoy/i] }],
+  [{ name: "Tortang Talong", re: [/^tortang talong/i, /tortang talong/i] }, { name: "Ginisang Ampalaya", re: [/^ginisang ampalaya/i, /ampalaya/i] }],
 ];
+const GAME_ROUNDS = 10;
 
 const GAME_FACTS = {
   "Sinigang": "Sinigang's sourness traditionally comes from sampalok (tamarind), but kamias, bayabas, kalamansi and santol are used too.",
@@ -41,6 +46,12 @@ const GAME_FACTS = {
   "Laing": "Laing is from Bicol: dried taro (gabi) leaves slowly cooked in coconut milk with chili.",
   "Pinakbet": "Pinakbet is an Ilocano dish. The name is said to come from \"pinakebbet\", meaning shrunk or shrivelled.",
   "Halo-Halo": "\"Halo-halo\" means \"mix-mix\": you're meant to stir everything together before eating.",
+  "Chicken Inasal": "Chicken inasal comes from Bacolod. It's marinated in vinegar, kalamansi and lemongrass, then basted with annatto (atsuete) oil while grilling.",
+  "Lechon Manok": "Lechon manok is roasted on a turning spit, often with lemongrass stuffed inside the chicken.",
+  "Bulalo": "Bulalo is beef shank and marrow bone soup, a favourite in Batangas and cool Tagaytay.",
+  "Batchoy": "Batchoy comes from La Paz, Iloilo: noodle soup with pork, liver and crushed chicharon on top.",
+  "Tortang Talong": "For tortang talong, the eggplant is grilled, peeled and flattened, then dipped in egg and fried.",
+  "Ginisang Ampalaya": "Rubbing sliced ampalaya with salt and squeezing out the juice makes it less bitter.",
   "Leche Flan": "A popular story says leche flan used the egg yolks left over when egg whites were used in building old Spanish-era churches.",
 };
 
@@ -61,7 +72,8 @@ function findDish(recipes, patterns) {
 function buildMatchups(recipes, matchups = GAME_MATCHUPS) {
   return matchups
     .map(([a, b]) => ({ a: { name: a.name, recipe: findDish(recipes, a.re) }, b: { name: b.name, recipe: findDish(recipes, b.re) } }))
-    .filter((m) => m.a.recipe && m.b.recipe);
+    .filter((m) => m.a.recipe && m.b.recipe)
+    .slice(0, GAME_ROUNDS);
 }
 
 /** Words and hand for a 1-10 rating. */
