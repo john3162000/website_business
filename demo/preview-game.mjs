@@ -52,6 +52,32 @@ for (let i = 0; i < 12; i++) {
 }
 await pause(2500);
 await shot("5-versus-champions");
+// A test player who loves sour dishes and dislikes fried ones.
+await page.evaluate(() => {
+  const iS = TASTE_TAGS.findIndex((t) => t.key === "maasim"), iP = TASTE_TAGS.findIndex((t) => t.key === "prito");
+  const pool = RECIPES.filter((r) => r.img && r.category !== "Sauce & Condiment");
+  for (let k = 0; k < 14; k++) {
+    const r = pool[Math.floor(Math.random() * pool.length)];
+    const x = tasteVector(r);
+    gameRatings[r.id] = x[iS] ? 9 : x[iP] ? 2 : 6;
+  }
+  gameSave(GAME_RATE_KEY, gameRatings);
+  setGameMode("taste");
+});
+await pause(2500);
+await shot("7-panlasa");
+await page.evaluate(() => document.querySelector("#game-taste .game-card:nth-child(2)")?.scrollIntoView({ block: "start" }));
+await pause(1500);
+await shot("8-para-sayo");
+console.log("tag counts:", await page.evaluate(() => {
+  const counts = TASTE_TAGS.map(() => 0);
+  for (const r of RECIPES) tasteVector(r).forEach((v, i) => (counts[i] += v));
+  return TASTE_TAGS.map((t, i) => `${t.key}=${counts[i]}`).join(" ") + ` of ${RECIPES.length}`;
+}));
+console.log("samples:", await page.evaluate(() => ["Sinigang", "Adobo", "Kare", "Laing", "Menudo", "Tinola", "Lechon Kawali", "Pinakbet"].map((n) => {
+  const r = RECIPES.find((x) => x.title.includes(n));
+  return r ? `${r.title}: ${TASTE_TAGS.filter((_, i) => tasteVector(r)[i]).map((t) => t.key).join(",")}` : `${n}: -`;
+}).join("\n")));
 await page.evaluate(() => document.documentElement.classList.add("dark"));
 await page.evaluate(() => setGameMode("rate"));
 await pause(1500);

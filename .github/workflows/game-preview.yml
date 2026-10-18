@@ -5,7 +5,7 @@ name: Game preview
 on:
   push:
     branches-ignore: [main]
-    paths: [docs/games.js, demo/preview-game.mjs, .github/workflows/game-preview.yml]
+    paths: [docs/games.js, docs/taste.js, demo/preview-game.mjs, .github/workflows/game-preview.yml]
 
 permissions:
   contents: write

@@ -114,7 +114,7 @@ function roundNote(m, winnerSide, rng = Math.random) {
 // ── State and storage ──
 
 let gameRatings = {};      // { recipeId: 1-10 }
-let gameVsPicks = {};      // { "Sinigang|Adobo": "Sinigang" }
+let gameVsPicks = {};      // { "Sinigang|Adobo": { n: "Sinigang", w: winnerId, l: loserId } }
 let gameRateDish = null;
 let gameRounds = [];
 let gameRound = 0;
@@ -140,9 +140,11 @@ function setGameMode(mode) {
   document.querySelectorAll("[data-game]").forEach((b) => b.classList.toggle("on", b.dataset.game === mode));
   document.getElementById("game-rate").classList.toggle("hidden", mode !== "rate");
   document.getElementById("game-versus").classList.toggle("hidden", mode !== "versus");
+  document.getElementById("game-taste").classList.toggle("hidden", mode !== "taste");
   if (typeof trackEvent === "function") trackEvent(`game/${mode}`);
   if (mode === "rate") { if (!gameRateDish) gameRateDish = nextRateDish(RECIPES, gameRatings); renderRate(); }
-  else startVersus();
+  else if (mode === "versus") startVersus();
+  else renderTaste();
 }
 
 // ── Rate the ulam ──
@@ -264,7 +266,8 @@ function pickVersus(s) {
   if (gameRoundDone) return;
   gameRoundDone = true;
   const m = gameRounds[gameRound];
-  gameVsPicks[vsKey(m)] = m[s].name;
+  const lose = s === "a" ? "b" : "a";
+  gameVsPicks[vsKey(m)] = { n: m[s].name, w: m[s].recipe.id, l: m[lose].recipe.id };
   gameSave(GAME_VS_KEY, gameVsPicks);
   if (typeof trackEvent === "function") trackEvent("game/versus-pick");
   document.getElementById(`vs-${s}`).classList.add("win");
@@ -284,7 +287,7 @@ function nextVersus() {
 }
 
 function renderVersusEnd() {
-  const winners = gameRounds.map((m) => gameVsPicks[vsKey(m)]).filter(Boolean);
+  const winners = gameRounds.map((m) => gameVsPicks[vsKey(m)]).filter((p) => p && p.n).map((p) => p.n);
   const pics = new Map(gameRounds.flatMap((m) => [[m.a.name, m.a.recipe], [m.b.name, m.b.recipe]]));
   document.getElementById("game-versus").innerHTML = `
     <div class="game-card p-5 text-center">
@@ -293,6 +296,68 @@ function renderVersusEnd() {
       <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-4">
         ${winners.map((n) => { const r = pics.get(n); return `<button class="vs-champ" onclick="openModal(${r.id})"><img src="${escapeHtml(r.img || "logo.png")}" alt="" loading="lazy"><span>${escapeHtml(n)}</span></button>`; }).join("")}
       </div>
-      <button onclick="startVersus()" class="mt-5 bg-green-800 text-amber-50 rounded-full px-6 py-2 text-sm font-semibold">Laro ulit 🔁</button>
+      <div class="flex flex-wrap gap-2 justify-center mt-5">
+        <button onclick="startVersus()" class="border border-gray-200 rounded-full px-5 py-2 text-sm font-semibold text-gray-600">Laro ulit 🔁</button>
+        <button onclick="setGameMode('taste')" class="bg-green-800 text-amber-50 rounded-full px-5 py-2 text-sm font-semibold">🧠 Tingnan ang panlasa mo</button>
+      </div>
+    </div>`;
+}
+
+// ── Panlasa mo (taste profile and picks, from taste.js) ──
+
+/** Trains the taste model on this device's ratings and Versus picks. */
+function gameTasteModel() {
+  const byId = new Map(RECIPES.map((r) => [String(r.id), r]));
+  const ratings = Object.entries(gameRatings)
+    .filter(([id]) => byId.has(id))
+    .map(([id, rating]) => ({ x: tasteVector(byId.get(id)), rating }));
+  const picks = Object.values(gameVsPicks)
+    .filter((p) => p && byId.has(String(p.w)) && byId.has(String(p.l)))
+    .map((p) => ({ win: tasteVector(byId.get(String(p.w))), lose: tasteVector(byId.get(String(p.l))) }));
+  return learnTaste(ratings, picks);
+}
+
+function renderTaste() {
+  const box = document.getElementById("game-taste");
+  const model = gameTasteModel();
+  if (model.answers < TASTE_MIN_ANSWERS) {
+    const left = TASTE_MIN_ANSWERS - model.answers;
+    box.innerHTML = `<div class="game-card p-6 text-center">
+      <p class="text-4xl">🧠</p>
+      <p class="font-display text-xl font-bold mt-2">Kilalanin natin ang panlasa mo</p>
+      <p class="text-sm text-gray-500 mt-2">Mag-rate o maglaro ng Versus ng ${left} pa para makita kung anong klaseng ulam ang hilig mo.</p>
+      <div class="flex gap-2 justify-center mt-4">
+        <button onclick="setGameMode('rate')" class="bg-green-800 text-amber-50 rounded-full px-5 py-2 text-sm font-semibold">⭐ Rate</button>
+        <button onclick="setGameMode('versus')" class="border border-gray-200 rounded-full px-5 py-2 text-sm font-semibold text-gray-600">⚔️ Versus</button>
+      </div></div>`;
+    return;
+  }
+  const prof = tasteProfile(model);
+  const max = Math.max(0.3, ...prof.items.map((t) => Math.abs(t.w)));
+  const bars = prof.items.slice().sort((a, b) => b.w - a.w).map((t) => {
+    const pct = Math.round((Math.abs(t.w) / max) * 50);
+    const side = t.w >= 0 ? `left:50%;width:${pct}%` : `right:50%;width:${pct}%`;
+    return `<div class="taste-row"><span class="taste-label">${t.icon} ${escapeHtml(t.label)}</span>
+      <span class="taste-track"><span class="taste-bar ${t.w >= 0 ? "pos" : "neg"}" style="${side}"></span></span></div>`;
+  }).join("");
+  const picks = recommendDishes(model, RECIPES, gameRatings);
+  box.innerHTML = `
+    <div class="game-card p-5">
+      <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Panlasa mo · from ${model.answers} answers</p>
+      <p class="font-display text-xl font-bold mt-1 leading-snug">${escapeHtml(prof.sentence || "Wala ka pang malinaw na paborito. Laro pa!")}</p>
+      <div class="mt-4">${bars}</div>
+      <div class="flex justify-between text-[.65rem] text-gray-400 mt-1"><span>← hindi masyado</span><span>mas gusto →</span></div>
+    </div>
+    <div class="game-card p-5 mt-4">
+      <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Para sa'yo · bagay sa panlasa mo at sulit</p>
+      <div class="grid grid-cols-2 gap-3">
+        ${picks.map(({ r, x }) => `<button class="taste-pick" onclick="openModal(${r.id})">
+          <img src="${escapeHtml(r.img)}" alt="" loading="lazy">
+          <span class="taste-pick-name">${escapeHtml(r.title)}</span>
+          <span class="taste-pick-why">${escapeHtml(tasteReasons(model, x).join(" · ") || "sulit pick")}</span>
+          <span class="taste-pick-price">₱${r.costPerServing}/serving</span>
+        </button>`).join("")}
+      </div>
+      <p class="text-[.7rem] text-gray-400 mt-3">Learned on this phone only from your ratings and Versus picks. The more you play, the better it gets.</p>
     </div>`;
 }

@@ -186,7 +186,22 @@
     section:not(.hidden) { animation: fadeIn .25s ease; }
     /* Phones: a tab bar at the bottom instead of the header tabs. */
     /* Laro (games) */
-    .game-tabs { display: flex; gap: .5rem; justify-content: center; margin-bottom: 1.25rem; }
+    .game-tabs { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; margin-bottom: 1.25rem; }
+    .taste-row { display: grid; grid-template-columns: 8.5rem 1fr; align-items: center; gap: .5rem; padding: .2rem 0; font-size: .8rem; }
+    .taste-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .taste-track { position: relative; height: .6rem; background: #EFEADC; border-radius: 9999px; }
+    .taste-track::after { content: ""; position: absolute; left: 50%; top: -.15rem; bottom: -.15rem; width: 1px; background: #B8AF97; }
+    .taste-bar { position: absolute; top: 0; bottom: 0; border-radius: 9999px; }
+    .taste-bar.pos { background: #1F6B47; }
+    .taste-bar.neg { background: #C8553D; }
+    .taste-pick { display: flex; flex-direction: column; text-align: left; gap: .15rem; }
+    .taste-pick img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: .75rem; margin-bottom: .2rem; }
+    .taste-pick-name { font-size: .8rem; font-weight: 600; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .taste-pick-why { font-size: .68rem; color: #1F6B47; font-weight: 600; }
+    .taste-pick-price { font-size: .68rem; color: #8A6A12; font-weight: 600; }
+    html.dark .taste-track { background: var(--s2); }
+    html.dark .taste-bar.pos, html.dark .taste-pick-why { color: var(--mint); }
+    html.dark .taste-bar.pos { background: var(--mint); }
     .game-card { background: #fff; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(22,63,46,.06); overflow: hidden; }
     .game-photo { width: 100%; height: 13rem; object-fit: cover; display: block; }
     .rate-stage { position: relative; height: 8.5rem; margin-top: .25rem; }
@@ -722,9 +737,11 @@
     <div class="game-tabs">
       <button class="wx-btn" data-game="rate" onclick="setGameMode('rate')">⭐ Rate the ulam</button>
       <button class="wx-btn" data-game="versus" onclick="setGameMode('versus')">⚔️ Versus</button>
+      <button class="wx-btn" data-game="taste" onclick="setGameMode('taste')">🧠 Panlasa mo</button>
     </div>
     <div id="game-rate"></div>
     <div id="game-versus" class="hidden"></div>
+    <div id="game-taste" class="hidden"></div>
   </div>
 </section>
 
@@ -835,6 +852,7 @@
 <script src="finder.js"></script>
 <script src="alerts.js"></script>
 <script src="share.js"></script>
+<script src="taste.js"></script>
 <script src="games.js"></script>
 <script src="tour.js"></script>
 <script src="app.js"></script>
