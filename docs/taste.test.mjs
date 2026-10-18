@@ -1,0 +1,60 @@
+// Runs docs/taste.js (a plain browser script) in a VM and tests the taste model.
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import vm from "node:vm";
+
+const ctx = vm.createContext({});
+vm.runInContext(`${readFileSync(new URL("./taste.js", import.meta.url), "utf8")}
+;globalThis.api = { TASTE_TAGS, tasteVector, solveLinear, learnTaste, tasteProfile, tasteScore, tasteReasons, recommendDishes };`, ctx);
+const { TASTE_TAGS, tasteVector, solveLinear, learnTaste, tasteProfile, tasteScore, tasteReasons, recommendDishes } = ctx.api;
+
+const tags = (r) => Array.from(TASTE_TAGS).filter((_, i) => tasteVector(r)[i]).map((t) => t.key);
+const R = (id, title, ingredientNames = [], extra = {}) => ({ id, title, ingredientNames, img: "x.jpg", costPerServing: 50, category: "Main Dish", ...extra });
+
+test("tasteVector tags dishes from title and ingredients", () => {
+  assert.deepEqual(tags(R(1, "Sinigang na Baboy", ["pork belly", "tamarind", "kangkong"], { category: "Soup" })), ["maasim", "sabaw", "baboy"]);
+  assert.deepEqual(tags(R(2, "Pork Menudo", ["pork", "tomato sauce", "liver"])), ["kamatis", "saucy", "baboy"]);
+  assert.deepEqual(tags(R(3, "Bicol Express", ["pork", "coconut milk", "siling haba"])), ["gata", "saucy", "maanghang", "baboy"]);
+  assert.deepEqual(tags(R(4, "Chicken Adobo", ["chicken", "vinegar", "soy sauce"])), ["maasim", "saucy", "manok"]);
+  assert.ok(tags(R(5, "Lechon Kawali", ["pork belly"], { frying: "deep" })).includes("prito"));
+  assert.deepEqual(tags(R(6, "Leche Flan", ["egg yolks", "condensed milk"], { category: "Dessert" })), ["matamis"]);
+});
+
+test("solveLinear solves a small system", () => {
+  const x = solveLinear([[2, 1], [1, 3]], [3, 5]);
+  assert.ok(Math.abs(x[0] - 0.8) < 1e-9 && Math.abs(x[1] - 1.4) < 1e-9);
+});
+
+test("learnTaste: a player who loves sour and hates fried", () => {
+  const sour = R(1, "Sinigang na Hipon", ["tamarind"], { category: "Soup" });
+  const sour2 = R(2, "Paksiw na Isda", ["vinegar"]);
+  const fried = R(3, "Fried Chicken", [], { frying: "deep" });
+  const fried2 = R(4, "Crispy Pata", [], { frying: "deep" });
+  const ratings = [[sour, 10], [sour2, 9], [fried, 2], [fried2, 1]].map(([r, rating]) => ({ x: tasteVector(r), rating }));
+  const picks = [{ win: tasteVector(sour), lose: tasteVector(fried) }];
+  const model = learnTaste(ratings, picks);
+  const w = (k) => model.weights[TASTE_TAGS.findIndex((t) => t.key === k)];
+  assert.equal(model.answers, 5);
+  assert.ok(w("maasim") > 0.2, `maasim ${w("maasim")}`);
+  assert.ok(w("prito") < -0.2, `prito ${w("prito")}`);
+  assert.ok(Math.abs(w("gata")) < 1e-9); // never seen: no opinion
+  const prof = tasteProfile(model);
+  assert.match(prof.sentence, /^Mahilig ka sa maasim 🍋/);
+  assert.match(prof.sentence, /pero hindi masyado sa prito 🍳/);
+  assert.deepEqual(Array.from(tasteReasons(model, tasteVector(sour))), ["🍋 maasim"]);
+  assert.ok(tasteScore(model, tasteVector(sour)) > tasteScore(model, tasteVector(fried)));
+});
+
+test("recommendDishes ranks unrated dishes by taste, skips rated ones and repeats", () => {
+  const model = { weights: TASTE_TAGS.map((t) => (t.key === "maasim" ? 1 : t.key === "prito" ? -1 : 0)), seen: TASTE_TAGS.map(() => 3) };
+  const recipes = [
+    R(1, "Sinigang na Baboy", ["tamarind"], { category: "Soup" }),
+    R(2, "Fried Chicken", [], { frying: "deep" }),
+    R(3, "Paksiw na Bangus", ["vinegar"]),
+    R(4, "Paksiw na Bangus", ["vinegar"]),
+    R(5, "Pinakbet", ["squash"]),
+  ];
+  const out = Array.from(recommendDishes(model, recipes, { 1: 8 }, 3), (p) => p.r.id);
+  assert.deepEqual(out, [3, 5, 2]);
+});

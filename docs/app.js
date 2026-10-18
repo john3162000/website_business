@@ -5,6 +5,22 @@
 //   /api/nutrition         FNRI Food Composition Table (only counted here)
 const API_BASE = "https://website-business-beta.vercel.app";
 
+// Visitor counts (GoatCounter: no cookies, no personal data). Empty code = off.
+// Dashboard: https://<GC_CODE>.goatcounter.com
+const GC_CODE = "";
+if (GC_CODE && typeof document !== "undefined") {
+  const s = document.createElement("script");
+  s.async = true;
+  s.src = "https://gc.zgo.at/count.js";
+  s.dataset.goatcounter = `https://${GC_CODE}.goatcounter.com/count`;
+  document.head.appendChild(s);
+}
+
+/** Counts one use of a feature (e.g. "section/planner") as a GoatCounter event. */
+function trackEvent(name) {
+  try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: name, title: name, event: true }); } catch { /* counting must never break the site */ }
+}
+
 const DRV = { protein: 50, carbs: 275, fat: 78, fiber: 25, vitaminC: 60, iron: 18, calcium: 1000, vitaminA: 900 };
 // Value rankings only use recipes whose cost and nutrition cover most of their
 // weight: a priced pinch of salt must not hide an unpriced 1 kg fish.
@@ -779,6 +795,7 @@ let MODAL_DATA = null; // { id, instructions, lines } of the open recipe, for th
 async function openModal(id) {
   const r = RECIPES.find((x) => x.id === id);
   if (!r) return;
+  trackEvent("recipe-open");
   MODAL_DATA = { id, instructions: [], lines: [] };
   if (history.replaceState) history.replaceState(null, "", `#recipe=${id}`);
   document.getElementById("modal-content").innerHTML = buildModal(r, ["Loading instructions…"], null);
@@ -842,7 +859,7 @@ function closeModalBtn() { closeModal(); }
 // ═══════════════ NAVIGATION ═══════════════
 
 function showSection(name) {
-  ["home", "browse", "prices", "mydish", "planner", "finder"].forEach((s) => {
+  ["home", "browse", "prices", "mydish", "planner", "finder", "game"].forEach((s) => {
     document.getElementById(`section-${s}`).classList.toggle("hidden", s !== name);
     document.getElementById(`section-${s}`).classList.toggle("flex", s === name);
     const btn = document.getElementById(`nav-${s}`);
@@ -852,11 +869,13 @@ function showSection(name) {
     if (btn && s === name && btn.scrollIntoView) btn.scrollIntoView({ block: "nearest", inline: "nearest" });
   });
   window.scrollTo(0, 0);
+  trackEvent(`section/${name}`);
   if (name === "browse") filterRecipes();
   if (name === "prices") { loadMovers(); renderAlerts(); }
   if (name === "mydish") initMyDish();
   if (name === "planner") initPlanner();
   if (name === "finder") initFinder();
+  if (name === "game") initGames();
 }
 
 // ═══════════════ LIGHT / DARK ═══════════════

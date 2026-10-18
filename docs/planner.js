@@ -564,6 +564,7 @@ function planOnBudget() {
   const out = document.getElementById("budget-result");
   const { budget, people } = parseBudgetText(document.getElementById("budget-text").value);
   if (!budget) { out.textContent = "Type a budget, for example “₱1,500 for the week, 4 people”."; out.className = "text-xs text-red-600"; return; }
+  if (typeof trackEvent === "function") trackEvent("budget-plan");
   const n = people ?? plan.people;
   const meals = randomMeals === "ulam" ? ["Tanghalian", "Hapunan"] : MEALS;
   // Only dishes with a complete, ranked price, so the total can be trusted.
