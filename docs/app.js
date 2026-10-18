@@ -859,7 +859,7 @@ function closeModalBtn() { closeModal(); }
 // ═══════════════ NAVIGATION ═══════════════
 
 function showSection(name) {
-  ["home", "browse", "prices", "mydish", "planner", "finder"].forEach((s) => {
+  ["home", "browse", "prices", "mydish", "planner", "finder", "game"].forEach((s) => {
     document.getElementById(`section-${s}`).classList.toggle("hidden", s !== name);
     document.getElementById(`section-${s}`).classList.toggle("flex", s === name);
     const btn = document.getElementById(`nav-${s}`);
@@ -875,6 +875,7 @@ function showSection(name) {
   if (name === "mydish") initMyDish();
   if (name === "planner") initPlanner();
   if (name === "finder") initFinder();
+  if (name === "game") initGames();
 }
 
 // ═══════════════ LIGHT / DARK ═══════════════
