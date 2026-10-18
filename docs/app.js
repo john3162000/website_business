@@ -407,6 +407,8 @@ function buildModal(r, instructions, lines) {
           </div>
         </div>
 
+        ${typeof factBoxHtml === "function" ? factBoxHtml(r) : ""}
+
         <div>
           <h3 class="font-bold text-lg mb-3">Ingredients</h3>
           <div class="space-y-2">${ingRows}</div>

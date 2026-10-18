@@ -4,7 +4,7 @@ name: For-you preview
 on:
   push:
     branches-ignore: [main]
-    paths: [docs/taste.js, docs/app.js, demo/preview-foryou.mjs, .github/workflows/foryou-preview.yml]
+    paths: [docs/facts.js, docs/taste.js, docs/app.js, demo/preview-foryou.mjs, .github/workflows/foryou-preview.yml]
 
 permissions:
   contents: write

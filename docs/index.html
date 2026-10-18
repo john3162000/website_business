@@ -185,6 +185,8 @@
     .logo-mark { animation: sway .9s cubic-bezier(.2, .7, .3, 1) both; transform-origin: 50% 90%; }
     section:not(.hidden) { animation: fadeIn .25s ease; }
     /* Phones: a tab bar at the bottom instead of the header tabs. */
+    .fact-box { background: #FBF3DC; border: 1px solid #EBD9A6; border-radius: .9rem; padding: .8rem 1rem; }
+    html.dark .fact-box { background: var(--s2); border-color: var(--line); }
     /* Laro (games) */
     .game-tabs { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; margin-bottom: 1.25rem; }
     .taste-row { display: grid; grid-template-columns: 8.5rem 1fr; align-items: center; gap: .5rem; padding: .2rem 0; font-size: .8rem; }
@@ -853,6 +855,7 @@
 <script src="finder.js"></script>
 <script src="alerts.js"></script>
 <script src="share.js"></script>
+<script src="facts.js"></script>
 <script src="taste.js"></script>
 <script src="games.js"></script>
 <script src="tour.js"></script>
