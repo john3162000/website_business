@@ -165,3 +165,89 @@ function recommendDishes(model, recipes, rated, n = 6, vec = tasteVector) {
     .filter(({ r }) => { const t = r.title.toLowerCase(); if (seen.has(t)) return false; seen.add(t); return true; })
     .slice(0, n);
 }
+
+// ── Using the model across the site (Browse sort, badges, similar dishes) ──
+
+const TASTE_RATE_KEY = "sarapsulit.ratings.v1"; // written by games.js
+const TASTE_VS_KEY = "sarapsulit.versus.v1";
+const TASTE_MATCH = 0.3; // taste score worth a "bagay sa'yo" badge
+
+let tasteModelCache = null;
+const tasteVecCache = new Map();
+
+/** Taste vector of a recipe, computed once per page load. */
+function tasteVec(r) {
+  if (!tasteVecCache.has(r.id)) tasteVecCache.set(r.id, tasteVector(r));
+  return tasteVecCache.get(r.id);
+}
+
+/** Trains the model from saved ratings ({ id: 1-10 }) and Versus picks ({ key: { w, l } }). */
+function tasteModelFrom(recipes, ratings, picks) {
+  const byId = new Map(recipes.map((r) => [String(r.id), r]));
+  const rows = Object.entries(ratings || {})
+    .filter(([id]) => byId.has(id))
+    .map(([id, rating]) => ({ x: tasteVec(byId.get(id)), rating }));
+  const pairs = Object.values(picks || {})
+    .filter((p) => p && byId.has(String(p.w)) && byId.has(String(p.l)))
+    .map((p) => ({ win: tasteVec(byId.get(String(p.w))), lose: tasteVec(byId.get(String(p.l))) }));
+  return learnTaste(rows, pairs);
+}
+
+/** This device's taste model, or null until the player has given enough answers. */
+function currentTasteModel() {
+  if (!tasteModelCache) {
+    const read = (k) => { try { return JSON.parse(localStorage.getItem(k) || "{}") || {}; } catch { return {}; } };
+    tasteModelCache = tasteModelFrom(typeof RECIPES !== "undefined" ? RECIPES : [], read(TASTE_RATE_KEY), read(TASTE_VS_KEY));
+  }
+  return tasteModelCache.answers >= TASTE_MIN_ANSWERS ? tasteModelCache : null;
+}
+
+/** Call after a new rating or pick so the next use retrains. */
+function tasteModelChanged() { tasteModelCache = null; }
+
+// Words that say nothing about what a dish is.
+const TASTE_STOP = new Set(["cup", "cups", "tablespoon", "tablespoons", "teaspoon", "teaspoons", "pieces", "piece", "chopped", "minced", "sliced", "diced", "crushed", "large", "small", "medium", "fresh", "ground", "whole", "salt", "pepper", "water", "garlic", "onion", "onions", "cooking", "oil", "sugar", "black", "white", "cloves", "into", "with", "and", "taste", "pounds", "pound", "grams", "ounces", "optional", "about", "cut", "thinly", "finely", "leaves"]);
+
+/** The meaningful ingredient words of a recipe (pork, tamarind, kangkong, ...). */
+function dishWords(r) {
+  const words = new Set();
+  for (const name of r.ingredientNames || []) {
+    for (const w of name.toLowerCase().split(/[^a-z]+/)) if (w.length >= 4 && !TASTE_STOP.has(w)) words.add(w);
+  }
+  return words;
+}
+
+function cosine(a, b) {
+  let dot = 0, na = 0, nb = 0;
+  for (let i = 0; i < a.length; i++) { dot += a[i] * b[i]; na += a[i] * a[i]; nb += b[i] * b[i]; }
+  return na && nb ? dot / Math.sqrt(na * nb) : 0;
+}
+
+function jaccard(a, b) {
+  if (!a.size || !b.size) return 0;
+  let inter = 0;
+  for (const w of a) if (b.has(w)) inter++;
+  return inter / (a.size + b.size - inter);
+}
+
+/**
+ * Dishes like this one: same taste tags and shared ingredients, a little
+ * nudge for the same category and, when there's a profile, for the player's
+ * taste. Skips the dish itself, same-titled copies and dishes without photos.
+ */
+function similarDishes(r, recipes, n = 4, model = null, vec = tasteVec, words = dishWords) {
+  const x = vec(r), w = words(r), title = r.title.trim().toLowerCase();
+  const sauce = r.category === "Sauce & Condiment";
+  const seen = new Set([title]);
+  return recipes
+    .filter((o) => o.id !== r.id && o.img && (sauce || o.category !== "Sauce & Condiment"))
+    .map((o) => {
+      const ox = vec(o);
+      const score = 0.55 * cosine(x, ox) + 0.45 * jaccard(w, words(o)) + (o.category === r.category ? 0.08 : 0) + (model ? 0.1 * tasteScore(model, ox) : 0);
+      return { r: o, score };
+    })
+    .sort((a, b) => b.score - a.score)
+    .filter(({ r: o }) => { const t = o.title.trim().toLowerCase(); if (seen.has(t)) return false; seen.add(t); return true; })
+    .slice(0, n)
+    .map((s) => s.r);
+}

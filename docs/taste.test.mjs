@@ -6,8 +6,8 @@ import vm from "node:vm";
 
 const ctx = vm.createContext({});
 vm.runInContext(`${readFileSync(new URL("./taste.js", import.meta.url), "utf8")}
-;globalThis.api = { TASTE_TAGS, tasteVector, solveLinear, learnTaste, tasteProfile, tasteScore, tasteReasons, recommendDishes };`, ctx);
-const { TASTE_TAGS, tasteVector, solveLinear, learnTaste, tasteProfile, tasteScore, tasteReasons, recommendDishes } = ctx.api;
+;globalThis.api = { TASTE_TAGS, tasteVector, solveLinear, learnTaste, tasteProfile, tasteScore, tasteReasons, recommendDishes, tasteModelFrom, similarDishes, dishWords };`, ctx);
+const { TASTE_TAGS, tasteVector, solveLinear, learnTaste, tasteProfile, tasteScore, tasteReasons, recommendDishes, tasteModelFrom, similarDishes, dishWords } = ctx.api;
 
 const tags = (r) => Array.from(TASTE_TAGS).filter((_, i) => tasteVector(r)[i]).map((t) => t.key);
 const R = (id, title, ingredientNames = [], extra = {}) => ({ id, title, ingredientNames, img: "x.jpg", costPerServing: 50, category: "Main Dish", ...extra });
@@ -57,4 +57,29 @@ test("recommendDishes ranks unrated dishes by taste, skips rated ones and repeat
   ];
   const out = Array.from(recommendDishes(model, recipes, { 1: 8 }, 3), (p) => p.r.id);
   assert.deepEqual(out, [3, 5, 2]);
+});
+
+test("tasteModelFrom reads saved ratings and Versus picks", () => {
+  const recipes = [R(1, "Sinigang na Baboy", ["tamarind"], { category: "Soup" }), R(2, "Fried Chicken", [], { frying: "deep" })];
+  const model = tasteModelFrom(recipes, { 1: 10, 2: 1, 99: 5 }, { "a|b": { n: "Sinigang", w: 1, l: 2 }, old: "Adobo" });
+  assert.equal(model.answers, 3); // unknown id 99 and the old string pick are skipped
+  assert.ok(tasteScore(model, tasteVector(recipes[0])) > tasteScore(model, tasteVector(recipes[1])));
+});
+
+test("similarDishes: same tags and shared ingredients first, no copies", () => {
+  assert.deepEqual([...dishWords(R(0, "x", ["2 cups pork belly, sliced", "tamarind soup base", "salt"]))].sort(), ["base", "belly", "pork", "soup", "tamarind"]);
+  const recipes = [
+    R(1, "Sinigang na Baboy", ["pork belly", "tamarind", "kangkong", "radish"], { category: "Soup" }),
+    R(2, "Sinigang na Hipon", ["shrimp", "tamarind", "kangkong", "radish"], { category: "Soup" }),
+    R(3, "Sinigang na Hipon", ["shrimp", "tamarind", "kangkong"], { category: "Soup" }),
+    R(4, "Leche Flan", ["egg yolks", "condensed milk"], { category: "Dessert" }),
+    R(5, "Pork Sinampalukan", ["pork", "tamarind leaves", "ginger"], { category: "Soup" }),
+    R(6, "Atchara", ["papaya", "vinegar"], { category: "Sauce & Condiment" }),
+  ];
+  const out = Array.from(similarDishes(recipes[0], recipes, 3), (r) => r.id);
+  assert.ok(out.slice(0, 2).includes(5)); // the other pork-tamarind soup
+  assert.ok(out.slice(0, 2).some((id) => id === 2 || id === 3)); // the shrimp sinigang...
+  assert.ok(!(out.includes(2) && out.includes(3))); // ...but only one of the two same-titled copies
+  assert.ok(!out.includes(6)); // sauces only for sauces
+  assert.equal(out[out.length - 1], 4);
 });

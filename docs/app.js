@@ -282,6 +282,7 @@ function buildRecipeCard(r) {
          onclick="openModal(${r.id})">
       <div class="relative h-44 bg-amber-100 overflow-hidden">
         ${img}
+        ${forYouBadge(r)}
         ${r.costIncomplete ? `<div class="absolute top-2 left-2 bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow" title="No price yet for ${escapeHtml(r.costGaps.join(", "))}">⚠ Incomplete price</div>` : ""}
       </div>
       <div class="p-4 flex flex-col gap-2 flex-1">
@@ -425,6 +426,7 @@ function buildModal(r, instructions, lines) {
           <div id="video-links" class="flex flex-wrap gap-2 mb-4" data-recipe="${r.id}"></div>
           <ol class="space-y-4">${steps}</ol>
         </div>
+        ${similarHtml(r)}
       </div>
 
       <div class="space-y-4">
@@ -621,7 +623,36 @@ async function loadMovers() {
   }
 }
 
+// "Para sa'yo": once a player has a taste profile (from the Laro tab), Browse
+// offers it as a sort and starts on it, unless they already picked another sort.
+let BROWSE_MODEL = null;
+let forYouDefaulted = false;
+function syncForYouSort() {
+  BROWSE_MODEL = typeof currentTasteModel === "function" ? currentTasteModel() : null;
+  const sel = document.getElementById("sort-select");
+  const opt = sel.querySelector('option[value="forYou"]');
+  opt.hidden = opt.disabled = !BROWSE_MODEL;
+  if (BROWSE_MODEL && !forYouDefaulted && sel.value === "valueScore") sel.value = "forYou";
+  if (BROWSE_MODEL) forYouDefaulted = true;
+  if (!BROWSE_MODEL && sel.value === "forYou") sel.value = "valueScore";
+}
+
+/** Taste match plus a nudge toward sulit dishes, for the "Para sa'yo" sort. */
+function forYouScore(r, maxValue) {
+  return tasteScore(BROWSE_MODEL, tasteVec(r)) + 0.25 * ((r.valueScore || 0) / maxValue);
+}
+
+/** "🧠 bagay sa'yo · 🍋 maasim" on cards that fit the player's taste. */
+function forYouBadge(r) {
+  if (!BROWSE_MODEL) return "";
+  const x = tasteVec(r);
+  if (tasteScore(BROWSE_MODEL, x) < TASTE_MATCH) return "";
+  const why = tasteReasons(BROWSE_MODEL, x, 1)[0];
+  return `<div class="absolute top-2 right-2 bg-green-800/90 text-amber-50 text-xs font-semibold px-2 py-1 rounded-full shadow">🧠 bagay sa'yo${why ? ` · ${escapeHtml(why)}` : ""}</div>`;
+}
+
 function filterRecipes() {
+  syncForYouSort();
   const sort = document.getElementById("sort-select").value;
   const minProt = parseFloat(document.getElementById("min-protein").value) || 0;
   const maxCost = parseFloat(document.getElementById("max-cost").value) || Infinity;
@@ -642,15 +673,18 @@ function filterRecipes() {
   });
 
   // Dishes with incomplete price data always go last.
+  const maxValue = Math.max(1, ...RECIPES.map((r) => r.valueScore || 0));
+  const forYou = sort === "forYou" && BROWSE_MODEL ? new Map(filtered.map((r) => [r.id, forYouScore(r, maxValue)])) : null;
   filtered.sort((a, b) => (a.costIncomplete - b.costIncomplete) || browseCmp(a, b));
   function browseCmp(a, b) {
+    if (forYou) return forYou.get(b.id) - forYou.get(a.id);
     if (sort === "costPerServing") return (a.ranked ? a.costPerServing : Infinity) - (b.ranked ? b.costPerServing : Infinity);
     if (sort === "caloriesAsc") return (kcalKnown(a) ? a.calories : Infinity) - (kcalKnown(b) ? b.calories : Infinity);
     if (sort === "proteinPer100kcal") return (kcalKnown(b) ? b.proteinPer100kcal : -1) - (kcalKnown(a) ? a.proteinPer100kcal : -1);
     return (b[sort] || 0) - (a[sort] || 0);
   }
 
-  document.getElementById("result-count").textContent = `${filtered.length.toLocaleString()} recipe${filtered.length !== 1 ? "s" : ""} found`;
+  document.getElementById("result-count").textContent = `${filtered.length.toLocaleString()} recipe${filtered.length !== 1 ? "s" : ""} found${forYou ? " · sorted by your panlasa 🧠" : ""}`;
   // Render in pages so 2,000 cards don't block the page.
   const shown = filtered.slice(0, browseLimit);
   document.getElementById("browse-grid").innerHTML = shown.length > 0
@@ -811,6 +845,24 @@ async function openModal(id) {
   if (!document.getElementById("recipe-modal").classList.contains("open")) return;
   document.getElementById("modal-content").innerHTML = buildModal(r, instructions, lines);
   loadVideoLinks(r);
+}
+
+/** "Kahawig na ulam": four dishes like this one (taste tags and shared ingredients). */
+function similarHtml(r) {
+  if (typeof similarDishes !== "function") return "";
+  const model = typeof currentTasteModel === "function" ? currentTasteModel() : null;
+  const sims = similarDishes(r, RECIPES, 4, model);
+  if (!sims.length) return "";
+  return `<div>
+    <h3 class="font-bold text-lg mb-3">Kahawig na ulam</h3>
+    <div class="grid grid-cols-2 gap-3">${sims.map((s) => `
+      <button class="taste-pick" onclick="openModal(${s.id})">
+        <img src="${escapeHtml(s.img)}" alt="" loading="lazy">
+        <span class="taste-pick-name">${escapeHtml(s.title)}</span>
+        <span class="taste-pick-price">${s.costPerServing > 0 ? `₱${s.costPerServing}/serving` : ""}</span>
+      </button>`).join("")}
+    </div>
+  </div>`;
 }
 
 // ═══════════════ HOW-TO-COOK VIDEOS ═══════════════
