@@ -7,7 +7,7 @@ const API_BASE = "https://website-business-beta.vercel.app";
 
 // Visitor counts (GoatCounter: no cookies, no personal data). Empty code = off.
 // Dashboard: https://<GC_CODE>.goatcounter.com
-const GC_CODE = "";
+const GC_CODE = "sarapsulit";
 if (GC_CODE && typeof document !== "undefined") {
   const s = document.createElement("script");
   s.async = true;
