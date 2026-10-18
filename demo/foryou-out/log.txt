@@ -2,7 +2,9 @@ before: valueScore
 after: forYou 1,935 recipes found · sorted by your panlasa 🧠
 captured 1-browse-sort
 captured 2-browse-foryou
-modal ms: 2913
+modal ms: 1403
+captured 4-fact-box
+fact coverage: 1182 of 1935 dishes have a fact (616 from a dish fact)
 captured 3-kahawig-sinigang
 similar: Sinigang na Baboy with Gabi -> Sinigang na Pata with Gabi | Porknigang (Sinigang na Baboy) | Pork and Chicken Sinigang | Killer Pork Sinigang Recipe
 Chicken Adobo -> Easy Chicken Adobo Recipe | Sous Vide Chicken Adobo | Perfect Chicken Adobo on a Budget | Killer Chicken Adobo
