@@ -194,6 +194,7 @@ function submitRate() {
   if (!gameRateDish) return;
   gameRatings[gameRateDish.id] = +document.getElementById("rate-slider").value;
   gameSave(GAME_RATE_KEY, gameRatings);
+  tasteModelChanged();
   if (typeof trackEvent === "function") trackEvent("game/rated");
   gameRateDish = nextRateDish(RECIPES, gameRatings);
   renderRate();
@@ -269,6 +270,7 @@ function pickVersus(s) {
   const lose = s === "a" ? "b" : "a";
   gameVsPicks[vsKey(m)] = { n: m[s].name, w: m[s].recipe.id, l: m[lose].recipe.id };
   gameSave(GAME_VS_KEY, gameVsPicks);
+  tasteModelChanged();
   if (typeof trackEvent === "function") trackEvent("game/versus-pick");
   document.getElementById(`vs-${s}`).classList.add("win");
   document.getElementById(`vs-${s === "a" ? "b" : "a"}`).classList.add("lose");
@@ -307,14 +309,7 @@ function renderVersusEnd() {
 
 /** Trains the taste model on this device's ratings and Versus picks. */
 function gameTasteModel() {
-  const byId = new Map(RECIPES.map((r) => [String(r.id), r]));
-  const ratings = Object.entries(gameRatings)
-    .filter(([id]) => byId.has(id))
-    .map(([id, rating]) => ({ x: tasteVector(byId.get(id)), rating }));
-  const picks = Object.values(gameVsPicks)
-    .filter((p) => p && byId.has(String(p.w)) && byId.has(String(p.l)))
-    .map((p) => ({ win: tasteVector(byId.get(String(p.w))), lose: tasteVector(byId.get(String(p.l))) }));
-  return learnTaste(ratings, picks);
+  return tasteModelFrom(RECIPES, gameRatings, gameVsPicks);
 }
 
 function renderTaste() {
