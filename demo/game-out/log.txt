@@ -4,14 +4,25 @@ captured 2-rate-10
 captured 3-versus
 captured 4-versus-picked
 captured 5-versus-champions
+captured 7-panlasa
+captured 8-para-sayo
+tag counts: maasim=557 kamatis=173 gata=143 sabaw=196 saucy=250 prito=345 maanghang=271 matamis=377 baboy=536 manok=367 baka=233 isda=348 gulay=311 of 1935
+samples: Sinigang na Baka: maasim,sabaw,baka
+Adobong Itlog (Egg Adobo): maasim,saucy
+Kare Kare Buntot ng Baka: saucy,baka
+Shrimp Laing Recipe: gata,saucy,maanghang,gulay
+Filipino Pork Menudo Recipe: kamatis,saucy,baboy
+Pork Curry Tinola: gata,sabaw,maanghang,baboy
+Lechon Kawali: prito,baboy
+Monggo Pinakbet Recipe: gulay
 captured 6-rate-dark
-rounds: Laing=Laing Recipe | Pinakbet=Pinakbet Tagalog Recipe
-Sisig=Pork Sisig | Bicol Express=Bicol Express
+rounds: Sisig=Pork Sisig | Bicol Express=Bicol Express
 Kaldereta=Beef Kaldereta | Kare-Kare=Kare Kare
-Tinola=Chicken Tinola Recipe | Nilaga=Nilagang Baka Recipe
-Pancit Canton=Pancit Canton | Pancit Bihon=Pancit Bihon Recipe
-Chicken Inasal=Chicken Inasal BBQ Recipe | Lechon Manok=Lechon Manok Recipe
-Lechon Kawali=Lechon Kawali | Crispy Pata=Crispy Pata
 Menudo=Pork Menudo | Afritada=Easy Afritada
+Chicken Inasal=Chicken Inasal BBQ Recipe | Lechon Manok=Lechon Manok Recipe
+Laing=Laing Recipe | Pinakbet=Pinakbet Tagalog Recipe
 Sinigang=Sinigang na Baboy with Gabi | Adobo=Chicken Adobo
+Tinola=Chicken Tinola Recipe | Nilaga=Nilagang Baka Recipe
+Lechon Kawali=Lechon Kawali | Crispy Pata=Crispy Pata
+Pancit Canton=Pancit Canton | Pancit Bihon=Pancit Bihon Recipe
 Lumpiang Shanghai=Lumpiang Shanghai Recipe | Tokwa't Baboy=Tokwat Baboy Recipe
