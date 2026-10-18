@@ -5,12 +5,13 @@ captured 3-versus
 captured 4-versus-picked
 captured 5-versus-champions
 captured 6-rate-dark
-rounds: Lumpiang Shanghai=Cheesy Lumpiang Shanghai | Tokwa't Baboy=Tokwat Baboy Recipe
-Pancit Canton=Pancit Canton | Pancit Bihon=Pancit Bihon Recipe
+rounds: Laing=Laing Recipe | Pinakbet=Pinakbet Tagalog Recipe
 Sisig=Pork Sisig | Bicol Express=Bicol Express
-Laing=Laing Recipe | Pinakbet=Monggo Pinakbet Recipe
-Lechon Kawali=Lechon Kawali | Crispy Pata=Crispy Pata
 Kaldereta=Beef Kaldereta | Kare-Kare=Kare Kare
 Tinola=Chicken Tinola Recipe | Nilaga=Nilagang Baka Recipe
+Pancit Canton=Pancit Canton | Pancit Bihon=Pancit Bihon Recipe
+Chicken Inasal=Chicken Inasal BBQ Recipe | Lechon Manok=Lechon Manok Recipe
+Lechon Kawali=Lechon Kawali | Crispy Pata=Crispy Pata
 Menudo=Pork Menudo | Afritada=Easy Afritada
 Sinigang=Sinigang na Baboy with Gabi | Adobo=Chicken Adobo
+Lumpiang Shanghai=Lumpiang Shanghai Recipe | Tokwa't Baboy=Tokwat Baboy Recipe
