@@ -12,6 +12,23 @@ const nextConfig: NextConfig = {
     "/api/scrape/da": ["./node_modules/pdfjs-dist/legacy/build/**"],
     "/api/cron/da-daily": ["./node_modules/pdfjs-dist/legacy/build/**"],
   },
+  poweredByHeader: false,
+  // Basic hardening on every response. No page here is meant to be framed, and
+  // /admin keeps the admin token in the browser, so framing is refused.
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

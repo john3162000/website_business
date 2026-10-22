@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/lib/admin-auth";
 import { prisma } from "@/lib/db";
 import { scanSMNutrition } from "@/lib/scrapers/sm-scraper";
 
@@ -17,6 +18,8 @@ const PACKAGED_CATEGORY_WORDS = [
  * specific SKUs instead, or `?limit=` (default 40, max 100).
  */
 export async function GET(request: Request) {
+  const denied = requireAdmin(request);
+  if (denied) return denied;
   // Everything (DB sampling included) is inside the try so failures come back
   // as readable JSON instead of a blank 500 page.
   let stage = "parse";

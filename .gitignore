@@ -1,0 +1,7 @@
+# Secrets and local-only working folders (scraper-backend/.gitignore covers the backend build).
+.env*
+!.env.example
+*.pem
+.overnight/
+outreach/
+node_modules/

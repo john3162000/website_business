@@ -6,6 +6,7 @@ export const maxDuration = 30;
 
 const METHODS = "POST, OPTIONS";
 const MAX_LINES = 60;
+const MAX_BODY = 64_000;
 const str = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) : null);
 
 /** Checks and trims a personal dish from the request body; null when it isn't one. */
@@ -37,9 +38,15 @@ function parseDish(body: unknown): DishInput | null {
  * POST /api/dish  { title, servings, ingredients: [{ amount, unit, name, slug? }], instructions? }
  */
 export async function POST(request: Request) {
+  // 60 lines of short fields fit in a few KB; refuse anything far bigger before parsing it.
+  if (Number(request.headers.get("content-length") ?? 0) > MAX_BODY) {
+    return corsJson({ error: "Body too large" }, { status: 413 }, METHODS);
+  }
+  const text = await request.text();
+  if (text.length > MAX_BODY) return corsJson({ error: "Body too large" }, { status: 413 }, METHODS);
   let body: unknown;
   try {
-    body = await request.json();
+    body = JSON.parse(text);
   } catch {
     return corsJson({ error: "Body must be JSON" }, { status: 400 }, METHODS);
   }
