@@ -1,21 +1,22 @@
-kinds: {"ulam":1234,"null":425,"meryenda":276}
+kinds: {"ulam":1232,"null":427,"meryenda":276}
 captured 1-rate-ulam
-random Tuna and Zucchini Omelet [isda]
-random Garlic Pepper Beef [baka]
-random Ginisang Monggo with Inihaw na Liempo [maasim,baboy,gulay]
-ACTIVE Chicken Asado [maasim,kamatis,saucy,prito,manok]
-ACTIVE Filipino Fish Stew (Paksiw na Isda sa Gata) [maasim,gata,saucy,prito,maanghang,isda]
-ACTIVE Pork Curry Tinola [gata,sabaw,maanghang,baboy]
-ACTIVE Estofado Recipe (Probinsya Style) [saucy,prito,matamis,baboy]
-ACTIVE Chili Ginger Chicken [maasim,prito,maanghang,matamis,manok]
+random Pork Ribs Caldereta [kamatis,saucy,maanghang,baboy]
+random Ginataang Tahong [gata,maanghang,isda]
+random Spicy Pork Ribs Adobo [maasim,saucy,maanghang,baboy]
+ACTIVE Stir Fried Chicken Franks [prito,matamis,manok]
+ACTIVE Sinigang na Buntot ng Baboy with Gabi [maasim,sabaw,baboy,gulay]
+ACTIVE Spicy Beef Noodle Soup [sabaw,maanghang,matamis,baka]
+ACTIVE Sweet Pusit Adobo [maasim,saucy,matamis,isda]
+random Kinamatisang Baboy [baboy]
 captured 2-rate-active
 captured 3-rate-meryenda
 captured 4-panlasa-ulam
 captured 5-panlasa-meryenda
-weather: {"apparent":32.3,"code":3,"precip":0,"limits":{"hot":39.2,"cold":27.3,"source":"last year"},"mood":"mild"}
+weather: {"apparent":32.2,"code":3,"precip":0,"limits":{"hot":39.2,"cold":27.3,"source":"last year"},"mood":"mild"}
 captured 6-weather
 captured 8-prices-foryou
 captured 9-movers-ulam
+prices width: 608 vs 608
 random hint: 🎲 Inuna ang mga ulam na bagay sa panlasa mo 🧠 (mula sa Laro), pero sulit pa rin.
 captured 7-random-week
 grocery png written
