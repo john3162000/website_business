@@ -129,7 +129,7 @@ const ALMUSAL_TITLE = /(silog\b|\b(tapa|tocino|longg?anisa|daing|tuyo|danggit|ch
 const SNACK_COURSE = /\b(snacks?|desserts?|appetizers?|merienda|meryenda)\b/i;
 const MEAL_COURSE = /\b(main|dinner|lunch|entree|soup|side dish)\b/i;
 const SNACK_TITLE = /\b(chips|fries|nachos|popcorn|crackers?|chicharon|chicharron|tokneneng|kwek[- ]?kwek|fish ?balls?|squid ?balls?|kikiam|tornado|corndogs?|deviled eggs?|nuggets?|adobong mani|mani|(?:roasted|boiled|fried|garlic|spicy|salted) peanuts?|kropek|kornik|cornick)\b/i;
-const SIDE_TITLE = /\b(pickled?|pickles|atchara|achara|burong|buro|dip|dressing|salsa|jam|syrup|salads?|ensalada|ensaladang|sandwich(es)?|burgers?|egg rolls?|spring rolls?|lettuce wraps?|wraps?|tacos?|quesadillas?|nachos|pandesal|pan de sal|bread|buns?|toasts?|potato wedges|wedges|onion rings|lugaw|arroz caldo|goto|congee|porridge|champorado)\b/i;
+const SIDE_TITLE = /\b(mashed potato(?:es)?|pickled?|pickles|atchara|achara|burong|buro|dip|dressing|salsa|jam|syrup|salads?|ensalada|ensaladang|sandwich(es)?|burgers?|egg rolls?|spring rolls?|lettuce wraps?|wraps?|tacos?|quesadillas?|nachos|pandesal|pan de sal|bread|buns?|toasts?|potato wedges|wedges|onion rings|lugaw|arroz caldo|goto|congee|porridge|champorado)\b/i;
 // Sweets and kakanin are never an ulam, even when the recipe data calls them a main dish.
 const SWEET_TITLE = /\b(mamon|ensaymada|silvanas?|sans rival|food for the gods|minatamis|matamis|pastimallows?|marshmallows?|brazo|pancakes?|hotcakes?|waffles?|french toast|nilupak|pichi[- ]?pichi|puto|kutsinta|bibingka|suman|biko|palitaw|sapin[- ]?sapin|kakanin|maja|cassava cake|bilo[- ]?bilo|ginataang mais|ginataang halo|binignit|halo[- ]?halo|mais con yelo|sago|gulaman|buko pandan|fruit salad|ensaymada|cakes?|cupcakes?|cookies|brownies?|leche flan|flan|polvoron|pastillas|turrones|donuts?|doughnuts?|muffins?|banana loaf|hopia|turon|maruya|banana ?cue|camote ?cue|kamote ?cue|yema|tsokolate|champorado|espasol|tikoy|kalamay|ube halaya|halaya|jelly|gelatin|pudding|ice cream)\b/i;
 
@@ -564,14 +564,30 @@ function plannerKitchenOk(r) {
   return typeof kitchenOk !== "function" || kitchenOk(r);
 }
 
+/**
+ * How Random week ranks dishes: value (nutrition per peso) as before, plus the
+ * player's taste from the Laro tab when there's a profile for the dish's kind
+ * (ulam or meryenda), so liked dishes come up more while staying sulit.
+ */
+function plannerTasteScorer(recipes) {
+  const maxValue = Math.max(1, ...recipes.map((r) => r.valueScore || 0));
+  const hasModel = typeof currentTasteModel === "function" && typeof dishKind === "function";
+  const models = hasModel ? { ulam: currentTasteModel("ulam"), meryenda: currentTasteModel("meryenda") } : {};
+  return (r) => {
+    const m = models[hasModel ? dishKind(r) : null];
+    return (r.valueScore || 0) / maxValue + (m ? 2 * tasteScore(m, tasteVec(r)) : 0);
+  };
+}
+
 function randomPools() {
   const pools = {};
   const onePerTitle = () => { const seen = new Set(); return (r) => { const t = r.title.trim().toLowerCase(); if (seen.has(t)) return false; seen.add(t); return true; }; };
   const fits = RECIPES.filter((r) => r.costPerServing > 0 && dietOk(r, activeDiet) && plannerKitchenOk(r));
+  const score = plannerTasteScorer(fits);
   for (const s of ["almusal", "ulam", "meryenda"]) {
     pools[s] = fits
       .filter((r) => mealTypes(r).has(s) && (s !== "ulam" || isMainUlam(r)))
-      .sort((a, b) => (b.ranked - a.ranked) || (b.valueScore - a.valueScore))
+      .sort((a, b) => (b.ranked - a.ranked) || (score(b) - score(a)))
       .filter(onePerTitle())
       .map((r) => r.id);
   }
@@ -587,6 +603,8 @@ function randomizeWeek() {
   const keep = document.getElementById("plan-keep").checked;
   plan = randomWeek(plan, randomPools(), { meals, keep, ulamPerMeal, alternate: randomStyle === "alternate" });
   persist(); renderGrid(); renderReceipt();
+  const taste = typeof currentTasteModel === "function" && (currentTasteModel("ulam") || currentTasteModel("meryenda"));
+  if (taste && randomStyle !== "alternate") hint("🎲 Inuna ang mga ulam na bagay sa panlasa mo 🧠 (mula sa Laro), pero sulit pa rin.");
 }
 
 /** The budget box: parse it, fill the week within budget, and say how it went. */
@@ -720,33 +738,101 @@ function deleteSavedPlan(i) {
 }
 
 /** Builds the grocery list text for the current plan (fetching ingredient lines first). */
-async function currentGroceryText() {
+/** The current plan's grocery receipt (fetching ingredient lines first), or null when the week is empty. */
+async function currentGrocery() {
   if (!plannedDishes(plan).length) { plannerNote("Wala pang ulam sa plano.", false); return null; }
   await loadPlanDetails((n) => plannerNote(`Inaayos ang listahan (${n} ulam)…`));
-  const d = new Date().toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" });
-  return groceryText(receiptByIngredient(plan, detailCache), plan.people, d);
+  const date = new Date().toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" });
+  return { receipt: receiptByIngredient(plan, detailCache), people: plan.people, date };
 }
 
+async function currentGroceryText() {
+  const g = await currentGrocery();
+  return g ? groceryText(g.receipt, g.people, g.date) : null;
+}
+
+/** The grocery list drawn as a picture (1080 px wide, as tall as the list), like a market receipt. */
+function groceryCanvas({ receipt, people, date }) {
+  const W = 1080, PAD = 64, ROW = 58, HEAD = 250, FOOT = 230;
+  const rows = groceryRows(receipt);
+  const c = document.createElement("canvas");
+  c.width = W; c.height = HEAD + rows.length * ROW + FOOT;
+  const ctx = c.getContext("2d");
+  const font = (w, px) => `${w} ${px}px Inter, "Helvetica Neue", Arial, sans-serif`;
+  ctx.fillStyle = "#F8F4EA"; ctx.fillRect(0, 0, W, c.height);
+  // Header band
+  ctx.fillStyle = "#163F2E"; ctx.fillRect(0, 0, W, 170);
+  ctx.fillStyle = "#E6C265"; ctx.font = font(800, 26); ctx.fillText("FARM2FIGURE", PAD, 62);
+  ctx.fillStyle = "#F8F4EA"; ctx.font = font(800, 60); ctx.fillText("Grocery list", PAD, 132);
+  ctx.fillStyle = "#3D3420"; ctx.font = font(600, 30); ctx.fillText(`Para sa ${people} tao · ${date}`, PAD, 222);
+  // Rows: checkbox, item, amount, price
+  let y = HEAD;
+  const fit = (text, max) => { let t = text; while (ctx.measureText(t).width > max && t.length > 4) t = t.slice(0, -2); return t === text ? t : `${t.trimEnd()}…`; };
+  rows.forEach((r, i) => {
+    if (i % 2 === 0) { ctx.fillStyle = "#FFFFFF"; ctx.fillRect(PAD - 16, y, W - 2 * PAD + 32, ROW); }
+    ctx.strokeStyle = "#1F5A3D"; ctx.lineWidth = 3; ctx.strokeRect(PAD, y + 16, 26, 26);
+    ctx.fillStyle = "#1F2A24"; ctx.font = font(600, 30);
+    ctx.fillText(fit(r.label, 560), PAD + 48, y + 40);
+    ctx.fillStyle = "#6B7F70"; ctx.font = font(500, 28); ctx.textAlign = "right";
+    ctx.fillText(r.qty, W - PAD - 190, y + 40);
+    ctx.fillStyle = "#8A6A12"; ctx.font = font(700, 28);
+    ctx.fillText(r.price, W - PAD, y + 40);
+    ctx.textAlign = "left";
+    y += ROW;
+  });
+  // Total and sources
+  y += 24;
+  ctx.fillStyle = "#163F2E"; ctx.fillRect(PAD - 16, y, W - 2 * PAD + 32, 4);
+  ctx.font = font(800, 40); ctx.fillText("Total", PAD, y + 66);
+  ctx.textAlign = "right"; ctx.fillText(`≈ ₱${Math.round(receipt.total).toLocaleString("en-PH")}`, W - PAD, y + 66); ctx.textAlign = "left";
+  ctx.fillStyle = "#6B7F70"; ctx.font = font(500, 24);
+  ctx.fillText(receipt.unpriced ? `${receipt.unpriced} na sangkap ang wala pang presyo (—). ` : "", PAD, y + 112);
+  ctx.fillText("Presyo mula sa DA, PSA, SM at DTI · dami ay bago lutuin (as bought)", PAD, y + 148);
+  return c;
+}
+
+/** One printable row per ingredient: label, amount to buy, price. */
+function groceryRows(receipt) {
+  return receipt.items.map((it) => ({
+    label: it.label,
+    qty: it.grams > 0 && it.grams < 1 ? "<1 g" : formatGrams(it.grams),
+    price: it.priced ? `₱${Math.round(it.cost).toLocaleString("en-PH")}${it.unpricedGrams > 0 ? "+" : ""}` : "—",
+  }));
+}
+
+function groceryFileName() {
+  return `grocery-list-${new Date().toISOString().slice(0, 10)}.png`;
+}
+
+const canvasBlob = (c) => new Promise((resolve) => c.toBlob(resolve, "image/png"));
+
 async function downloadGroceryList() {
-  const text = await currentGroceryText();
-  if (!text) return;
+  const g = await currentGrocery();
+  if (!g) return;
+  const blob = await canvasBlob(groceryCanvas(g));
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([text], { type: "text/plain;charset=utf-8" }));
-  a.download = `grocery-list-${new Date().toISOString().slice(0, 10)}.txt`;
+  a.href = URL.createObjectURL(blob);
+  a.download = groceryFileName();
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-  plannerNote("Na-download ang grocery list ✓");
+  plannerNote("Na-download ang grocery list (larawan) ✓");
   if (typeof trackEvent === "function") trackEvent("grocery/download");
 }
 
-/** Phones: the share sheet (Messenger is on it). Elsewhere: copy, then open Messenger to paste. */
+/** Phones: share the picture (Messenger is on the share sheet). Elsewhere: copy the list as text, then open Messenger. */
 async function sendGroceryList() {
-  const text = await currentGroceryText();
-  if (!text) return;
+  const g = await currentGrocery();
+  if (!g) return;
   if (typeof trackEvent === "function") trackEvent("grocery/share");
+  const text = groceryText(g.receipt, g.people, g.date);
   if (navigator.share) {
-    try { await navigator.share({ title: "Grocery list", text }); plannerNote("Na-send ✓"); return; }
-    catch (e) { if (e && e.name === "AbortError") return; }
+    try {
+      const file = new File([await canvasBlob(groceryCanvas(g))], groceryFileName(), { type: "image/png" });
+      const payload = navigator.canShare && navigator.canShare({ files: [file] }) ? { files: [file], title: "Grocery list" } : { title: "Grocery list", text };
+      await navigator.share(payload);
+      plannerNote("Na-send ✓");
+      return;
+    } catch (e) { if (e && e.name === "AbortError") return; }
   }
   try {
     await navigator.clipboard.writeText(text);

@@ -7,20 +7,36 @@ import vm from "node:vm";
 
 const ctx = vm.createContext({});
 vm.runInContext(`${readFileSync(new URL("./weather.js", import.meta.url), "utf8")}
-;globalThis.api = { weatherMood, weatherPicks, weatherLabel };`, ctx);
-const { weatherMood, weatherPicks, weatherLabel } = ctx.api;
+;globalThis.api = { weatherMood, weatherPicks, weatherLabel, percentile, climateLimits };`, ctx);
+const { weatherMood, weatherPicks, weatherLabel, percentile, climateLimits } = ctx.api;
 const titles = (list) => [...list].map((r) => r.title);
 
-test("weatherMood: rain wins, then sun or heat, then cool", () => {
-  assert.equal(weatherMood({ code: 63, apparent: 34 }), "rainy"); // raining, even if humid
-  assert.equal(weatherMood({ code: 2, apparent: 30, rainChance6h: 70 }), "rainy"); // rain coming
-  assert.equal(weatherMood({ code: 3, apparent: 29, precipitation: 0.4 }), "rainy");
-  assert.equal(weatherMood({ code: 0, apparent: 28 }), "sunny"); // clear and warm
-  assert.equal(weatherMood({ code: 2, apparent: 27 }), "sunny"); // partly cloudy still counts
-  assert.equal(weatherMood({ code: 3, apparent: 33 }), "sunny"); // overcast but scorching
-  assert.equal(weatherMood({ code: 3, apparent: 29 }), "mild"); // overcast, warm
-  assert.equal(weatherMood({ code: 0, apparent: 25 }), "mild"); // clear but not hot
-  assert.equal(weatherMood({ code: 1, apparent: 21 }), "cool");
+test("weatherMood: only moderate-to-heavy rain, or heat/cold past last year's 85th/15th percentile", () => {
+  const L = { hot: 41, cold: 23 };
+  assert.equal(weatherMood({ code: 63, apparent: 34 }, L), "rainy"); // moderate rain
+  assert.equal(weatherMood({ code: 95, apparent: 30 }, L), "rainy"); // thunderstorm
+  assert.equal(weatherMood({ code: 3, apparent: 29, precipitation: 3 }, L), "rainy"); // 3 mm in the last hour
+  assert.equal(weatherMood({ code: 61, apparent: 30, precipitation: 0.5 }, L), "mild"); // light rain doesn't count
+  assert.equal(weatherMood({ code: 53, apparent: 30 }, L), "mild"); // drizzle doesn't count
+  assert.equal(weatherMood({ code: 2, apparent: 30, rainChance6h: 90 }, L), "mild"); // a forecast chance isn't rain
+  assert.equal(weatherMood({ code: 0, apparent: 41 }, L), "sunny"); // at the hot limit
+  assert.equal(weatherMood({ code: 0, apparent: 38 }, L), "mild"); // hot, but a normal day here
+  assert.equal(weatherMood({ code: 1, apparent: 23 }, L), "cool");
+  assert.equal(weatherMood({ code: 1, apparent: 25 }, L), "mild");
+  assert.equal(weatherMood({ code: 0, apparent: 43 }), "sunny"); // fallback limits before last year's data loads
+});
+
+test("percentile and climate limits", () => {
+  const days = Array.from({ length: 101 }, (_, i) => i); // 0..100
+  assert.equal(percentile(days, 85), 85);
+  assert.equal(percentile(days, 15), 15);
+  assert.equal(percentile([10, 20], 50), 15);
+  assert.equal(percentile([], 50), null);
+  assert.equal(percentile([1, null, 3], 50), 2);
+  const lim = climateLimits(days.map((d) => 30 + d / 10), days.map((d) => 20 + d / 10));
+  assert.equal(lim.hot, 38.5);
+  assert.equal(lim.cold, 21.5);
+  assert.equal(climateLimits([], [1]), null);
 });
 
 test("weatherLabel covers Open-Meteo's WMO codes", () => {
