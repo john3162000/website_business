@@ -1,0 +1,27 @@
+recipes with appliances: 615
+captured 1-browse-bar
+captured 2-kitchen-all
+captured 3-kitchen-airfryer
+captured 4-kitchen-fact
+count: 1,745 of 1,935 ulam ang kaya mong lutuin
+captured 5-browse-filtered
+captured 6-modal-needs
+captured 7-planner-receipt
+captured 8-planner-saved
+GROCERY:
+🛒 Grocery list · FARM2FIGURE
+Para sa 4 tao · October 22, 2026
+
+☐ Mussels (tahong), in shell: 1.4 kg · ≈₱168
+☐ Mung beans, dried: 953 g · ≈₱141
+☐ Yellow onion: 620 g · ≈₱120
+☐ Firm tofu: 752 g · ≈₱105
+☐ Longganisa: 227 g · ≈₱84
+☐ Cooking oil: 1.2 kg · ≈₱72
+☐ Sardines in tomato sauce: 416 g · ≈₱60
+☐ Chicken egg: 414 g · ≈₱59
+☐ Unsalted butter: 76 g · ≈₱57
+☐ Mussel meat (shelled): 454 g · ≈₱56
+☐ Garlic: 146 g · ≈₱54
+download: grocery-list-2026-10-22.txt
+captured 9-tour-step
