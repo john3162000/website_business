@@ -1,3 +1,0 @@
-oven 6
-oven_b 6
-oven_c 6

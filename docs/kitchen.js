@@ -39,6 +39,28 @@ const KITCHEN_FACTS = {
   "steamer<-rice_cooker": "Maraming rice cooker ang may kasamang steamer tray, kaya pwedeng mag-steam habang nagsasaing.",
 };
 
+// Photo credits (Wikimedia Commons; CC BY / CC BY-SA / public domain), shown under the kitchen.
+const KITCHEN_CREDITS = {
+  stove: {"creator": "Douglas P Perkins", "license": "CC BY 3.0", "source": "https://commons.wikimedia.org/wiki/File:Rinnai_RT-3GID_20090606.jpg"},
+  oven: {"creator": "Shixart1985", "license": "CC BY 2.0", "source": "https://commons.wikimedia.org/wiki/File:Hands_open_oven_door_to_take_out_baked_food_from_inside_in_a_modern_kitchen.jpg"},
+  air_fryer: {"creator": "I am R.", "license": "CC BY 2.0", "source": "https://commons.wikimedia.org/wiki/File:Air_Fryer_2020.jpg"},
+  microwave: {"creator": "Wrightmt", "license": "Public domain", "source": "https://commons.wikimedia.org/wiki/File:Microwave_oven_flashon.jpg"},
+  grill: {"creator": "Shixart1985", "license": "CC BY 2.0", "source": "https://commons.wikimedia.org/wiki/File:Charcoal_grill_ready_for_barbecue_with_ashes_arranged_neatly_at_summer_gathering_in_backyard.jpg"},
+  steamer: {"creator": "Wikimedia Commons contributor", "license": "CC BY-SA 3.0", "source": "https://commons.wikimedia.org/wiki/File:Steamers.jpg"},
+  rice_cooker: {"creator": "Jugo Yokomizo", "license": "CC BY-SA 4.0", "source": "https://commons.wikimedia.org/wiki/File:Rival_Rice_Cooker.jpg"},
+  pressure_cooker: {"creator": "Cantons-de-l'Est", "license": "CC BY-SA 4.0", "source": "https://commons.wikimedia.org/wiki/File:Pressure_cooker_-_Hawkins,_Contura_Model_-_3_litres_-_4.jpg"},
+  slow_cooker: {"creator": "Your Best Digs", "license": "CC BY 2.0", "source": "https://commons.wikimedia.org/wiki/File:6_quart_Crock_Pot_slow_cooker.jpg"},
+  blender: {"creator": "Infrogmation of New Orleans", "license": "CC BY-SA 4.0", "source": "https://commons.wikimedia.org/wiki/File:Old_blender_on_shelf_in_New_Orleans_kitchen.jpg"},
+  mixer: {"creator": "Schekinov Alexey Victorovich", "license": "CC BY-SA 4.0", "source": "https://commons.wikimedia.org/wiki/File:%D0%9C%D0%B8%D0%BA%D1%81%D0%B5%D1%80_%D0%94%D0%9E%D0%9C%D0%9E%D0%A2%D0%95%D0%9A.jpg"},
+};
+
+function kitchenCreditsHtml() {
+  return "Photos from Wikimedia Commons: " + KITCHEN_ITEMS.map((i) => {
+    const c = KITCHEN_CREDITS[i.key];
+    return c ? `<a href="${escapeHtml(c.source)}" target="_blank" rel="noopener">${escapeHtml(i.label)}</a> by ${escapeHtml(c.creator)} (${escapeHtml(c.license)})` : "";
+  }).filter(Boolean).join(" · ");
+}
+
 // ── Pure helpers ──
 
 /** Whether a dish needing `needs` can be cooked with the appliances in `have` (a Set). */
@@ -136,6 +158,7 @@ function renderKitchen() {
   const box = document.getElementById("kitchen-fact");
   box.innerHTML = facts.map((f) => `<p>💡 ${escapeHtml(f)}</p>`).join("");
   box.classList.toggle("hidden", !facts.length);
+  document.getElementById("kitchen-credits").innerHTML = kitchenCreditsHtml();
 }
 
 function applyKitchen() {
