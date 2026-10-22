@@ -10,8 +10,9 @@ const QUERIES = {
 mkdirSync(OUT, { recursive: true });
 const meta = {};
 for (const [key, q] of Object.entries(QUERIES)) {
-  const url = `https://api.openverse.org/v1/images/?q=${encodeURIComponent(q)}&license_type=commercial,modification&page_size=12&mature=false`;
-  const res = await fetch(url, { headers: { "User-Agent": "FARM2FIGURE-photo-finder/1.0" } });
+  const url = `https://api.openverse.org/v1/images/?q=${encodeURIComponent(q)}&license_type=commercial,modification&page_size=10&mature=false`;
+  let res;
+  try { res = await fetch(url, { headers: { "User-Agent": "FARM2FIGURE-photo-finder/1.0" }, signal: AbortSignal.timeout(20000) }); } catch (e) { console.log(key, "search failed", e.message); continue; }
   if (!res.ok) { console.log(key, "HTTP", res.status); continue; }
   const j = await res.json();
   meta[key] = [];
@@ -19,7 +20,7 @@ for (const [key, q] of Object.entries(QUERIES)) {
   for (const r of j.results || []) {
     if (n >= 6) break;
     try {
-      const img = await fetch(r.thumbnail || r.url);
+      const img = await fetch(r.thumbnail || r.url, { signal: AbortSignal.timeout(15000) });
       if (!img.ok) continue;
       const buf = Buffer.from(await img.arrayBuffer());
       if (buf.length < 4000) continue;
