@@ -1,32 +1,38 @@
-// Finds openly licensed photos of kitchen appliances on Openverse and saves a
-// few candidates per appliance with their licence details, for review.
+// Finds openly licensed photos of kitchen appliances on Wikimedia Commons and
+// saves a few candidates per appliance with their licence details, for review.
 import { writeFileSync, mkdirSync } from "node:fs";
 const OUT = process.argv[2] || "photos";
+const UA = { "User-Agent": "FARM2FIGURE-photo-finder/1.0 (https://github.com/john3162000/website_business)" };
 const QUERIES = {
-  stove: "gas stove burner kitchen", oven: "kitchen oven", air_fryer: "air fryer", microwave: "microwave oven kitchen",
-  grill: "charcoal grill barbecue", steamer: "bamboo steamer", rice_cooker: "rice cooker", pressure_cooker: "pressure cooker",
-  slow_cooker: "slow cooker crock pot", blender: "kitchen blender", mixer: "stand mixer kitchen",
+  stove: "gas stove burners kitchen", oven: "kitchen oven appliance", air_fryer: "air fryer", microwave: "microwave oven",
+  grill: "charcoal grill barbecue", steamer: "steamer cookware", rice_cooker: "rice cooker", pressure_cooker: "pressure cooker",
+  slow_cooker: "slow cooker", blender: "blender kitchen appliance", mixer: "stand mixer",
 };
+const OK = /^(cc0|cc by(-sa)? [0-9.]+|public domain|pd)/i;
 mkdirSync(OUT, { recursive: true });
 const meta = {};
+const strip = (h) => (h || "").replace(/<[^>]+>/g, "").trim();
 for (const [key, q] of Object.entries(QUERIES)) {
-  const url = `https://api.openverse.org/v1/images/?q=${encodeURIComponent(q)}&license_type=commercial,modification&page_size=10&mature=false`;
-  let res;
-  try { res = await fetch(url, { headers: { "User-Agent": "FARM2FIGURE-photo-finder/1.0" }, signal: AbortSignal.timeout(20000) }); } catch (e) { console.log(key, "search failed", e.message); continue; }
-  if (!res.ok) { console.log(key, "HTTP", res.status); continue; }
-  const j = await res.json();
+  const url = `https://commons.wikimedia.org/w/api.php?action=query&format=json&generator=search&gsrnamespace=6&gsrlimit=20&gsrsearch=${encodeURIComponent(q + " filetype:bitmap")}&prop=imageinfo&iiprop=url|extmetadata|mime&iiurlwidth=480`;
+  let j;
+  try { j = await (await fetch(url, { headers: UA, signal: AbortSignal.timeout(20000) })).json(); } catch (e) { console.log(key, "search failed", e.message); continue; }
+  const pages = Object.values(j.query?.pages || {}).sort((a, b) => a.index - b.index);
   meta[key] = [];
   let n = 0;
-  for (const r of j.results || []) {
+  for (const p of pages) {
     if (n >= 6) break;
+    const ii = p.imageinfo?.[0];
+    if (!ii || !/jpe?g|png/.test(ii.mime)) continue;
+    const m = ii.extmetadata || {};
+    const lic = strip(m.LicenseShortName?.value);
+    if (!OK.test(lic)) continue;
     try {
-      const img = await fetch(r.thumbnail || r.url, { signal: AbortSignal.timeout(15000) });
+      const img = await fetch(ii.thumburl, { headers: UA, signal: AbortSignal.timeout(15000) });
       if (!img.ok) continue;
       const buf = Buffer.from(await img.arrayBuffer());
-      if (buf.length < 4000) continue;
       const file = `${key}-${n}.jpg`;
       writeFileSync(`${OUT}/${file}`, buf);
-      meta[key].push({ file, title: r.title, creator: r.creator, license: `${r.license} ${r.license_version || ""}`.trim(), license_url: r.license_url, source: r.foreign_landing_url, url: r.url, w: r.width, h: r.height });
+      meta[key].push({ file, title: p.title, creator: strip(m.Artist?.value), license: lic, license_url: m.LicenseUrl?.value || null, source: ii.descriptionurl });
       n++;
     } catch {}
   }
