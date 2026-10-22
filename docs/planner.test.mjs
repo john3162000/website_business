@@ -6,8 +6,8 @@ import vm from "node:vm";
 
 const ctx = vm.createContext({});
 vm.runInContext(`${readFileSync(new URL("./planner.js", import.meta.url), "utf8")}
-;globalThis.api = { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, isMainUlam, proteinKind, dietOk, cheapestByKind };`, ctx);
-const { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, isMainUlam, proteinKind, dietOk, cheapestByKind } = ctx.api;
+;globalThis.api = { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, isMainUlam, proteinKind, dietOk, cheapestByKind, addSavedPlan, groceryText };`, ctx);
+const { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, isMainUlam, proteinKind, dietOk, cheapestByKind, addSavedPlan, groceryText } = ctx.api;
 const plain = (v) => JSON.parse(JSON.stringify(v));
 
 test("slots: add without duplicates, at most 5, remove clears empty slots", () => {
@@ -235,4 +235,28 @@ test("random week: gulay → isda → karne take turns, leaning to the cheapest"
   const kind = (id) => (id < 20 ? "g" : id < 30 ? "i" : "k");
   assert.equal(ids.map(kind).join(""), "gikgikgikgikgi");
   assert.equal(ids[0], 10, "cheapest gulay first");
+});
+
+test("saved plans: newest first, same name replaces, at most 8, copies not shared", () => {
+  const p = { people: 4, slots: { "Lunes|Hapunan": [1] } };
+  let list = addSavedPlan([], "Week 1", p, 1);
+  p.slots["Lunes|Hapunan"].push(2); // later edits don't change the saved copy
+  assert.deepEqual(plain(list[0].plan.slots), { "Lunes|Hapunan": [1] });
+  list = addSavedPlan(list, "Week 2", p, 2);
+  list = addSavedPlan(list, " Week 1 ", p, 3);
+  assert.deepEqual(plain(list.map((x) => x.name)), ["Week 1", "Week 2"]);
+  for (let i = 0; i < 10; i++) list = addSavedPlan(list, `W${i}`, p, 10 + i);
+  assert.equal(list.length, 8);
+  assert.equal(addSavedPlan([], "  ", p)[0].name, "Plano");
+});
+
+test("grocery list text: one checkbox line per ingredient, then the total", () => {
+  const receipt = { items: [
+    { label: "Pork belly", grams: 1200, cost: 330.4, priced: true, unpricedGrams: 0 },
+    { label: "Kangkong", grams: 450, cost: 0, priced: false, unpricedGrams: 450 },
+  ], total: 330.4, unpriced: 1 };
+  const t = groceryText(receipt, 4, "October 22, 2026");
+  assert.match(t, /Para sa 4 tao · October 22, 2026/);
+  assert.match(t, /☐ Pork belly: 1\.2 kg · ≈₱330\n☐ Kangkong: 450 g\n/);
+  assert.match(t, /Total ≈ ₱330 \(\+ 1 na walang presyo pa\)/);
 });
