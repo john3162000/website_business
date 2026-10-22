@@ -10,6 +10,7 @@
  */
 import { isUnit, parseQuantity, type ParsedQuantity } from "./quantity.ts";
 import type { Alias, Canonical } from "./types.ts";
+import { detectAppliances, type Appliance } from "./appliances.ts";
 
 export interface Nutrients {
   kcal: number; protein: number; fat: number; carbs: number; sodium: number;
@@ -98,6 +99,8 @@ export interface CompiledRecipe {
   servings: number;
   servingsAssumed: boolean;
   method: { frying: "deep" | "shallow" | null; absorbedOilG: [number, number] | null };
+  /** Appliances named in the title or steps (oven, air fryer, grill, ...); a stove is assumed. */
+  appliances: Appliance[];
   perServing: Nutrients & { kcalLow: number; kcalHigh: number };
   costPerServing: number | null;
   /** Share of weighed food lines with FNRI nutrition / with a DA price (0–1). Condiments DA doesn't sell lower costCoverage. */
@@ -633,6 +636,7 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
     servings,
     servingsAssumed,
     method: { frying, absorbedOilG: absorbed },
+    appliances: detectAppliances(r.title, r.instructions),
     perServing: {
       ...(Object.fromEntries(Object.entries(total).map(([k, v]) => [k, per(v)])) as unknown as Nutrients),
       kcalLow: per(kcalLow), kcalHigh: per(kcalHigh),

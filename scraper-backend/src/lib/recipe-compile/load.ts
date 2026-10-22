@@ -149,6 +149,7 @@ export function summarize(c: CompiledRecipe & { course?: string | null; referenc
     servingsAssumed: c.servingsAssumed,
     course: c.course ?? null,
     frying: c.method.frying,
+    appliances: c.appliances,
     kcal: round(c.perServing.kcal),
     kcalLow: round(c.perServing.kcalLow),
     kcalHigh: round(c.perServing.kcalHigh),
