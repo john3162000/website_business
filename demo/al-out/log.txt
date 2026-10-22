@@ -1,15 +1,19 @@
 kinds: {"ulam":1234,"null":425,"meryenda":276}
 captured 1-rate-ulam
-random Barbecued Pork Char Siu [matamis,baboy]
-random How to Cook Lumpia [prito,baboy]
-random Sarciadong Isda Recipe [isda]
-ACTIVE Chicken Feet Adobo [maasim,saucy,prito,maanghang,manok]
-ACTIVE Sinigang na Buto buto with Gabi Recipe [maasim,sabaw,maanghang,gulay]
-ACTIVE Beef Mechado Recipe [maasim,kamatis,saucy,baka]
-random Easy Meatballs Recipe [baka]
-ACTIVE Shrimp Laing Recipe [gata,saucy,maanghang,gulay]
+random Sarciadong Pechay [gulay]
+random Shared Recipe: Tortang Talong with Giniling [prito,gulay]
+random How to Cook Ginataang Langka with Tinapa Flakes [maasim,gata,maanghang,gulay]
+ACTIVE Pocherong Manok [kamatis,saucy,prito,baboy,manok]
+ACTIVE Adobo Steak Recipe [maasim,saucy,matamis,baka]
+ACTIVE Sinigang na Panga ng Tuna Recipe (Tuna jaw cooked in sour broth) [maasim,sabaw,maanghang,isda]
+ACTIVE Spicy Chicken Feet [prito,maanghang,matamis,manok]
+ACTIVE Pininyahang Baboy sa Gata [gata,matamis,baboy]
 captured 2-rate-active
 captured 3-rate-meryenda
 captured 4-panlasa-ulam
 captured 5-panlasa-meryenda
+weather: {"apparent":32.3,"code":3,"precip":0,"limits":{"hot":39.2,"cold":27.3,"source":"last year"},"mood":"mild"}
+captured 6-weather
+random hint: 🎲 Inuna ang mga ulam na bagay sa panlasa mo 🧠 (mula sa Laro), pero sulit pa rin.
+captured 7-random-week
 grocery png written
