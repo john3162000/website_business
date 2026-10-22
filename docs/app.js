@@ -629,10 +629,12 @@ async function loadMovers() {
 
 // "Para sa'yo": once a player has a taste profile (from the Laro tab), Browse
 // offers it as a sort and starts on it, unless they already picked another sort.
-let BROWSE_MODEL = null;
+let BROWSE_MODEL = null; // ulam profile (or meryenda when that's all there is); BROWSE_MODELS has both
+let BROWSE_MODELS = {};
 let forYouDefaulted = false;
 function syncForYouSort() {
-  BROWSE_MODEL = typeof currentTasteModel === "function" ? currentTasteModel() : null;
+  BROWSE_MODELS = typeof currentTasteModel === "function" ? { ulam: currentTasteModel("ulam"), meryenda: currentTasteModel("meryenda") } : {};
+  BROWSE_MODEL = BROWSE_MODELS.ulam || BROWSE_MODELS.meryenda || null;
   const sel = document.getElementById("sort-select");
   const opt = sel.querySelector('option[value="forYou"]');
   opt.hidden = opt.disabled = !BROWSE_MODEL;
@@ -643,15 +645,17 @@ function syncForYouSort() {
 
 /** Taste match plus a nudge toward sulit dishes, for the "Para sa'yo" sort. */
 function forYouScore(r, maxValue) {
-  return tasteScore(BROWSE_MODEL, tasteVec(r)) + 0.25 * ((r.valueScore || 0) / maxValue);
+  const m = BROWSE_MODELS[dishKind(r)];
+  return (m ? tasteScore(m, tasteVec(r)) : 0) + 0.25 * ((r.valueScore || 0) / maxValue);
 }
 
 /** "🧠 bagay sa'yo · 🍋 maasim" on cards that fit the player's taste. */
 function forYouBadge(r) {
-  if (!BROWSE_MODEL) return "";
+  const m = BROWSE_MODEL && BROWSE_MODELS[dishKind(r)];
+  if (!m) return "";
   const x = tasteVec(r);
-  if (tasteScore(BROWSE_MODEL, x) < TASTE_MATCH) return "";
-  const why = tasteReasons(BROWSE_MODEL, x, 1)[0];
+  if (tasteScore(m, x) < TASTE_MATCH) return "";
+  const why = tasteReasons(m, x, 1)[0];
   return `<div class="absolute top-2 right-2 bg-green-800/90 text-amber-50 text-xs font-semibold px-2 py-1 rounded-full shadow">🧠 bagay sa'yo${why ? ` · ${escapeHtml(why)}` : ""}</div>`;
 }
 
@@ -863,7 +867,7 @@ function needsHtml(r) {
 /** "Kahawig na ulam": four dishes like this one (taste tags and shared ingredients). */
 function similarHtml(r) {
   if (typeof similarDishes !== "function") return "";
-  const model = typeof currentTasteModel === "function" ? currentTasteModel() : null;
+  const model = typeof currentTasteModel === "function" ? currentTasteModel(dishKind(r)) : null;
   const sims = similarDishes(r, RECIPES, 4, model);
   if (!sims.length) return "";
   return `<div>

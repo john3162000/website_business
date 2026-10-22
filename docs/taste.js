@@ -118,7 +118,31 @@ function learnTaste(ratings, picks, ridge = TASTE_RIDGE) {
   for (let i = 0; i < d; i++) A[i][i] += ridge; // the bias (last) is not shrunk
   A[d][d] += 1e-6;
   const w = solveLinear(A, b);
-  return { weights: w.slice(0, d), bias: w[d], seen, answers: rows.length };
+  return { weights: w.slice(0, d), bias: w[d], seen, answers: rows.length, A };
+}
+
+/**
+ * How unsure the model is about a dish with tags x: the ridge posterior
+ * variance x'A⁻¹x (up to the noise scale). High = we've learned little
+ * about dishes like this, so rating one teaches the model the most.
+ */
+function tasteVariance(model, x) {
+  const v = [...x, 1];
+  const s = solveLinear(model.A, v);
+  return v.reduce((sum, vi, i) => sum + vi * s[i], 0);
+}
+
+/**
+ * Active learning: the next dish to rate. Before a few answers, any dish
+ * (random). After that, mostly one of the dishes the model is least sure
+ * about, picked at random from the top few so the game stays varied; now
+ * and then a fully random dish to keep exploring.
+ */
+function pickToLearn(model, pool, { rng = Math.random, vec = tasteVector, top = 12, explore = 0.2, warmup = 3 } = {}) {
+  if (!pool.length) return { r: null, active: false };
+  if (!model || model.answers < warmup || rng() < explore) return { r: pool[Math.floor(rng() * pool.length)], active: false };
+  const ranked = pool.map((r) => ({ r, u: tasteVariance(model, vec(r)) })).sort((a, b) => b.u - a.u).slice(0, top);
+  return { r: ranked[Math.floor(rng() * ranked.length)].r, active: true };
 }
 
 /** Plain-language profile: what they like and what they skip, strongest first. */
@@ -152,11 +176,12 @@ function tasteReasons(model, x, n = 2) {
  * "Para sa'yo": unrated dishes ranked by taste match, with a nudge toward
  * dishes that are sulit (good nutrition for the price). One per title.
  */
-function recommendDishes(model, recipes, rated, n = 6, vec = tasteVector) {
+function recommendDishes(model, recipes, rated, n = 6, vec = tasteVector, kind = null, kindOf = dishKind) {
   const maxValue = Math.max(1, ...recipes.map((r) => r.valueScore || 0));
   const seen = new Set();
   return recipes
-    .filter((r) => r.img && r.costPerServing > 0 && !(String(r.id) in rated) && r.category !== "Sauce & Condiment" && r.category !== "Dessert")
+    .filter((r) => r.img && r.costPerServing > 0 && !(String(r.id) in rated) && r.category !== "Sauce & Condiment")
+    .filter((r) => (kind ? kindOf(r) === kind : r.category !== "Dessert"))
     .map((r) => {
       const x = vec(r);
       return { r, x, score: tasteScore(model, x) + 0.25 * ((r.valueScore || 0) / maxValue) };
@@ -172,8 +197,28 @@ const TASTE_RATE_KEY = "sarapsulit.ratings.v1"; // written by games.js
 const TASTE_VS_KEY = "sarapsulit.versus.v1";
 const TASTE_MATCH = 0.3; // taste score worth a "bagay sa'yo" badge
 
-let tasteModelCache = null;
+const tasteModelCache = new Map();
 const tasteVecCache = new Map();
+const tasteKindCache = new Map();
+
+/**
+ * Ulam and meryenda are learned separately: liking sweet kakanin says
+ * nothing about liking sweet ulam. Uses planner.js's meal types; null for
+ * dishes that are neither (sauces, sides).
+ */
+function dishKind(r) {
+  if (tasteKindCache.has(r.id)) return tasteKindCache.get(r.id);
+  let k = null;
+  if (r.category === "Sauce & Condiment") k = null;
+  else if (typeof mealTypes !== "function") k = r.category === "Dessert" ? "meryenda" : "ulam";
+  else {
+    const t = mealTypes(r);
+    if (t.has("ulam") && (typeof isMainUlam !== "function" || isMainUlam(r))) k = "ulam";
+    else if (t.has("meryenda")) k = "meryenda";
+  }
+  if (r.id != null) tasteKindCache.set(r.id, k);
+  return k;
+}
 
 /** Taste vector of a recipe, computed once per page load. */
 function tasteVec(r) {
@@ -181,29 +226,35 @@ function tasteVec(r) {
   return tasteVecCache.get(r.id);
 }
 
-/** Trains the model from saved ratings ({ id: 1-10 }) and Versus picks ({ key: { w, l } }). */
-function tasteModelFrom(recipes, ratings, picks) {
+/**
+ * Trains the model from saved ratings ({ id: 1-10 }) and Versus picks ({ key: { w, l } }).
+ * With a kind ("ulam" or "meryenda"), only dishes of that kind count.
+ */
+function tasteModelFrom(recipes, ratings, picks, kind = null, kindOf = dishKind) {
   const byId = new Map(recipes.map((r) => [String(r.id), r]));
+  const fits = (id) => byId.has(String(id)) && (!kind || kindOf(byId.get(String(id))) === kind);
   const rows = Object.entries(ratings || {})
-    .filter(([id]) => byId.has(id))
+    .filter(([id]) => fits(id))
     .map(([id, rating]) => ({ x: tasteVec(byId.get(id)), rating }));
   const pairs = Object.values(picks || {})
-    .filter((p) => p && byId.has(String(p.w)) && byId.has(String(p.l)))
+    .filter((p) => p && fits(p.w) && byId.has(String(p.l)))
     .map((p) => ({ win: tasteVec(byId.get(String(p.w))), lose: tasteVec(byId.get(String(p.l))) }));
   return learnTaste(rows, pairs);
 }
 
-/** This device's taste model, or null until the player has given enough answers. */
-function currentTasteModel() {
-  if (!tasteModelCache) {
+/** This device's taste model for ulam or meryenda, or null until there are enough answers of that kind. */
+function currentTasteModel(kind = "ulam") {
+  if (!kind) return null;
+  if (!tasteModelCache.has(kind)) {
     const read = (k) => { try { return JSON.parse(localStorage.getItem(k) || "{}") || {}; } catch { return {}; } };
-    tasteModelCache = tasteModelFrom(typeof RECIPES !== "undefined" ? RECIPES : [], read(TASTE_RATE_KEY), read(TASTE_VS_KEY));
+    tasteModelCache.set(kind, tasteModelFrom(typeof RECIPES !== "undefined" ? RECIPES : [], read(TASTE_RATE_KEY), read(TASTE_VS_KEY), kind));
   }
-  return tasteModelCache.answers >= TASTE_MIN_ANSWERS ? tasteModelCache : null;
+  const m = tasteModelCache.get(kind);
+  return m.answers >= TASTE_MIN_ANSWERS ? m : null;
 }
 
 /** Call after a new rating or pick so the next use retrains. */
-function tasteModelChanged() { tasteModelCache = null; }
+function tasteModelChanged() { tasteModelCache.clear(); }
 
 // Words that say nothing about what a dish is.
 const TASTE_STOP = new Set(["cup", "cups", "tablespoon", "tablespoons", "teaspoon", "teaspoons", "pieces", "piece", "chopped", "minced", "sliced", "diced", "crushed", "large", "small", "medium", "fresh", "ground", "whole", "salt", "pepper", "water", "garlic", "onion", "onions", "cooking", "oil", "sugar", "black", "white", "cloves", "into", "with", "and", "taste", "pounds", "pound", "grams", "ounces", "optional", "about", "cut", "thinly", "finely", "leaves"]);
