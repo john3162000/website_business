@@ -1,0 +1,14 @@
+kinds: {"ulam":1234,"null":425,"meryenda":276}
+captured 1-rate-ulam
+random How to Cook Lumpia [prito,baboy]
+random Sayote Guisado with Chicken and Shrimp [saucy,manok,gulay]
+random Utan Bisaya [isda]
+random Oxtail Stew [kamatis,saucy,baka]
+ACTIVE Pork Binagoongan sa Gata [maasim,gata,saucy,maanghang,baboy]
+random Sinigang na Salmon [maasim,sabaw,isda]
+ACTIVE Kung Pao Chicken [maasim,maanghang,matamis,manok]
+ACTIVE Deep Fried Bulalo with Restaurant Style Teriyaki Sauce [sabaw,prito,matamis,baka]
+captured 2-rate-active
+captured 3-rate-meryenda
+captured 4-panlasa-ulam
+captured 5-panlasa-meryenda
