@@ -35,4 +35,10 @@ await page.evaluate(() => { for (let i = 0; i < 6; i++) { document.getElementByI
 await pause(2500); await shot("4-panlasa-ulam");
 await page.evaluate(() => document.querySelectorAll("#game-taste .game-card")[2]?.scrollIntoView({ block: "start" }));
 await pause(1500); await shot("5-panlasa-meryenda");
+await page.evaluate(() => { showSection("planner"); document.getElementById("budget-text").value = "₱1,500 for the week, 4 people"; planOnBudget(); });
+await pause(2500);
+const url = await page.evaluate(async () => groceryCanvas(await currentGrocery()).toDataURL("image/png"));
+const { writeFileSync } = await import("node:fs");
+writeFileSync("al-out/grocery-list.png", Buffer.from(url.split(",")[1], "base64"));
+console.log("grocery png written");
 await browser.close();

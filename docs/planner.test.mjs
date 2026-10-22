@@ -6,8 +6,8 @@ import vm from "node:vm";
 
 const ctx = vm.createContext({});
 vm.runInContext(`${readFileSync(new URL("./planner.js", import.meta.url), "utf8")}
-;globalThis.api = { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, isMainUlam, proteinKind, dietOk, cheapestByKind, addSavedPlan, groceryText };`, ctx);
-const { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, isMainUlam, proteinKind, dietOk, cheapestByKind, addSavedPlan, groceryText } = ctx.api;
+;globalThis.api = { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, isMainUlam, proteinKind, dietOk, cheapestByKind, addSavedPlan, groceryText, groceryRows };`, ctx);
+const { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, isMainUlam, proteinKind, dietOk, cheapestByKind, addSavedPlan, groceryText, groceryRows } = ctx.api;
 const plain = (v) => JSON.parse(JSON.stringify(v));
 
 test("slots: add without duplicates, at most 5, remove clears empty slots", () => {
@@ -259,4 +259,17 @@ test("grocery list text: one checkbox line per ingredient, then the total", () =
   assert.match(t, /Para sa 4 tao · October 22, 2026/);
   assert.match(t, /☐ Pork belly: 1\.2 kg · ≈₱330\n☐ Kangkong: 450 g\n/);
   assert.match(t, /Total ≈ ₱330 \(\+ 1 na walang presyo pa\)/);
+});
+
+test("grocery picture rows: amount to buy and price, — when unpriced", () => {
+  const rows = groceryRows({ items: [
+    { label: "Pork belly", grams: 1200, cost: 330.4, priced: true, unpricedGrams: 0 },
+    { label: "Calamansi", grams: 80, cost: 12, priced: true, unpricedGrams: 20 },
+    { label: "Kangkong", grams: 450, cost: 0, priced: false, unpricedGrams: 450 },
+  ] });
+  assert.deepEqual(plain(rows), [
+    { label: "Pork belly", qty: "1.2 kg", price: "₱330" },
+    { label: "Calamansi", qty: "80 g", price: "₱12+" },
+    { label: "Kangkong", qty: "450 g", price: "—" },
+  ]);
 });
