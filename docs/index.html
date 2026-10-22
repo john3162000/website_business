@@ -185,6 +185,8 @@
     .logo-mark { animation: sway .9s cubic-bezier(.2, .7, .3, 1) both; transform-origin: 50% 90%; }
     section:not(.hidden) { animation: fadeIn .25s ease; }
     /* Phones: a tab bar at the bottom instead of the header tabs. */
+    .mover-img { width: 3.2rem; height: 3.2rem; border-radius: .7rem; object-fit: cover; flex-shrink: 0; background: #EFEADC; }
+    .mover-img-empty { display: grid; place-items: center; font-size: 1.3rem; }
     .fact-box { background: #FBF3DC; border: 1px solid #EBD9A6; border-radius: .9rem; padding: .8rem 1rem; }
     html.dark .fact-box { background: var(--s2); border-color: var(--line); }
     /* Ang kusina ko (appliances) */
@@ -615,10 +617,13 @@
       <button class="wx-btn on" data-period="month" onclick="setPricePeriod('month')">Last month</button>
     </div>
 
+    <!-- Cheap ulam that fit the player's taste (taste model from Laro) -->
+    <div id="prices-foryou" class="mb-8 hidden"></div>
+
     <!-- Dishes whose cost moved since the chosen period -->
     <div class="mb-8">
       <div class="flex items-baseline justify-between mb-3 flex-wrap gap-2">
-        <h2 class="text-xl font-bold">Dishes whose cost changed · <span data-period-label>1 month</span></h2>
+        <h2 class="text-xl font-bold">Ulam whose cost changed · <span data-period-label>1 month</span></h2>
         <span id="movers-summary" class="text-xs text-gray-500">Loading…</span>
       </div>
       <div class="grid md:grid-cols-2 gap-4">

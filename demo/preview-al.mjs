@@ -41,6 +41,13 @@ console.log("weather:", await page.evaluate(async () => {
 }));
 await page.evaluate(() => { setWeatherMode("auto"); showSection("home"); document.getElementById("weather-title").scrollIntoView({ block: "start" }); window.scrollBy(0, -90); });
 await pause(1500); await shot("6-weather");
+await page.evaluate(() => showSection("prices"));
+await page.waitForFunction(() => !/Loading/.test(document.getElementById("movers-summary").textContent), null, { timeout: 60000 }).catch(() => {});
+await pause(2000);
+await page.evaluate(() => document.getElementById("prices-foryou").scrollIntoView({ block: "start" }));
+await pause(1200); await shot("8-prices-foryou");
+await page.evaluate(() => document.getElementById("movers-rose").scrollIntoView({ block: "start" }));
+await pause(1200); await shot("9-movers-ulam");
 await page.evaluate(() => { showSection("planner"); randomizeWeek(); });
 await pause(2000);
 console.log("random hint:", await page.evaluate(() => document.getElementById("plan-hint").textContent));

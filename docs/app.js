@@ -574,13 +574,15 @@ function mealTags(id) {
 }
 
 function moverRow(m) {
-  const known = RECIPES.some((r) => r.id === m.id);
+  const rec = RECIPES.find((r) => r.id === m.id);
+  const known = !!rec;
   const drivers = (m.drivers || [])
     .filter((d) => d.change != null && Math.abs(d.change) >= 0.05)
     .map((d) => `${escapeHtml(d.label)} ${pctText(d.change)}`).join(", ");
   return `
-    <div class="flex items-start justify-between gap-3 rounded-lg px-2 py-1.5 ${known ? "cursor-pointer hover:bg-gray-50" : ""}" ${known ? `onclick="openModal(${m.id})"` : ""}>
-      <div class="min-w-0">
+    <div class="flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 ${known ? "cursor-pointer hover:bg-gray-50" : ""}" ${known ? `onclick="openModal(${m.id})"` : ""}>
+      ${rec && rec.img ? `<img src="${escapeHtml(rec.img)}" alt="" loading="lazy" class="mover-img">` : `<span class="mover-img mover-img-empty">🍽️</span>`}
+      <div class="min-w-0 flex-1">
         <p class="font-medium truncate">${known ? favButton(m.id) : ""} ${escapeHtml(m.title)}</p>
         ${mealTags(m.id)}
         ${drivers ? `<p class="text-xs text-gray-400 truncate">${drivers}</p>` : ""}
@@ -593,6 +595,61 @@ function moverRow(m) {
 }
 
 const moversCache = new Map();
+const MOVERS_SHOWN = 8;
+let moversFell = new Map(); // recipe id → cost change, for dishes that got cheaper
+
+/** Price movers that are ulam (not sauces, sweets or snacks), one per title, at most 8. */
+function ulamMovers(list) {
+  const byId = new Map(RECIPES.map((r) => [r.id, r]));
+  const seen = new Set();
+  return (list || []).filter((m) => {
+    const r = byId.get(m.id);
+    if (!r || (typeof dishKind === "function" ? dishKind(r) !== "ulam" : r.category === "Sauce & Condiment")) return false;
+    const t = r.title.trim().toLowerCase();
+    if (seen.has(t)) return false;
+    seen.add(t);
+    return true;
+  }).slice(0, MOVERS_SHOWN);
+}
+
+/**
+ * "Mura ngayon at bagay sa panlasa mo": cheap ulam the player's taste model
+ * (from Laro) likes, cheapest first; ones whose cost just fell get a nudge
+ * and a "▼ x%" tag. Hidden without a profile or a match; a teaser invites
+ * people who haven't played yet.
+ */
+function renderPriceForYou(fellById = new Map()) {
+  const box = document.getElementById("prices-foryou");
+  if (!box || typeof currentTasteModel !== "function") return;
+  const model = currentTasteModel("ulam");
+  if (!model) {
+    box.innerHTML = `<p class="text-sm text-gray-600">🧠 Gusto mo ng murang ulam na bagay sa panlasa mo? <button onclick="showSection('game')" class="font-semibold text-green-800 hover:underline">Maglaro sa Laro</button> para matuto ang app.</p>`;
+    box.classList.remove("hidden");
+    return;
+  }
+  const kitchen = (r) => typeof kitchenOk !== "function" || kitchenOk(r);
+  const seen = new Set();
+  const picks = RECIPES
+    .filter((r) => r.img && r.ranked && !r.costIncomplete && r.costPerServing > 0 && dishKind(r) === "ulam" && kitchen(r))
+    .map((r) => ({ r, taste: tasteScore(model, tasteVec(r)), fell: fellById.get(r.id) }))
+    .filter((p) => p.taste >= TASTE_MATCH)
+    .sort((a, b) => (a.r.costPerServing * (a.fell ? 1 + a.fell : 1)) - (b.r.costPerServing * (b.fell ? 1 + b.fell : 1)))
+    .filter(({ r }) => { const t = r.title.trim().toLowerCase(); if (seen.has(t)) return false; seen.add(t); return true; })
+    .slice(0, 4);
+  if (!picks.length) { box.classList.add("hidden"); return; }
+  box.innerHTML = `
+    <h2 class="text-xl font-bold mb-1">🧠 Mura ngayon at bagay sa panlasa mo</h2>
+    <p class="text-xs text-gray-500 mb-3">Mula sa mga sagot mo sa Laro, pinakamura muna (presyo ngayon).</p>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">${picks.map(({ r, fell }) => `
+      <button class="taste-pick bg-white rounded-2xl shadow p-2" onclick="openModal(${r.id})">
+        <img src="${escapeHtml(r.img)}" alt="" loading="lazy">
+        <span class="taste-pick-name">${escapeHtml(r.title)}</span>
+        <span class="taste-pick-why">${escapeHtml(tasteReasons(model, tasteVec(r)).join(" · ") || "bagay sa'yo")}</span>
+        <span class="taste-pick-price">₱${r.costPerServing}/serving${fell ? ` · <span class="price-down">▼ ${Math.round(-fell * 100)}%</span>` : ""}</span>
+      </button>`).join("")}
+    </div>`;
+  box.classList.remove("hidden");
+}
 
 async function loadMovers() {
   if (moversLoaded) return;
@@ -604,7 +661,8 @@ async function loadMovers() {
     // Each period is fetched once; switching back is instant.
     let m = moversCache.get(period.days);
     if (!m) {
-      const res = await fetch(`${API_BASE}/api/recipes/price-movers?limit=8&days=${period.days}`);
+      // Ask for more than shown: only ulam are listed, so the rest are filtered out below.
+      const res = await fetch(`${API_BASE}/api/recipes/price-movers?limit=50&days=${period.days}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       m = await res.json();
       moversCache.set(period.days, m);
@@ -619,8 +677,11 @@ async function loadMovers() {
     }
     const min = `${Math.round((m.thresholds?.minChange ?? 0.1) * 100)}%`;
     summary.textContent = `Since ${shortDate(new Date(m.compareDate))} · ${m.compared.toLocaleString()} dishes compared · typical dish ${pctText(m.medianChange)} · ${m.rising} pricier, ${m.falling} cheaper by ${min} or more`;
-    document.getElementById("movers-rose").innerHTML = m.rose.map(moverRow).join("") || `<p class="text-gray-400 px-2 py-1.5">No dish rose by ${min} or more.</p>`;
-    document.getElementById("movers-fell").innerHTML = m.fell.map(moverRow).join("") || `<p class="text-gray-400 px-2 py-1.5">No dish fell by ${min} or more.</p>`;
+    const rose = ulamMovers(m.rose), fell = ulamMovers(m.fell);
+    document.getElementById("movers-rose").innerHTML = rose.map(moverRow).join("") || `<p class="text-gray-400 px-2 py-1.5">No ulam rose by ${min} or more.</p>`;
+    document.getElementById("movers-fell").innerHTML = fell.map(moverRow).join("") || `<p class="text-gray-400 px-2 py-1.5">No ulam fell by ${min} or more.</p>`;
+    moversFell = new Map(m.fell.map((x) => [x.id, x.change]));
+    renderPriceForYou(moversFell);
   } catch (e) {
     moversLoaded = false; // try again next time the tab opens
     summary.textContent = `Couldn’t load price changes (${e.message}).`;
@@ -946,7 +1007,7 @@ function showSection(name) {
   window.scrollTo(0, 0);
   trackEvent(`section/${name}`);
   if (name === "browse") filterRecipes();
-  if (name === "prices") { loadMovers(); renderAlerts(); }
+  if (name === "prices") { loadMovers(); renderAlerts(); renderPriceForYou(moversFell); }
   if (name === "mydish") initMyDish();
   if (name === "planner") initPlanner();
   if (name === "finder") initFinder();

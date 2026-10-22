@@ -4,7 +4,7 @@ name: Active learning preview
 on:
   push:
     branches-ignore: [main]
-    paths: [docs/weather.js, docs/planner.js, docs/games.js, docs/taste.js, demo/preview-al.mjs, .github/workflows/al-preview.yml]
+    paths: [docs/app.js, docs/weather.js, docs/planner.js, docs/games.js, docs/taste.js, demo/preview-al.mjs, .github/workflows/al-preview.yml]
 
 permissions:
   contents: write
