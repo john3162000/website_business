@@ -39,7 +39,7 @@ console.log("weather:", await page.evaluate(async () => {
   for (let i = 0; i < 30 && !lastWeather; i++) await new Promise((r) => setTimeout(r, 1000));
   return lastWeather ? JSON.stringify({ apparent: lastWeather.w.apparent, code: lastWeather.w.code, precip: lastWeather.w.precipitation, limits: lastWeather.limits, mood: weatherMood(lastWeather.w, lastWeather.limits) }) : "no weather";
 }));
-await page.evaluate(() => { setWeatherMode("auto"); showSection("home"); document.getElementById("weather-grid").scrollIntoView({ block: "end" }); });
+await page.evaluate(() => { setWeatherMode("auto"); showSection("home"); document.getElementById("weather-title").scrollIntoView({ block: "start" }); window.scrollBy(0, -90); });
 await pause(1500); await shot("6-weather");
 await page.evaluate(() => { showSection("planner"); randomizeWeek(); });
 await pause(2000);
