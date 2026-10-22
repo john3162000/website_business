@@ -1,11 +1,3 @@
-stove 6
 oven 6
-air_fryer 6
-microwave 6
-grill 6
-steamer 6
-rice_cooker 6
-pressure_cooker 6
-slow_cooker 6
-blender 6
-mixer 6
+oven_b 6
+oven_c 6
