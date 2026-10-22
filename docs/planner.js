@@ -564,14 +564,30 @@ function plannerKitchenOk(r) {
   return typeof kitchenOk !== "function" || kitchenOk(r);
 }
 
+/**
+ * How Random week ranks dishes: value (nutrition per peso) as before, plus the
+ * player's taste from the Laro tab when there's a profile for the dish's kind
+ * (ulam or meryenda), so liked dishes come up more while staying sulit.
+ */
+function plannerTasteScorer(recipes) {
+  const maxValue = Math.max(1, ...recipes.map((r) => r.valueScore || 0));
+  const hasModel = typeof currentTasteModel === "function" && typeof dishKind === "function";
+  const models = hasModel ? { ulam: currentTasteModel("ulam"), meryenda: currentTasteModel("meryenda") } : {};
+  return (r) => {
+    const m = models[hasModel ? dishKind(r) : null];
+    return (r.valueScore || 0) / maxValue + (m ? 2 * tasteScore(m, tasteVec(r)) : 0);
+  };
+}
+
 function randomPools() {
   const pools = {};
   const onePerTitle = () => { const seen = new Set(); return (r) => { const t = r.title.trim().toLowerCase(); if (seen.has(t)) return false; seen.add(t); return true; }; };
   const fits = RECIPES.filter((r) => r.costPerServing > 0 && dietOk(r, activeDiet) && plannerKitchenOk(r));
+  const score = plannerTasteScorer(fits);
   for (const s of ["almusal", "ulam", "meryenda"]) {
     pools[s] = fits
       .filter((r) => mealTypes(r).has(s) && (s !== "ulam" || isMainUlam(r)))
-      .sort((a, b) => (b.ranked - a.ranked) || (b.valueScore - a.valueScore))
+      .sort((a, b) => (b.ranked - a.ranked) || (score(b) - score(a)))
       .filter(onePerTitle())
       .map((r) => r.id);
   }
@@ -587,6 +603,8 @@ function randomizeWeek() {
   const keep = document.getElementById("plan-keep").checked;
   plan = randomWeek(plan, randomPools(), { meals, keep, ulamPerMeal, alternate: randomStyle === "alternate" });
   persist(); renderGrid(); renderReceipt();
+  const taste = typeof currentTasteModel === "function" && (currentTasteModel("ulam") || currentTasteModel("meryenda"));
+  if (taste && randomStyle !== "alternate") hint("🎲 Inuna ang mga ulam na bagay sa panlasa mo 🧠 (mula sa Laro), pero sulit pa rin.");
 }
 
 /** The budget box: parse it, fill the week within budget, and say how it went. */

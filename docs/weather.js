@@ -17,20 +17,48 @@ function weatherLabel(code) {
   return { icon: "🌤️", text: "fair" };
 }
 
-const RAIN_CODE = (c) => (c >= 51 && c <= 67) || (c >= 80 && c <= 82) || c >= 95;
+// Moderate to heavy only: moderate/heavy rain (63, 65, 67), moderate/violent
+// showers (81, 82) and thunderstorms (95–99). Drizzle and light rain don't count.
+const HEAVY_RAIN_CODE = (c) => c === 63 || c === 65 || c === 67 || c === 81 || c === 82 || c >= 95;
+const MODERATE_RAIN_MM = 2.5; // mm in the last hour: the usual lower bound of "moderate rain"
+
+// Weather only changes the picks when it's unusual for the place: hotter than
+// 85% of last year's days, or colder than 85% of them.
+const HOT_PERCENTILE = 85;
+const COLD_PERCENTILE = 15;
+// Used until last year's numbers load (Metro Manila-like): PAGASA "danger" heat index, and a cool Amihan morning.
+const FALLBACK_LIMITS = { hot: 42, cold: 22, source: "fallback" };
+
+/** The p-th percentile (0–100) of a list of numbers, interpolated; null when empty. */
+function percentile(values, p) {
+  const v = values.filter((x) => typeof x === "number" && !Number.isNaN(x)).sort((a, b) => a - b);
+  if (!v.length) return null;
+  const i = (p / 100) * (v.length - 1);
+  const lo = Math.floor(i), hi = Math.ceil(i);
+  return v[lo] + (v[hi] - v[lo]) * (i - lo);
+}
 
 /**
- * "rainy" | "sunny" | "cool" | "mild" from current conditions:
- *   rainy: rain, showers or a thunderstorm now, ≥ 0.2 mm in the last hour,
- *          or a ≥ 60% chance of rain in the next 6 hours
- *   sunny: clear to partly cloudy (WMO 0–2) and feels like ≥ 27 °C, or any dry
- *          day that feels like ≥ 32 °C (PAGASA's heat index "caution" starts at 27)
- *   cool:  feels like < 24 °C (Baguio, or a cold Amihan morning)
+ * Heat and cold limits from last year's daily "feels like" temperatures:
+ * hot = 85th percentile of the daily highs, cold = 15th percentile of the daily lows.
  */
-function weatherMood({ code, apparent, precipitation = 0, rainChance6h = 0 }) {
-  if (RAIN_CODE(code) || precipitation >= 0.2 || rainChance6h >= 60) return "rainy";
-  if ((code <= 2 && apparent >= 27) || apparent >= 32) return "sunny";
-  if (apparent < 24) return "cool";
+function climateLimits(dailyMax, dailyMin) {
+  const hot = percentile(dailyMax, HOT_PERCENTILE);
+  const cold = percentile(dailyMin, COLD_PERCENTILE);
+  return hot == null || cold == null ? null : { hot: Math.round(hot * 10) / 10, cold: Math.round(cold * 10) / 10, source: "last year" };
+}
+
+/**
+ * "rainy" | "sunny" | "cool" | "mild" from current conditions and the place's limits:
+ *   rainy: moderate to heavy rain, showers or a thunderstorm now, or ≥ 2.5 mm in the last hour
+ *   sunny: feels like (heat index) at or above the hot limit (85th percentile of last year's highs)
+ *   cool:  feels like at or below the cold limit (15th percentile of last year's lows)
+ *   mild:  anything else; the picks don't follow the weather
+ */
+function weatherMood({ code, apparent, precipitation = 0 }, limits = FALLBACK_LIMITS) {
+  if (HEAVY_RAIN_CODE(code) || precipitation >= MODERATE_RAIN_MM) return "rainy";
+  if (apparent >= limits.hot) return "sunny";
+  if (apparent <= limits.cold) return "cool";
   return "mild";
 }
 
@@ -38,7 +66,7 @@ const MOOD_COPY = {
   rainy: { title: "Maulan: mainit na sabaw", sub: "Bulalo, sinigang, tinola and other hot soups, plus a warm merienda like bilo-bilo" },
   cool: { title: "Malamig: mainit na sabaw", sub: "Hot soups for a cool day, plus a warm merienda" },
   sunny: { title: "Maaraw: pampalamig", sub: "Cold treats for a sunny day: buko, sago't gulaman, fruit salad and kinilaw" },
-  mild: { title: "Maaliwalas: kahit ano", sub: "Good value dishes for any weather" },
+  mild: { title: "Normal na panahon: kahit ano", sub: "Hindi matindi ang ulan, init o lamig ngayon, kaya sulit picks muna" },
 };
 
 // Dish families in priority order: [match, exclude]. One recipe per family, so
@@ -134,6 +162,28 @@ async function fetchWeather(place) {
     precipitation: j.current.precipitation,
     rainChance6h: Math.max(0, ...((j.hourly && j.hourly.precipitation_probability) || []).filter((v) => v != null)),
   };
+}
+
+/**
+ * Last year's daily "feels like" highs and lows for the place (Open-Meteo
+ * archive, which runs a few days behind), as heat and cold limits. Cached on
+ * the device per place and month, so it's fetched about once a month.
+ */
+async function fetchClimateLimits(place, now = new Date()) {
+  const key = `sarapsulit.climate.${place.lat.toFixed(1)},${place.lon.toFixed(1)}.${now.toISOString().slice(0, 7)}`;
+  try { const c = JSON.parse(localStorage.getItem(key) || "null"); if (c && c.hot != null) return c; } catch { /* no cache */ }
+  const end = new Date(now.getTime() - 7 * 86400000);
+  const start = new Date(end.getTime() - 364 * 86400000);
+  const d = (x) => x.toISOString().slice(0, 10);
+  const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${place.lat}&longitude=${place.lon}`
+    + `&start_date=${d(start)}&end_date=${d(end)}&daily=apparent_temperature_max,apparent_temperature_min&timezone=auto`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`climate: HTTP ${res.status}`);
+  const j = await res.json();
+  const limits = climateLimits(j.daily?.apparent_temperature_max || [], j.daily?.apparent_temperature_min || []);
+  if (!limits) throw new Error("climate: no data");
+  try { localStorage.setItem(key, JSON.stringify(limits)); } catch { /* storage blocked */ }
+  return limits;
 }
 
 /**

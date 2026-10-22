@@ -35,6 +35,17 @@ await page.evaluate(() => { for (let i = 0; i < 6; i++) { document.getElementByI
 await pause(2500); await shot("4-panlasa-ulam");
 await page.evaluate(() => document.querySelectorAll("#game-taste .game-card")[2]?.scrollIntoView({ block: "start" }));
 await pause(1500); await shot("5-panlasa-meryenda");
+console.log("weather:", await page.evaluate(async () => {
+  for (let i = 0; i < 30 && !lastWeather; i++) await new Promise((r) => setTimeout(r, 1000));
+  return lastWeather ? JSON.stringify({ apparent: lastWeather.w.apparent, code: lastWeather.w.code, precip: lastWeather.w.precipitation, limits: lastWeather.limits, mood: weatherMood(lastWeather.w, lastWeather.limits) }) : "no weather";
+}));
+await page.evaluate(() => { setWeatherMode("auto"); showSection("home"); document.getElementById("weather-grid").scrollIntoView({ block: "end" }); });
+await pause(1500); await shot("6-weather");
+await page.evaluate(() => { showSection("planner"); randomizeWeek(); });
+await pause(2000);
+console.log("random hint:", await page.evaluate(() => document.getElementById("plan-hint").textContent));
+await page.evaluate(() => document.getElementById("plan-grid").scrollIntoView({ block: "center" }));
+await pause(1000); await shot("7-random-week");
 await page.evaluate(() => { showSection("planner"); document.getElementById("budget-text").value = "₱1,500 for the week, 4 people"; planOnBudget(); });
 await pause(2500);
 const url = await page.evaluate(async () => groceryCanvas(await currentGrocery()).toDataURL("image/png"));

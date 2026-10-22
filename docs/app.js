@@ -748,7 +748,7 @@ function setPreset(kind) {
 const MODE_KEY = "sarapsulit.weatherMode";
 const SORT_KEY = "sarapsulit.pickSort";
 const MOOD_ICON = { sunny: "☀️", rainy: "🌧️", cool: "🌥️", mild: "⛅" };
-let lastWeather = null; // { w, place } from Open-Meteo
+let lastWeather = null; // { w, place, limits } from Open-Meteo
 let weatherError = null;
 let weatherMode = readPref(MODE_KEY, ["auto", "sunny", "rainy", "cool"], "auto");
 let pickSort = readPref(SORT_KEY, Object.keys(PICK_SORTS), "value");
@@ -783,14 +783,16 @@ function setRainy(on) {
 function renderWeather() {
   document.querySelectorAll("[data-mode]").forEach((b) => b.classList.toggle("on", b.dataset.mode === weatherMode));
   document.querySelectorAll("[data-sort]").forEach((b) => b.classList.toggle("on", b.dataset.sort === pickSort));
-  const live = lastWeather ? weatherMood(lastWeather.w) : null;
+  const live = lastWeather ? weatherMood(lastWeather.w, lastWeather.limits) : null;
   const mood = weatherMode === "auto" ? live : weatherMode;
   const sub = document.getElementById("weather-sub");
   if (lastWeather) {
     const { w, place } = lastWeather;
     const label = weatherLabel(w.code);
     const rain = w.rainChance6h > 0 ? ` · ${w.rainChance6h}% chance of rain in the next 6 hours` : "";
-    sub.textContent = `${Math.round(w.temp)}°C, feels like ${Math.round(w.apparent)}°C, ${label.text}${rain} · ${place === MANILA ? MANILA.name : "near you"}`
+    const lim = lastWeather.limits;
+    const limits = lim ? ` · init kapag ≥ ${Math.round(lim.hot)}°C, lamig kapag ≤ ${Math.round(lim.cold)}°C (${lim.source === "last year" ? "top/bottom 15% of last year" : "estimate"})` : "";
+    sub.textContent = `${Math.round(w.temp)}°C, feels like ${Math.round(w.apparent)}°C, ${label.text}${rain} · ${place === MANILA ? MANILA.name : "near you"}${limits}`
       + (weatherMode !== "auto" ? ` · showing ${weatherMode} picks (your choice)` : "");
   } else if (weatherError) {
     sub.textContent = `Couldn’t get the weather (${weatherError})${weatherMode !== "auto" ? `. Showing ${weatherMode} picks.` : ". Pick a weather above."}`;
@@ -810,8 +812,12 @@ function renderWeather() {
 
 async function showWeather(place) {
   try {
-    const [w] = await Promise.all([fetchWeather(place), DATA_READY ? DATA_READY.catch(() => {}) : null]);
-    lastWeather = { w, place };
+    const [w, limits] = await Promise.all([
+      fetchWeather(place),
+      fetchClimateLimits(place).catch(() => FALLBACK_LIMITS),
+      DATA_READY ? DATA_READY.catch(() => {}) : null,
+    ]);
+    lastWeather = { w, place, limits };
     weatherError = null;
   } catch (e) {
     weatherError = e.message;
