@@ -48,6 +48,7 @@ await page.evaluate(() => document.getElementById("prices-foryou").scrollIntoVie
 await pause(1200); await shot("8-prices-foryou");
 await page.evaluate(() => document.getElementById("movers-rose").scrollIntoView({ block: "start" }));
 await pause(1200); await shot("9-movers-ulam");
+console.log("prices width:", await page.evaluate(() => `${document.documentElement.scrollWidth} vs ${window.innerWidth}`));
 await page.evaluate(() => { showSection("planner"); randomizeWeek(); });
 await pause(2000);
 console.log("random hint:", await page.evaluate(() => document.getElementById("plan-hint").textContent));
