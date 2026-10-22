@@ -266,8 +266,10 @@ test("grocery picture rows: amount to buy and price, — when unpriced", () => {
     { label: "Pork belly", grams: 1200, cost: 330.4, priced: true, unpricedGrams: 0 },
     { label: "Calamansi", grams: 80, cost: 12, priced: true, unpricedGrams: 20 },
     { label: "Kangkong", grams: 450, cost: 0, priced: false, unpricedGrams: 450 },
+    { label: "Parsley flakes", grams: 0.3, cost: 1, priced: true, unpricedGrams: 0 },
   ] });
-  assert.deepEqual(plain(rows), [
+  assert.deepEqual(plain(rows).slice(3), [{ label: "Parsley flakes", qty: "<1 g", price: "₱1" }]);
+  assert.deepEqual(plain(rows).slice(0, 3), [
     { label: "Pork belly", qty: "1.2 kg", price: "₱330" },
     { label: "Calamansi", qty: "80 g", price: "₱12+" },
     { label: "Kangkong", qty: "450 g", price: "—" },

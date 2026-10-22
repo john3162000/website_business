@@ -777,7 +777,7 @@ function groceryCanvas({ receipt, people, date }) {
 function groceryRows(receipt) {
   return receipt.items.map((it) => ({
     label: it.label,
-    qty: formatGrams(it.grams),
+    qty: it.grams > 0 && it.grams < 1 ? "<1 g" : formatGrams(it.grams),
     price: it.priced ? `₱${Math.round(it.cost).toLocaleString("en-PH")}${it.unpricedGrams > 0 ? "+" : ""}` : "—",
   }));
 }
