@@ -20,16 +20,16 @@ jobs:
           node-version: 22
       - name: Appliance counts
         working-directory: demo
-        run: mkdir -p photos && node appliance-stats.mjs | tee photos/stats.txt
+        run: echo skip
       - name: Fetch
         timeout-minutes: 12
         working-directory: demo
-        run: mkdir -p photos && node fetch-photos.mjs photos | tee photos-log.txt
+        run: mkdir -p photos && cp photos/meta.json photos/meta-main.json; node fetch-photos.mjs photos | tee photos-log.txt
       - name: Contact sheet
         working-directory: demo/photos
         run: |
           sudo apt-get install -y imagemagick >/dev/null 2>&1 || true
-          for k in stove oven air_fryer microwave grill steamer rice_cooker pressure_cooker slow_cooker blender mixer; do
+          for k in stove oven oven_b oven_c air_fryer microwave grill steamer rice_cooker pressure_cooker slow_cooker blender mixer; do
             ls $k-*.jpg >/dev/null 2>&1 && montage -label '%f' $k-*.jpg -tile 6x1 -geometry 220x165+4+4 sheet-$k.png || true
           done
       - name: Commit

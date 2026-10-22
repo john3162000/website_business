@@ -4,9 +4,7 @@ import { writeFileSync, mkdirSync } from "node:fs";
 const OUT = process.argv[2] || "photos";
 const UA = { "User-Agent": "FARM2FIGURE-photo-finder/1.0 (https://github.com/john3162000/website_business)" };
 const QUERIES = {
-  stove: "gas stove burners kitchen", oven: "kitchen oven appliance", air_fryer: "air fryer", microwave: "microwave oven",
-  grill: "charcoal grill barbecue", steamer: "steamer cookware", rice_cooker: "rice cooker", pressure_cooker: "pressure cooker",
-  slow_cooker: "slow cooker", blender: "blender kitchen appliance", mixer: "stand mixer",
+  oven: "electric oven baking", oven_b: "toaster oven", oven_c: "kitchen oven door open",
 };
 const OK = /^(cc0|cc by(-sa)? [0-9.]+|public domain|pd)/i;
 mkdirSync(OUT, { recursive: true });
