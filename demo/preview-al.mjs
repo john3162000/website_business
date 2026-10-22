@@ -48,7 +48,11 @@ await page.evaluate(() => document.getElementById("prices-foryou").scrollIntoVie
 await pause(1200); await shot("8-prices-foryou");
 await page.evaluate(() => document.getElementById("movers-rose").scrollIntoView({ block: "start" }));
 await pause(1200); await shot("9-movers-ulam");
-console.log("wide:", await page.evaluate(() => [...document.querySelectorAll("#section-prices *")].map((el) => ({ el, r: el.getBoundingClientRect() })).filter(({ r }) => r.right > 392 && r.width > 0).slice(0, 12).map(({ el, r }) => `${el.tagName}.${(el.className || "").toString().slice(0, 60)} id=${el.id} w=${Math.round(r.width)} right=${Math.round(r.right)}`).join("\n")));
+console.log("wide:", await page.evaluate(() => {
+  const clipped = (el) => { for (let p = el.parentElement; p; p = p.parentElement) { const o = getComputedStyle(p).overflowX; if (o === "auto" || o === "hidden" || o === "scroll") return true; } return false; };
+  return [...document.querySelectorAll("body *")].filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.right > 392 && getComputedStyle(el).position !== "fixed" && !clipped(el); })
+    .slice(0, 15).map((el) => { const r = el.getBoundingClientRect(); return `${el.tagName}.${(el.className || "").toString().slice(0, 70)} id=${el.id} w=${Math.round(r.width)} right=${Math.round(r.right)}`; }).join("\n");
+}));
 console.log("prices width:", await page.evaluate(() => `${document.documentElement.scrollWidth} vs ${window.innerWidth}`));
 await page.evaluate(() => { showSection("planner"); randomizeWeek(); });
 await pause(2000);
