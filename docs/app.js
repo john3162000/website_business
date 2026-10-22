@@ -126,6 +126,7 @@ function buildRecipe(raw, c) {
     kcalLow: n.kcalLow != null ? Math.round(n.kcalLow) : null,
     kcalHigh: n.kcalHigh != null ? Math.round(n.kcalHigh) : null,
     frying: n.frying || null,
+    appliances: n.appliances || [],
     sodium: n.sodium ?? null,
     refKcal: n.refKcal ?? null,
     protein: round1(perServing.protein),
@@ -407,6 +408,7 @@ function buildModal(r, instructions, lines) {
           </div>
         </div>
 
+        ${needsHtml(r)}
         ${typeof factBoxHtml === "function" ? factBoxHtml(r) : ""}
 
         <div>
@@ -665,6 +667,7 @@ function filterRecipes() {
   const kcalFilter = minKcal > 0 || maxKcal !== Infinity;
 
   const filtered = RECIPES.filter((r) => {
+    if (typeof kitchenOk === "function" && !kitchenOk(r)) return false;
     if (r.protein < minProt) return false;
     // Calorie filters need trustworthy calories: a dish missing most nutrition data would look "light".
     if (kcalFilter && (!kcalKnown(r) || r.calories < minKcal || r.calories > maxKcal)) return false;
@@ -686,6 +689,7 @@ function filterRecipes() {
     return (b[sort] || 0) - (a[sort] || 0);
   }
 
+  if (typeof kitchenSummary === "function") document.querySelectorAll("[data-kitchen-summary]").forEach((el) => { el.textContent = kitchenSummary(); });
   document.getElementById("result-count").textContent = `${filtered.length.toLocaleString()} recipe${filtered.length !== 1 ? "s" : ""} found${forYou ? " · sorted by your panlasa 🧠" : ""}`;
   // Render in pages so 2,000 cards don't block the page.
   const shown = filtered.slice(0, browseLimit);
@@ -847,6 +851,13 @@ async function openModal(id) {
   if (!document.getElementById("recipe-modal").classList.contains("open")) return;
   document.getElementById("modal-content").innerHTML = buildModal(r, instructions, lines);
   loadVideoLinks(r);
+}
+
+/** "Kailangan: Oven, Mixer" under the scores, when the recipe needs more than a stove. */
+function needsHtml(r) {
+  if (!r.appliances || !r.appliances.length || typeof KITCHEN_ITEMS === "undefined") return "";
+  const names = r.appliances.map((k) => (KITCHEN_ITEMS.find((i) => i.key === k) || { label: k }).label);
+  return `<p class="text-sm text-gray-600">🍳 <b>Kailangan:</b> ${escapeHtml(names.join(", "))} <button onclick="openKitchen()" class="text-xs font-semibold text-green-800 hover:underline ml-1">Ang kusina ko</button></p>`;
 }
 
 /** "Kahawig na ulam": four dishes like this one (taste tags and shared ingredients). */

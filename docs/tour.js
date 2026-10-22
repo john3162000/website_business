@@ -15,6 +15,8 @@ const TOUR_STEPS = [
     text: "I-filter mo by presyo, protein o calories. Yung green na bar? Sulit meter yan: mas maraming green, mas sulit. I-tap ang dish para makita ang ingredients, presyo at paano lutuin." },
   { section: "prices", target: "#section-prices table", title: "DA Prices",
     text: "Presyo ngayon vs last week, 2 weeks at last month. I-tap ang 🔔 para ma-alert ka pag bumaba na yung presyo." },
+  { section: "browse", target: ".kitchen-bar", title: "Ang kusina ko 🍳",
+    text: "Walang oven? I-tap ang “Ang kusina ko” at piliin ang mga gamit mo (air fryer, rice cooker, ihawan…). Itatago namin ang mga ulam na hindi mo kayang lutuin." },
   { section: "planner", target: "#plan-grid", title: "Weekly Planner",
     text: "I-plan ang buong linggo. May 🎲 Random week, Budget planner (e.g. “₱1,500 for 4 people”), at Diet filter: diabetic, heart, kidney, gout at iba pa." },
   { section: "finder", target: "#finder-cats", title: "Anong lulutuin?",

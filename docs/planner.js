@@ -98,6 +98,30 @@ function receiptByIngredient(plan, details) {
   return { items: list, total, unpriced: list.filter((x) => !x.priced).length };
 }
 
+// ── Saved plans and the grocery list ──
+
+const SAVED_PLANS_KEY = "sarapsulit.savedplans.v1";
+const MAX_SAVED_PLANS = 8;
+
+/** Adds a named copy of the plan, newest first; the same name replaces the older copy. */
+function addSavedPlan(list, name, plan, now = Date.now()) {
+  const clean = (name || "").trim() || "Plano";
+  const copy = JSON.parse(JSON.stringify(plan));
+  return [{ name: clean, savedAt: now, plan: copy }, ...(list || []).filter((p) => p.name !== clean)].slice(0, MAX_SAVED_PLANS);
+}
+
+/** The shopping list as plain text, for downloading or sending to Messenger. */
+function groceryText(receipt, people, dateLabel) {
+  const lines = [`🛒 Grocery list · FARM2FIGURE`, `Para sa ${people} tao · ${dateLabel}`, ""];
+  for (const it of receipt.items) {
+    const price = it.priced ? ` · ≈₱${Math.round(it.cost).toLocaleString("en-PH")}${it.unpricedGrams > 0 ? "+" : ""}` : "";
+    lines.push(`☐ ${it.label}: ${formatGrams(it.grams)}${price}`);
+  }
+  lines.push("", `Total ≈ ₱${Math.round(receipt.total).toLocaleString("en-PH")}${receipt.unpriced ? ` (+ ${receipt.unpriced} na walang presyo pa)` : ""}`);
+  lines.push("Presyo mula sa DA, PSA, SM at DTI · amounts as bought, before cooking");
+  return lines.join("\n");
+}
+
 // ── Meal types: which slots a dish suits (a dish can suit several) ──
 
 const MERYENDA_TITLE = /\b(turon|banana ?cue|camote ?cue|kamote ?cue|maruya|lumpia|lumpiang|shanghai|okoy|ukoy|fish ?balls?|kwek[- ]?kwek|tokneneng|siomai|siopao|empanadas?|pancit|palabok|puto|kutsinta|bibingka|suman|biko|palitaw|sapin[- ]?sapin|kakanin|maja|cassava cake|bilo[- ]?bilo|ginataang mais|ginataang halo|binignit|halo[- ]?halo|mais con yelo|sago|gulaman|buko pandan|fruit salad|ensaymada|pandesal|pan de sal|sandwich(es)?|burgers?|spaghetti|arroz caldo|lugaw|goto|champorado|cakes?|cupcakes?|cookies|brownies?|leche flan|flan|polvoron|pastillas|turrones|donuts?|doughnuts?|muffins?|bread|banana loaf|hopia|cheese sticks|french fries|nachos|camote fries)\b/i;
@@ -364,6 +388,7 @@ async function initPlanner() {
   renderPicker();
   renderGrid();
   renderReceipt();
+  renderSavedPlans();
 }
 
 function persist() {
@@ -391,7 +416,7 @@ function renderPicker() {
   const favs = typeof favIds === "function" ? favIds() : new Set();
   const inSeries = (r) => series === "all" || (series === "fav" ? favs.has(r.id) : types.get(r.id).has(series));
   // Sauces and condiments fit no meal slot: not offered. The diet filter applies here too.
-  const pool = RECIPES.filter((r) => r.costPerServing > 0 && types.get(r.id).size > 0 && dietOk(r, activeDiet));
+  const pool = RECIPES.filter((r) => r.costPerServing > 0 && types.get(r.id).size > 0 && dietOk(r, activeDiet) && plannerKitchenOk(r));
   document.getElementById("plan-series").innerHTML = SERIES.map((s) =>
     `<button class="wx-btn ${s.key === series ? "on" : ""}" onclick="setSeries('${s.key}')">${s.label}</button>`).join("");
   const matches = pool
@@ -534,10 +559,15 @@ function setRandomMeals(v) {
  * Dish ids per series for the randomizer, within the chosen diet: value-ranked first, one per
  * title (reposts share a title). Also gulay / isda / karne ulam pools, cheapest first.
  */
+/** The kitchen filter (kitchen.js), when it's loaded: dishes needing appliances you don't have are left out. */
+function plannerKitchenOk(r) {
+  return typeof kitchenOk !== "function" || kitchenOk(r);
+}
+
 function randomPools() {
   const pools = {};
   const onePerTitle = () => { const seen = new Set(); return (r) => { const t = r.title.trim().toLowerCase(); if (seen.has(t)) return false; seen.add(t); return true; }; };
-  const fits = RECIPES.filter((r) => r.costPerServing > 0 && dietOk(r, activeDiet));
+  const fits = RECIPES.filter((r) => r.costPerServing > 0 && dietOk(r, activeDiet) && plannerKitchenOk(r));
   for (const s of ["almusal", "ulam", "meryenda"]) {
     pools[s] = fits
       .filter((r) => mealTypes(r).has(s) && (s !== "ulam" || isMainUlam(r)))
@@ -613,23 +643,116 @@ async function renderReceipt() {
     return;
   }
   // Per ingredient: needs each dish's lines.
-  const missing = [...new Set(dishes.map((d) => d.id))].filter((id) => !detailCache.has(id));
-  if (missing.length) {
-    out.innerHTML = `<p class="text-sm text-gray-400">Adding up ingredients for ${missing.length} dish${missing.length > 1 ? "es" : ""}…</p>`;
-    await Promise.all(missing.map(async (id) => {
-      try {
-        const res = await fetch(`${API_BASE}/api/recipes/compiled?id=${id}`);
-        const j = await res.json();
-        if (j.recipe) detailCache.set(id, { servings: j.recipe.servings, lines: j.recipe.lines });
-      } catch { /* left out of the total */ }
-    }));
-    if (receiptMode !== "ingredient") return;
-  }
+  const missing = await loadPlanDetails((n) => { out.innerHTML = `<p class="text-sm text-gray-400">Adding up ingredients for ${n} dish${n > 1 ? "es" : ""}…</p>`; });
+  if (missing && receiptMode !== "ingredient") return;
   const r = receiptByIngredient(plan, detailCache);
   out.innerHTML = r.items.map((it) => `
     <div class="rc-row"><span class="rc-name">${escapeHtml(it.label)} <span class="rc-qty">${formatGrams(it.grams)}${it.dishes > 1 ? ` · ${it.dishes} dishes` : ""}</span></span>
     <span>${it.priced ? peso(it.cost) + (it.unpricedGrams > 0 ? "+" : "") : "—"}</span></div>`).join("")
     + receiptFooter(r.total, r.unpriced ? `${r.unpriced} ingredient${r.unpriced > 1 ? "s" : ""} without a price (—)` : "", 0);
+}
+
+/** Fetches the ingredient lines of planned dishes not seen yet; returns how many were fetched. */
+async function loadPlanDetails(onStart) {
+  const missing = [...new Set(plannedDishes(plan).map((d) => d.id))].filter((id) => !detailCache.has(id));
+  if (!missing.length) return 0;
+  if (onStart) onStart(missing.length);
+  await Promise.all(missing.map(async (id) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/recipes/compiled?id=${id}`);
+      const j = await res.json();
+      if (j.recipe) detailCache.set(id, { servings: j.recipe.servings, lines: j.recipe.lines });
+    } catch { /* left out of the total */ }
+  }));
+  return missing.length;
+}
+
+function plannerNote(text, ok = true) {
+  const el = document.getElementById("plan-save-note");
+  if (!el) return;
+  el.textContent = text;
+  el.className = `text-xs ${ok ? "text-green-700" : "text-red-600"}`;
+}
+
+function readSavedPlans() {
+  try { return JSON.parse(plannerStore()?.getItem(SAVED_PLANS_KEY) || "[]") || []; } catch { return []; }
+}
+
+function saveNamedPlan() {
+  if (!plannedDishes(plan).length) { plannerNote("Wala pang ulam sa plano.", false); return; }
+  const d = new Date();
+  const suggested = `Linggo ng ${d.toLocaleDateString("en-PH", { month: "short", day: "numeric" })}`;
+  const name = typeof prompt === "function" ? prompt("Pangalan ng plano:", suggested) : suggested;
+  if (name === null) return;
+  try {
+    plannerStore().setItem(SAVED_PLANS_KEY, JSON.stringify(addSavedPlan(readSavedPlans(), name, plan)));
+    plannerNote(`Na-save sa device na 'to ✓ (“${(name || "").trim() || "Plano"}”)`);
+  } catch { plannerNote("Hindi ma-save: naka-block ang storage ng browser.", false); }
+  renderSavedPlans();
+}
+
+function renderSavedPlans() {
+  const box = document.getElementById("plan-saved");
+  if (!box) return;
+  const list = readSavedPlans();
+  box.innerHTML = list.length ? `<p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Mga na-save</p>` + list.map((p, i) => `
+    <div class="flex items-center justify-between gap-2 text-sm">
+      <span class="truncate">${escapeHtml(p.name)} <span class="text-xs text-gray-400">· ${plannedDishes(p.plan).length} ulam</span></span>
+      <span class="shrink-0"><button onclick="loadSavedPlan(${i})" class="text-green-800 font-semibold hover:underline">Buksan</button>
+      <button onclick="deleteSavedPlan(${i})" class="text-gray-400 hover:text-red-600 ml-2" aria-label="Delete">✕</button></span>
+    </div>`).join("") : "";
+}
+
+function loadSavedPlan(i) {
+  const p = readSavedPlans()[i];
+  if (!p) return;
+  plan = { ...emptyPlan(), ...JSON.parse(JSON.stringify(p.plan)) };
+  document.getElementById("plan-people").value = plan.people;
+  persist(); renderGrid(); renderReceipt();
+  plannerNote(`Binuksan: “${p.name}”`);
+}
+
+function deleteSavedPlan(i) {
+  const list = readSavedPlans();
+  list.splice(i, 1);
+  try { plannerStore().setItem(SAVED_PLANS_KEY, JSON.stringify(list)); } catch { /* storage blocked */ }
+  renderSavedPlans();
+}
+
+/** Builds the grocery list text for the current plan (fetching ingredient lines first). */
+async function currentGroceryText() {
+  if (!plannedDishes(plan).length) { plannerNote("Wala pang ulam sa plano.", false); return null; }
+  await loadPlanDetails((n) => plannerNote(`Inaayos ang listahan (${n} ulam)…`));
+  const d = new Date().toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" });
+  return groceryText(receiptByIngredient(plan, detailCache), plan.people, d);
+}
+
+async function downloadGroceryList() {
+  const text = await currentGroceryText();
+  if (!text) return;
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([text], { type: "text/plain;charset=utf-8" }));
+  a.download = `grocery-list-${new Date().toISOString().slice(0, 10)}.txt`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  plannerNote("Na-download ang grocery list ✓");
+  if (typeof trackEvent === "function") trackEvent("grocery/download");
+}
+
+/** Phones: the share sheet (Messenger is on it). Elsewhere: copy, then open Messenger to paste. */
+async function sendGroceryList() {
+  const text = await currentGroceryText();
+  if (!text) return;
+  if (typeof trackEvent === "function") trackEvent("grocery/share");
+  if (navigator.share) {
+    try { await navigator.share({ title: "Grocery list", text }); plannerNote("Na-send ✓"); return; }
+    catch (e) { if (e && e.name === "AbortError") return; }
+  }
+  try {
+    await navigator.clipboard.writeText(text);
+    plannerNote("Na-copy ang listahan ✓ I-paste sa Messenger.");
+    window.open("https://www.messenger.com/", "_blank", "noopener");
+  } catch { plannerNote("Hindi ma-copy. Subukan ang Download.", false); }
 }
 
 function receiptFooter(total, note, unpricedDishes) {
