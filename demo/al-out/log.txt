@@ -1,13 +1,13 @@
 kinds: {"ulam":1234,"null":425,"meryenda":276}
 captured 1-rate-ulam
-random Sarciadong Pechay [gulay]
-random Shared Recipe: Tortang Talong with Giniling [prito,gulay]
-random How to Cook Ginataang Langka with Tinapa Flakes [maasim,gata,maanghang,gulay]
-ACTIVE Pocherong Manok [kamatis,saucy,prito,baboy,manok]
-ACTIVE Adobo Steak Recipe [maasim,saucy,matamis,baka]
-ACTIVE Sinigang na Panga ng Tuna Recipe (Tuna jaw cooked in sour broth) [maasim,sabaw,maanghang,isda]
-ACTIVE Spicy Chicken Feet [prito,maanghang,matamis,manok]
-ACTIVE Pininyahang Baboy sa Gata [gata,matamis,baboy]
+random Chicken Caldereta Recipe [kamatis,saucy,maanghang,manok]
+random Filipino Chicken Macaroni Sopas [sabaw,baboy,manok]
+random How to Poach Chicken [manok]
+ACTIVE Sweet and Sour Tilapia [maasim,prito,matamis,isda]
+ACTIVE Creamy Coconut Milk Fish Stew (Ginataang Isda with Eggplant and Bok Choy) [maasim,gata,saucy,prito,gulay]
+ACTIVE Gotong Batangas Recipe [sabaw,maanghang,matamis,baka]
+ACTIVE Ginataang Langka with Pork Recipe [gata,maanghang,baboy,gulay]
+ACTIVE Hardinera (Jardinera) Recipe [kamatis,matamis,baboy,baka]
 captured 2-rate-active
 captured 3-rate-meryenda
 captured 4-panlasa-ulam
