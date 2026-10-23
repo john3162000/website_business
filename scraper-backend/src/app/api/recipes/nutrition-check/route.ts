@@ -50,7 +50,7 @@ function stats(recipes: CompiledFromDb[]) {
  * GET /api/recipes/nutrition-check?limit=100  → more outliers
  */
 export async function GET(request: Request) {
-  const limit = Math.min(500, Math.max(1, Number(new URL(request.url).searchParams.get("limit")) || 25));
+  const limit = Math.min(100, Math.max(1, Number(new URL(request.url).searchParams.get("limit")) || 25));
   const { recipes } = await compileFromDb(null);
 
   const meals = recipes.filter((c) => !c.isArticle && !c.isCollection);

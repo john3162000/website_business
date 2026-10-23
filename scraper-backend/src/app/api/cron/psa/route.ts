@@ -1,3 +1,4 @@
+import { requireCron } from "@/lib/admin-auth";
 import { prisma } from "@/lib/db";
 import { importPsa } from "@/lib/psa-import";
 
@@ -7,13 +8,11 @@ export const maxDuration = 60;
 /**
  * Weekly PSA price update, called by Vercel Cron (see vercel.json). PSA
  * publishes monthly, so weekly catches a new month within days. Vercel sends
- * `Authorization: Bearer $CRON_SECRET` when CRON_SECRET is set.
+ * `Authorization: Bearer $CRON_SECRET`; without CRON_SECRET the route is closed in production.
  */
 export async function GET(request: Request) {
-  const secret = process.env.CRON_SECRET;
-  if (secret && request.headers.get("authorization") !== `Bearer ${secret}`) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const denied = requireCron(request);
+  if (denied) return denied;
   const log = await prisma.scrapingLog.create({ data: { type: "PSA", status: "RUNNING", message: "Weekly update: fetching PSA prices..." } });
   try {
     const r = await importPsa();

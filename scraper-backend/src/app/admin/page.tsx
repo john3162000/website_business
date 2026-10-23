@@ -41,19 +41,22 @@ function Section({ type, label, desc, chunked }: { type: string; label: string; 
   const [error, setError] = useState<string | null>(null);
 
   const loadLogs = async () => {
-    const res = await fetch(`/api/scrape/${type.toLowerCase()}`);
-    const data: LogEntry[] = await res.json();
+    const res = await fetch(`/api/scrape/${type.toLowerCase()}`, { headers: { "x-admin-token": readAdminToken() } });
+    const body: unknown = await res.json();
+    // Logs are admin-only: a 401 (no or wrong token) shows as an empty list.
+    const data: LogEntry[] = Array.isArray(body) ? body : [];
     setLogs(data);
     return data;
   };
 
   useEffect(() => {
     let cancelled = false;
-    fetch(`/api/scrape/${type.toLowerCase()}`)
+    fetch(`/api/scrape/${type.toLowerCase()}`, { headers: { "x-admin-token": readAdminToken() } })
       .then((res) => res.json())
-      .then((data: LogEntry[]) => {
-        if (!cancelled) setLogs(data);
-      });
+      .then((data: unknown) => {
+        if (!cancelled) setLogs(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {});
     return () => {
       cancelled = true;
     };
