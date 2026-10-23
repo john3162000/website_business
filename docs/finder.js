@@ -247,7 +247,7 @@ function renderFinderMenu(key) {
   const q = document.getElementById(`fx-q-${key}`)?.value || "";
   const opts = categoryOptions(finderIndex, key, q).slice(0, 40);
   document.getElementById(`fx-list-${key}`).innerHTML = opts.map((o) => `
-    <button class="fx-opt ${finderHave.has(o.token) ? "on" : ""}" onclick="finderToggle('${escapeHtml(o.token)}')">
+    <button class="fx-opt ${finderHave.has(o.token) ? "on" : ""}" data-token="${escapeHtml(o.token)}" onclick="finderToggle(this.dataset.token)">
       <span class="fx-check">${finderHave.has(o.token) ? "✓" : ""}</span><span class="flex-1 text-left">${escapeHtml(o.label)}</span>
       <span class="fx-uses">${o.count == null ? "lahat" : `${o.count} dish${o.count > 1 ? "es" : ""}`}</span>
     </button>`).join("") || `<p class="text-xs text-gray-400 p-2">No match.</p>`;
@@ -257,8 +257,8 @@ function renderFinder() {
   if (!finderIndex) return;
   renderFinderCats();
   document.getElementById("finder-have").innerHTML = [...finderHave].map((t) =>
-    `<li class="fx-have" onmouseenter="graphFocus('i:${escapeHtml(t)}')" onmouseleave="graphFocus(null)"><span class="fx-dot" style="background:${ingredientCategory(t).color}"></span><span class="flex-1">${escapeHtml(finderLabel(t))}</span>
-      <button onclick="finderRemove('${escapeHtml(t)}')" aria-label="Remove">✕</button></li>`).join("")
+    `<li class="fx-have" data-token="${escapeHtml(t)}" onmouseenter="graphFocus('i:' + this.dataset.token)" onmouseleave="graphFocus(null)"><span class="fx-dot" style="background:${ingredientCategory(t).color}"></span><span class="flex-1">${escapeHtml(finderLabel(t))}</span>
+      <button onclick="finderRemove(this.parentElement.dataset.token)" aria-label="Remove">✕</button></li>`).join("")
     || `<li class="text-sm text-gray-400">Wala pa. Open a group above and pick what you have.</li>`;
 
   const recipes = new Map(RECIPES.map((r) => [r.id, r]));

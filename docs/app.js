@@ -288,7 +288,7 @@ function buildRecipeCard(r) {
       </div>
       <div class="p-4 flex flex-col gap-2 flex-1">
         <h3 class="font-semibold text-gray-900 leading-snug group-hover:text-green-700 transition-colors">${escapeHtml(r.title)}</h3>
-        <span class="text-xs text-gray-400 uppercase tracking-wide">${r.category}</span>
+        <span class="text-xs text-gray-400 uppercase tracking-wide">${escapeHtml(r.category)}</span>
         ${sulitMeter(r)}
         <div class="flex flex-wrap gap-1 mt-auto pt-2">
           <span class="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-medium">${costText(r)}/serving</span>
