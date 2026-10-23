@@ -800,6 +800,60 @@ function groceryRows(receipt) {
   }));
 }
 
+/** Escapes text for the stand-alone HTML file (planner.js can't rely on app.js there). */
+function groceryEsc(t) {
+  return String(t).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+/**
+ * The grocery list as a stand-alone HTML file: opens offline in any browser,
+ * the boxes can be ticked while shopping (remembered in that file's page),
+ * and it prints as a clean one-column list.
+ */
+function groceryHtml(receipt, people, date) {
+  const rows = groceryRows(receipt).map((r, i) => `<li><label><input type="checkbox" data-i="${i}"><span class="n">${groceryEsc(r.label)}</span><span class="q">${groceryEsc(r.qty)}</span><span class="p">${groceryEsc(r.price)}</span></label></li>`).join("\n");
+  const total = `≈ ₱${Math.round(receipt.total).toLocaleString("en-PH")}`;
+  return `<!doctype html>
+<html lang="fil"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grocery list · ${groceryEsc(date)}</title>
+<style>
+body{font-family:Inter,"Helvetica Neue",Arial,sans-serif;background:#F8F4EA;color:#1F2A24;margin:0}
+header{background:#163F2E;color:#F8F4EA;padding:20px 20px 16px}header small{color:#E6C265;font-weight:800;letter-spacing:.12em}
+h1{margin:4px 0 0;font-size:28px}main{max-width:640px;margin:0 auto;padding:12px 16px 32px}
+.sub{color:#3D3420;font-weight:600;margin:12px 0}ul{list-style:none;padding:0;margin:0}
+li label{display:grid;grid-template-columns:auto 1fr auto 4.5em;gap:10px;align-items:center;padding:10px 8px;border-bottom:1px solid #E7DFCB;cursor:pointer}
+li:nth-child(odd) label{background:#fff}input{width:20px;height:20px;accent-color:#1F5A3D}
+.q{color:#6B7F70}.p{color:#8A6A12;font-weight:700;text-align:right}
+input:checked~span{text-decoration:line-through;opacity:.45}
+.total{display:flex;justify-content:space-between;font-size:22px;font-weight:800;border-top:3px solid #163F2E;margin-top:14px;padding-top:12px}
+.note{color:#6B7F70;font-size:13px}@media print{header{background:none;color:#000}header small{color:#000}body{background:#fff}}
+</style></head><body>
+<header><small>FARM2FIGURE</small><h1>Grocery list</h1></header>
+<main><p class="sub">Para sa ${groceryEsc(people)} tao · ${groceryEsc(date)}</p>
+<ul>
+${rows}
+</ul>
+<div class="total"><span>Total</span><span>${total}</span></div>
+<p class="note">${receipt.unpriced ? `${groceryEsc(receipt.unpriced)} na sangkap ang wala pang presyo (—). ` : ""}Presyo mula sa DA, PSA, SM at DTI · dami ay bago lutuin (as bought).</p>
+</main>
+<script>
+var K="grocery:"+document.title;try{var s=JSON.parse(localStorage.getItem(K)||"[]");document.querySelectorAll("input").forEach(function(b){b.checked=s.indexOf(+b.dataset.i)>=0;b.onchange=function(){var on=[].slice.call(document.querySelectorAll("input:checked")).map(function(x){return +x.dataset.i});try{localStorage.setItem(K,JSON.stringify(on))}catch(e){}}})}catch(e){}
+</script>
+</body></html>`;
+}
+
+async function downloadGroceryHtml() {
+  const g = await currentGrocery();
+  if (!g) return;
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([groceryHtml(g.receipt, g.people, g.date)], { type: "text/html;charset=utf-8" }));
+  a.download = `grocery-list-${new Date().toISOString().slice(0, 10)}.html`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  plannerNote("Na-download ang grocery list (HTML) ✓ Buksan sa browser at i-tsek habang namimili.");
+  if (typeof trackEvent === "function") trackEvent("grocery/html");
+}
+
 function groceryFileName() {
   return `grocery-list-${new Date().toISOString().slice(0, 10)}.png`;
 }

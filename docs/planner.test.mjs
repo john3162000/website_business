@@ -6,8 +6,8 @@ import vm from "node:vm";
 
 const ctx = vm.createContext({});
 vm.runInContext(`${readFileSync(new URL("./planner.js", import.meta.url), "utf8")}
-;globalThis.api = { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, isMainUlam, proteinKind, dietOk, cheapestByKind, addSavedPlan, groceryText, groceryRows };`, ctx);
-const { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, isMainUlam, proteinKind, dietOk, cheapestByKind, addSavedPlan, groceryText, groceryRows } = ctx.api;
+;globalThis.api = { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, isMainUlam, proteinKind, dietOk, cheapestByKind, addSavedPlan, groceryText, groceryRows, groceryHtml };`, ctx);
+const { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, isMainUlam, proteinKind, dietOk, cheapestByKind, addSavedPlan, groceryText, groceryRows, groceryHtml } = ctx.api;
 const plain = (v) => JSON.parse(JSON.stringify(v));
 
 test("slots: add without duplicates, at most 5, remove clears empty slots", () => {
@@ -275,4 +275,18 @@ test("grocery picture rows: amount to buy and price, — when unpriced", () => {
     { label: "Calamansi", qty: "80 g", price: "₱12+" },
     { label: "Kangkong", qty: "450 g", price: "—" },
   ]);
+});
+
+test("grocery HTML file: one checkbox per ingredient, total, and text is escaped", () => {
+  const html = groceryHtml({ items: [
+    { label: "Pork belly", grams: 1200, cost: 330.4, priced: true, unpricedGrams: 0 },
+    { label: "<script>alert(1)</script>", grams: 50, cost: 0, priced: false, unpricedGrams: 50 },
+  ], total: 330.4, unpriced: 1 }, 4, "October 23, 2026");
+  assert.match(html, /^<!doctype html>/);
+  assert.equal((html.match(/type="checkbox"/g) || []).length, 2);
+  assert.match(html, /Pork belly<\/span><span class="q">1\.2 kg<\/span><span class="p">₱330</);
+  assert.match(html, /Para sa 4 tao · October 23, 2026/);
+  assert.match(html, /≈ ₱330/);
+  assert.ok(!html.includes("<script>alert(1)"));
+  assert.ok(html.includes("&lt;script&gt;alert(1)&lt;/script&gt;"));
 });
