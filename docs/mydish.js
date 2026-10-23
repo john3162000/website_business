@@ -105,11 +105,11 @@ function renderDishList() {
   const dishes = s ? loadDishes(s) : [];
   const cards = dishes.map((d) => `
     <div class="bg-white rounded-xl shadow px-4 py-3 flex items-center justify-between gap-3 ${currentDish && currentDish.id === d.id ? "ring-2 ring-green-600" : ""}">
-      <button onclick="openDish('${d.id}')" class="text-left min-w-0">
+      <button data-id="${escapeHtml(d.id)}" onclick="openDish(this.dataset.id)" class="text-left min-w-0">
         <p class="font-medium truncate">${escapeHtml(d.title)}</p>
         <p class="text-xs text-gray-400">${d.lastCost != null ? `₱${Number(d.lastCost).toFixed(0)}/serving · ` : ""}${d.lines.length} ingredients</p>
       </button>
-      <button onclick="deleteDish('${d.id}')" class="text-gray-300 hover:text-red-600 text-lg leading-none" title="Delete">✕</button>
+      <button data-id="${escapeHtml(d.id)}" onclick="deleteDish(this.dataset.id)" class="text-gray-300 hover:text-red-600 text-lg leading-none" title="Delete">✕</button>
     </div>`).join("");
   document.getElementById("mydish-list").innerHTML = `
     <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
