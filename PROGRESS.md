@@ -124,3 +124,34 @@ Result: 895 of 2,031 meals fully priced (44%), and 91% of food lines priced.
 - **Ideas suggested but not built:** grocery list by palengke section, health goals, allergy
   filters, substitutions, cook mode, regional prices, and more animations (pop-up opening from the
   card, planner drop, Random week shuffle).
+
+## 2026-10-22/23: games, taste model, kitchen and planner extras
+
+- **#36–#38: Laro.** Rate (stretchy-arm slider), Versus, and "Panlasa mo": a ridge-regression taste model
+  over 13 taste tags, learned on the phone only. Browse gets a "Para sa'yo" sort and "bagay sa'yo" badges;
+  the recipe pop-up shows "Kahawig na ulam" and "Alam mo ba?" facts.
+- **#40, #41: Ang kusina ko.** The engine detects appliances in each recipe (`appliances.ts`); the site
+  hides dishes you can't cook (with substitutes such as air fryer ↔ oven). Planner: save named plans,
+  grocery list as a picture or to Messenger. Tour steps for the kitchen and Laro.
+- **#43:** active learning (asks about the dishes the model is least sure of), ulam and meryenda learned
+  separately, weather picks only for moderate rain or the 85th/15th percentile of last year's heat/cold,
+  Random week leans to your taste, DA Prices movers are ulam-only with photos plus "Mura ngayon at bagay
+  sa panlasa mo".
+- **#42, #44, #52 (separate security session):** admin/cron auth, API caching, security headers, safer
+  inline handlers, Dependabot, copyright footer.
+- **#53:** grocery list as a stand-alone HTML file with checkboxes.
+
+## 2026-10-27: Settings, filters, grocery sections, drag and drop, more recipes
+
+- **⚙️ Settings** (header button, `settings.js`): English/Tagalog for the app buttons, diets (several at
+  once: a dish must pass all of them; the "guidance only" note stays), Ang kusina ko, "Suggest ka pa"
+  (taste picks on/off), dark mode and weather. Saved on the device.
+- **Fish / Chicken / Pork / Beef chips** in Browse and the Planner (`meatTypes()` from `proteinKind()`).
+- **Grocery list by palengke section:** Isda, Karne, Gulay, Prutas, Itlog/Dairy, Tinapay,
+  Pampalasa/Condiments, Bigas/Pantry, in the receipt, PNG, HTML and Messenger text.
+- **Planner drag and drop:** the page dims and only slots that can take the dish light up; works with a
+  mouse and on phones (hold, then drag); dishes can be moved between days.
+- **More recipes:** the crawl reads every post sitemap from the sitemap index (dishes like pastil that
+  were missed), keeps method notes instead of copying steps or descriptions, and the owner runs
+  `node scripts/add-recipes.mjs` on their own computer. Panlasang Pinoy has ~3,000 posts, so ~5,000
+  needs a second source.
