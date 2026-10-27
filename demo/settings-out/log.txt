@@ -19,19 +19,8 @@ captured 12-touch-drag-lit-slots
 touch drag: {"lit":14,"dim":true} plan: {"Lunes|Tanghalian":[1709]} expect id 1709
 swipe started a drag? false
 captured 13-after-touch-drop
+desktop src/dst: {"sy":196,"dy":-189}
 captured 14-desktop-mouse-drag
-desktop lit: 
+desktop lit: Lunes|Meryenda,Martes|Meryenda,Miyerkules|Meryenda,Huwebes|Meryenda,Biyernes|Meryenda,Sabado|Meryenda,Linggo|Meryenda
 desktop plan after drop: {}
-node:internal/modules/run_main:123
-    triggerUncaughtException(
-    ^
-
-locator.boundingBox: Timeout 30000ms exceeded.
-Call log:
-  - waiting for locator('.plan-chip[data-from="Martes|Meryenda"]').first()
-
-    at /home/runner/work/website_business/website_business/demo/preview-settings.mjs:135:82 {
-  name: 'TimeoutError'
-}
-
-Node.js v22.23.4
+no chip to move
