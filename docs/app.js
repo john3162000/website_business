@@ -333,7 +333,10 @@ function ingredientRows(lines) {
 function buildModal(r, instructions, lines) {
   const nutr = r.nutrition;
   const ingRows = lines ? ingredientRows(lines) : `<p class="text-sm text-gray-400">Loading ingredients…</p>`;
-  const steps = (instructions && instructions.length ? instructions : ["Full instructions are on the original recipe page."])
+  // Newer recipes keep no copy of the author's steps: point to the original page instead.
+  const steps = !(instructions && instructions.length) && r.url
+    ? `<li><a href="${escapeHtml(r.url)}" target="_blank" rel="noopener" class="inline-block bg-green-800 hover:bg-green-700 text-amber-50 font-semibold text-sm px-4 py-2 rounded-full">📖 See the steps on Panlasang Pinoy ↗</a></li>`
+    : (instructions && instructions.length ? instructions : ["Full instructions are on the original recipe page."])
     .map((s, i) => `
     <li class="flex gap-4">
       <span class="flex-shrink-0 w-8 h-8 bg-green-700 text-white rounded-full flex items-center justify-center text-sm font-bold">${i + 1}</span>

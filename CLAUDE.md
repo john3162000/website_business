@@ -27,11 +27,14 @@ docs/                         static site, no build step (Tailwind CDN, plain br
   app.js                      data loading, Browse, Prices, recipe pop-up, nav, sulit meter, dark toggle
   weather.js                  weather picks (Open-Meteo)       mydish.js   "My Dish" builder
   planner.js                  weekly planner, Random week (incl. gulay→isda→karne), budget planner,
-                              mealTypes(), proteinKind(), dietOk() diet filters, Pinakamura ngayon
+                              mealTypes(), proteinKind(), meatTypes(), dietOk()/dietsOk() (all chosen diets),
+                              grocerySection() palengke groups, drag and drop (dropSlots), Pinakamura ngayon
   finder.js                   "Anong lulutuin?" ingredient finder + d3 graph
   alerts.js                   price alerts (localStorage + browser notifications)
   share.js                    share a recipe as a PNG (canvas) → share sheet / Messenger
   tour.js                     first-time tour (Taglish), replay with the "?" header button
+  settings.js                 ⚙️ Settings (language tl/en with I18N + data-i18n, diets, kitchen, "Suggest ka pa",
+                              dark mode, weather) and the Fish/Chicken/Pork/Beef chips; key sarapsulit.settings.v1
   *.test.mjs                  node:test files; run each script's pure helpers in node:vm
   logo.png, favicon.png       FARM2FIGURE logo
 scraper-backend/
@@ -122,7 +125,9 @@ required on `main`.
 - **Catalog TSVs use CRLF line endings.** `build-catalog.mjs` splits on `/\r?\n/`. Append rows
   with CRLF.
 - **One global scope:** all `docs/*.js` files are classic scripts that share globals. Script
-  order in `index.html`: weather, mydish, planner, finder, alerts, share, tour, then app last.
+  order in `index.html`: weather, mydish, planner, finder, alerts, share, facts, taste, games,
+  kitchen, settings, tour, then app last. New button text gets a `data-i18n` key in settings.js `I18N`
+  (`settings.test.mjs` fails on a missing key).
   Favourites (`favIds`, `toggleFav`, key `sarapsulit.favs.v1`) live in `app.js`. Give new
   top-level names a prefix (`SHARE_W`, `FINDER_KEY`) so they can't clash.
 - **The theme comes from the Tailwind config:** `index.html` re-points Tailwind's `green` to
@@ -139,6 +144,25 @@ required on `main`.
 - **Panlasang Pinoy images** send `Access-Control-Allow-Origin: *`, which is why `share.js` can
   draw them on a canvas.
 
+## Adding recipes (Panlasang Pinoy)
+
+The crawl reads every post sitemap listed in `sitemap_index.xml` and saves up to 4 new recipes per
+`POST /api/scrape/recipes` call (admin only). New recipes keep the title, source link, photo link,
+servings, times, course and ingredients, plus `methodNotes` (short phrases like "deep fry. discard the
+marinade" that the engine reads). They do **not** copy the author's description or steps; the recipe
+pop-up links to Panlasang Pinoy for the method. Unknown ingredients hide the recipe as usual.
+
+The owner runs it from their own computer, so the token never goes through a cloud session:
+
+```bash
+cd scraper-backend
+node scripts/add-recipes.mjs            # ADMIN_TOKEN from the environment or scraper-backend/.env.local
+node scripts/add-recipes.mjs --max 50   # stop after 50 calls; run again to resume
+```
+
+Panlasang Pinoy has about 3,000 posts, so a target of ~5,000 recipes needs a second source (the
+owner's call).
+
 ## Data rules
 
 - **Do not scrape Shopee or Puregold** (terms risk). Open Food Facts is not wired in because of
@@ -146,6 +170,7 @@ required on `main`.
 - **Never guess a price silently.** Use a sourced row, or a labelled derived row with a factor
   and a reason. Otherwise leave it unpriced and let `costGaps` flag the dish.
 - **Never delete recipes from the database.** Hide them instead.
+- **Don't copy recipe prose or photos.** New recipes store method notes and a photo link, not text.
 
 ## Measuring (local, git-ignored)
 
