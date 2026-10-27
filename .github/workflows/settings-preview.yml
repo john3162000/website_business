@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   preview:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
@@ -27,6 +27,7 @@ jobs:
       - name: Capture
         working-directory: demo
         run: |
+          mkdir -p settings-out
           python3 -m http.server 5173 --directory ../docs &
           sleep 2
           node preview-settings.mjs http://localhost:5173/ 2>&1 | tee settings-out/log.txt
