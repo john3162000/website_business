@@ -138,9 +138,16 @@ console.log("desktop plan after drop:", await dp.evaluate(() => JSON.stringify(p
 // Move the chip from Martes to Sabado.
 const chip = await dp.locator('.plan-chip[data-from="Martes|Meryenda"]').first().boundingBox({ timeout: 5000 }).catch(() => null);
 if (!chip) { console.log("no chip to move"); await browser.close(); process.exit(0); }
-const dst2 = await dp.locator('.plan-cell[data-key="Sabado|Meryenda"]').boundingBox();
+// Hold the chip at the grid's right edge until Sabado scrolls into view, then drop it there.
+const gridBox = await dp.locator("#plan-grid").evaluate((el) => { const r = el.parentElement.getBoundingClientRect(); return { right: r.right }; });
 await dp.mouse.move(chip.x + 10, chip.y + 10); await dp.mouse.down();
-await dp.mouse.move(dst2.x + dst2.width / 2, dst2.y + dst2.height / 2, { steps: 12 }); await dp.mouse.up();
+await dp.mouse.move(gridBox.right - 12, chip.y + 10, { steps: 12 });
+await dp.waitForTimeout(1500);
+const dst2 = await dp.locator('.plan-cell[data-key="Sabado|Meryenda"]').boundingBox();
+await dp.mouse.move(dst2.x + dst2.width / 2, dst2.y + dst2.height / 2, { steps: 6 });
+await dp.waitForTimeout(300);
+await dp.screenshot({ path: "settings-out/14b-desktop-move-chip.png" });
+await dp.mouse.up();
 await dp.waitForTimeout(500);
 console.log("desktop plan after chip move:", await dp.evaluate(() => JSON.stringify(plan.slots)));
 await dp.evaluate(() => { openSettings(); toggleTheme(); renderSettings(); });

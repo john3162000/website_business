@@ -686,8 +686,11 @@ function edgeScroll() {
   const h = window.innerHeight, w = window.innerWidth;
   const dy = drag.y < DRAG_EDGE ? -12 : drag.y > h - DRAG_EDGE ? 12 : 0;
   if (dy) window.scrollBy(0, dy);
+  // The week grid scrolls sideways when the dish nears its left or right edge (or the screen's).
   const grid = document.getElementById("plan-grid")?.parentElement;
-  const dx = drag.x < DRAG_EDGE / 2 ? -10 : drag.x > w - DRAG_EDGE / 2 ? 10 : 0;
+  const g = grid ? grid.getBoundingClientRect() : { left: 0, right: w, top: 0, bottom: h };
+  const inRows = drag.y > g.top && drag.y < g.bottom;
+  const dx = inRows && drag.x < Math.max(g.left, 0) + DRAG_EDGE / 2 ? -10 : inRows && drag.x > Math.min(g.right, w) - DRAG_EDGE / 2 ? 10 : 0;
   if (dx && grid) grid.scrollLeft += dx;
   if (dx || dy) moveDrag(drag.x, drag.y);
   drag.raf = requestAnimationFrame(edgeScroll);
