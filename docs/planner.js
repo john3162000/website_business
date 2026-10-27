@@ -748,7 +748,12 @@ function initPlannerDrag() {
     e.preventDefault();
     moveDrag(p.clientX, p.clientY);
   }, { passive: false });
-  document.addEventListener("touchend", (e) => { if (drag && drag.touch && endDrag(true)) { e.preventDefault(); swallowClick = true; } });
+  document.addEventListener("touchend", (e) => {
+    if (!drag || !drag.touch) return;
+    // A slow tap (held, never moved) is still a tap: end the drag and let the click pick the dish.
+    const moved = Math.hypot(drag.x - drag.x0, drag.y - drag.y0) > 10;
+    if (endDrag(moved) && moved) { e.preventDefault(); swallowClick = true; }
+  });
   document.addEventListener("touchcancel", () => endDrag(false));
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") endDrag(false); });
   root.addEventListener("contextmenu", (e) => { if (drag) e.preventDefault(); });
