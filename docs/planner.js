@@ -457,9 +457,9 @@ const MEAT_TYPES = [
   { key: "pork", label: "🐷 Baboy", en: "🐷 Pork" },
   { key: "beef", label: "🐄 Baka", en: "🐄 Beef" },
 ];
-const CHICKEN_WORDS = /(chicken|manok|poultry|inasal|tinola|arroz caldo)/i;
-const PORK_WORDS = /(pork|baboy|liempo|pata|lechon|bagnet|chicharr?on|sisig|dinuguan|longg?anisa|tocino|ham|bacon|spam|luncheon meat|binagoongan|igado|bopis|lomo|kasim|pigue|embutido)/i;
-const BEEF_WORDS = /(beef|baka|bulalo|oxtail|kare[- ]?kare|tapa|corned beef|mechado|bistek|beefsteak|steak|lengua|tripe|tuwalya|kenchi|brisket|sirloin|carabeef)/i;
+const CHICKEN_WORDS = /\b(chicken|manok|poultry|inasal|tinola|arroz caldo)\b/i;
+const PORK_WORDS = /\b(pork|baboy|liempo|pata|lechon|bagnet|chicharr?on|sisig|dinuguan|longg?anisa|tocino|ham|bacon|spam|luncheon meat|binagoongan|igado|bopis|lomo|kasim|pigue|embutido)\b/i;
+const BEEF_WORDS = /\b(beef|baka|bulalo|oxtail|kare[- ]?kare|tapa|corned beef|mechado|bistek|beefsteak|steak|lengua|tripe|tuwalya|kenchi|brisket|sirloin|carabeef)\b/i;
 
 /**
  * The meat types of a dish for the Fish / Chicken / Pork / Beef filter. Uses proteinKind(): an
