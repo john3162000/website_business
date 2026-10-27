@@ -681,6 +681,8 @@ function moveDrag(x, y) {
 /** Near the top or bottom of the screen the page scrolls; near the sides, the week grid does. */
 function edgeScroll() {
   if (!drag || !drag.on) return;
+  // Only once the dish has been moved: picking one up near the screen edge doesn't scroll the page.
+  if (Math.hypot(drag.x - drag.x0, drag.y - drag.y0) < 40) { drag.raf = requestAnimationFrame(edgeScroll); return; }
   const h = window.innerHeight, w = window.innerWidth;
   const dy = drag.y < DRAG_EDGE ? -12 : drag.y > h - DRAG_EDGE ? 12 : 0;
   if (dy) window.scrollBy(0, dy);

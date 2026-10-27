@@ -119,8 +119,11 @@ await dp.goto(URL0, { waitUntil: "networkidle" });
 await dp.waitForFunction(() => typeof RECIPES !== "undefined" && RECIPES.length > 0, null, { timeout: 60000 });
 await dp.evaluate(() => { showSection("planner"); setSeries("meryenda"); });
 await dp.waitForTimeout(1200);
+await dp.evaluate(() => { window.scrollTo(0, 0); document.getElementById("plan-picker").scrollIntoView({ block: "center" }); });
+await dp.waitForTimeout(400);
 const src = await dp.locator("#plan-picker [data-drag-id]").first().boundingBox();
 const dst = await dp.locator('.plan-cell[data-key="Martes|Meryenda"]').boundingBox();
+console.log("desktop src/dst:", JSON.stringify({ sy: Math.round(src.y), dy: Math.round(dst.y) }));
 await dp.mouse.move(src.x + 30, src.y + 15);
 await dp.mouse.down();
 await dp.mouse.move(src.x + 60, src.y + 30, { steps: 4 });
@@ -132,7 +135,8 @@ await dp.mouse.up();
 await dp.waitForTimeout(500);
 console.log("desktop plan after drop:", await dp.evaluate(() => JSON.stringify(plan.slots)));
 // Move the chip from Martes to Sabado.
-const chip = await dp.locator('.plan-chip[data-from="Martes|Meryenda"]').first().boundingBox();
+const chip = await dp.locator('.plan-chip[data-from="Martes|Meryenda"]').first().boundingBox({ timeout: 5000 }).catch(() => null);
+if (!chip) { console.log("no chip to move"); await browser.close(); process.exit(0); }
 const dst2 = await dp.locator('.plan-cell[data-key="Sabado|Meryenda"]').boundingBox();
 await dp.mouse.move(chip.x + 10, chip.y + 10); await dp.mouse.down();
 await dp.mouse.move(dst2.x + dst2.width / 2, dst2.y + dst2.height / 2, { steps: 12 }); await dp.mouse.up();
