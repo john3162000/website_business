@@ -341,6 +341,11 @@ test("meat types: fish from isda dishes; chicken, pork and beef from karne title
   assert.deepEqual(types({ title: "Kare-Kare", ingredientNames: ["oxtail", "peanut butter"] }), ["beef"]);
   assert.deepEqual(types({ title: "Menudo", ingredientNames: ["pork shoulder", "liver"] }), ["pork"]);
   assert.deepEqual(types({ title: "Pinakbet", category: "Vegetable Dish", ingredientNames: ["pork belly"] }), []);
+  assert.deepEqual(types({ title: "Lechon Kawali" }), ["pork"]);
+  assert.deepEqual(types({ title: "Lechon Manok" }), ["chicken"]);
+  assert.deepEqual(types({ title: "Chicken Igado" }), ["chicken"]);
+  assert.deepEqual(types({ title: "Lechon Sauce Recipe" }), []);
+  assert.deepEqual(types({ title: "Liver Sauce", category: "Sauce & Condiment", ingredientNames: ["pork liver"] }), []);
   const adobo = { title: "Chicken Adobo", category: "Main Dish", ingredientNames: [] };
   assert.equal(meatOk(adobo, ["pork", "chicken"]), true);
   assert.equal(meatOk(adobo, ["fish"]), false);

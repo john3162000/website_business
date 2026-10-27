@@ -458,7 +458,9 @@ const MEAT_TYPES = [
   { key: "beef", label: "🐄 Baka", en: "🐄 Beef" },
 ];
 const CHICKEN_WORDS = /\b(chicken|manok|poultry|inasal|tinola|arroz caldo)\b/i;
-const PORK_WORDS = /\b(pork|baboy|liempo|pata|lechon|bagnet|chicharr?on|sisig|dinuguan|longg?anisa|tocino|ham|bacon|spam|luncheon meat|binagoongan|igado|bopis|lomo|kasim|pigue|embutido)\b/i;
+const PORK_WORDS = /\b(pork|baboy|liempo|pata|bagnet|chicharr?on|dinuguan|longg?anisa|tocino|ham|bacon|spam|luncheon meat|binagoongan|bopis|lomo|kasim|pigue|embutido)\b/i;
+// Dish names that are pork unless the title names another meat (Lechon Manok, Chicken Igado).
+const PORK_DISH = /\b(lechon|sisig|igado|menudo)\b/i;
 const BEEF_WORDS = /\b(beef|baka|bulalo|oxtail|kare[- ]?kare|tapa|corned beef|mechado|bistek|beefsteak|steak|lengua|tripe|tuwalya|kenchi|brisket|sirloin|carabeef)\b/i;
 
 /**
@@ -469,9 +471,11 @@ const BEEF_WORDS = /\b(beef|baka|bulalo|oxtail|kare[- ]?kare|tapa|corned beef|me
 function meatTypes(r) {
   const kind = proteinKind(r);
   if (kind === "isda") return new Set(["fish"]);
-  if (kind !== "karne") return new Set();
+  // Sauces and dips aren't a meat dish (Lechon Sauce).
+  if (kind !== "karne" || r.category === "Sauce & Condiment" || /\b(sauce|dip|gravy)\b/i.test(r.title || "")) return new Set();
   const find = (text) => new Set([["chicken", CHICKEN_WORDS], ["pork", PORK_WORDS], ["beef", BEEF_WORDS]].filter(([, re]) => re.test(text)).map(([k]) => k));
   const byTitle = find(r.title || "");
+  if (!byTitle.size && PORK_DISH.test(r.title || "")) byTitle.add("pork");
   return byTitle.size ? byTitle : find((r.ingredientNames || []).join(" | "));
 }
 
@@ -713,7 +717,10 @@ function initPlannerDrag() {
   let swallowClick = false;
   root.addEventListener("mousedown", (e) => {
     const el = e.button === 0 && e.target.closest("[data-drag-id]");
-    if (el && !e.target.closest("button:not([data-drag-id])")) dragStartPoint(el, e.clientX, e.clientY, false);
+    if (!el || e.target.closest("button:not([data-drag-id])")) return;
+    // Stops the browser's own image drag and text selection, which would swallow the mouse moves.
+    e.preventDefault();
+    dragStartPoint(el, e.clientX, e.clientY, false);
   });
   document.addEventListener("mousemove", (e) => {
     if (!drag || drag.touch) return;
