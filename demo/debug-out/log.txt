@@ -1,0 +1,34 @@
+
+===== phone fresh =====
+scripts: weather.js,mydish.js,planner.js,finder.js,alerts.js,share.js,facts.js,taste.js,games.js,kitchen.js,settings.js,tour.js,app.js
+globals: {"dietsOk":"function","meatOk":"function","settingsDiets":"function","initPlannerDrag":"function","groupGrocery":"function","recipes":1935}
+open: {"picker":60,"pickerText":"Monggo Guisado with Dilis and Malunggay (Mung Bean Stew with Dried Anchovies)\n  ","count":"All · 1,741 dishes","cells":28,"chips":0,"cheapest":9,"meatChips":10,"dietLine":"Diet None (every dish) ⚙️ Change","receipt":"Your receipt appears here once you add dishes.","hint":"Drag a dish into a slot, or tap a dish then tap a slot.","slots":"{}"}
+after tap-tap: {"picker":60,"pickerText":"Monggo Guisado with Dilis and Malunggay (Mung Bean Stew with Dried Anchovies)\n  ","count":"Lunch / Dinner · 1,520 dishes","cells":28,"chips":1,"cheapest":9,"meatChips":10,"dietLine":"Diet None (every dish) ⚙️ Change","receipt":"Lunes₱66.40\n      \n        Tanghalian: Monggo Guisado with Dilis and Malunggay (","hint":"Drag a dish into a slot, or tap a dish then tap a slot.","slots":"{\"Lunes|Tanghalian\":[1709]}"}
+after random week: {"picker":60,"pickerText":"Monggo Guisado with Dilis and Malunggay (Mung Bean Stew with Dried Anchovies)\n  ","count":"Lunch / Dinner · 1,520 dishes","cells":28,"chips":14,"cheapest":9,"meatChips":10,"dietLine":"Diet None (every dish) ⚙️ Change","receipt":"Lunes₱778.40\n      \n        Tanghalian: Meatloaf Recipe\n        ₱456.80\n        ","hint":"Drag a dish into a slot, or tap a dish then tap a slot.","slots":"{\"Lunes|Tanghalian\":[2685],\"Lunes|Hapunan\":[910],\"Martes|Tanghalian\":[1970],\"Martes|Hapunan\":[987],\"Miyerkules|Tanghalia"}
+budget: Planned ₱1,499 of ₱1,500 for 4 people: most nutritious dishes that fit.
+per ingredient: {"picker":60,"pickerText":"Monggo Guisado with Dilis and Malunggay (Mung Bean Stew with Dried Anchovies)\n  ","count":"Lunch / Dinner · 1,520 dishes","cells":28,"chips":14,"cheapest":9,"meatChips":10,"dietLine":"Diet None (every dish) ⚙️ Change","receipt":"Adding up ingredients for 14 dishes…","hint":"Drag a dish into a slot, or tap a dish then tap a slot.","slots":"{\"Lunes|Tanghalian\":[867],\"Lunes|Hapunan\":[2197],\"Martes|Tanghalian\":[1709],\"Martes|Hapunan\":[307],\"Miyerkules|Tanghalia"}
+
+===== phone returning =====
+scripts: weather.js,mydish.js,planner.js,finder.js,alerts.js,share.js,facts.js,taste.js,games.js,kitchen.js,settings.js,tour.js,app.js
+globals: {"dietsOk":"function","meatOk":"function","settingsDiets":"function","initPlannerDrag":"function","groupGrocery":"function","recipes":1935}
+open: {"picker":60,"pickerText":"Monggo Guisado with Dilis and Malunggay (Mung Bean Stew with Dried Anchovies)\n  ","count":"All · 1,573 dishes","cells":28,"chips":4,"cheapest":9,"meatChips":10,"dietLine":"Diet None (every dish) ⚙️ Change","receipt":"Lunes₱533.60\n      \n        Almusal: Recipe 99999\n        —\n        Tanghalian: ","hint":"Drag a dish into a slot, or tap a dish then tap a slot.","slots":"{\"Lunes|Tanghalian\":[1,2],\"Martes|Hapunan\":[3],\"Lunes|Almusal\":[99999]}"}
+after tap-tap: {"picker":60,"pickerText":"Monggo Guisado with Dilis and Malunggay (Mung Bean Stew with Dried Anchovies)\n  ","count":"Lunch / Dinner · 1,397 dishes","cells":28,"chips":5,"cheapest":9,"meatChips":10,"dietLine":"Diet None (every dish) ⚙️ Change","receipt":"Lunes₱600.00\n      \n        Almusal: Recipe 99999\n        —\n        Tanghalian: ","hint":"Drag a dish into a slot, or tap a dish then tap a slot.","slots":"{\"Lunes|Tanghalian\":[1,2,1709],\"Martes|Hapunan\":[3],\"Lunes|Almusal\":[99999]}"}
+after random week: {"picker":60,"pickerText":"Monggo Guisado with Dilis and Malunggay (Mung Bean Stew with Dried Anchovies)\n  ","count":"Lunch / Dinner · 1,397 dishes","cells":28,"chips":15,"cheapest":9,"meatChips":10,"dietLine":"Diet None (every dish) ⚙️ Change","receipt":"Lunes₱799.60\n      \n        Almusal: Recipe 99999\n        —\n        Tanghalian: ","hint":"Drag a dish into a slot, or tap a dish then tap a slot.","slots":"{\"Lunes|Almusal\":[99999],\"Lunes|Tanghalian\":[349],\"Lunes|Hapunan\":[1718],\"Martes|Tanghalian\":[29],\"Martes|Hapunan\":[489]"}
+budget: Planned ₱1,499 of ₱1,500 for 4 people: most nutritious dishes that fit.
+per ingredient: {"picker":60,"pickerText":"Monggo Guisado with Dilis and Malunggay (Mung Bean Stew with Dried Anchovies)\n  ","count":"Lunch / Dinner · 1,397 dishes","cells":28,"chips":14,"cheapest":9,"meatChips":10,"dietLine":"Diet None (every dish) ⚙️ Change","receipt":"🐟 Fish & seafood₱279.28\n    Mussels (tahong), in shell 1.4 kg · 2 dishes\n    ₱1","hint":"Drag a dish into a slot, or tap a dish then tap a slot.","slots":"{\"Lunes|Tanghalian\":[867],\"Lunes|Hapunan\":[2197],\"Martes|Tanghalian\":[1709],\"Martes|Hapunan\":[307],\"Miyerkules|Tanghalia"}
+
+===== desktop fresh =====
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://john3162000.github.io/website_business/", waiting until "networkidle"
+
+    at run (/home/runner/work/website_business/website_business/demo/planner-debug.mjs:16:14)
+    at async file:///home/runner/work/website_business/website_business/demo/planner-debug.mjs:71:1 {
+  name: 'TimeoutError'
+}
+
+Node.js v22.23.3
