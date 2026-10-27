@@ -6,9 +6,9 @@ captured 05-settings-tagalog
 diets: ["lowcal","gout"] lang: fil
 captured 06-browse-tagalog-diets
 browse with lowcal+gout: 556 recipes found
-browse pork: 451 recipes found Lechon Sauce Recipe | Lechon Manok Sauce Recipe | Dinaldalem Recipe | Chicken Igado Recipe | Dinuguan Laman-Loob Recipe (Blood Stew) | Igado Recipe
+browse pork: 438 recipes found Dinaldalem Recipe | Dinuguan Laman-Loob Recipe (Blood Stew) | Igado Recipe | Masarsang Menudo | Pancit Chami Tamis Anghang Recipe | Higadillo Recipe (Pork and Liver Stew)
 captured 07-browse-pork-fish
-browse pork+fish: 799 recipes found
+browse pork+fish: 786 recipes found
 width browse: 390 vs 390
 captured 08-planner-diet-line
 captured 09-receipt-by-section
