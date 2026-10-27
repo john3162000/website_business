@@ -1,0 +1,37 @@
+captured 01-header-gear
+captured 02-settings-en
+captured 03-settings-two-diets
+captured 04-settings-suggest-dark-weather
+captured 05-settings-tagalog
+diets: ["lowcal","gout"] lang: fil
+captured 06-browse-tagalog-diets
+browse with lowcal+gout: 556 recipes found
+browse pork: 451 recipes found Lechon Sauce Recipe | Lechon Manok Sauce Recipe | Dinaldalem Recipe | Chicken Igado Recipe | Dinuguan Laman-Loob Recipe (Blood Stew) | Igado Recipe
+captured 07-browse-pork-fish
+browse pork+fish: 799 recipes found
+width browse: 390 vs 390
+captured 08-planner-diet-line
+captured 09-receipt-by-section
+sections: 🐟 Fish & seafood · 🥩 Meat & poultry · 🥬 Vegetables · 🍌 Fruit · 🥚 Eggs & dairy · 🍞 Bread · 🧂 Seasonings & condiments · 🍚 Rice & pantry
+captured 11-grocery-html
+width planner: 390 vs 390
+captured 12-touch-drag-lit-slots
+touch drag: {"lit":14,"dim":true} plan: {"Lunes|Tanghalian":[1709]} expect id 1709
+swipe started a drag? false
+captured 13-after-touch-drop
+captured 14-desktop-mouse-drag
+desktop lit: 
+desktop plan after drop: {}
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+locator.boundingBox: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator('.plan-chip[data-from="Martes|Meryenda"]').first()
+
+    at /home/runner/work/website_business/website_business/demo/preview-settings.mjs:135:82 {
+  name: 'TimeoutError'
+}
+
+Node.js v22.23.4
