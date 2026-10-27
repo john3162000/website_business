@@ -23,5 +23,5 @@ desktop src/dst: {"sy":725,"dy":340}
 captured 14-desktop-mouse-drag
 desktop lit: Lunes|Meryenda,Martes|Meryenda,Miyerkules|Meryenda,Huwebes|Meryenda,Biyernes|Meryenda,Sabado|Meryenda,Linggo|Meryenda
 desktop plan after drop: {"Martes|Meryenda":[895]}
-desktop plan after chip move: {"Martes|Meryenda":[895]}
+desktop plan after chip move: {"Sabado|Meryenda":[895]}
 captured 15-desktop-settings-dark
