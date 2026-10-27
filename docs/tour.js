@@ -18,13 +18,13 @@ const TOUR_STEPS = [
   { section: "browse", target: ".kitchen-bar", title: "Ang kusina ko 🍳",
     text: "Walang oven? I-tap ang “Ang kusina ko” at piliin ang mga gamit mo (air fryer, rice cooker, ihawan…). Itatago namin ang mga ulam na hindi mo kayang lutuin." },
   { section: "planner", target: "#plan-grid", title: "Weekly Planner",
-    text: "I-plan ang buong linggo. May 🎲 Random week, Budget planner (e.g. “₱1,500 for 4 people”), at Diet filter: diabetic, heart, kidney, gout at iba pa." },
+    text: "I-plan ang buong linggo: i-drag ang ulam sa slot (sa phone, pindutin nang matagal). May 🎲 Random week, Budget planner (“₱1,500 for 4 people”) at grocery list per palengke section." },
   { section: "finder", target: "#finder-cats", title: "Anong lulutuin?",
     text: "Piliin mo lang yung meron ka sa ref o kusina, lalabas yung mga pwede mong lutuin at kung ano pa ang kulang." },
   { section: "game", target: ".game-tabs", title: "Laro tayo! 🎮",
     text: "I-rate ang ulam o pumili sa Versus (Sinigang vs Adobo?). Habang naglalaro ka, natututunan namin ang panlasa mo, tapos sa Recipes, uunahin na ang mga ulam na “bagay sa'yo”." },
   { section: "home", target: null, title: "Ayan, ready ka na! 🍳",
-    text: "Sa bawat recipe, pwede mong i-☆ favorite (lalabas sa Planner) at i-share sa Messenger. Pindutin ang “?” sa taas kung gusto mong ulitin 'tong tour." },
+    text: "Nasa ⚙️ sa taas ang Settings: English o Tagalog, diet (pwedeng marami), kusina, dark mode at weather. Pindutin ang “?” para ulitin 'tong tour." },
 ];
 
 // ── Pure helpers ──

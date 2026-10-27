@@ -37,6 +37,12 @@ const PATTERNS: Record<Appliance, RegExp> = {
 // "Steamed rice" and "serve with steamed rice" are side dishes, not steaming the dish.
 const STEAMED_RICE = /\bsteamed (white |jasmine )?rice\b|\bsteam(ing)? hot\b/g;
 
+/** The words in the steps that name an appliance ("bake", "air fryer"), for method notes. */
+export function applianceWords(instructions: string[]): string[] {
+  const text = instructions.join("\n").toLowerCase().replace(STEAMED_RICE, " ");
+  return APPLIANCES.flatMap((a) => [...text.matchAll(new RegExp(PATTERNS[a].source, "g"))].map((m) => m[0]));
+}
+
 /** The appliances named in a recipe's title or steps, in APPLIANCES order. */
 export function detectAppliances(title: string, instructions: string[] = []): Appliance[] {
   const text = `${title}\n${instructions.join("\n")}`.toLowerCase().replace(STEAMED_RICE, " ");

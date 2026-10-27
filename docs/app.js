@@ -333,7 +333,10 @@ function ingredientRows(lines) {
 function buildModal(r, instructions, lines) {
   const nutr = r.nutrition;
   const ingRows = lines ? ingredientRows(lines) : `<p class="text-sm text-gray-400">Loading ingredients…</p>`;
-  const steps = (instructions && instructions.length ? instructions : ["Full instructions are on the original recipe page."])
+  // Newer recipes keep no copy of the author's steps: point to the original page instead.
+  const steps = !(instructions && instructions.length) && r.url
+    ? `<li><a href="${escapeHtml(r.url)}" target="_blank" rel="noopener" class="inline-block bg-green-800 hover:bg-green-700 text-amber-50 font-semibold text-sm px-4 py-2 rounded-full">📖 See the steps on Panlasang Pinoy ↗</a></li>`
+    : (instructions && instructions.length ? instructions : ["Full instructions are on the original recipe page."])
     .map((s, i) => `
     <li class="flex gap-4">
       <span class="flex-shrink-0 w-8 h-8 bg-green-700 text-white rounded-full flex items-center justify-center text-sm font-bold">${i + 1}</span>
@@ -621,6 +624,7 @@ function ulamMovers(list) {
 function renderPriceForYou(fellById = new Map()) {
   const box = document.getElementById("prices-foryou");
   if (!box || typeof currentTasteModel !== "function") return;
+  if (typeof suggestOn === "function" && !suggestOn()) { box.classList.add("hidden"); return; }
   const model = currentTasteModel("ulam");
   if (!model) {
     box.innerHTML = `<p class="text-sm text-gray-600">🧠 Gusto mo ng murang ulam na bagay sa panlasa mo? <button onclick="showSection('game')" class="font-semibold text-green-800 hover:underline">Maglaro sa Laro</button> para matuto ang app.</p>`;
@@ -694,7 +698,9 @@ let BROWSE_MODEL = null; // ulam profile (or meryenda when that's all there is);
 let BROWSE_MODELS = {};
 let forYouDefaulted = false;
 function syncForYouSort() {
-  BROWSE_MODELS = typeof currentTasteModel === "function" ? { ulam: currentTasteModel("ulam"), meryenda: currentTasteModel("meryenda") } : {};
+  // "Suggest ka pa" off in Settings: no taste sort or badges.
+  const suggest = typeof suggestOn !== "function" || suggestOn();
+  BROWSE_MODELS = suggest && typeof currentTasteModel === "function" ? { ulam: currentTasteModel("ulam"), meryenda: currentTasteModel("meryenda") } : {};
   BROWSE_MODEL = BROWSE_MODELS.ulam || BROWSE_MODELS.meryenda || null;
   const sel = document.getElementById("sort-select");
   const opt = sel.querySelector('option[value="forYou"]');
@@ -733,6 +739,8 @@ function filterRecipes() {
 
   const filtered = RECIPES.filter((r) => {
     if (typeof kitchenOk === "function" && !kitchenOk(r)) return false;
+    // Settings: every chosen diet, and the Fish / Chicken / Pork / Beef chips (planner.js helpers).
+    if (!dietsOk(r, activeDiets()) || !meatOk(r, activeMeats())) return false;
     if (r.protein < minProt) return false;
     // Calorie filters need trustworthy calories: a dish missing most nutrition data would look "light".
     if (kcalFilter && (!kcalKnown(r) || r.calories < minKcal || r.calories > maxKcal)) return false;
