@@ -10,7 +10,7 @@
  */
 import { isUnit, parseQuantity, type ParsedQuantity } from "./quantity.ts";
 import type { Alias, Canonical } from "./types.ts";
-import { detectAppliances, type Appliance } from "./appliances.ts";
+import { applianceWords, detectAppliances, type Appliance } from "./appliances.ts";
 
 export interface Nutrients {
   kcal: number; protein: number; fat: number; carbs: number; sodium: number;
@@ -410,6 +410,25 @@ function marinadeFate(steps: string, title: string, fried: boolean): { kept: num
     return { kept: MARINADE_DRAINED, reason: `marinade is usually drained before ${frying ? "frying" : "grilling"}: ≈${MARINADE_DRAINED * 100}% counted` };
   }
   return { kept: 1, reason: "marinade stays with the dish" };
+}
+
+// What the engine reads in the cooking steps: frying, baking, grilling, basting and what happens to a marinade.
+const STEP_SIGNALS = [DEEP_FRY_STEP, PAN_FRY_STEP, BAKE_VETO, MARINADE_DISCARD, MARINADE_REUSED, /\bbast(e|ing)\b/i, FRY_WORD, GRILLED];
+
+/**
+ * Method notes: only the short phrases in a recipe's steps that the engine reads (frying, oven,
+ * grill, steaming, what happens to the marinade, appliances), not the steps themselves. Recipes
+ * added from Panlasang Pinoy keep these instead of copying the author's instructions; the site
+ * links to the original page for the full method. Joined with ". " so no rule reads across two
+ * notes. Compiling with [methodNotes(steps)] gives the same frying, marinade and appliance
+ * results as compiling with the steps.
+ */
+export function methodNotes(instructions: string[]): string {
+  // Read the steps as compileRecipe does; "no-grill" isn't grilling (see marinadeFate).
+  const text = instructions.join(" ").replace(/\bno[- ]grill\b/gi, " ");
+  const found = STEP_SIGNALS.flatMap((re) => [...text.matchAll(new RegExp(re.source, re.flags.includes("g") ? re.flags : `${re.flags}g`))].map((m) => m[0]));
+  const notes = [...found, ...applianceWords(instructions)].map((s) => s.replace(/\s+/g, " ").trim().toLowerCase()).filter(Boolean);
+  return [...new Set(notes)].join(". ");
 }
 
 /** Uptake as a fraction of the fried food's weight: [low, high] (≈, Bognár / frying literature). */

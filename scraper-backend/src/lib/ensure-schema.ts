@@ -24,7 +24,8 @@ export function ensureNutritionColumns(): Promise<void> {
 }
 
 /**
- * Recipe structured-data columns (prisma/migrations/20261015000000_recipe_structured_data).
+ * Recipe structured-data columns (prisma/migrations/20261015000000_recipe_structured_data,
+ * 20261027000000_recipe_method_notes).
  * Prisma selects every scalar column on create/update/include, so any route that
  * touches Recipe or RecipeIngredient must await this before its first query.
  */
@@ -38,7 +39,8 @@ export function ensureRecipeColumns(): Promise<void> {
         ADD COLUMN IF NOT EXISTS "cuisine" TEXT,
         ADD COLUMN IF NOT EXISTS "yieldText" TEXT,
         ADD COLUMN IF NOT EXISTS "refNutrition" JSONB,
-        ADD COLUMN IF NOT EXISTS "structuredAt" TIMESTAMP(3)`);
+        ADD COLUMN IF NOT EXISTS "structuredAt" TIMESTAMP(3),
+        ADD COLUMN IF NOT EXISTS "methodNotes" TEXT`);
     await prisma.$executeRawUnsafe(`ALTER TABLE "RecipeIngredient" ADD COLUMN IF NOT EXISTS "groupName" TEXT`);
   })().catch((err) => {
     recipeColumns = null; // retry on the next request

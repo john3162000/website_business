@@ -40,6 +40,9 @@ model Recipe {
   refNutrition Json?
   /// When the structured data was last read from the page (null: not yet).
   structuredAt DateTime?
+  /// Recipes added since 2026-10-27 keep only these short method phrases ("deep fry. discard the
+  /// marinade. oven"), not the author's steps; the site links to the original page for the method.
+  methodNotes  String?             @db.Text
   ingredients  RecipeIngredient[]
   instructions RecipeInstruction[]
 }

@@ -40,7 +40,7 @@ async function loadInputs(onlyId: number | null, pricesSince: Date) {
       where: onlyId ? { id: onlyId } : undefined,
       orderBy: { id: "asc" },
       select: {
-        id: true, title: true, servings: true, course: true, yieldText: true, refNutrition: true,
+        id: true, title: true, servings: true, course: true, yieldText: true, refNutrition: true, methodNotes: true,
         ingredients: { orderBy: { id: "asc" }, select: { id: true, name: true, amount: true, unit: true, rawText: true, groupName: true } },
         instructions: { orderBy: { stepNumber: "asc" }, select: { text: true } },
       },
@@ -90,7 +90,8 @@ function compileAll(recipes: Recipes, fnri: Map<string, FnriFood>, da: Map<strin
     const c = compileRecipe({
       id: r.id, title: r.title, servings: r.servings,
       ingredients: r.ingredients.map((i) => ({ ...i, rawText: i.rawText.replace(/^▢\s*/, ""), group: i.groupName })),
-      instructions: r.instructions.map((s) => s.text),
+      // Newer recipes keep method notes instead of the steps (see methodNotes in compile.ts).
+      instructions: r.instructions.length ? r.instructions.map((s) => s.text) : r.methodNotes ? [r.methodNotes] : [],
     }, ctx);
     const ref = r.refNutrition as RefNutrition | null;
     const scale = yieldCount(r.yieldText) / c.servings;
