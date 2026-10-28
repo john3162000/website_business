@@ -1,21 +1,21 @@
 captured 1-browse-today
 today: Special picks · In 3 days · Oct 31 – Nov 2 | All Saints' Day (Undas)
-bagongtaon: Lechon Sauce | Cassava Suman | Sardines with Sotanghon and Pechay | Shared Recipe. Maja Blanca | Fruit Salad | Leche Flan | Masarsang Menudo | Pancit Chami Tamis Anghang
-sinulog: Lechon Sauce | Lechon Manok Sauce | Kilawing Puso ng Saging | Dinuguan Laman-Loob Recipe (Blood Stew) | Homemade Lechon Paksiw | Crispy Ulo and Lechon Sauce | Lechon Manok | Pancit Bihon with Lechon Kawali
-cny: Sardines Fish Ball with Sweet and Sour Sauce | Chicken Pancit Habhab | Pancit Chami Tamis Anghang | Chicken Dynamite Lumpia | Lumpiang Sariwa with Fresh Lumpia Wrapper | How to Cook Special Pancit Canton ala Corazon | Chicken Mami | Chicken Mami
-valentines: Liver Steak | Burger Steak Sardinas | Cassava Cake Recipe Creamy and Cheesy Version | Steamed Cassava Cake | Monggo with Hibi (Mung beans with small dried shrimp) | Leche Flan | Sauteed Flank Steak with Bok Choy and String Beans | Puto Cake
-eidfitr: Chicken Kare-kare sa Gata | Kare Kare Tripas | Chickpea and Spinach Curry | Corned Beef Omelet | Corned Beef with Cabbage and Potato | Lo Mein with Beef and Broccoli | Corned Beef and Potato Casserole | Christmas Chicken Curry
-kuwaresma: Monggo Guisado with Dilis and Malunggay (Mung Bean Stew with Dried Anchovies) | Spicy Monggo with Tinapa | Ginisang Sardinas Recipe (Sautéed Sardines) | Lumpiang Gulay (Vegetable Egg Roll Recipe) | Monggo with Tuyo Recipe (Mung Beans with Salted Fish) | Sardines Fish Ball with Sweet and Sour Sauce | Tipid Sarap Monggo | Ginisang Monggo with Kalabasa
-semanasanta: Monggo Guisado with Dilis and Malunggay (Mung Bean Stew with Dried Anchovies) | Spicy Monggo with Tinapa | Ginisang Sardinas Recipe (Sautéed Sardines) | Lumpiang Gulay (Vegetable Egg Roll Recipe) | Monggo with Tuyo Recipe (Mung Beans with Salted Fish) | Sardines Fish Ball with Sweet and Sour Sauce | Tipid Sarap Monggo | Ginisang Monggo with Kalabasa
-floresdemayo: Cassava Suman | Shared Recipe. Maja Blanca | Chicken Pancit Habhab | Leche Puto | Buko Ice Candy | Kutsinta | Puto Cake | Air Fryer Longganisa Frittata
-mothersday: Ube Pichi Pichi | Cassava Cake Recipe Creamy and Cheesy Version | Baked Chicken Nuggets | Steamed Cassava Cake | Monggo with Hibi (Mung beans with small dried shrimp) | Fruit Salad | Leche Flan | Puto Cake
-eidadha: Chicken Kare-kare sa Gata | Kare Kare Tripas | Chickpea and Spinach Curry | Luncheon Meat Caldereta | Corned Beef Omelet | Chicken Caldereta | Corned Beef with Cabbage and Potato | Lo Mein with Beef and Broccoli
-kalayaan: Lechon Sauce | Lechon Manok Sauce | Bok Choy Adobo | Chicken Liver and Gizzard Adobo | Chicken Pancit Habhab | Leche Flan | Leche Puto | Pancit Chami Tamis Anghang
-fathersday: Grilled Liver Bistek | Chicken Kare-kare sa Gata | Grilled Filipino Sweet Sausage | Crispy Pata Sisig | Kare Kare Tripas | Grilled Mussels | Luncheon Meat Caldereta | BBQ Chicken Wrap
-undas: Cassava Suman | Nilupak | Ginataang Monggo with Tofu and Malunggay | Shared Recipe. Maja Blanca | Cassava Cake Recipe Creamy and Cheesy Version | Chicken Pancit Habhab | Steamed Cassava Cake | Leche Puto
-pasko: Lechon Sauce | Lechon Manok Sauce | Chicken Pancit Habhab | Fruit Salad | Leche Flan | Masarsang Menudo | Pancit Chami Tamis Anghang | Chicken Dynamite Lumpia
-handaan: Shared Recipe. Maja Blanca | Cassava Cake Recipe Creamy and Cheesy Version | Chicken Pancit Habhab | Steamed Cassava Cake | Fruit Salad | Leche Flan | Leche Puto | Kutsinta
-fiesta: Lechon Sauce | Lechon Manok Sauce | Cassava Suman | Shared Recipe. Maja Blanca | Chicken Pancit Habhab | Dinuguan Laman-Loob Recipe (Blood Stew) | Fruit Salad | Leche Flan
+bagongtaon: Pancit Chami Tamis Anghang | Garlic Bihon | Sardines with Sotanghon and Pechay | Meaty Spaghetti | Biko | Sapin Sapin | Kalamay hati | Tikoy
+sinulog: Homemade Lechon Paksiw | Kilawing Puso ng Saging | Dinuguan Laman-Loob Recipe (Blood Stew) | Tokwa at Baboy Humba | Bam-I | Pork Siomai | Kinilaw na Tuna | Pamplina Recipe (Pork and Chorizo Soup with Beans)
+cny: Tikoy | Chicken Pancit Habhab | Garlic Bihon | Siopao Asado | Pork Siomai | Pork Dumpling | Chicken Asado | Yang Chow Fried Rice
+valentines: Beef Salpicao | Sirloin Beef Steak Tagalog | Breakfast T-Bone Steak with Fried Eggs | How to Make Authentic Carbonara | Pinoy Baked Whole Wheat Penne Pasta | Rotini Chicken Alfredo | Creamy Baked Salmon | Sinigang na Salmon
+eidfitr: Lo Mein with Beef and Broccoli | Kalderetang Kambing | Chickpea and Spinach Curry | Chicken Kare-kare sa Gata | Beef Short Rib Kare Kare | Spicy Calderetang Kambing with Peanut Butter (Goat Meat Caldereta) | Christmas Chicken Curry | Bulalo Kare-Kare
+kuwaresma: Paksiw na Isda | Sinigang na Isda sa Kamias (Fish Sinigang) | Manila Clam and Mussel Tinola | Escabeche | Spicy Monggo with Tinapa | Ginataang Langka with Malunggay and Daing | Monggo with Tuyo Recipe (Mung Beans with Salted Fish) | Tinolang Bangus
+semanasanta: Binignit | Ginataang Monggo with Tofu and Malunggay | Pork Ginataan with Squash and String Beans | How to Make Bilo-bilo | Paksiw na Isda | Sinigang na Isda sa Kamias (Fish Sinigang) | Escabeche | Spicy Monggo with Tinapa
+floresdemayo: Chicken Pancit Habhab | Air Fryer Longganisa Frittata | Cassava Suman | Leche Puto | Kutsinta | Biko | Sapin Sapin | Shared Recipe. Maja Blanca
+mothersday: Chicken Kare-kare sa Gata | Creamy Lengua with Corn | Classic Beef Morcon | Luncheon Meat Caldereta | Pork Giniling Kaldereta | Special Chicken Embutido Recipe (Filipino Chicken Meatloaf) | Creamy Baked Salmon | Sinigang na Salmon
+eidadha: Kalderetang Kambing | Beef Kaldereta | Chicken Caldereta | Lo Mein with Beef and Broccoli | Nilagang Baka | Chickpea and Spinach Curry | Chicken Kare-kare sa Gata | Spicy Calderetang Kambing with Peanut Butter (Goat Meat Caldereta)
+kalayaan: Bok Choy Adobo | Sinigang na Isda sa Kamias (Fish Sinigang) | Chicken Kare-kare sa Gata | Homemade Lechon Paksiw | Crispy Pata Sisig | Chicken Pancit Habhab | Chicken Dynamite Lumpia | Chicken Tinola
+fathersday: Ginisang Monggo with Inihaw na Liempo | Grilled Liver Bistek | Asian Chicken Barbecue Submarine Sandwich | BBQ Chicken Wrap | Sizzling Liempo Sisig | Crispy Pata Sisig | Crispy Pata Dinakdakan | Pancit Bihon with Lechon Kawali
+undas: Cassava Suman | Biko | Palitaw | Chicken Gizzard Ginataan | Ginataang Monggo with Tofu and Malunggay | How to Make Bilo-bilo | Leche Puto | Kutsinta
+pasko: Christmas Chicken Curry | Noche Buena Lumpiang Shanghai | Chicken and Ham Sopas | Homemade Lechon Paksiw | Special Chicken Embutido Recipe (Filipino Chicken Meatloaf) | Classic Beef Morcon | Bibingka | Puto Bumbong
+handaan: Chicken Pancit Habhab | Garlic Bihon | Palabok | Meaty Spaghetti | Chicken Dynamite Lumpia | Longanisa Lumpiang Shanghai | Special Chicken Embutido Recipe (Filipino Chicken Meatloaf) | Masarsang Menudo
+fiesta: Homemade Lechon Paksiw | Chicken Kare-kare sa Gata | Pork Giniling Kaldereta | Luncheon Meat Caldereta | Masarsang Menudo | Special Chicken Afritada | Chicken Mechado | Special Chicken Embutido Recipe (Filipino Chicken Meatloaf)
 captured 2-pasko
 captured 3-bagongtaon-tagalog
 captured 4-semanasanta
