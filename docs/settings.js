@@ -157,6 +157,7 @@ function settingsChanged() {
   if (!document.getElementById("settings-dialog").classList.contains("hidden")) renderSettings();
   if (typeof RECIPES !== "undefined" && RECIPES.length) {
     if (typeof filterRecipes === "function") filterRecipes();
+    if (typeof renderOccasion === "function") renderOccasion();
     if (typeof renderPicker === "function" && document.getElementById("plan-picker")) renderPicker();
     if (typeof renderReceipt === "function" && document.getElementById("plan-receipt")) renderReceipt();
     if (typeof renderPriceForYou === "function") renderPriceForYou(typeof moversFell !== "undefined" ? moversFell : new Map());
