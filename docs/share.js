@@ -1,5 +1,5 @@
-// Share a recipe as one picture: photo, cost, sulit meter, nutrition facts, ingredients with
-// prices and the cooking steps, drawn on a canvas in the FARM2FIGURE style. On phones the
+// Share a recipe as one picture: photo (credited), cost, sulit meter, nutrition facts, ingredients
+// with prices, and where to find the steps (the source site), drawn on a canvas in the FARM2FIGURE style. On phones the
 // share sheet sends it to Messenger (or anywhere); elsewhere the picture can be saved and the
 // link copied. Uses app.js: RECIPES, MODAL_DATA, sulitLevel, DRV, LATEST_DA_DATE, formatDate.
 // docs/share.test.mjs tests the pure helpers.
@@ -11,6 +11,17 @@ const SHARE_C = { forest: "#163F2E", green: "#2F7A55", cream: "#F8F4EA", gold: "
 // ── Pure helpers ──
 
 /** The link that opens this recipe on the site. */
+// Partner recipe sites: we show their photo (linked) and send "Paano lutuin?" clicks to them;
+// their steps are never shown here.
+const RECIPE_SOURCES = { "panlasangpinoy.com": "Panlasang Pinoy", "kawalingpinoy.com": "Kawaling Pinoy" };
+
+/** The site a recipe comes from: { name, host } ("Panlasang Pinoy", "panlasangpinoy.com"), or null. */
+function recipeSource(url) {
+  let host;
+  try { host = new URL(url).hostname.replace(/^www\./, ""); } catch { return null; }
+  return { name: RECIPE_SOURCES[host] || host, host };
+}
+
 function recipeLink(id) {
   return `${SITE_URL}#recipe=${id}`;
 }
@@ -66,8 +77,9 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
 }
 
-/** Draws the share card; returns a PNG Blob. `lines` and `steps` come from the open pop-up. */
-async function drawRecipeCard(r, lines, steps) {
+/** Draws the share card; returns a PNG Blob. `lines` come from the open pop-up. */
+async function drawRecipeCard(r, lines) {
+  const src = recipeSource(r.url);
   await Promise.all(["600 60px Fraunces", "400 28px Inter", "700 28px Inter"].map((f) => document.fonts?.load(f).catch(() => {})));
   const [photo, logo] = await Promise.all([loadImage(r.img), loadImage("logo.png")]);
   const canvas = document.createElement("canvas");
@@ -92,6 +104,13 @@ async function drawRecipeCard(r, lines, steps) {
     const h = 620, s = Math.max(SHARE_W / photo.width, h / photo.height);
     const sw = SHARE_W / s, sh = h / s;
     ctx.drawImage(photo, (photo.width - sw) / 2, (photo.height - sh) / 2, sw, sh, 0, y, SHARE_W, h);
+    if (src) {
+      const credit = `📷 ${src.name}`;
+      ctx.font = sans(24, 700);
+      const w = ctx.measureText(credit).width + 32;
+      ctx.fillStyle = "rgba(22, 63, 46, .82)"; roundRect(ctx, SHARE_W - SHARE_PAD - w, y + h - 64, w, 44, 22); ctx.fill();
+      text(credit, SHARE_W - SHARE_PAD - w / 2, y + h - 34, sans(24, 700), SHARE_C.cream, "center");
+    }
     y += h;
   }
 
@@ -143,26 +162,19 @@ async function drawRecipeCard(r, lines, steps) {
   if (!ing.length) { text("See the recipe link for ingredients.", SHARE_PAD, y, sans(28), SHARE_C.muted); y += 40; }
   y += 40;
 
-  // Steps (long recipes are cut after a few thousand pixels; the link has the rest)
-  text("Paano lutuin", SHARE_PAD, y, serif(40), SHARE_C.forest); y += 54;
-  const MAX_Y = 5500;
-  let cut = false;
-  (steps || []).forEach((s, i) => {
-    if (cut) return;
-    const rows = wrap(s, sans(28), SHARE_W - 2 * SHARE_PAD - 70);
-    if (y + rows.length * 40 > MAX_Y) { cut = true; return; }
-    ctx.fillStyle = SHARE_C.forest; ctx.beginPath(); ctx.arc(SHARE_PAD + 22, y - 10, 22, 0, Math.PI * 2); ctx.fill();
-    text(String(i + 1), SHARE_PAD + 22, y - 1, sans(24, 700), SHARE_C.cream, "center");
-    rows.forEach((row) => { text(row, SHARE_PAD + 70, y, sans(28), SHARE_C.ink); y += 40; });
-    y += 18;
-  });
-  if (cut) { text("…full steps at the link below", SHARE_PAD + 70, y, sans(28), SHARE_C.muted); y += 50; }
+  // Paano lutuin: the steps live on the source site, never here.
+  if (src && r.url) {
+    ctx.fillStyle = SHARE_C.card; roundRect(ctx, SHARE_PAD, y - 10, SHARE_W - 2 * SHARE_PAD, 150, 24); ctx.fill();
+    text("Paano lutuin?", SHARE_PAD + 36, y + 44, serif(40), SHARE_C.forest);
+    text(`Full recipe on ${src.name}: ${r.url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}`.slice(0, 64), SHARE_PAD + 36, y + 96, sans(26, 700), SHARE_C.green);
+    y += 170;
+  }
 
   // Footer
   y += 30;
   ctx.fillStyle = SHARE_C.forest; ctx.fillRect(0, y, SHARE_W, 150);
   const date = typeof LATEST_DA_DATE !== "undefined" && LATEST_DA_DATE ? formatDate(LATEST_DA_DATE) : "today";
-  text(`Prices: DA, PSA and SM, ${date}. Recipe: Panlasang Pinoy.`, SHARE_PAD, y + 62, sans(24), "#B5D2BE");
+  text(`Prices: DA, PSA and SM, ${date}. Recipe and photo: ${src ? src.name : "Panlasang Pinoy"}.`, SHARE_PAD, y + 62, sans(24), "#B5D2BE");
   text(recipeLink(r.id).replace("https://", ""), SHARE_PAD, y + 104, sans(24, 700), "#E6C265");
   y += 150;
 
@@ -184,8 +196,8 @@ async function shareRecipe(id) {
   const btn = document.getElementById("share-btn");
   if (btn) btn.textContent = "Preparing picture…";
   try {
-    const data = typeof MODAL_DATA !== "undefined" && MODAL_DATA && MODAL_DATA.id === id ? MODAL_DATA : { lines: [], instructions: [] };
-    const blob = await drawRecipeCard(r, data.lines, data.instructions);
+    const data = typeof MODAL_DATA !== "undefined" && MODAL_DATA && MODAL_DATA.id === id ? MODAL_DATA : { lines: [] };
+    const blob = await drawRecipeCard(r, data.lines);
     const file = new File([blob], shareFileName(r), { type: "image/png" });
     const payload = { files: [file], title: r.title, text: `${shareText(r)} ${recipeLink(r.id)}` };
     // Phones: the share sheet lists Messenger with the picture attached.
