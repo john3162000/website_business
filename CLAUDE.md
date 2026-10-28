@@ -6,8 +6,9 @@ PR, the numbers, and what is still open), read `PROGRESS.md`.
 
 ## What it is
 
-**FARM2FIGURE** (formerly SarapSulit; the browser title still says "SarapSulit") ranks Filipino
-recipes from Panlasang Pinoy by **nutrition per peso**, using today's market prices. Users can
+**SarapSulit** is a sub-project of **FARM2FIGURE** (the owner's umbrella brand, whose logo and
+colours the site uses). Keep the name SarapSulit for the app (browser title, outreach letters).
+It ranks Filipino recipes from Panlasang Pinoy by **nutrition per peso**, using today's market prices. Users can
 browse dishes, see DA prices and how dish costs moved, build their own dish, plan a week (with a
 budget planner), find dishes from ingredients they have, set price alerts and share a recipe as
 a picture.
@@ -200,7 +201,6 @@ Last measured on 2026-10-16: 1,628 of 2,031 meals (80%) fully priced, 94% of lin
 - The Supabase password was once committed. It's removed from the repo but still in git history.
   The owner must rotate it, update `DATABASE_URL` and `DIRECT_URL` in Vercel, and set
   `ADMIN_TOKEN` in Vercel.
-- Rename the browser title to FARM2FIGURE? Waiting on the owner.
 - `/api/commodities` still lists one junk row named "b)", left from older DA data.
 - Price alerts only run while the site is open. Real push would need a service worker and a push
   server.
