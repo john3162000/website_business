@@ -56,6 +56,19 @@ test("picks: title fits the occasion, avoided and meat dishes left out, best val
   assert.deepEqual(ids("eidfitr"), [9, 10]); // no pork in the title or the ingredients
 });
 
+test("picks: no sauces, the most typical dishes first, and a mix before repeats", () => {
+  const R = (id, title, valueScore = 1, extra = {}) => ({ id, title, img: "x.jpg", costPerServing: 40, ranked: true, valueScore, ingredientNames: [], ...extra });
+  const recipes = [
+    R(1, "Fruit Salad", 9), R(2, "Lechon Sauce", 9), R(3, "Chicken Pancit", 8), R(4, "Pancit Bihon", 7),
+    R(5, "Hamon de Bola", 1), R(6, "Christmas Ham", 2), R(7, "Bibingka", 3), R(8, "Liver Spread Dip", 9, { category: "Sauce & Condiment" }),
+  ];
+  const ids = Array.from(occasionPicks(occ("pasko"), recipes, 8), (r) => r.id);
+  assert.ok(!ids.includes(2) && !ids.includes(8)); // sauces and dips aren't dishes
+  // "christmas", "hamon", "ham", … come before "pancit" and "fruit salad" in the Christmas list;
+  // each word gives one dish before any word gives a second.
+  assert.deepEqual(ids, [6, 5, 7, 1, 3, 4]);
+});
+
 test("date ranges read naturally", () => {
   assert.equal(occasionDates(new Date(2026, 10, 1), new Date(2026, 10, 2)), "Nov 1–2");
   assert.equal(occasionDates(new Date(2026, 11, 26), new Date(2027, 0, 1)), "Dec 26 – Jan 1");

@@ -36,7 +36,32 @@ const fromTable = (table, y, before = 0, after = 0) => {
   return [addDays(d, -before), addDays(d, after)];
 };
 
-const SEASON_PORK = /\b(pork|baboy|liempo|lechon|ham|hamon|bacon|tocino|longg?anisa|chicharr?on|sisig|dinuguan|embutido|hotdogs?|spam|bagnet|pata|menudo)\b/i;
+const SEASON_PORK = /\b(pork|baboy|liempo|lechon|ham|hamon|bacon|tocino|longg?anisa|chicharr?on|sisig|dinuguan|embutido|hotdogs?|spam|luncheon meat|bagnet|pata|menudo)\b/i;
+// Eid dishes: no processed meat (often not halal) or offal stews.
+const SEASON_EID_AVOID = /\b(corned|luncheon|tripas|tripe|liver|hotdogs?|sausages?)\b/i;
+// Sauces and dips aren't a dish to serve (Lechon Sauce).
+const SEASON_SAUCE = /\b(sauce|dip|dressing|gravy|marinade)\s*(recipe)?\s*$/i;
+
+/** The match words of an occasion, in the order they are listed (most typical first). */
+function matchWords(o) {
+  const src = o.match.source.replace(/^\\b\(/, "").replace(/\)\\b$/, "");
+  const words = [];
+  let depth = 0, cur = "";
+  for (const ch of src) {
+    if (ch === "(") depth++;
+    if (ch === ")") depth--;
+    if (ch === "|" && depth === 0) { words.push(cur); cur = ""; } else cur += ch;
+  }
+  words.push(cur);
+  return words.map((w) => new RegExp(`\\b(${w})\\b`, "i"));
+}
+
+/** How typical a title is for an occasion: the place of the first match word it contains (lower is better). */
+function typicalRank(o, title) {
+  o.words ??= matchWords(o);
+  const i = o.words.findIndex((re) => re.test(title));
+  return i < 0 ? Infinity : i;
+}
 
 /**
  * Each occasion: when it is (start and end for a year, or null), how many days ahead it starts
@@ -46,7 +71,7 @@ const SEASON_PORK = /\b(pork|baboy|liempo|lechon|ham|hamon|bacon|tocino|longg?an
 const OCCASIONS = [
   { key: "bagongtaon", icon: "🎆", tl: "Bagong Taon · Media Noche", en: "New Year · Media Noche",
     when: (y) => [SEASON_ymd(y, 12, 26), SEASON_ymd(y + 1, 1, 1)], lead: 0,
-    match: /\b(pancit|bihon|canton|sotanghon|miki|spaghetti|biko|sapin[- ]?sapin|kalamay|tikoy|suman|maja|ube halaya|fruit salad|buko salad|lechon|hamon|ham|embutido|lumpia|leche flan|graham|grapes?|kare[- ]?kare|menudo|kaldereta|caldereta|mechado|afritada)\b/i,
+    match: /\b(new year|media noche|pancit|bihon|canton|sotanghon|miki|spaghetti|biko|sapin[- ]?sapin|kalamay|tikoy|suman|maja|ube halaya|fruit salad|buko salad|lechon|hamon|ham|embutido|lumpia|leche flan|graham|grapes?|kare[- ]?kare|menudo|kaldereta|caldereta|mechado|afritada)\b/i,
     avoid: /\b(chicken|manok|fish|isda|tinola)\b/i,
     note: { tl: "Pansit para humaba ang buhay, malagkit na kakanin para magkadikit ang pamilya, at 12 bilog na prutas para swertehin. Iniiwasan ng iba ang manok at isda (“isang kahig, isang tuka”).",
       en: "Noodles for long life, sticky kakanin to keep the family together, and 12 round fruits for luck. Some skip chicken and fish (“scratch for scratch”)." } },
@@ -62,7 +87,8 @@ const OCCASIONS = [
       en: "Tikoy so good luck sticks, noodles for long life, and siopao, siomai and hopia from Binondo." } },
   { key: "valentines", icon: "💝", tl: "Valentine's Day", en: "Valentine's Day",
     when: (y) => [SEASON_ymd(y, 2, 14), SEASON_ymd(y, 2, 14)], lead: 7,
-    match: /\b(steak|beef salpicao|salpicao|carbonara|pasta|alfredo|baked salmon|salmon|shrimp|garlic butter|chocolate|choco|brownies?|cake|leche flan|panna cotta|cheesecake|strawberr\w*|red velvet|mango float|crema)\b/i,
+    match: /\b(salpicao|beef steak|ribeye|t-bone|sirloin|carbonara|pasta|alfredo|baked salmon|salmon|garlic butter shrimp|buttered shrimp|shrimp scampi|chocolate|choco|brownies?|red velvet|cheesecake|panna cotta|strawberr\w*|mango float|crema|leche flan)\b/i,
+    avoid: /\b(liver|sardin\w*|burger|monggo|munggo)\b/i,
     note: { tl: "Pang-date sa bahay: steak, pasta at matamis, mas mura kaysa sa restaurant.", en: "Date night at home: steak, pasta and something sweet, for less than a restaurant." } },
   { key: "eidfitr", icon: "🌙", tl: "Eid al-Fitr (Hari Raya)", en: "Eid al-Fitr (Hari Raya)",
     when: (y) => fromTable(EID_FITR, y, 0, 2), lead: 7, noPork: true,
@@ -85,7 +111,8 @@ const OCCASIONS = [
       en: "Month of flowers and fiestas: Pahiyas in Lucban (May 15) with kiping, longganisa and pancit habhab, plus summer coolers." } },
   { key: "mothersday", icon: "💐", tl: "Mother's Day", en: "Mother's Day",
     when: (y) => { const d = nthWeekday(y, 5, 0, 2); return [d, d]; }, lead: 7,
-    match: /\b(kare[- ]?kare|caldereta|kaldereta|lengua|morcon|embutido|baked|salmon|shrimp|prawns?|pasta|cake|leche flan|ube|buko pandan|fruit salad|sisig|crispy pata|lechon kawali)\b/i,
+    match: /\b(kare[- ]?kare|lengua|morcon|caldereta|kaldereta|embutido|baked salmon|salmon|garlic butter shrimp|buttered shrimp|baked mussels|crispy pata|lechon kawali|carbonara|pasta|ube|buko pandan|fruit salad|leche flan|cake)\b/i,
+    avoid: /\b(tripas|tripe|monggo|munggo|nuggets?)\b/i,
     note: { tl: "Ipagluto si Nanay ng espesyal: kare-kare, lengua o baked salmon, at panghimagas.", en: "Cook something special for Mom: kare-kare, lengua or baked salmon, and dessert." } },
   { key: "eidadha", icon: "🐐", tl: "Eid al-Adha", en: "Eid al-Adha",
     when: (y) => fromTable(EID_ADHA, y, 0, 2), lead: 7, noPork: true,
@@ -107,7 +134,7 @@ const OCCASIONS = [
       en: "Food to bring to the cemetery: suman, biko, ginataan and pancit for the whole family's vigil." } },
   { key: "pasko", icon: "🎄", tl: "Pasko · Noche Buena", en: "Christmas · Noche Buena",
     when: (y) => [SEASON_ymd(y, 12, 16), SEASON_ymd(y, 12, 25)], lead: 21,
-    match: /\b(hamon|ham|queso de bola|lechon|embutido|morcon|relleno|bibingka|puto bumbong|leche flan|fruit salad|buko salad|macaroni salad|spaghetti|kare[- ]?kare|menudo|caldereta|kaldereta|mechado|afritada|lengua|pancit|lumpia|shanghai|graham|buko pandan|ensaymada|tsokolate|hot chocolate|roast(ed)? chicken|cheese ?cake|mango float)\b/i,
+    match: /\b(christmas|noche buena|hamon|ham|queso de bola|lechon|embutido|morcon|relleno|bibingka|puto bumbong|leche flan|fruit salad|buko salad|macaroni salad|spaghetti|kare[- ]?kare|menudo|caldereta|kaldereta|mechado|afritada|lengua|pancit|lumpia|shanghai|graham|buko pandan|ensaymada|tsokolate|hot chocolate|roast(ed)? chicken|cheese ?cake|mango float)\b/i,
     note: { tl: "Simbang Gabi (Dis 16–24) na may bibingka at puto bumbong, tapos Noche Buena: hamon, queso de bola, spaghetti at fruit salad.",
       en: "Simbang Gabi (Dec 16–24) with bibingka and puto bumbong, then Noche Buena: ham, queso de bola, spaghetti and fruit salad." } },
   // No fixed date: always in the chips.
@@ -162,13 +189,23 @@ function occasionPicks(o, recipes, n = 8, ok = () => true, kindOf = () => "other
     .filter((r) => r.img && r.costPerServing > 0 && ok(r))
     .filter((r) => {
       const title = r.title || "";
+      if (r.category === "Sauce & Condiment" || SEASON_SAUCE.test(title)) return false;
       if (o.avoid && o.avoid.test(title)) return false;
-      if (o.noPork && (SEASON_PORK.test(title) || SEASON_PORK.test((r.ingredientNames || []).join(" | ")))) return false;
+      if (o.noPork && (SEASON_PORK.test(title) || SEASON_PORK.test((r.ingredientNames || []).join(" | ")) || SEASON_EID_AVOID.test(title))) return false;
       if (o.meatless && kindOf(r) === "karne") return false;
       return o.match.test(title);
     })
-    .sort((a, b) => (Number(b.ranked && !b.costIncomplete) - Number(a.ranked && !a.costIncomplete)) || (b.valueScore || 0) - (a.valueScore || 0))
-    .filter((r) => { const t = r.title.trim().toLowerCase(); if (seen.has(t)) return false; seen.add(t); return true; })
+    // The most typical dishes first (by the order of the match words), then complete prices and value.
+    .map((r) => ({ r, rank: typicalRank(o, r.title) }))
+    .sort((a, b) => a.rank - b.rank || (Number(b.r.ranked && !b.r.costIncomplete) - Number(a.r.ranked && !a.r.costIncomplete)) || (b.r.valueScore || 0) - (a.r.valueScore || 0))
+    .filter(({ r }) => { const t = r.title.trim().toLowerCase(); if (seen.has(t)) return false; seen.add(t); return true; })
+    // A mix: the best dish of each kind (bibingka, hamon, fruit salad, …) before a second of any.
+    .reduce((rounds, x, i, all) => {
+      const nth = all.slice(0, i).filter((y) => y.rank === x.rank).length;
+      (rounds[nth] ??= []).push(x.r);
+      return rounds;
+    }, [])
+    .flat()
     .slice(0, n);
 }
 
