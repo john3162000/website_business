@@ -178,6 +178,9 @@ owner's call).
   and a reason. Otherwise leave it unpriced and let `costGaps` flag the dish.
 - **Never delete recipes from the database.** Hide them instead.
 - **Don't copy recipe prose or photos.** New recipes store method notes and a photo link, not text.
+- **Recipe photos stay linked from the source site** (owner's decision, 2026-10-28) until the source asks
+  otherwise; take them down promptly on request. Fallback plan: drawn dish-type illustrations for every
+  dish, Wikimedia Commons (credited) photos for the best-known dishes, then the owner's own photos.
 
 ## Measuring (local, git-ignored)
 
