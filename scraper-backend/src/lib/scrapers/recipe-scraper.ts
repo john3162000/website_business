@@ -29,14 +29,29 @@ const POST_SITEMAPS = [
   `${BASE_URL}/post-sitemap3.xml`,
 ];
 
+// Sitemaps change rarely: a warm server instance reuses them for a while instead of
+// downloading them again for every chunk of 4 recipes.
+const SITEMAP_TTL_MS = 15 * 60_000;
+const sitemapCache = new Map<string, { at: number; urls: string[] }>();
+
+async function cached(key: string, load: () => Promise<string[]>): Promise<string[]> {
+  const hit = sitemapCache.get(key);
+  if (hit && Date.now() - hit.at < SITEMAP_TTL_MS) return hit.urls;
+  const urls = await load();
+  sitemapCache.set(key, { at: Date.now(), urls });
+  return urls;
+}
+
 /** The post sitemaps from the site's sitemap index, or the known three when it can't be read. */
 async function postSitemaps(): Promise<string[]> {
-  try {
-    const found = postSitemapsFromIndex(await fetchHtml(`${BASE_URL}/sitemap_index.xml`));
-    return found.length ? found : POST_SITEMAPS;
-  } catch {
-    return POST_SITEMAPS;
-  }
+  return cached("index", async () => {
+    try {
+      const found = postSitemapsFromIndex(await fetchHtml(`${BASE_URL}/sitemap_index.xml`));
+      return found.length ? found : POST_SITEMAPS;
+    } catch {
+      return POST_SITEMAPS;
+    }
+  });
 }
 const DELAY_MS = 1500;
 
@@ -147,7 +162,7 @@ async function scrapeRecipePage(url: string): Promise<ScrapedRecipe | null> {
 }
 
 async function getRecipeUrlsFromSitemap(sitemapUrl: string): Promise<string[]> {
-  return urlsFromSitemap(await fetchHtml(sitemapUrl), BASE_URL);
+  return cached(sitemapUrl, async () => urlsFromSitemap(await fetchHtml(sitemapUrl), BASE_URL));
 }
 
 // Cap on how many *new* recipes a single chunk scrapes — each one costs a
@@ -232,7 +247,7 @@ export async function scrapeRecipeChunk(
       continue;
     }
 
-    await prisma.recipe.create({
+    const created = await prisma.recipe.create({
       data: {
         title: scraped.title,
         url: scraped.url,
@@ -258,7 +273,12 @@ export async function scrapeRecipeChunk(
           })),
         },
       },
+    }).catch((err: unknown) => {
+      // Saved meanwhile by another run (unique url): skip it instead of failing the crawl.
+      if ((err as { code?: string }).code === "P2002") return null;
+      throw err;
     });
+    if (!created) { index++; continue; }
 
     saved++;
     newCount++;
