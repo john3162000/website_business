@@ -27,6 +27,29 @@ for (const width of [390]) {
       return { spill, page: document.documentElement.scrollWidth, wide: innermost.slice(0, 12).map(desc), chain: innermost[0] ? (() => { const out = []; for (let p = innermost[0]; p && p !== sec; p = p.parentElement) out.push(desc(p).slice(0, 110)); return out.slice(0, 10); })() : [] };
     });
     console.log(`\n[${width}px] ${s}: page width ${r.page}`);
+    // Hide one child at a time; when the page fits again, that child holds the culprit: go inside it.
+    const path = await page.evaluate(() => {
+      const W = window.innerWidth, wide = () => document.documentElement.scrollWidth > W + 1;
+      const name = (el) => `${el.tagName.toLowerCase()}${el.id ? "#" + el.id : ""}.${String(el.className).trim().split(/\s+/).slice(0, 5).join(".")}`;
+      const out = [];
+      let el = document.body;
+      for (let depth = 0; depth < 30 && el; depth++) {
+        let next = null;
+        for (const c of el.children) {
+          const old = c.style.display;
+          c.style.display = "none";
+          const fixed = !wide();
+          c.style.display = old;
+          if (fixed) { next = c; break; }
+        }
+        if (!next) break;
+        const b = next.getBoundingClientRect(), cs = getComputedStyle(next);
+        out.push(`${name(next)} w=${Math.round(b.width)} left=${Math.round(b.left)} right=${Math.round(b.right)} pos=${cs.position} minW=${cs.minWidth} ws=${cs.whiteSpace} text="${(next.textContent || "").trim().slice(0, 30)}"`);
+        el = next;
+      }
+      return out;
+    });
+    for (const p of path) console.log("  PATH:", p);
     for (const w of r.wide) console.log("  WIDE:", w);
     for (const w of r.spill) console.log("  SPILL:", w);
     if (r.wide.length) for (const c of r.chain) console.log("    in:", c);
