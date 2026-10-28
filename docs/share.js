@@ -164,10 +164,13 @@ async function drawRecipeCard(r, lines) {
 
   // Paano lutuin: the steps live on the source site, never here.
   if (src && r.url) {
-    ctx.fillStyle = SHARE_C.card; roundRect(ctx, SHARE_PAD, y - 10, SHARE_W - 2 * SHARE_PAD, 150, 24); ctx.fill();
+    const link = wrap(r.url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""), sans(26, 700), SHARE_W - 2 * SHARE_PAD - 72);
+    const boxH = 140 + link.length * 36;
+    ctx.fillStyle = SHARE_C.card; roundRect(ctx, SHARE_PAD, y - 10, SHARE_W - 2 * SHARE_PAD, boxH, 24); ctx.fill();
     text("Paano lutuin?", SHARE_PAD + 36, y + 44, serif(40), SHARE_C.forest);
-    text(`Full recipe on ${src.name}: ${r.url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}`.slice(0, 64), SHARE_PAD + 36, y + 96, sans(26, 700), SHARE_C.green);
-    y += 170;
+    text(`See the full recipe on ${src.name}:`, SHARE_PAD + 36, y + 92, sans(26), SHARE_C.muted);
+    link.forEach((l, k) => text(l, SHARE_PAD + 36, y + 130 + k * 36, sans(26, 700), SHARE_C.green));
+    y += boxH + 20;
   }
 
   // Footer
