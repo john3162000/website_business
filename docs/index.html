@@ -697,7 +697,9 @@
     </div>
 
     <div class="bg-white rounded-2xl shadow overflow-hidden">
-      <div class="overflow-x-auto">
+      <!-- relative: keeps the table's absolutely positioned sr-only label inside this scroll box
+           (without it the label anchored to the page and made Prices ~600 px wide on phones) -->
+      <div class="overflow-x-auto relative">
         <table class="w-full text-sm">
           <thead class="bg-green-700 text-white">
             <tr>

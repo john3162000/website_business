@@ -55,3 +55,12 @@ test("sulit meter: dishes are placed by how they rank against all others", () =>
   assert.equal(ctx.sulitLevel(1, scores).segs, 1);
   assert.equal(ctx.sulitLevel(5, []), null);
 });
+
+test("the price table's hidden label stays inside its scroll box (Prices fits a phone)", () => {
+  // Tailwind's sr-only is position:absolute; without a positioned scroll box it anchored to the page
+  // and made the Prices tab ~600 px wide on phones.
+  const html = read("index.html");
+  const table = html.indexOf('id="price-table-body"');
+  const box = html.lastIndexOf('class="overflow-x-auto', table);
+  assert.ok(box > 0 && /class="overflow-x-auto[^"]*\brelative\b/.test(html.slice(box, box + 60)));
+});
