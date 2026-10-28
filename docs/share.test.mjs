@@ -4,10 +4,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 
-const ctx = vm.createContext({});
+const ctx = vm.createContext({ URL });
 vm.runInContext(`${readFileSync(new URL("./share.js", import.meta.url), "utf8")}
-;globalThis.api = { recipeLink, recipeIdFromHash, shareText, shareFileName, wrapLines };`, ctx);
-const { recipeLink, recipeIdFromHash, shareText, shareFileName, wrapLines } = ctx.api;
+;globalThis.api = { recipeLink, recipeIdFromHash, shareText, shareFileName, wrapLines, recipeSource };`, ctx);
+const { recipeLink, recipeIdFromHash, shareText, shareFileName, wrapLines, recipeSource } = ctx.api;
 
 test("share links open the recipe; other hashes don't", () => {
   assert.equal(recipeLink(315), "https://john3162000.github.io/website_business/#recipe=315");
@@ -29,4 +29,11 @@ test("wrapLines keeps words whole and lines within the width", () => {
   assert.ok(lines.every((l) => measure(l) <= 160 || !l.includes(" ")), JSON.stringify(lines));
   assert.equal(lines.join(" "), "Saute garlic and onion until soft then add the pork");
   assert.deepEqual([...wrapLines("a\nb", 100, measure)], ["a", "b"]);
+});
+
+test("recipe source: partner sites by name, others by host", () => {
+  assert.deepEqual({ ...recipeSource("https://panlasangpinoy.com/kare-kare-recipe/") }, { name: "Panlasang Pinoy", host: "panlasangpinoy.com" });
+  assert.deepEqual({ ...recipeSource("https://www.kawalingpinoy.com/adobo/") }, { name: "Kawaling Pinoy", host: "kawalingpinoy.com" });
+  assert.equal(recipeSource("https://example.org/x").name, "example.org");
+  assert.equal(recipeSource("not a url"), null);
 });

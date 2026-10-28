@@ -380,6 +380,15 @@
     .cheap-row b { color: #1D5239; white-space: nowrap; }
     html.dark .cheap-card { background: var(--s2); border-color: var(--line); }
     html.dark .cheap-row { color: var(--tx); } html.dark .cheap-row:hover { background: #173A28; } html.dark .cheap-row b { color: var(--mint); }
+    /* Recipe pop-up: the source's photo (credited) and the "Paano lutuin?" card that links to it */
+    .modal-photo { position: relative; margin: 0; border-radius: 1rem; overflow: hidden; background: #EFEADC; aspect-ratio: 16 / 9; }
+    .modal-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .photo-credit { position: absolute; right: .6rem; bottom: .6rem; background: rgba(22, 63, 46, .82); color: #F8F4EA; font-size: .72rem; font-weight: 700; padding: .25rem .6rem; border-radius: 9999px; }
+    .photo-credit:hover { background: #163F2E; }
+    .cook-card { background: #EFF5F0; border: 1px solid #D9E8DD; border-radius: 1rem; padding: 1rem 1.1rem; }
+    .cook-btn { display: inline-flex; align-items: center; gap: .4rem; background: #163F2E; color: #F8F4EA; font-weight: 700; padding: .7rem 1.2rem; border-radius: 9999px; box-shadow: 0 6px 16px rgba(22, 63, 46, .25); transition: background .15s, transform .15s; }
+    .cook-btn:hover { background: #1F5A3D; transform: translateY(-1px); }
+    html.dark .cook-card { background: #16291F; border-color: #24402F; } html.dark .cook-btn { background: #7CE0A3; color: #0B1712; }
     /* Okasyon (holiday picks) in Browse */
     .occ-box { background: linear-gradient(135deg, #163F2E, #1F5A3D); color: #F8F4EA; border-radius: 1.25rem; padding: 1.1rem 1.1rem 1rem; box-shadow: 0 10px 30px rgba(22, 63, 46, .25); }
     .occ-box:empty { display: none; }

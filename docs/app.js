@@ -330,18 +330,15 @@ function ingredientRows(lines) {
   }).join("");
 }
 
-function buildModal(r, instructions, lines) {
+/**
+ * The recipe pop-up. We show the dish (the source's photo, linked and credited), its cost and
+ * nutrition; the cooking steps stay on the source site, behind the "Paano lutuin?" button.
+ */
+function buildModal(r, lines) {
   const nutr = r.nutrition;
   const ingRows = lines ? ingredientRows(lines) : `<p class="text-sm text-gray-400">Loading ingredients…</p>`;
-  // Newer recipes keep no copy of the author's steps: point to the original page instead.
-  const steps = !(instructions && instructions.length) && r.url
-    ? `<li><a href="${escapeHtml(r.url)}" target="_blank" rel="noopener" class="inline-block bg-green-800 hover:bg-green-700 text-amber-50 font-semibold text-sm px-4 py-2 rounded-full">📖 See the steps on Panlasang Pinoy ↗</a></li>`
-    : (instructions && instructions.length ? instructions : ["Full instructions are on the original recipe page."])
-    .map((s, i) => `
-    <li class="flex gap-4">
-      <span class="flex-shrink-0 w-8 h-8 bg-green-700 text-white rounded-full flex items-center justify-center text-sm font-bold">${i + 1}</span>
-      <p class="text-gray-700 leading-relaxed pt-1">${escapeHtml(s)}</p>
-    </li>`).join("");
+  const src = r.url ? recipeSource(r.url) : null;
+  const srcLink = (cls, label) => `<a href="${escapeHtml(r.url)}" target="_blank" rel="noopener" class="${cls}" data-ev="cook/${escapeHtml(src.host)}" onclick="trackEvent(this.dataset.ev)">${label}</a>`;
 
   const nutriBars = [
     { label: "Protein", val: nutr.protein, key: "protein", unit: "g" },
@@ -380,7 +377,7 @@ function buildModal(r, instructions, lines) {
       <div>
         <h2 class="text-2xl font-bold">${escapeHtml(r.title)}</h2>
         <span class="text-sm text-gray-500">${r.category} · ${r.servings} servings${r.servingsAssumed ? " (assumed: the recipe doesn’t say)" : ""}${(r.prepTime || 0) + (r.cookTime || 0) > 0 ? ` · ${(r.prepTime || 0) + (r.cookTime || 0)} min` : ""}</span>
-        ${r.url ? `<a href="${escapeHtml(r.url)}" target="_blank" rel="noopener" class="block text-xs text-green-700 hover:underline mt-1">View original on Panlasang Pinoy ↗</a>` : ""}
+        ${src ? `<p class="text-xs text-gray-500 mt-1">Recipe &amp; photo: ${srcLink("text-green-700 font-semibold hover:underline", `${escapeHtml(src.name)} ↗`)}</p>` : ""}
         <div class="flex flex-wrap gap-2 mt-2">
           ${r.id ? favButton(r.id, "pill") : ""}
           ${r.id ? `<button id="share-btn" onclick="shareRecipe(${r.id})" class="text-xs font-semibold bg-green-800 hover:bg-green-700 text-amber-50 px-3 py-1 rounded-full">💬 Share to Messenger</button>` : ""}
@@ -392,6 +389,7 @@ function buildModal(r, instructions, lines) {
 
     <div class="grid md:grid-cols-3 gap-6">
       <div class="md:col-span-2 space-y-6">
+        ${r.img ? `<figure class="modal-photo"><img src="${escapeHtml(r.img)}" alt="${escapeHtml(r.title)}">${src ? srcLink("photo-credit", `📷 ${escapeHtml(src.name)}`) : ""}</figure>` : ""}
         <div class="flex flex-wrap gap-3">
           <div class="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-center">
             <p class="text-2xl font-bold text-green-700">${r.ranked ? r.valueScore : "—"}</p>
@@ -428,10 +426,11 @@ function buildModal(r, instructions, lines) {
           ${r.costIncomplete ? `<p class="mt-2 text-xs bg-amber-100 text-amber-900 rounded-xl px-4 py-2">⚠ <strong>Incomplete price data:</strong> no price yet for ${escapeHtml(r.costGaps.join(", "))}. The real cost is higher than shown, so this dish is listed last.</p>` : ""}
         </div>
 
-        <div>
-          <h3 class="font-bold text-lg mb-3">Instructions</h3>
-          <div id="video-links" class="flex flex-wrap gap-2 mb-4" data-recipe="${r.id}"></div>
-          <ol class="space-y-4">${steps}</ol>
+        <div class="cook-card">
+          <h3 class="font-display font-bold text-xl">Paano lutuin? 👩‍🍳</h3>
+          <p class="text-sm text-gray-600 mt-1 mb-3">${src ? `Nasa ${escapeHtml(src.name)} ang buong recipe: ang mga hakbang, tips at video ng gumawa nito.` : "Full instructions are on the original recipe page."}</p>
+          ${src ? srcLink("cook-btn", `📖 See the recipe on ${escapeHtml(src.name)} ↗`) : ""}
+          <div id="video-links" class="flex flex-wrap gap-2 mt-3" data-recipe="${r.id}"></div>
         </div>
         ${similarHtml(r)}
       </div>
@@ -909,26 +908,23 @@ async function loadWeatherPicks() {
 
 // ═══════════════ MODAL ═══════════════
 
-let MODAL_DATA = null; // { id, instructions, lines } of the open recipe, for the share picture
+let MODAL_DATA = null; // { id, lines } of the open recipe, for the share picture
 
 async function openModal(id) {
   const r = RECIPES.find((x) => x.id === id);
   if (!r) return;
   trackEvent("recipe-open");
-  MODAL_DATA = { id, instructions: [], lines: [] };
+  MODAL_DATA = { id, lines: [] };
   if (history.replaceState) history.replaceState(null, "", `#recipe=${id}`);
-  document.getElementById("modal-content").innerHTML = buildModal(r, ["Loading instructions…"], null);
+  document.getElementById("modal-content").innerHTML = buildModal(r, null);
   document.getElementById("recipe-modal").classList.add("open");
   document.body.style.overflow = "hidden";
-  const [detail, compiled] = await Promise.all([
-    fetch(`${API_BASE}/api/recipes/${id}`).then((res) => res.json()).catch(() => null),
-    fetch(`${API_BASE}/api/recipes/compiled?id=${id}`).then((res) => (res.ok ? res.json() : null)).catch(() => null),
-  ]);
-  const instructions = detail && detail.recipe ? (detail.recipe.instructions || []).map((s) => s.text) : [];
+  // Only the priced ingredient lines; the steps are not loaded (they stay on the source site).
+  const compiled = await fetch(`${API_BASE}/api/recipes/compiled?id=${id}`).then((res) => (res.ok ? res.json() : null)).catch(() => null);
   const lines = compiled && compiled.recipe ? compiled.recipe.lines : [];
-  if (MODAL_DATA && MODAL_DATA.id === id) MODAL_DATA = { id, instructions, lines };
+  if (MODAL_DATA && MODAL_DATA.id === id) MODAL_DATA = { id, lines };
   if (!document.getElementById("recipe-modal").classList.contains("open")) return;
-  document.getElementById("modal-content").innerHTML = buildModal(r, instructions, lines);
+  document.getElementById("modal-content").innerHTML = buildModal(r, lines);
   loadVideoLinks(r);
 }
 

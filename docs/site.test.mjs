@@ -64,3 +64,12 @@ test("the price table's hidden label stays inside its scroll box (Prices fits a 
   const box = html.lastIndexOf('class="overflow-x-auto', table);
   assert.ok(box > 0 && /class="overflow-x-auto[^"]*\brelative\b/.test(html.slice(box, box + 60)));
 });
+
+test("the recipe pop-up never shows or loads the source's steps", () => {
+  // Offer to partner sites: we show the dish, they teach the cooking ("Paano lutuin?" links to them).
+  const app = read("app.js"), share = read("share.js");
+  assert.ok(!app.includes("/api/recipes/${id}`)"), "the pop-up must not fetch the stored steps");
+  assert.ok(!/>Instructions</.test(app));
+  assert.match(app, /Paano lutuin\?/);
+  assert.ok(!/steps\)/.test(share.match(/async function drawRecipeCard\([^)]*\)/)[0]), "the share picture takes no steps");
+});
