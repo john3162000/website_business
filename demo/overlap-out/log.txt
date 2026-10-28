@@ -1,0 +1,12 @@
+https://panlasangpinoy.com: 3 post sitemaps
+pp: 2742 posts, 2692 after dropping roundups/articles, 2589 distinct dish names
+https://www.kawalingpinoy.com: 1 post sitemaps
+kp: 627 posts, 627 after dropping roundups/articles, 626 distinct dish names
+
+Same dish name on both sites: 150
+Near matches (one word different): 138
+Combined distinct dishes: 3065 (exact) · about 2927 if near matches are also the same dish
+
+Examples of shared dishes: blog | canton pancit | leche puto | beef corned sinigang | chicken sinampalukang | chicken pesang | caldereta chicken | afritada chicken pineapple | binagoongan crispy pork | bake sushi | beef nilagang | bibingkang malagkit | luglug pancit | in lengua mushroom sauce | adobo chicken | sinantomas | gising | kawali lechon | nilupak | cassava suman | chicken curry | binagoongan pork | belly grilled tuna | malabon pancit | gato lengua | adobong dilaw | arroz cubana | na sinaing tulingan | kinamatisang pork | guisantes pork | meatballs sour sweet | barbecue chicken | ginisang sayote | eggs giniling pork quail | na pork sinigang | ginisang repolyo | sinangag | estofado lengua | coconut shrimp | afritada chicken
+
+Examples of near matches: crispy kawali lechon pinakbet | adobo chicken liver spread | adobong chicken patis sa | cake cassava ube | pandesal red velvet | chicken tinola tinolang | pineapple pork ribs | gambas sizzling | chicken tamarind wings | chicken chinese salad | chicken curry mango | adobo gata sa | rice taco | asian chicken jalapeno | at sotanghon soup upo | chicken lemongrass roasted | chicken coconut lime | cathedral gelatin window | adobo pineapple pork | guisado lomi pancit | beef pares | talong tortang | at daing ginataang langka | scampi shrimp sriracha | giniling na pork
