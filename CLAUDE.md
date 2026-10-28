@@ -85,6 +85,7 @@ Line statuses are `ok`, `to-taste`, `optional`, `water`, `skipped`, `unmatched`,
 | `POST /api/dish` | Prices a personal dish (My Dish) |
 | `/api/scrape/*` | Admin only (`ADMIN_TOKEN`) |
 | `/api/cron/da-daily`, `/api/cron/psa` | Vercel crons: DA daily at 10:00 UTC, PSA Mondays at 11:00 UTC |
+| `/api/cron/recipes` | Vercel cron daily at 03:15 UTC: the recipe crawl, calling itself (≤150 hops) until every sitemap is read |
 
 ## Commands
 
@@ -154,7 +155,10 @@ servings, times, course and ingredients, plus `methodNotes` (short phrases like 
 marinade" that the engine reads). They do **not** copy the author's description or steps; the recipe
 pop-up links to Panlasang Pinoy for the method. Unknown ingredients hide the recipe as usual.
 
-The owner runs it from their own computer, so the token never goes through a cloud session:
+It runs by itself every day (`/api/cron/recipes`, 03:15 UTC): each run crawls for ~45 s, then calls
+itself again with the `CRON_SECRET` Vercel sends, until every sitemap is read (Hobby crons can only run
+daily, hence the hops). Progress is the RECIPES row in `ScrapingLog`; the logic is `src/lib/recipe-crawl.ts`.
+To push it along by hand from the owner's computer (the token never goes through a cloud session):
 
 ```bash
 cd scraper-backend
