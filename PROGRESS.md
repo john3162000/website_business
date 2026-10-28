@@ -160,3 +160,8 @@ Result: 895 of 2,031 meals fully priced (44%), and 91% of food lines priced.
   were missed), keeps method notes instead of copying steps or descriptions, and the owner runs
   `node scripts/add-recipes.mjs` on their own computer. Panlasang Pinoy has ~3,000 posts, so ~5,000
   needs a second source.
+- **Recipe pop-up: "we show the dish, you teach the cooking".** The source's photo with a "📷 Panlasang Pinoy"
+  credit, a "Recipe & photo" credit, and a "Paano lutuin?" card that sends people to the source recipe; the
+  stored steps are no longer fetched or shown (they stay in the database). The share picture does the same.
+  "cook/<host>" clicks are counted for monthly partner reports (needs GoatCounter). Basis for the partnership
+  offers to Panlasang Pinoy and Kawaling Pinoy (`outreach/recipe-permission-emails.md`, git-ignored).
