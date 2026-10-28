@@ -1,2 +1,12 @@
 
 [390px] prices: page width 608
+  PATH: header.site-header.sticky.top-0.z-50 w=390 left=0 right=390 pos=sticky minW=auto ws=normal text="FARM2FIGURE
+    
+    
+      Ho"
+  PATH: div.max-w-6xl.mx-auto.px-4.flex.items-center w=390 left=0 right=390 pos=static minW=0px ws=normal text="FARM2FIGURE
+    
+    
+      Ho"
+  PATH: a.flex.flex-col.items-center.shrink-0.leading-none w=86 left=16 right=102 pos=static minW=auto ws=normal text="FARM2FIGURE"
+  PATH: img.logo-mark.h-11.w-11 w=45 left=35 right=79 pos=static minW=auto ws=normal text=""
