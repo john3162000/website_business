@@ -1014,7 +1014,7 @@ function showSection(name) {
   });
   window.scrollTo(0, 0);
   trackEvent(`section/${name}`);
-  if (name === "browse") filterRecipes();
+  if (name === "browse") { filterRecipes(); if (typeof renderOccasion === "function") renderOccasion(); }
   if (name === "prices") { loadMovers(); renderAlerts(); renderPriceForYou(moversFell); }
   if (name === "mydish") initMyDish();
   if (name === "planner") initPlanner();
@@ -1053,4 +1053,5 @@ function toggleTheme() {
   renderTopRecipes();
   renderPrices("all");
   filterRecipes();
+  if (typeof renderOccasion === "function") renderOccasion();
 })();

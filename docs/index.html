@@ -380,6 +380,24 @@
     .cheap-row b { color: #1D5239; white-space: nowrap; }
     html.dark .cheap-card { background: var(--s2); border-color: var(--line); }
     html.dark .cheap-row { color: var(--tx); } html.dark .cheap-row:hover { background: #173A28; } html.dark .cheap-row b { color: var(--mint); }
+    /* Okasyon (holiday picks) in Browse */
+    .occ-box { background: linear-gradient(135deg, #163F2E, #1F5A3D); color: #F8F4EA; border-radius: 1.25rem; padding: 1.1rem 1.1rem 1rem; box-shadow: 0 10px 30px rgba(22, 63, 46, .25); }
+    .occ-box:empty { display: none; }
+    .occ-head { display: flex; align-items: center; gap: .75rem; }
+    .occ-icon { font-size: 2.1rem; line-height: 1; }
+    .occ-kicker { font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #E6C265; }
+    .occ-title { font-size: 1.45rem; font-weight: 700; line-height: 1.15; }
+    .occ-note { font-size: .82rem; color: #D6E6DA; margin: .5rem 0 .7rem; }
+    .occ-chips { display: flex; gap: .4rem; overflow-x: auto; padding-bottom: .35rem; scrollbar-width: none; }
+    .occ-chips .wx-btn { white-space: nowrap; background: rgba(255, 255, 255, .1); border-color: rgba(255, 255, 255, .2); color: #F8F4EA; }
+    .occ-chips .wx-btn.on { background: #E6C265; border-color: #E6C265; color: #163F2E; font-weight: 700; }
+    .occ-row { display: flex; gap: .7rem; overflow-x: auto; padding: .6rem 0 .2rem; scroll-snap-type: x mandatory; }
+    .occ-card { flex: 0 0 9.5rem; scroll-snap-align: start; background: #FBF8F0; color: #1F2A24; border-radius: 1rem; overflow: hidden; text-align: left; display: flex; flex-direction: column; box-shadow: 0 4px 14px rgba(0, 0, 0, .18); transition: transform .15s; }
+    .occ-card:hover { transform: translateY(-2px); }
+    .occ-card img { width: 100%; height: 6.5rem; object-fit: cover; }
+    .occ-name { font-size: .8rem; font-weight: 600; line-height: 1.2; padding: .45rem .55rem 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .occ-cost { font-size: .72rem; color: #8A6A12; font-weight: 700; padding: .25rem .55rem .55rem; margin-top: auto; }
+    html.dark .occ-box { background: linear-gradient(135deg, #16291F, #1E3A2B); } html.dark .occ-card { background: #16291F; color: #E6F4EC; }
     /* Settings dialog */
     .settings-card { background: #FBF8F0; box-shadow: 0 20px 50px rgba(0, 0, 0, .3); }
     .set-row { padding: .9rem 0; border-top: 1px solid #ECE4D0; } .set-row:first-child { border-top: 0; }
@@ -545,6 +563,9 @@
       <p class="text-gray-500 text-sm">Filter and sort by nutrition, price, or specific produce. Prices based on <span data-da-date>the latest</span> DA data.</p>
       <p id="hidden-note" class="hidden text-gray-400 text-xs mt-1"></p>
     </div>
+
+    <!-- Okasyon: holiday and special-event picks (seasons.js) -->
+    <div id="occasion-picks" class="occ-box mb-6"></div>
 
     <!-- Filters -->
     <div class="bg-white rounded-2xl shadow p-5 mb-6 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -962,6 +983,7 @@
 <script src="games.js"></script>
 <script src="kitchen.js"></script>
 <script src="settings.js"></script>
+<script src="seasons.js"></script>
 <script src="tour.js"></script>
 <script src="app.js"></script>
 </body>
