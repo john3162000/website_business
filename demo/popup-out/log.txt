@@ -1,0 +1,13 @@
+steps shown: false
+step fetches: 0 cook link: https://panlasangpinoy.com/kare-kare-recipe/
+captured share picture
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+page.evaluate: Execution context was destroyed, most likely because of a navigation.
+    at /home/runner/work/website_business/website_business/demo/preview-popup.mjs:36:10 {
+  name: 'Error'
+}
+
+Node.js v22.23.4
