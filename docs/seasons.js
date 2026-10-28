@@ -192,7 +192,8 @@ function occasionPicks(o, recipes, n = 8, ok = () => true, kindOf = () => "other
       if (r.category === "Sauce & Condiment" || SEASON_SAUCE.test(title)) return false;
       if (o.avoid && o.avoid.test(title)) return false;
       if (o.noPork && (SEASON_PORK.test(title) || SEASON_PORK.test((r.ingredientNames || []).join(" | ")) || SEASON_EID_AVOID.test(title))) return false;
-      if (o.meatless && kindOf(r) === "karne") return false;
+      // Meatless: not a meat dish, and no meat in the title either (Pork Ginataan with Squash).
+      if (o.meatless && (kindOf(r) === "karne" || SEASON_PORK.test(title) || /\b(beef|baka|chicken|manok|carabeef|goat|kambing|meat)\b/i.test(title))) return false;
       return o.match.test(title);
     })
     // The most typical dishes first (by the order of the match words), then complete prices and value.
