@@ -1,0 +1,28 @@
+
+[360px] home: page width 360
+
+[360px] browse: page width 360
+
+[360px] prices: page width 608
+
+[360px] mydish: page width 360
+
+[360px] planner: page width 360
+
+[360px] finder: page width 360
+
+[360px] game: page width 360
+
+[390px] home: page width 390
+
+[390px] browse: page width 390
+
+[390px] prices: page width 608
+
+[390px] mydish: page width 390
+
+[390px] planner: page width 390
+
+[390px] finder: page width 390
+
+[390px] game: page width 390
