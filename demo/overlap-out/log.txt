@@ -1,6 +1,10 @@
 https://panlasangpinoy.com: 3 post sitemaps
+  sitemap_index.xml lists: post-sitemap.xml, post-sitemap2.xml, post-sitemap3.xml, page-sitemap.xml, category-sitemap.xml
+  wp-sitemap.xml lists: post-sitemap.xml, post-sitemap2.xml, post-sitemap3.xml, page-sitemap.xml, category-sitemap.xml
 pp: 2742 posts, 2692 after dropping roundups/articles, 2589 distinct dish names
 https://www.kawalingpinoy.com: 1 post sitemaps
+  sitemap_index.xml lists: post-sitemap.xml, page-sitemap.xml, category-sitemap.xml
+  wp-sitemap.xml lists: post-sitemap.xml, page-sitemap.xml, category-sitemap.xml
 kp: 627 posts, 627 after dropping roundups/articles, 626 distinct dish names
 
 Same dish name on both sites: 150
