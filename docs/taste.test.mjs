@@ -6,8 +6,8 @@ import vm from "node:vm";
 
 const ctx = vm.createContext({});
 vm.runInContext(`${readFileSync(new URL("./taste.js", import.meta.url), "utf8")}
-;globalThis.api = { TASTE_TAGS, tasteVector, solveLinear, learnTaste, tasteProfile, tasteScore, tasteReasons, recommendDishes, tasteModelFrom, similarDishes, dishWords };`, ctx);
-const { TASTE_TAGS, tasteVector, solveLinear, learnTaste, tasteProfile, tasteScore, tasteReasons, recommendDishes, tasteModelFrom, similarDishes, dishWords } = ctx.api;
+;globalThis.api = { TASTE_TAGS, tasteVector, solveLinear, learnTaste, tasteProfile, tasteScore, tasteReasons, recommendDishes, tasteModelFrom, similarDishes, dishWords, tasteVariance, pickToLearn, dishKind };`, ctx);
+const { TASTE_TAGS, tasteVector, solveLinear, learnTaste, tasteProfile, tasteScore, tasteReasons, recommendDishes, tasteModelFrom, similarDishes, dishWords, tasteVariance, pickToLearn, dishKind } = ctx.api;
 
 const tags = (r) => Array.from(TASTE_TAGS).filter((_, i) => tasteVector(r)[i]).map((t) => t.key);
 const R = (id, title, ingredientNames = [], extra = {}) => ({ id, title, ingredientNames, img: "x.jpg", costPerServing: 50, category: "Main Dish", ...extra });
@@ -82,4 +82,33 @@ test("similarDishes: same tags and shared ingredients first, no copies", () => {
   assert.ok(!(out.includes(2) && out.includes(3))); // ...but only one of the two same-titled copies
   assert.ok(!out.includes(6)); // sauces only for sauces
   assert.equal(out[out.length - 1], 4);
+});
+
+test("active learning: the model is least sure about tags it hasn't seen", () => {
+  const sour = R(1, "Sinigang na Hipon", ["tamarind"], { category: "Soup" });
+  const sour2 = R(2, "Paksiw na Bangus", ["vinegar"]);
+  const gata = R(3, "Ginataang Kalabasa", ["coconut milk", "squash"]);
+  const model = learnTaste([sour, sour2, sour, sour2].map((r, i) => ({ x: tasteVector(r), rating: 9 - i })), []);
+  assert.ok(tasteVariance(model, tasteVector(gata)) > tasteVariance(model, tasteVector(sour)));
+  // Past the warm-up and not exploring: one of the most uncertain dishes.
+  const pick = pickToLearn(model, [sour, sour2, gata], { rng: () => 0.5, top: 1, explore: 0.2 });
+  assert.equal(pick.r.id, 3);
+  assert.equal(pick.active, true);
+  // Cold start (no model, or too few answers): random, not "active".
+  assert.equal(pickToLearn(null, [sour, gata], { rng: () => 0 }).active, false);
+  assert.equal(pickToLearn(model, [], {}).r, null);
+});
+
+test("ulam and meryenda are learned separately", () => {
+  const ulam = R(1, "Sinigang na Baboy", ["tamarind"], { category: "Soup" });
+  const kakanin = R(2, "Leche Flan", ["condensed milk"], { category: "Dessert" });
+  assert.equal(dishKind(ulam), "ulam");
+  assert.equal(dishKind(kakanin), "meryenda");
+  assert.equal(dishKind(R(3, "Atchara", [], { category: "Sauce & Condiment" })), null);
+  const ratings = { 1: 9, 2: 2 };
+  assert.equal(tasteModelFrom([ulam, kakanin], ratings, {}, "ulam").answers, 1);
+  assert.equal(tasteModelFrom([ulam, kakanin], ratings, {}, "meryenda").answers, 1);
+  assert.equal(tasteModelFrom([ulam, kakanin], ratings, {}).answers, 2);
+  const m = { weights: TASTE_TAGS.map(() => 0), seen: TASTE_TAGS.map(() => 0) };
+  assert.deepEqual(Array.from(recommendDishes(m, [ulam, kakanin], {}, 5, tasteVector, "meryenda"), (p) => p.r.id), [2]);
 });

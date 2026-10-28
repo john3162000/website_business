@@ -1,3 +1,4 @@
+import { requireCron } from "@/lib/admin-auth";
 import { prisma } from "@/lib/db";
 import { initialDACursor, scrapeDAChunk, type DACursor } from "@/lib/scrapers/da-scraper";
 
@@ -13,14 +14,11 @@ const TIME_BUDGET_MS = 50_000;
 /**
  * Daily DA price update, called by Vercel Cron (see vercel.json). Fetches the
  * newest Daily Price Index PDFs and replaces those days' rows. Vercel sends
- * `Authorization: Bearer $CRON_SECRET` when CRON_SECRET is set; requests
- * without it are refused in that case.
+ * `Authorization: Bearer $CRON_SECRET`; without CRON_SECRET the route is closed in production.
  */
 export async function GET(request: Request) {
-  const secret = process.env.CRON_SECRET;
-  if (secret && request.headers.get("authorization") !== `Bearer ${secret}`) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const denied = requireCron(request);
+  if (denied) return denied;
 
   const started = Date.now();
   const log = await prisma.scrapingLog.create({

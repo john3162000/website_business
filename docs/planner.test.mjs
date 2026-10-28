@@ -6,8 +6,8 @@ import vm from "node:vm";
 
 const ctx = vm.createContext({});
 vm.runInContext(`${readFileSync(new URL("./planner.js", import.meta.url), "utf8")}
-;globalThis.api = { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, isMainUlam, proteinKind, dietOk, cheapestByKind };`, ctx);
-const { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, isMainUlam, proteinKind, dietOk, cheapestByKind } = ctx.api;
+;globalThis.api = { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, isMainUlam, proteinKind, dietOk, cheapestByKind, addSavedPlan, groceryText, groceryRows, groceryHtml, grocerySection, groupGrocery, dietsOk, dietNote, meatTypes, meatOk, dropSlots, moveInPlan };`, ctx);
+const { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, isMainUlam, proteinKind, dietOk, cheapestByKind, addSavedPlan, groceryText, groceryRows, groceryHtml, grocerySection, groupGrocery, dietsOk, dietNote, meatTypes, meatOk, dropSlots, moveInPlan } = ctx.api;
 const plain = (v) => JSON.parse(JSON.stringify(v));
 
 test("slots: add without duplicates, at most 5, remove clears empty slots", () => {
@@ -162,6 +162,7 @@ test("meal types: kakanin and sweets are meryenda, never ulam, even when filed a
 test("main ulam: real mains with protein; not sides of rice, egg how-tos or sweets", () => {
   const R = (title, category, protein) => ({ title, category, protein });
   assert.equal(isMainUlam(R("Chicken Adobo", "Main Dish", 30)), true);
+  assert.equal(mealTypes({ title: "Cream Cheese Mashed Potatoes", category: "Main Dish" }).has("ulam"), false); // a side, not ulam
   assert.equal(isMainUlam(R("Sinigang na Baboy", "Soup", 22)), true);
   assert.equal(isMainUlam(R("Cilantro Lime Rice", "Rice & Noodles", 4)), false);
   assert.equal(isMainUlam(R("How to Make Hard Boiled Eggs", "Main Dish", 12)), false);
@@ -235,4 +236,134 @@ test("random week: gulay → isda → karne take turns, leaning to the cheapest"
   const kind = (id) => (id < 20 ? "g" : id < 30 ? "i" : "k");
   assert.equal(ids.map(kind).join(""), "gikgikgikgikgi");
   assert.equal(ids[0], 10, "cheapest gulay first");
+});
+
+test("saved plans: newest first, same name replaces, at most 8, copies not shared", () => {
+  const p = { people: 4, slots: { "Lunes|Hapunan": [1] } };
+  let list = addSavedPlan([], "Week 1", p, 1);
+  p.slots["Lunes|Hapunan"].push(2); // later edits don't change the saved copy
+  assert.deepEqual(plain(list[0].plan.slots), { "Lunes|Hapunan": [1] });
+  list = addSavedPlan(list, "Week 2", p, 2);
+  list = addSavedPlan(list, " Week 1 ", p, 3);
+  assert.deepEqual(plain(list.map((x) => x.name)), ["Week 1", "Week 2"]);
+  for (let i = 0; i < 10; i++) list = addSavedPlan(list, `W${i}`, p, 10 + i);
+  assert.equal(list.length, 8);
+  assert.equal(addSavedPlan([], "  ", p)[0].name, "Plano");
+});
+
+test("grocery list text: one checkbox line per ingredient, then the total", () => {
+  const receipt = { items: [
+    { label: "Pork belly", grams: 1200, cost: 330.4, priced: true, unpricedGrams: 0 },
+    { label: "Kangkong", grams: 450, cost: 0, priced: false, unpricedGrams: 450 },
+  ], total: 330.4, unpriced: 1 };
+  const t = groceryText(receipt, 4, "October 22, 2026");
+  assert.match(t, /Para sa 4 tao · October 22, 2026/);
+  assert.match(t, /🥩 Karne\n☐ Pork belly: 1\.2 kg · ≈₱330\n\n🥬 Gulay\n☐ Kangkong: 450 g\n/);
+  assert.match(t, /Total ≈ ₱330 \(\+ 1 na walang presyo pa\)/);
+});
+
+test("grocery picture rows: amount to buy and price, — when unpriced", () => {
+  const rows = groceryRows({ items: [
+    { label: "Pork belly", grams: 1200, cost: 330.4, priced: true, unpricedGrams: 0 },
+    { label: "Calamansi", grams: 80, cost: 12, priced: true, unpricedGrams: 20 },
+    { label: "Kangkong", grams: 450, cost: 0, priced: false, unpricedGrams: 450 },
+    { label: "Parsley flakes", grams: 0.3, cost: 1, priced: true, unpricedGrams: 0 },
+  ] });
+  // Grouped by palengke section, a heading row first.
+  assert.deepEqual(plain(rows), [
+    { heading: "🥩 Karne" },
+    { label: "Pork belly", qty: "1.2 kg", price: "₱330" },
+    { heading: "🥬 Gulay" },
+    { label: "Kangkong", qty: "450 g", price: "—" },
+    { label: "Parsley flakes", qty: "<1 g", price: "₱1" },
+    { heading: "🍌 Prutas" },
+    { label: "Calamansi", qty: "80 g", price: "₱12+" },
+  ]);
+});
+
+test("grocery HTML file: one checkbox per ingredient, total, and text is escaped", () => {
+  const html = groceryHtml({ items: [
+    { label: "Pork belly", grams: 1200, cost: 330.4, priced: true, unpricedGrams: 0 },
+    { label: "<script>alert(1)</script>", grams: 50, cost: 0, priced: false, unpricedGrams: 50 },
+  ], total: 330.4, unpriced: 1 }, 4, "October 23, 2026");
+  assert.match(html, /^<!doctype html>/);
+  assert.equal((html.match(/type="checkbox"/g) || []).length, 2);
+  assert.match(html, /Pork belly<\/span><span class="q">1\.2 kg<\/span><span class="p">₱330</);
+  assert.match(html, /Para sa 4 tao · October 23, 2026/);
+  assert.match(html, /≈ ₱330/);
+  assert.match(html, /<li class="h">🥩 Karne<\/li>/);
+  assert.ok(!html.includes("<script>alert(1)"));
+  assert.ok(html.includes("&lt;script&gt;alert(1)&lt;/script&gt;"));
+});
+
+test("grocery sections: catalog items go to the right palengke section", () => {
+  const sec = (key, label = "") => grocerySection({ key, label });
+  for (const k of ["milkfish", "shrimp", "squid", "fish_dried", "anchovies_dried", "tinapa"]) assert.equal(sec(k), "isda", k);
+  for (const k of ["pork_belly", "beef_shank", "chicken_thigh", "pork_ground", "chicken_ground", "longganisa", "hotdog_cheese"]) assert.equal(sec(k), "karne", k);
+  for (const k of ["kangkong", "eggplant", "garlic", "onion_red", "tofu_firm", "lemongrass", "papaya_green", "sitaw"]) assert.equal(sec(k), "gulay", k);
+  for (const k of ["calamansi", "banana_saba", "mango_ripe", "buko_meat"]) assert.equal(sec(k), "prutas", k);
+  for (const k of ["egg_chicken", "salted_duck_egg", "milk_evaporated", "cheese_cheddar", "butter"]) assert.equal(sec(k), "itlog", k);
+  for (const k of ["pandesal", "bread_crumbs", "lumpia_wrapper", "wonton_wrapper"]) assert.equal(sec(k), "tinapay", k);
+  for (const k of ["fish_sauce", "soy_sauce", "vinegar_cane_white", "salt", "black_pepper", "shrimp_paste", "bay_leaf", "cumin_ground", "stock_cube_pork"]) assert.equal(sec(k), "pampalasa", k);
+  for (const k of ["rice_white_raw", "oil_cooking", "sugar_white", "noodles_bihon", "coconut_milk", "sardines_tomato_sauce", "corned_beef", "tuna_canned", "broth_chicken", "mung_beans"]) assert.equal(sec(k), "pantry", k);
+  // Items without a slug fall back to the label.
+  assert.equal(sec(undefined, "Bangus belly"), "isda");
+});
+
+test("grocery groups follow the palengke order and skip empty sections", () => {
+  const groups = groupGrocery([{ key: "salt" }, { key: "kangkong" }, { key: "milkfish" }, { key: "garlic" }]);
+  assert.deepEqual(plain(groups.map((g) => g.key)), ["isda", "gulay", "pampalasa"]);
+  assert.deepEqual(plain(groups[1].items.map((i) => i.key)), ["kangkong", "garlic"]);
+});
+
+test("several diets: a dish must pass every one; the note keeps the guidance line", () => {
+  const base = { nutritionCoverage: 1, nutrition: { carbs: 20, fat: 10 }, sodium: 300, ingredientNames: [] };
+  const light = { ...base, title: "Ginisang Sayote", calories: 200, protein: 8 };
+  const liver = { ...base, title: "Ginisang Atay", calories: 300, protein: 20, ingredientNames: ["pork liver"] };
+  const heavy = { ...base, title: "Pork Stew", calories: 700, protein: 30 };
+  assert.equal(dietsOk(light, ["lowcal", "gout"]), true);
+  assert.equal(dietsOk(liver, ["lowcal", "gout"]), false); // low calorie, but organ meat
+  assert.equal(dietsOk(heavy, ["lowcal", "gout"]), false); // fine for gout, too many calories
+  assert.equal(dietsOk(heavy, []), true);
+  const note = dietNote(["lowcal", "gout"]);
+  assert.match(note, /Gout \/ uric acid: .*Low calorie: |Low calorie: .*Gout \/ uric acid: /);
+  assert.match(note, /Gabay lang ito/);
+  assert.match(dietNote(["gout"], true), /Guidance only/);
+  assert.equal(dietNote([]), "");
+});
+
+test("meat types: fish from isda dishes; chicken, pork and beef from karne titles, then ingredients", () => {
+  const types = (r) => [...meatTypes({ category: "Main Dish", ingredientNames: [], ...r })].sort();
+  assert.deepEqual(types({ title: "Sinigang na Bangus" }), ["fish"]);
+  assert.deepEqual(types({ title: "Chicken Adobo" }), ["chicken"]);
+  assert.deepEqual(types({ title: "Pork and Chicken Adobo" }), ["chicken", "pork"]);
+  assert.deepEqual(types({ title: "Bulalo", category: "Soup" }), ["beef"]);
+  assert.deepEqual(types({ title: "Kare-Kare", ingredientNames: ["oxtail", "peanut butter"] }), ["beef"]);
+  assert.deepEqual(types({ title: "Menudo", ingredientNames: ["pork shoulder", "liver"] }), ["pork"]);
+  assert.deepEqual(types({ title: "Pinakbet", category: "Vegetable Dish", ingredientNames: ["pork belly"] }), []);
+  assert.deepEqual(types({ title: "Lechon Kawali" }), ["pork"]);
+  assert.deepEqual(types({ title: "Lechon Manok" }), ["chicken"]);
+  assert.deepEqual(types({ title: "Chicken Igado" }), ["chicken"]);
+  assert.deepEqual(types({ title: "Lechon Sauce Recipe" }), []);
+  assert.deepEqual(types({ title: "Liver Sauce", category: "Sauce & Condiment", ingredientNames: ["pork liver"] }), []);
+  const adobo = { title: "Chicken Adobo", category: "Main Dish", ingredientNames: [] };
+  assert.equal(meatOk(adobo, ["pork", "chicken"]), true);
+  assert.equal(meatOk(adobo, ["fish"]), false);
+  assert.equal(meatOk(adobo, []), true);
+});
+
+test("drag and drop: only meals the dish suits, not full, not already there", () => {
+  let p = { people: 4, slots: { "Lunes|Tanghalian": [7], "Martes|Hapunan": [1, 2, 3, 4, 5] } };
+  const ulam = dropSlots(p, 7, new Set(["ulam"]));
+  assert.equal(ulam.has("Lunes|Tanghalian"), false); // already there
+  assert.equal(ulam.has("Martes|Hapunan"), false); // full
+  assert.equal(ulam.has("Lunes|Almusal"), false); // not a breakfast dish
+  assert.equal(ulam.has("Lunes|Hapunan"), true);
+  assert.equal(ulam.size, 7 * 2 - 2);
+  assert.equal(dropSlots(p, 9, new Set(["meryenda", "almusal"])).size, 14);
+  assert.equal(dropSlots(p, 9, new Set()).size, 27); // unknown kind: any slot with room
+  assert.equal(dropSlots(p, 7, new Set(["ulam"]), "Lunes|Tanghalian").has("Lunes|Tanghalian"), false);
+  p = moveInPlan(p, "Lunes|Tanghalian", "Linggo|Hapunan", 7);
+  assert.deepEqual(plain(p.slots), { "Martes|Hapunan": [1, 2, 3, 4, 5], "Linggo|Hapunan": [7] });
+  assert.equal(moveInPlan(p, "Linggo|Hapunan", "Martes|Hapunan", 7), p); // full: nothing moves
 });

@@ -6,8 +6,9 @@ PR, the numbers, and what is still open), read `PROGRESS.md`.
 
 ## What it is
 
-**FARM2FIGURE** (formerly SarapSulit; the browser title still says "SarapSulit") ranks Filipino
-recipes from Panlasang Pinoy by **nutrition per peso**, using today's market prices. Users can
+**SarapSulit** is a sub-project of **FARM2FIGURE** (the owner's umbrella brand, whose logo and
+colours the site uses). Keep the name SarapSulit for the app (browser title, outreach letters).
+It ranks Filipino recipes from Panlasang Pinoy by **nutrition per peso**, using today's market prices. Users can
 browse dishes, see DA prices and how dish costs moved, build their own dish, plan a week (with a
 budget planner), find dishes from ingredients they have, set price alerts and share a recipe as
 a picture.
@@ -27,11 +28,16 @@ docs/                         static site, no build step (Tailwind CDN, plain br
   app.js                      data loading, Browse, Prices, recipe pop-up, nav, sulit meter, dark toggle
   weather.js                  weather picks (Open-Meteo)       mydish.js   "My Dish" builder
   planner.js                  weekly planner, Random week (incl. gulay→isda→karne), budget planner,
-                              mealTypes(), proteinKind(), dietOk() diet filters, Pinakamura ngayon
+                              mealTypes(), proteinKind(), meatTypes(), dietOk()/dietsOk() (all chosen diets),
+                              grocerySection() palengke groups, drag and drop (dropSlots), Pinakamura ngayon
   finder.js                   "Anong lulutuin?" ingredient finder + d3 graph
   alerts.js                   price alerts (localStorage + browser notifications)
   share.js                    share a recipe as a PNG (canvas) → share sheet / Messenger
   tour.js                     first-time tour (Taglish), replay with the "?" header button
+  seasons.js                  Okasyon strip in Browse: holiday/special-event picks (Easter-based Holy Week,
+                              lunar-table CNY/Eids, fixed dates), chips to look ahead
+  settings.js                 ⚙️ Settings (language tl/en with I18N + data-i18n, diets, kitchen, "Suggest ka pa",
+                              dark mode, weather) and the Fish/Chicken/Pork/Beef chips; key sarapsulit.settings.v1
   *.test.mjs                  node:test files; run each script's pure helpers in node:vm
   logo.png, favicon.png       FARM2FIGURE logo
 scraper-backend/
@@ -80,6 +86,7 @@ Line statuses are `ok`, `to-taste`, `optional`, `water`, `skipped`, `unmatched`,
 | `POST /api/dish` | Prices a personal dish (My Dish) |
 | `/api/scrape/*` | Admin only (`ADMIN_TOKEN`) |
 | `/api/cron/da-daily`, `/api/cron/psa` | Vercel crons: DA daily at 10:00 UTC, PSA Mondays at 11:00 UTC |
+| `/api/cron/recipes` | Vercel cron daily at 03:15 UTC: the recipe crawl, calling itself (≤150 hops) until every sitemap is read |
 
 ## Commands
 
@@ -122,7 +129,9 @@ required on `main`.
 - **Catalog TSVs use CRLF line endings.** `build-catalog.mjs` splits on `/\r?\n/`. Append rows
   with CRLF.
 - **One global scope:** all `docs/*.js` files are classic scripts that share globals. Script
-  order in `index.html`: weather, mydish, planner, finder, alerts, share, tour, then app last.
+  order in `index.html`: weather, mydish, planner, finder, alerts, share, facts, taste, games,
+  kitchen, settings, seasons, tour, then app last. New button text gets a `data-i18n` key in settings.js `I18N`
+  (`settings.test.mjs` fails on a missing key).
   Favourites (`favIds`, `toggleFav`, key `sarapsulit.favs.v1`) live in `app.js`. Give new
   top-level names a prefix (`SHARE_W`, `FINDER_KEY`) so they can't clash.
 - **The theme comes from the Tailwind config:** `index.html` re-points Tailwind's `green` to
@@ -139,6 +148,28 @@ required on `main`.
 - **Panlasang Pinoy images** send `Access-Control-Allow-Origin: *`, which is why `share.js` can
   draw them on a canvas.
 
+## Adding recipes (Panlasang Pinoy)
+
+The crawl reads every post sitemap listed in `sitemap_index.xml` and saves up to 4 new recipes per
+`POST /api/scrape/recipes` call (admin only). New recipes keep the title, source link, photo link,
+servings, times, course and ingredients, plus `methodNotes` (short phrases like "deep fry. discard the
+marinade" that the engine reads). They do **not** copy the author's description or steps; the recipe
+pop-up links to Panlasang Pinoy for the method. Unknown ingredients hide the recipe as usual.
+
+It runs by itself every day (`/api/cron/recipes`, 03:15 UTC): each run crawls for ~45 s, then calls
+itself again with the `CRON_SECRET` Vercel sends, until every sitemap is read (Hobby crons can only run
+daily, hence the hops). Progress is the RECIPES row in `ScrapingLog`; the logic is `src/lib/recipe-crawl.ts`.
+To push it along by hand from the owner's computer (the token never goes through a cloud session):
+
+```bash
+cd scraper-backend
+node scripts/add-recipes.mjs            # ADMIN_TOKEN from the environment or scraper-backend/.env.local
+node scripts/add-recipes.mjs --max 50   # stop after 50 calls; run again to resume
+```
+
+Panlasang Pinoy has about 3,000 posts, so a target of ~5,000 recipes needs a second source (the
+owner's call).
+
 ## Data rules
 
 - **Do not scrape Shopee or Puregold** (terms risk). Open Food Facts is not wired in because of
@@ -146,6 +177,10 @@ required on `main`.
 - **Never guess a price silently.** Use a sourced row, or a labelled derived row with a factor
   and a reason. Otherwise leave it unpriced and let `costGaps` flag the dish.
 - **Never delete recipes from the database.** Hide them instead.
+- **Don't copy recipe prose or photos.** New recipes store method notes and a photo link, not text.
+- **Recipe photos stay linked from the source site** (owner's decision, 2026-10-28) until the source asks
+  otherwise; take them down promptly on request. Fallback plan: drawn dish-type illustrations for every
+  dish, Wikimedia Commons (credited) photos for the best-known dishes, then the owner's own photos.
 
 ## Measuring (local, git-ignored)
 
@@ -169,7 +204,6 @@ Last measured on 2026-10-16: 1,628 of 2,031 meals (80%) fully priced, 94% of lin
 - The Supabase password was once committed. It's removed from the repo but still in git history.
   The owner must rotate it, update `DATABASE_URL` and `DIRECT_URL` in Vercel, and set
   `ADMIN_TOKEN` in Vercel.
-- Rename the browser title to FARM2FIGURE? Waiting on the owner.
 - `/api/commodities` still lists one junk row named "b)", left from older DA data.
 - Price alerts only run while the site is open. Real push would need a service worker and a push
   server.

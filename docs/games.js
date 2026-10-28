@@ -90,9 +90,14 @@ function armReach(rating) {
   return (Math.min(10, Math.max(1, rating)) - 1) / 9;
 }
 
-/** A random dish with a photo that hasn't been rated yet; sauces and condiments are skipped. */
-function nextRateDish(recipes, rated, rng = Math.random) {
-  const pool = recipes.filter((r) => r.img && !(String(r.id) in rated) && r.category !== "Sauce & Condiment");
+/** Dishes with a photo not rated yet, of one kind ("ulam"/"meryenda") when given; sauces and condiments are skipped. */
+function ratePool(recipes, rated, kind = null, kindOf = typeof dishKind === "function" ? dishKind : () => "ulam") {
+  return recipes.filter((r) => r.img && !(String(r.id) in rated) && r.category !== "Sauce & Condiment" && (!kind || kindOf(r) === kind));
+}
+
+/** A random dish to rate (no model yet); see pickToLearn in taste.js for the active-learning pick. */
+function nextRateDish(recipes, rated, rng = Math.random, kind = null) {
+  const pool = ratePool(recipes, rated, kind);
   return pool.length ? pool[Math.floor(rng() * pool.length)] : null;
 }
 
@@ -116,6 +121,8 @@ function roundNote(m, winnerSide, rng = Math.random) {
 let gameRatings = {};      // { recipeId: 1-10 }
 let gameVsPicks = {};      // { "Sinigang|Adobo": { n: "Sinigang", w: winnerId, l: loserId } }
 let gameRateDish = null;
+let gameRateActive = false; // the dish was picked because the model is unsure about it
+let gameRateKind = "ulam";
 let gameRounds = [];
 let gameRound = 0;
 let gameRoundDone = false;
@@ -142,18 +149,37 @@ function setGameMode(mode) {
   document.getElementById("game-versus").classList.toggle("hidden", mode !== "versus");
   document.getElementById("game-taste").classList.toggle("hidden", mode !== "taste");
   if (typeof trackEvent === "function") trackEvent(`game/${mode}`);
-  if (mode === "rate") { if (!gameRateDish) gameRateDish = nextRateDish(RECIPES, gameRatings); renderRate(); }
+  if (mode === "rate") { if (!gameRateDish) chooseRateDish(); renderRate(); }
   else if (mode === "versus") startVersus();
   else renderTaste();
 }
 
 // ── Rate the ulam ──
 
+/** Active learning: the next dish is one the taste model (of this kind) is least sure about. */
+function chooseRateDish() {
+  const model = tasteModelFrom(RECIPES, gameRatings, gameVsPicks, gameRateKind);
+  const pick = pickToLearn(model, ratePool(RECIPES, gameRatings, gameRateKind), { vec: tasteVec });
+  gameRateDish = pick.r;
+  gameRateActive = pick.active;
+}
+
+function setRateKind(kind) {
+  gameRateKind = kind;
+  chooseRateDish();
+  renderRate();
+}
+
 function renderRate() {
   const box = document.getElementById("game-rate");
   const r = gameRateDish;
-  if (!r) { box.innerHTML = `<p class="text-sm text-gray-500 p-6 text-center">Na-rate mo na lahat! 🎉</p>${rateHistory()}`; return; }
-  box.innerHTML = `
+  const kinds = `<div class="flex gap-2 justify-center mb-3">
+    <button class="wx-btn ${gameRateKind === "ulam" ? "on" : ""}" onclick="setRateKind('ulam')">🍛 Ulam</button>
+    <button class="wx-btn ${gameRateKind === "meryenda" ? "on" : ""}" onclick="setRateKind('meryenda')">🍡 Meryenda</button>
+  </div>`;
+  if (!r) { box.innerHTML = `${kinds}<p class="text-sm text-gray-500 p-6 text-center">Na-rate mo na lahat! 🎉</p>${rateHistory()}`; return; }
+  box.innerHTML = `${kinds}
+    ${gameRateActive ? `<p class="text-xs text-center text-green-800 font-semibold mb-2">🧠 Pinili para mas makilala ang panlasa mo</p>` : ""}
     <div class="game-card">
       <img src="${escapeHtml(r.img)}" alt="" class="game-photo" loading="lazy">
       <div class="p-4">
@@ -196,12 +222,14 @@ function submitRate() {
   gameSave(GAME_RATE_KEY, gameRatings);
   tasteModelChanged();
   if (typeof trackEvent === "function") trackEvent("game/rated");
-  gameRateDish = nextRateDish(RECIPES, gameRatings);
+  chooseRateDish();
   renderRate();
 }
 
 function skipRate() {
-  gameRateDish = nextRateDish(RECIPES, gameRatings);
+  const skipped = gameRateDish;
+  chooseRateDish();
+  if (skipped && gameRateDish && gameRateDish.id === skipped.id) gameRateDish = nextRateDish(RECIPES, gameRatings, Math.random, gameRateKind);
   renderRate();
 }
 
@@ -307,25 +335,28 @@ function renderVersusEnd() {
 
 // ── Panlasa mo (taste profile and picks, from taste.js) ──
 
-/** Trains the taste model on this device's ratings and Versus picks. */
-function gameTasteModel() {
-  return tasteModelFrom(RECIPES, gameRatings, gameVsPicks);
+/** Trains the taste model for ulam or meryenda on this device's ratings and Versus picks. */
+function gameTasteModel(kind = "ulam") {
+  return tasteModelFrom(RECIPES, gameRatings, gameVsPicks, kind);
 }
 
+const GAME_KIND_LABEL = { ulam: "🍛 Ulam", meryenda: "🍡 Meryenda" };
+
 function renderTaste() {
-  const box = document.getElementById("game-taste");
-  const model = gameTasteModel();
+  document.getElementById("game-taste").innerHTML = tasteSection("ulam") + tasteSection("meryenda");
+}
+
+/** One kind's profile and picks, or how many more answers it needs. */
+function tasteSection(kind) {
+  const model = gameTasteModel(kind);
   if (model.answers < TASTE_MIN_ANSWERS) {
     const left = TASTE_MIN_ANSWERS - model.answers;
-    box.innerHTML = `<div class="game-card p-6 text-center">
-      <p class="text-4xl">🧠</p>
-      <p class="font-display text-xl font-bold mt-2">Kilalanin natin ang panlasa mo</p>
-      <p class="text-sm text-gray-500 mt-2">Mag-rate o maglaro ng Versus ng ${left} pa para makita kung anong klaseng ulam ang hilig mo.</p>
-      <div class="flex gap-2 justify-center mt-4">
-        <button onclick="setGameMode('rate')" class="bg-green-800 text-amber-50 rounded-full px-5 py-2 text-sm font-semibold">⭐ Rate</button>
-        <button onclick="setGameMode('versus')" class="border border-gray-200 rounded-full px-5 py-2 text-sm font-semibold text-gray-600">⚔️ Versus</button>
-      </div></div>`;
-    return;
+    return `<div class="game-card p-5 text-center mb-4">
+      <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">${GAME_KIND_LABEL[kind]}</p>
+      <p class="font-display text-lg font-bold mt-1">Kilalanin natin ang panlasa mo sa ${kind}</p>
+      <p class="text-sm text-gray-500 mt-1">Mag-rate ng ${left} pang ${kind}${kind === "ulam" ? " (o maglaro ng Versus)" : ""} para makita ang hilig mo.</p>
+      <button onclick="setGameMode('rate'); setRateKind('${kind}')" class="mt-3 bg-green-800 text-amber-50 rounded-full px-5 py-2 text-sm font-semibold">⭐ Rate ${kind}</button>
+    </div>`;
   }
   const prof = tasteProfile(model);
   const max = Math.max(0.3, ...prof.items.map((t) => Math.abs(t.w)));
@@ -335,10 +366,10 @@ function renderTaste() {
     return `<div class="taste-row"><span class="taste-label">${t.icon} ${escapeHtml(t.label)}</span>
       <span class="taste-track"><span class="taste-bar ${t.w >= 0 ? "pos" : "neg"}" style="${side}"></span></span></div>`;
   }).join("");
-  const picks = recommendDishes(model, RECIPES, gameRatings);
-  box.innerHTML = `
+  const picks = recommendDishes(model, RECIPES, gameRatings, 6, tasteVec, kind);
+  return `
     <div class="game-card p-5">
-      <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Panlasa mo · from ${model.answers} answers</p>
+      <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">${GAME_KIND_LABEL[kind]} · Panlasa mo · from ${model.answers} answers</p>
       <p class="font-display text-xl font-bold mt-1 leading-snug">${escapeHtml(prof.sentence || "Wala ka pang malinaw na paborito. Laro pa!")}</p>
       <div class="mt-4">${bars}</div>
       <div class="flex justify-between text-[.65rem] text-gray-400 mt-1"><span>← hindi masyado</span><span>mas gusto →</span></div>
@@ -354,5 +385,6 @@ function renderTaste() {
         </button>`).join("")}
       </div>
       <p class="text-[.7rem] text-gray-400 mt-3">Learned on this phone only from your ratings and Versus picks. The more you play, the better it gets.</p>
-    </div>`;
+    </div>
+    <div class="mb-4"></div>`;
 }

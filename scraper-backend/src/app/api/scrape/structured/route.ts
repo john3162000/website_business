@@ -107,7 +107,9 @@ export async function POST(request: Request) {
   return Response.json({ done, read, gone, failed, remaining });
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const denied = requireAdmin(request);
+  if (denied) return denied;
   const logs = await prisma.scrapingLog.findMany({
     where: { type: TYPE },
     orderBy: { id: "desc" },

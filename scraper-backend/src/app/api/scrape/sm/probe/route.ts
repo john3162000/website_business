@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/lib/admin-auth";
 import { prisma } from "@/lib/db";
 import { probeSMProduct } from "@/lib/scrapers/sm-scraper";
 
@@ -11,6 +12,8 @@ export const maxDuration = 60;
  * nutrition fields we find can be wired back to the priced StoreProduct row.
  */
 export async function GET(request: Request) {
+  const denied = requireAdmin(request);
+  if (denied) return denied;
   const { searchParams } = new URL(request.url);
   let sku = searchParams.get("sku")?.trim();
 

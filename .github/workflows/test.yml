@@ -7,6 +7,10 @@ on:
   push:
     branches: [main]
 
+# Tests only read the code.
+permissions:
+  contents: read
+
 jobs:
   backend:
     name: Backend tests and type check

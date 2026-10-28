@@ -1,14 +1,19 @@
 /**
  * Panlasang Pinoy full-site recipe scraper.
- * Crawls every recipe index page (stopping only when a page yields no recipes)
- * and stores each recipe — including ingredients and step-by-step instructions —
- * as static snapshot data.
+ * Walks every post sitemap and stores each new recipe: title, source link, photo
+ * link, servings, times, course and the ingredient list. The author's description
+ * and steps are not copied; only short method notes the pricing engine reads
+ * ("deep fry", "discard the marinade", "oven") are kept, and the site links to the
+ * original page for the full method. Recipes saved before 2026-10-27 keep the
+ * fields they were saved with.
  */
 
 import * as cheerio from "cheerio";
 import { prisma } from "@/lib/db";
 import { ensureRecipeColumns } from "@/lib/ensure-schema";
 import { parseStructured, type RefNutrition } from "./recipe-structured";
+import { postSitemapsFromIndex, urlsFromSitemap } from "./sitemaps";
+import { methodNotes } from "@/lib/recipe-compile/compile";
 
 const BASE_URL = "https://panlasangpinoy.com";
 // The "/recipes/" landing page only lists a small curated subset (~68
@@ -17,11 +22,37 @@ const BASE_URL = "https://panlasangpinoy.com";
 // files), which is the actual full catalog. Not every post is a recipe
 // (some are roundups/articles), so non-recipe pages are skipped during
 // scraping based on the absence of WPRM recipe markup.
+// Used when the sitemap index can't be read; the index also lists newer ones (post-sitemap4, …).
 const POST_SITEMAPS = [
   `${BASE_URL}/post-sitemap.xml`,
   `${BASE_URL}/post-sitemap2.xml`,
   `${BASE_URL}/post-sitemap3.xml`,
 ];
+
+// Sitemaps change rarely: a warm server instance reuses them for a while instead of
+// downloading them again for every chunk of 4 recipes.
+const SITEMAP_TTL_MS = 15 * 60_000;
+const sitemapCache = new Map<string, { at: number; urls: string[] }>();
+
+async function cached(key: string, load: () => Promise<string[]>): Promise<string[]> {
+  const hit = sitemapCache.get(key);
+  if (hit && Date.now() - hit.at < SITEMAP_TTL_MS) return hit.urls;
+  const urls = await load();
+  sitemapCache.set(key, { at: Date.now(), urls });
+  return urls;
+}
+
+/** The post sitemaps from the site's sitemap index, or the known three when it can't be read. */
+async function postSitemaps(): Promise<string[]> {
+  return cached("index", async () => {
+    try {
+      const found = postSitemapsFromIndex(await fetchHtml(`${BASE_URL}/sitemap_index.xml`));
+      return found.length ? found : POST_SITEMAPS;
+    } catch {
+      return POST_SITEMAPS;
+    }
+  });
+}
 const DELAY_MS = 1500;
 
 function sleep(ms: number) {
@@ -61,7 +92,6 @@ interface ScrapedRecipe {
   title: string;
   url: string;
   imageUrl?: string;
-  description?: string;
   servings?: number;
   prepTime?: number;
   cookTime?: number;
@@ -79,11 +109,6 @@ async function scrapeRecipePage(url: string): Promise<ScrapedRecipe | null> {
 
   const title = $(".wprm-recipe-name").first().text().trim() || $("h1").first().text().trim();
   if (!title) return null;
-
-  const description =
-    $(".wprm-recipe-summary").first().text().trim() ||
-    $("meta[name='description']").attr("content") ||
-    undefined;
 
   // Images are lazy-loaded (perfmatters): in the raw server HTML `src` is an
   // inline SVG placeholder and the real URL lives in `data-src`/`data-lazy-src`.
@@ -127,7 +152,7 @@ async function scrapeRecipePage(url: string): Promise<ScrapedRecipe | null> {
   });
 
   return {
-    title, url, imageUrl, description, servings, prepTime, cookTime,
+    title, url, imageUrl, servings, prepTime, cookTime,
     course: structured.courses.join(", ") || undefined,
     cuisine: structured.cuisines.join(", ") || undefined,
     yieldText: structured.yieldText ?? undefined,
@@ -137,14 +162,7 @@ async function scrapeRecipePage(url: string): Promise<ScrapedRecipe | null> {
 }
 
 async function getRecipeUrlsFromSitemap(sitemapUrl: string): Promise<string[]> {
-  const xml = await fetchHtml(sitemapUrl);
-  const $ = cheerio.load(xml, { xmlMode: true });
-  const urls: string[] = [];
-  $("url > loc").each((_, el) => {
-    const href = $(el).text().trim();
-    if (href.startsWith(BASE_URL)) urls.push(href);
-  });
-  return urls;
+  return cached(sitemapUrl, async () => urlsFromSitemap(await fetchHtml(sitemapUrl), BASE_URL));
 }
 
 // Cap on how many *new* recipes a single chunk scrapes — each one costs a
@@ -173,14 +191,15 @@ export async function scrapeRecipeChunk(
   onProgress?: (msg: string) => void
 ): Promise<{ saved: number; cursor: RecipeCursor; done: boolean }> {
   const { sitemapIndex } = cursor;
+  const sitemaps = await postSitemaps();
 
-  if (sitemapIndex >= POST_SITEMAPS.length) {
+  if (sitemapIndex >= sitemaps.length) {
     onProgress?.("All post sitemaps processed — reached the end.");
     return { saved: 0, cursor, done: true };
   }
 
   await ensureRecipeColumns();
-  const sitemapUrl = POST_SITEMAPS[sitemapIndex];
+  const sitemapUrl = sitemaps[sitemapIndex];
   onProgress?.(`Fetching sitemap: ${sitemapUrl}...`);
 
   let urls: string[];
@@ -200,12 +219,12 @@ export async function scrapeRecipeChunk(
   let saved = 0;
   let index = cursor.urlIndex;
   let newCount = 0;
+  // One query for the whole sitemap instead of one per URL: most posts are saved already.
+  const known = new Set((await prisma.recipe.findMany({ where: { url: { in: urls } }, select: { url: true } })).map((r) => r.url));
 
   while (index < urls.length && newCount < MAX_NEW_PER_CHUNK) {
     const url = urls[index];
-    const existing = await prisma.recipe.findUnique({ where: { url } });
-    if (existing) {
-      onProgress?.(`Already in DB, skipping: ${url}`);
+    if (known.has(url)) {
       index++;
       continue;
     }
@@ -228,12 +247,13 @@ export async function scrapeRecipeChunk(
       continue;
     }
 
-    await prisma.recipe.create({
+    const created = await prisma.recipe.create({
       data: {
         title: scraped.title,
         url: scraped.url,
+        // A link to the photo on Panlasang Pinoy (not a copy); no description or steps (see the top of this file).
         imageUrl: scraped.imageUrl,
-        description: scraped.description,
+        methodNotes: methodNotes(scraped.instructions) || null,
         servings: scraped.servings,
         prepTime: scraped.prepTime,
         cookTime: scraped.cookTime,
@@ -252,14 +272,13 @@ export async function scrapeRecipeChunk(
             groupName: ing.groupName,
           })),
         },
-        instructions: {
-          create: scraped.instructions.map((text, idx) => ({
-            stepNumber: idx + 1,
-            text,
-          })),
-        },
       },
+    }).catch((err: unknown) => {
+      // Saved meanwhile by another run (unique url): skip it instead of failing the crawl.
+      if ((err as { code?: string }).code === "P2002") return null;
+      throw err;
     });
+    if (!created) { index++; continue; }
 
     saved++;
     newCount++;

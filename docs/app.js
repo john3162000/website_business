@@ -126,6 +126,7 @@ function buildRecipe(raw, c) {
     kcalLow: n.kcalLow != null ? Math.round(n.kcalLow) : null,
     kcalHigh: n.kcalHigh != null ? Math.round(n.kcalHigh) : null,
     frying: n.frying || null,
+    appliances: n.appliances || [],
     sodium: n.sodium ?? null,
     refKcal: n.refKcal ?? null,
     protein: round1(perServing.protein),
@@ -287,7 +288,7 @@ function buildRecipeCard(r) {
       </div>
       <div class="p-4 flex flex-col gap-2 flex-1">
         <h3 class="font-semibold text-gray-900 leading-snug group-hover:text-green-700 transition-colors">${escapeHtml(r.title)}</h3>
-        <span class="text-xs text-gray-400 uppercase tracking-wide">${r.category}</span>
+        <span class="text-xs text-gray-400 uppercase tracking-wide">${escapeHtml(r.category)}</span>
         ${sulitMeter(r)}
         <div class="flex flex-wrap gap-1 mt-auto pt-2">
           <span class="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-medium">${costText(r)}/serving</span>
@@ -329,15 +330,15 @@ function ingredientRows(lines) {
   }).join("");
 }
 
-function buildModal(r, instructions, lines) {
+/**
+ * The recipe pop-up. We show the dish (the source's photo, linked and credited), its cost and
+ * nutrition; the cooking steps stay on the source site, behind the "Paano lutuin?" button.
+ */
+function buildModal(r, lines) {
   const nutr = r.nutrition;
   const ingRows = lines ? ingredientRows(lines) : `<p class="text-sm text-gray-400">Loading ingredients…</p>`;
-  const steps = (instructions && instructions.length ? instructions : ["Full instructions are on the original recipe page."])
-    .map((s, i) => `
-    <li class="flex gap-4">
-      <span class="flex-shrink-0 w-8 h-8 bg-green-700 text-white rounded-full flex items-center justify-center text-sm font-bold">${i + 1}</span>
-      <p class="text-gray-700 leading-relaxed pt-1">${escapeHtml(s)}</p>
-    </li>`).join("");
+  const src = r.url ? recipeSource(r.url) : null;
+  const srcLink = (cls, label) => `<a href="${escapeHtml(r.url)}" target="_blank" rel="noopener" class="${cls}" data-ev="cook/${escapeHtml(src.host)}" onclick="trackEvent(this.dataset.ev)">${label}</a>`;
 
   const nutriBars = [
     { label: "Protein", val: nutr.protein, key: "protein", unit: "g" },
@@ -376,7 +377,7 @@ function buildModal(r, instructions, lines) {
       <div>
         <h2 class="text-2xl font-bold">${escapeHtml(r.title)}</h2>
         <span class="text-sm text-gray-500">${r.category} · ${r.servings} servings${r.servingsAssumed ? " (assumed: the recipe doesn’t say)" : ""}${(r.prepTime || 0) + (r.cookTime || 0) > 0 ? ` · ${(r.prepTime || 0) + (r.cookTime || 0)} min` : ""}</span>
-        ${r.url ? `<a href="${escapeHtml(r.url)}" target="_blank" rel="noopener" class="block text-xs text-green-700 hover:underline mt-1">View original on Panlasang Pinoy ↗</a>` : ""}
+        ${src ? `<p class="text-xs text-gray-500 mt-1">Recipe &amp; photo: ${srcLink("text-green-700 font-semibold hover:underline", `${escapeHtml(src.name)} ↗`)}</p>` : ""}
         <div class="flex flex-wrap gap-2 mt-2">
           ${r.id ? favButton(r.id, "pill") : ""}
           ${r.id ? `<button id="share-btn" onclick="shareRecipe(${r.id})" class="text-xs font-semibold bg-green-800 hover:bg-green-700 text-amber-50 px-3 py-1 rounded-full">💬 Share to Messenger</button>` : ""}
@@ -388,6 +389,7 @@ function buildModal(r, instructions, lines) {
 
     <div class="grid md:grid-cols-3 gap-6">
       <div class="md:col-span-2 space-y-6">
+        ${r.img ? `<figure class="modal-photo"><img src="${escapeHtml(r.img)}" alt="${escapeHtml(r.title)}">${src ? srcLink("photo-credit", `📷 ${escapeHtml(src.name)}`) : ""}</figure>` : ""}
         <div class="flex flex-wrap gap-3">
           <div class="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-center">
             <p class="text-2xl font-bold text-green-700">${r.ranked ? r.valueScore : "—"}</p>
@@ -407,6 +409,7 @@ function buildModal(r, instructions, lines) {
           </div>
         </div>
 
+        ${needsHtml(r)}
         ${typeof factBoxHtml === "function" ? factBoxHtml(r) : ""}
 
         <div>
@@ -423,10 +426,11 @@ function buildModal(r, instructions, lines) {
           ${r.costIncomplete ? `<p class="mt-2 text-xs bg-amber-100 text-amber-900 rounded-xl px-4 py-2">⚠ <strong>Incomplete price data:</strong> no price yet for ${escapeHtml(r.costGaps.join(", "))}. The real cost is higher than shown, so this dish is listed last.</p>` : ""}
         </div>
 
-        <div>
-          <h3 class="font-bold text-lg mb-3">Instructions</h3>
-          <div id="video-links" class="flex flex-wrap gap-2 mb-4" data-recipe="${r.id}"></div>
-          <ol class="space-y-4">${steps}</ol>
+        <div class="cook-card">
+          <h3 class="font-display font-bold text-xl">Paano lutuin? 👩‍🍳</h3>
+          <p class="text-sm text-gray-600 mt-1 mb-3">${src ? `Nasa ${escapeHtml(src.name)} ang buong recipe: ang mga hakbang, tips at video ng gumawa nito.` : "Full instructions are on the original recipe page."}</p>
+          ${src ? srcLink("cook-btn", `📖 See the recipe on ${escapeHtml(src.name)} ↗`) : ""}
+          <div id="video-links" class="flex flex-wrap gap-2 mt-3" data-recipe="${r.id}"></div>
         </div>
         ${similarHtml(r)}
       </div>
@@ -572,13 +576,15 @@ function mealTags(id) {
 }
 
 function moverRow(m) {
-  const known = RECIPES.some((r) => r.id === m.id);
+  const rec = RECIPES.find((r) => r.id === m.id);
+  const known = !!rec;
   const drivers = (m.drivers || [])
     .filter((d) => d.change != null && Math.abs(d.change) >= 0.05)
     .map((d) => `${escapeHtml(d.label)} ${pctText(d.change)}`).join(", ");
   return `
-    <div class="flex items-start justify-between gap-3 rounded-lg px-2 py-1.5 ${known ? "cursor-pointer hover:bg-gray-50" : ""}" ${known ? `onclick="openModal(${m.id})"` : ""}>
-      <div class="min-w-0">
+    <div class="flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 ${known ? "cursor-pointer hover:bg-gray-50" : ""}" ${known ? `onclick="openModal(${m.id})"` : ""}>
+      ${rec && rec.img ? `<img src="${escapeHtml(rec.img)}" alt="" loading="lazy" class="mover-img">` : `<span class="mover-img mover-img-empty">🍽️</span>`}
+      <div class="min-w-0 flex-1">
         <p class="font-medium truncate">${known ? favButton(m.id) : ""} ${escapeHtml(m.title)}</p>
         ${mealTags(m.id)}
         ${drivers ? `<p class="text-xs text-gray-400 truncate">${drivers}</p>` : ""}
@@ -591,6 +597,62 @@ function moverRow(m) {
 }
 
 const moversCache = new Map();
+const MOVERS_SHOWN = 8;
+let moversFell = new Map(); // recipe id → cost change, for dishes that got cheaper
+
+/** Price movers that are ulam (not sauces, sweets or snacks), one per title, at most 8. */
+function ulamMovers(list) {
+  const byId = new Map(RECIPES.map((r) => [r.id, r]));
+  const seen = new Set();
+  return (list || []).filter((m) => {
+    const r = byId.get(m.id);
+    if (!r || (typeof dishKind === "function" ? dishKind(r) !== "ulam" : r.category === "Sauce & Condiment")) return false;
+    const t = r.title.trim().toLowerCase();
+    if (seen.has(t)) return false;
+    seen.add(t);
+    return true;
+  }).slice(0, MOVERS_SHOWN);
+}
+
+/**
+ * "Mura ngayon at bagay sa panlasa mo": cheap ulam the player's taste model
+ * (from Laro) likes, cheapest first; ones whose cost just fell get a nudge
+ * and a "▼ x%" tag. Hidden without a profile or a match; a teaser invites
+ * people who haven't played yet.
+ */
+function renderPriceForYou(fellById = new Map()) {
+  const box = document.getElementById("prices-foryou");
+  if (!box || typeof currentTasteModel !== "function") return;
+  if (typeof suggestOn === "function" && !suggestOn()) { box.classList.add("hidden"); return; }
+  const model = currentTasteModel("ulam");
+  if (!model) {
+    box.innerHTML = `<p class="text-sm text-gray-600">🧠 Gusto mo ng murang ulam na bagay sa panlasa mo? <button onclick="showSection('game')" class="font-semibold text-green-800 hover:underline">Maglaro sa Laro</button> para matuto ang app.</p>`;
+    box.classList.remove("hidden");
+    return;
+  }
+  const kitchen = (r) => typeof kitchenOk !== "function" || kitchenOk(r);
+  const seen = new Set();
+  const picks = RECIPES
+    .filter((r) => r.img && r.ranked && !r.costIncomplete && r.costPerServing > 0 && dishKind(r) === "ulam" && kitchen(r))
+    .map((r) => ({ r, taste: tasteScore(model, tasteVec(r)), fell: fellById.get(r.id) }))
+    .filter((p) => p.taste >= TASTE_MATCH)
+    .sort((a, b) => (a.r.costPerServing * (a.fell ? 1 + a.fell : 1)) - (b.r.costPerServing * (b.fell ? 1 + b.fell : 1)))
+    .filter(({ r }) => { const t = r.title.trim().toLowerCase(); if (seen.has(t)) return false; seen.add(t); return true; })
+    .slice(0, 4);
+  if (!picks.length) { box.classList.add("hidden"); return; }
+  box.innerHTML = `
+    <h2 class="text-xl font-bold mb-1">🧠 Mura ngayon at bagay sa panlasa mo</h2>
+    <p class="text-xs text-gray-500 mb-3">Mula sa mga sagot mo sa Laro, pinakamura muna (presyo ngayon).</p>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">${picks.map(({ r, fell }) => `
+      <button class="taste-pick bg-white rounded-2xl shadow p-2" onclick="openModal(${r.id})">
+        <img src="${escapeHtml(r.img)}" alt="" loading="lazy">
+        <span class="taste-pick-name">${escapeHtml(r.title)}</span>
+        <span class="taste-pick-why">${escapeHtml(tasteReasons(model, tasteVec(r)).join(" · ") || "bagay sa'yo")}</span>
+        <span class="taste-pick-price">₱${r.costPerServing}/serving${fell ? ` · <span class="price-down">▼ ${Math.round(-fell * 100)}%</span>` : ""}</span>
+      </button>`).join("")}
+    </div>`;
+  box.classList.remove("hidden");
+}
 
 async function loadMovers() {
   if (moversLoaded) return;
@@ -602,7 +664,8 @@ async function loadMovers() {
     // Each period is fetched once; switching back is instant.
     let m = moversCache.get(period.days);
     if (!m) {
-      const res = await fetch(`${API_BASE}/api/recipes/price-movers?limit=8&days=${period.days}`);
+      // Ask for more than shown: only ulam are listed, so the rest are filtered out below.
+      const res = await fetch(`${API_BASE}/api/recipes/price-movers?limit=50&days=${period.days}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       m = await res.json();
       moversCache.set(period.days, m);
@@ -617,8 +680,11 @@ async function loadMovers() {
     }
     const min = `${Math.round((m.thresholds?.minChange ?? 0.1) * 100)}%`;
     summary.textContent = `Since ${shortDate(new Date(m.compareDate))} · ${m.compared.toLocaleString()} dishes compared · typical dish ${pctText(m.medianChange)} · ${m.rising} pricier, ${m.falling} cheaper by ${min} or more`;
-    document.getElementById("movers-rose").innerHTML = m.rose.map(moverRow).join("") || `<p class="text-gray-400 px-2 py-1.5">No dish rose by ${min} or more.</p>`;
-    document.getElementById("movers-fell").innerHTML = m.fell.map(moverRow).join("") || `<p class="text-gray-400 px-2 py-1.5">No dish fell by ${min} or more.</p>`;
+    const rose = ulamMovers(m.rose), fell = ulamMovers(m.fell);
+    document.getElementById("movers-rose").innerHTML = rose.map(moverRow).join("") || `<p class="text-gray-400 px-2 py-1.5">No ulam rose by ${min} or more.</p>`;
+    document.getElementById("movers-fell").innerHTML = fell.map(moverRow).join("") || `<p class="text-gray-400 px-2 py-1.5">No ulam fell by ${min} or more.</p>`;
+    moversFell = new Map(m.fell.map((x) => [x.id, x.change]));
+    renderPriceForYou(moversFell);
   } catch (e) {
     moversLoaded = false; // try again next time the tab opens
     summary.textContent = `Couldn’t load price changes (${e.message}).`;
@@ -627,10 +693,14 @@ async function loadMovers() {
 
 // "Para sa'yo": once a player has a taste profile (from the Laro tab), Browse
 // offers it as a sort and starts on it, unless they already picked another sort.
-let BROWSE_MODEL = null;
+let BROWSE_MODEL = null; // ulam profile (or meryenda when that's all there is); BROWSE_MODELS has both
+let BROWSE_MODELS = {};
 let forYouDefaulted = false;
 function syncForYouSort() {
-  BROWSE_MODEL = typeof currentTasteModel === "function" ? currentTasteModel() : null;
+  // "Suggest ka pa" off in Settings: no taste sort or badges.
+  const suggest = typeof suggestOn !== "function" || suggestOn();
+  BROWSE_MODELS = suggest && typeof currentTasteModel === "function" ? { ulam: currentTasteModel("ulam"), meryenda: currentTasteModel("meryenda") } : {};
+  BROWSE_MODEL = BROWSE_MODELS.ulam || BROWSE_MODELS.meryenda || null;
   const sel = document.getElementById("sort-select");
   const opt = sel.querySelector('option[value="forYou"]');
   opt.hidden = opt.disabled = !BROWSE_MODEL;
@@ -641,15 +711,17 @@ function syncForYouSort() {
 
 /** Taste match plus a nudge toward sulit dishes, for the "Para sa'yo" sort. */
 function forYouScore(r, maxValue) {
-  return tasteScore(BROWSE_MODEL, tasteVec(r)) + 0.25 * ((r.valueScore || 0) / maxValue);
+  const m = BROWSE_MODELS[dishKind(r)];
+  return (m ? tasteScore(m, tasteVec(r)) : 0) + 0.25 * ((r.valueScore || 0) / maxValue);
 }
 
 /** "🧠 bagay sa'yo · 🍋 maasim" on cards that fit the player's taste. */
 function forYouBadge(r) {
-  if (!BROWSE_MODEL) return "";
+  const m = BROWSE_MODEL && BROWSE_MODELS[dishKind(r)];
+  if (!m) return "";
   const x = tasteVec(r);
-  if (tasteScore(BROWSE_MODEL, x) < TASTE_MATCH) return "";
-  const why = tasteReasons(BROWSE_MODEL, x, 1)[0];
+  if (tasteScore(m, x) < TASTE_MATCH) return "";
+  const why = tasteReasons(m, x, 1)[0];
   return `<div class="absolute top-2 right-2 bg-green-800/90 text-amber-50 text-xs font-semibold px-2 py-1 rounded-full shadow">🧠 bagay sa'yo${why ? ` · ${escapeHtml(why)}` : ""}</div>`;
 }
 
@@ -665,6 +737,9 @@ function filterRecipes() {
   const kcalFilter = minKcal > 0 || maxKcal !== Infinity;
 
   const filtered = RECIPES.filter((r) => {
+    if (typeof kitchenOk === "function" && !kitchenOk(r)) return false;
+    // Settings: every chosen diet, and the Fish / Chicken / Pork / Beef chips (planner.js helpers).
+    if (!dietsOk(r, activeDiets()) || !meatOk(r, activeMeats())) return false;
     if (r.protein < minProt) return false;
     // Calorie filters need trustworthy calories: a dish missing most nutrition data would look "light".
     if (kcalFilter && (!kcalKnown(r) || r.calories < minKcal || r.calories > maxKcal)) return false;
@@ -686,6 +761,7 @@ function filterRecipes() {
     return (b[sort] || 0) - (a[sort] || 0);
   }
 
+  if (typeof kitchenSummary === "function") document.querySelectorAll("[data-kitchen-summary]").forEach((el) => { el.textContent = kitchenSummary(); });
   document.getElementById("result-count").textContent = `${filtered.length.toLocaleString()} recipe${filtered.length !== 1 ? "s" : ""} found${forYou ? " · sorted by your panlasa 🧠" : ""}`;
   // Render in pages so 2,000 cards don't block the page.
   const shown = filtered.slice(0, browseLimit);
@@ -740,7 +816,7 @@ function setPreset(kind) {
 const MODE_KEY = "sarapsulit.weatherMode";
 const SORT_KEY = "sarapsulit.pickSort";
 const MOOD_ICON = { sunny: "☀️", rainy: "🌧️", cool: "🌥️", mild: "⛅" };
-let lastWeather = null; // { w, place } from Open-Meteo
+let lastWeather = null; // { w, place, limits } from Open-Meteo
 let weatherError = null;
 let weatherMode = readPref(MODE_KEY, ["auto", "sunny", "rainy", "cool"], "auto");
 let pickSort = readPref(SORT_KEY, Object.keys(PICK_SORTS), "value");
@@ -775,14 +851,16 @@ function setRainy(on) {
 function renderWeather() {
   document.querySelectorAll("[data-mode]").forEach((b) => b.classList.toggle("on", b.dataset.mode === weatherMode));
   document.querySelectorAll("[data-sort]").forEach((b) => b.classList.toggle("on", b.dataset.sort === pickSort));
-  const live = lastWeather ? weatherMood(lastWeather.w) : null;
+  const live = lastWeather ? weatherMood(lastWeather.w, lastWeather.limits) : null;
   const mood = weatherMode === "auto" ? live : weatherMode;
   const sub = document.getElementById("weather-sub");
   if (lastWeather) {
     const { w, place } = lastWeather;
     const label = weatherLabel(w.code);
     const rain = w.rainChance6h > 0 ? ` · ${w.rainChance6h}% chance of rain in the next 6 hours` : "";
-    sub.textContent = `${Math.round(w.temp)}°C, feels like ${Math.round(w.apparent)}°C, ${label.text}${rain} · ${place === MANILA ? MANILA.name : "near you"}`
+    const lim = lastWeather.limits;
+    const limits = lim ? ` · init kapag ≥ ${Math.round(lim.hot)}°C, lamig kapag ≤ ${Math.round(lim.cold)}°C (${lim.source === "last year" ? "top/bottom 15% of last year" : "estimate"})` : "";
+    sub.textContent = `${Math.round(w.temp)}°C, feels like ${Math.round(w.apparent)}°C, ${label.text}${rain} · ${place === MANILA ? MANILA.name : "near you"}${limits}`
       + (weatherMode !== "auto" ? ` · showing ${weatherMode} picks (your choice)` : "");
   } else if (weatherError) {
     sub.textContent = `Couldn’t get the weather (${weatherError})${weatherMode !== "auto" ? `. Showing ${weatherMode} picks.` : ". Pick a weather above."}`;
@@ -802,8 +880,12 @@ function renderWeather() {
 
 async function showWeather(place) {
   try {
-    const [w] = await Promise.all([fetchWeather(place), DATA_READY ? DATA_READY.catch(() => {}) : null]);
-    lastWeather = { w, place };
+    const [w, limits] = await Promise.all([
+      fetchWeather(place),
+      fetchClimateLimits(place).catch(() => FALLBACK_LIMITS),
+      DATA_READY ? DATA_READY.catch(() => {}) : null,
+    ]);
+    lastWeather = { w, place, limits };
     weatherError = null;
   } catch (e) {
     weatherError = e.message;
@@ -826,33 +908,37 @@ async function loadWeatherPicks() {
 
 // ═══════════════ MODAL ═══════════════
 
-let MODAL_DATA = null; // { id, instructions, lines } of the open recipe, for the share picture
+let MODAL_DATA = null; // { id, lines } of the open recipe, for the share picture
 
 async function openModal(id) {
   const r = RECIPES.find((x) => x.id === id);
   if (!r) return;
   trackEvent("recipe-open");
-  MODAL_DATA = { id, instructions: [], lines: [] };
+  MODAL_DATA = { id, lines: [] };
   if (history.replaceState) history.replaceState(null, "", `#recipe=${id}`);
-  document.getElementById("modal-content").innerHTML = buildModal(r, ["Loading instructions…"], null);
+  document.getElementById("modal-content").innerHTML = buildModal(r, null);
   document.getElementById("recipe-modal").classList.add("open");
   document.body.style.overflow = "hidden";
-  const [detail, compiled] = await Promise.all([
-    fetch(`${API_BASE}/api/recipes/${id}`).then((res) => res.json()).catch(() => null),
-    fetch(`${API_BASE}/api/recipes/compiled?id=${id}`).then((res) => (res.ok ? res.json() : null)).catch(() => null),
-  ]);
-  const instructions = detail && detail.recipe ? (detail.recipe.instructions || []).map((s) => s.text) : [];
+  // Only the priced ingredient lines; the steps are not loaded (they stay on the source site).
+  const compiled = await fetch(`${API_BASE}/api/recipes/compiled?id=${id}`).then((res) => (res.ok ? res.json() : null)).catch(() => null);
   const lines = compiled && compiled.recipe ? compiled.recipe.lines : [];
-  if (MODAL_DATA && MODAL_DATA.id === id) MODAL_DATA = { id, instructions, lines };
+  if (MODAL_DATA && MODAL_DATA.id === id) MODAL_DATA = { id, lines };
   if (!document.getElementById("recipe-modal").classList.contains("open")) return;
-  document.getElementById("modal-content").innerHTML = buildModal(r, instructions, lines);
+  document.getElementById("modal-content").innerHTML = buildModal(r, lines);
   loadVideoLinks(r);
+}
+
+/** "Kailangan: Oven, Mixer" under the scores, when the recipe needs more than a stove. */
+function needsHtml(r) {
+  if (!r.appliances || !r.appliances.length || typeof KITCHEN_ITEMS === "undefined") return "";
+  const names = r.appliances.map((k) => (KITCHEN_ITEMS.find((i) => i.key === k) || { label: k }).label);
+  return `<p class="text-sm text-gray-600">🍳 <b>Kailangan:</b> ${escapeHtml(names.join(", "))} <button onclick="openKitchen()" class="text-xs font-semibold text-green-800 hover:underline ml-1">Ang kusina ko</button></p>`;
 }
 
 /** "Kahawig na ulam": four dishes like this one (taste tags and shared ingredients). */
 function similarHtml(r) {
   if (typeof similarDishes !== "function") return "";
-  const model = typeof currentTasteModel === "function" ? currentTasteModel() : null;
+  const model = typeof currentTasteModel === "function" ? currentTasteModel(dishKind(r)) : null;
   const sims = similarDishes(r, RECIPES, 4, model);
   if (!sims.length) return "";
   return `<div>
@@ -924,8 +1010,8 @@ function showSection(name) {
   });
   window.scrollTo(0, 0);
   trackEvent(`section/${name}`);
-  if (name === "browse") filterRecipes();
-  if (name === "prices") { loadMovers(); renderAlerts(); }
+  if (name === "browse") { filterRecipes(); if (typeof renderOccasion === "function") renderOccasion(); }
+  if (name === "prices") { loadMovers(); renderAlerts(); renderPriceForYou(moversFell); }
   if (name === "mydish") initMyDish();
   if (name === "planner") initPlanner();
   if (name === "finder") initFinder();
@@ -963,4 +1049,5 @@ function toggleTheme() {
   renderTopRecipes();
   renderPrices("all");
   filterRecipes();
+  if (typeof renderOccasion === "function") renderOccasion();
 })();

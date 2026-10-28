@@ -78,7 +78,7 @@ function confBadge(label, name, c, threshold) {
   const pct = Math.round(c * 100);
   const gated = c < threshold ? " · below gate" : "";
   return `<div><span class="${cls} text-xs px-2 py-0.5 rounded font-medium">${pct}%${gated}</span>
-          <div class="text-gray-700 mt-0.5">${name}</div></div>`;
+          <div class="text-gray-700 mt-0.5">${escapeHtml(name)}</div></div>`;
 }
 
 async function load() {
@@ -196,7 +196,7 @@ function render() {
 }
 
 function escapeHtml(s) {
-  return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
 function download() {
