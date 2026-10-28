@@ -16,6 +16,9 @@ async function posts(base) {
     try { maps = locs(await get(`${base}/${idx}`)).filter((u) => /post-sitemap\d*\.xml$|wp-sitemap-posts-post-\d+\.xml$/.test(u)); if (maps.length) break; } catch (e) { console.log(`  ${idx}: ${e.message}`); }
   }
   console.log(`${base}: ${maps.length} post sitemaps`);
+  for (const idx of ["sitemap_index.xml", "wp-sitemap.xml"]) {
+    try { const all = locs(await get(`${base}/${idx}`)); console.log(`  ${idx} lists: ${all.map((u) => u.split("/").pop()).join(", ")}`); } catch {}
+  }
   const urls = new Set();
   for (const m of maps) for (const u of locs(await get(m))) if (u.startsWith(base) && !/\.(jpe?g|png|webp)$/i.test(u)) urls.add(u);
   return [...urls];
