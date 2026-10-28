@@ -33,6 +33,8 @@ docs/                         static site, no build step (Tailwind CDN, plain br
   alerts.js                   price alerts (localStorage + browser notifications)
   share.js                    share a recipe as a PNG (canvas) → share sheet / Messenger
   tour.js                     first-time tour (Taglish), replay with the "?" header button
+  seasons.js                  Okasyon strip in Browse: holiday/special-event picks (Easter-based Holy Week,
+                              lunar-table CNY/Eids, fixed dates), chips to look ahead
   settings.js                 ⚙️ Settings (language tl/en with I18N + data-i18n, diets, kitchen, "Suggest ka pa",
                               dark mode, weather) and the Fish/Chicken/Pork/Beef chips; key sarapsulit.settings.v1
   *.test.mjs                  node:test files; run each script's pure helpers in node:vm
@@ -126,7 +128,7 @@ required on `main`.
   with CRLF.
 - **One global scope:** all `docs/*.js` files are classic scripts that share globals. Script
   order in `index.html`: weather, mydish, planner, finder, alerts, share, facts, taste, games,
-  kitchen, settings, tour, then app last. New button text gets a `data-i18n` key in settings.js `I18N`
+  kitchen, settings, seasons, tour, then app last. New button text gets a `data-i18n` key in settings.js `I18N`
   (`settings.test.mjs` fails on a missing key).
   Favourites (`favIds`, `toggleFav`, key `sarapsulit.favs.v1`) live in `app.js`. Give new
   top-level names a prefix (`SHARE_W`, `FINDER_KEY`) so they can't clash.

@@ -151,6 +151,11 @@ Result: 895 of 2,031 meals fully priced (44%), and 91% of food lines priced.
   Pampalasa/Condiments, Bigas/Pantry, in the receipt, PNG, HTML and Messenger text.
 - **Planner drag and drop:** the page dims and only slots that can take the dish light up; works with a
   mouse and on phones (hold, then drag); dishes can be moved between days.
+- **#55:** a slow tap on a Planner dish (held over ~0.3 s without moving) picks it again instead of being swallowed by drag.
+- **Okasyon (holiday picks) in Browse:** 16 occasions (Bagong Taon, Sinulog, Chinese New Year, Valentine's,
+  Eid al-Fitr/al-Adha, Lent Fridays, Holy Week, Flores de Mayo/Pahiyas, Mother's/Father's Day, Independence
+  Day, Undas, Christmas/Simbang Gabi, Handaan, Fiesta). The one on now or coming soon shows first, with a note
+  on the custom; most typical dishes first; no sauces; meatless and no-pork rules where they apply.
 - **More recipes:** the crawl reads every post sitemap from the sitemap index (dishes like pastil that
   were missed), keeps method notes instead of copying steps or descriptions, and the owner runs
   `node scripts/add-recipes.mjs` on their own computer. Panlasang Pinoy has ~3,000 posts, so ~5,000
