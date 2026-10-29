@@ -16,7 +16,7 @@ const SHARE_C = { forest: "#163F2E", green: "#2F7A55", cream: "#F8F4EA", gold: "
 const RECIPE_SOURCES = {
   "panlasangpinoy.com": "Panlasang Pinoy", "kawalingpinoy.com": "Kawaling Pinoy", "yummykitchentv.com": "Yummy Kitchen",
   "recipesbynora.com": "Recipes by Nora", "pinoyrecipe.net": "Pinoy Recipe", "foxyfolksy.com": "Foxy Folksy",
-  "manilaspoon.com": "Manila Spoon", "pepper.ph": "Pepper.ph", "savorythoughts.com": "Savory Thoughts",
+  "manilaspoon.com": "Manila Spoon", "pepper.ph": "Pepper.ph",
 };
 
 /** The site a recipe comes from: { name, host } ("Panlasang Pinoy", "panlasangpinoy.com"), or null. */

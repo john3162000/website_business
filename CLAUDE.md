@@ -87,7 +87,7 @@ Line statuses are `ok`, `to-taste`, `optional`, `water`, `skipped`, `unmatched`,
 | `POST /api/dish` | Prices a personal dish (My Dish) |
 | `/api/scrape/*` | Admin only (`ADMIN_TOKEN`) |
 | `/api/cron/da-daily`, `/api/cron/psa` | Vercel crons: DA daily at 10:00 UTC, PSA Mondays at 11:00 UTC |
-| `/api/cron/recipes` | Vercel cron daily at 03:15 UTC: the recipe crawl, calling itself (≤150 hops) until every sitemap is read |
+| `/api/cron/recipes` | Vercel cron daily at 03:15 and 15:15 UTC: the recipe crawl, calling itself (≤150 hops) until every sitemap is read |
 
 ## Commands
 
@@ -156,7 +156,7 @@ required on `main`.
 
 The crawl reads every site in `src/lib/scrapers/recipe-sources.ts`, in order. Panlasang Pinoy is first.
 Since 2026-10-29 the list also has Kawaling Pinoy, Yummy Kitchen, Recipes by Nora, Pinoy Recipe, Foxy
-Folksy, Manila Spoon, Pepper.ph and Savory Thoughts.
+Folksy, Manila Spoon and Pepper.ph.
 
 **How it reads a site:**
 - It reads each site's post sitemaps from `sitemap_index.xml`, `wp-sitemap.xml` or a flat `sitemap.xml`.
@@ -178,7 +178,7 @@ Unknown ingredients hide the recipe as usual.
 ban on scraping or automated collection) and that its recipe pages carry Recipe JSON-LD. Then add it to
 `recipe-sources.ts` and give it a name in `docs/share.js`.
 
-**Schedule:** the crawl runs by itself every day (`/api/cron/recipes`, 03:15 UTC). Each run crawls for
+**Schedule:** the crawl runs by itself twice a day (`/api/cron/recipes`, 03:15 and 15:15 UTC). Each run crawls for
 ~45 s, then calls itself again with the `CRON_SECRET` Vercel sends, until every site is read (Hobby
 crons can only run daily, hence the hops). Progress is the RECIPES row in `ScrapingLog`; the logic is
 `src/lib/recipe-crawl.ts`. To push it along by hand from the owner's computer (the token never goes

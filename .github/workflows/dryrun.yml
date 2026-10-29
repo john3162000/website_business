@@ -22,7 +22,7 @@ jobs:
       - name: Dry run
         run: |
           mkdir -p demo/dryrun-out
-          cd scraper-backend && mkdir -p demo/dryrun-out && ONLY='yummy' PER_SITE=10 node --experimental-strip-types --no-warnings ../demo/dryrun.mts 2>&1 | tee ../demo/dryrun-out/log.txt
+          cd scraper-backend && mkdir -p demo/dryrun-out && ONLY='yummy|foxy|manila' PER_SITE=40 node --experimental-strip-types --no-warnings ../demo/dryrun.mts 2>&1 | tee ../demo/dryrun-out/log.txt
       - name: Commit the results
         if: always()
         run: |

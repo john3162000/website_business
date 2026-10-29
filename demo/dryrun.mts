@@ -36,7 +36,7 @@ for (const src of RECIPE_SOURCES.slice(1).filter((s) => !ONLY || ONLY.test(s.nam
   try {
     let maps: string[] = [];
     for (const n of ["sitemap_index.xml", "wp-sitemap.xml", "sitemap.xml"]) {
-      try { const x = await get(`${src.base}/${n}`); maps = postSitemapsFromIndex(x); if (!maps.length && /<urlset/i.test(x)) maps = [`${src.base}/${n}`]; if (maps.length) break; } catch {}
+      try { const x = await get(`${src.base}/${n}`); maps = postSitemapsFromIndex(x); if (!maps.length && /<urlset/i.test(x) && /<loc>/i.test(x)) maps = [`${src.base}/${n}`]; if (maps.length) break; } catch {}
     }
     const urls: string[] = [];
     for (const m of maps) {
