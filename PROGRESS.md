@@ -297,3 +297,10 @@ labels were mixed up. These are the two fixes the owner approved first.
     it aren't held back. The next full pass reads it again.
   - The pause shows in the RECIPES `ScrapingLog` message and in the logs as `recipe crawl hop N paused:`.
 - **More aliases:** grated and frozen grated ube, MAGGI chicken cubes, and "funnel" (equipment).
+- **Progress at 19:45 UTC:**
+  - Database: 3,475 entries, of which 744 are articles.
+  - By site: Panlasang Pinoy 2,781, Kawaling Pinoy 413 and Yummy Kitchen 281 (in progress).
+  - On the site: 2,423 shown and 308 hidden.
+  - The crawl runs about 60 recipes an hour, with no paused sitemaps.
+  - Aliases added: British "unflavoured gelatin", grahams, cayenne, pork broth cube, chocolate
+    chunks/chopped/plain chocolate.
