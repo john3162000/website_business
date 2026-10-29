@@ -246,3 +246,28 @@ Each new recipe gets the same treatment as Panlasang Pinoy's:
   before the occasion starts (Valentine's from Jan 31, Undas from Oct 17, and so on). **Christmas and
   New Year** are suggested **six weeks** before the day (Christmas from Nov 13, New Year from Nov 20).
   These are `SEASON_LEAD` and `SEASON_LEAD_BIG` in `seasons.js`.
+
+## 2026-10-29: Impeccable design critique, first quick wins
+
+The design critique (Impeccable, 22/40) found that the honesty markers were hard to read and the
+labels were mixed up. These are the two fixes the owner approved first.
+
+- **Contrast:**
+  - "⚠ Incomplete price" badge: dark amber with cream text instead of white on gold (about
+    2.7:1 before).
+  - Ingredient price-source line: 11 px and darker.
+  - Card category labels: darker grey.
+  - "Incomplete price" beside the meter: darker grey.
+  - Phone tab-bar labels: forest green at 11 px (9.6 px before).
+- **Labels:**
+  - One set of section names for the header tabs and the phone tab bar, in both languages, with
+    a test.
+  - "Nutri" became Sustansya / Nutrition, in a neutral pill (the red pill read as a warning).
+  - A legend for the "+" on prices: "“+” sa presyo: may sangkap na wala pang presyo".
+  - The pop-up and My Dish show the meter's word and "Better value than N% of dishes" instead of
+    a bare Sulit Score.
+  - "Medyo mahal" became "Hindi gaano sulit".
+- **Still open from the critique:**
+  - The recipe cards and pop-up can't be used by keyboard or screen reader (P0).
+  - Random week and Best Value pick dishes that aren't ulam.
+  - Phone pages are long.
