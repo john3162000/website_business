@@ -13,7 +13,11 @@ const SHARE_C = { forest: "#163F2E", green: "#2F7A55", cream: "#F8F4EA", gold: "
 /** The link that opens this recipe on the site. */
 // Partner recipe sites: we show their photo (linked) and send "Paano lutuin?" clicks to them;
 // their steps are never shown here.
-const RECIPE_SOURCES = { "panlasangpinoy.com": "Panlasang Pinoy", "kawalingpinoy.com": "Kawaling Pinoy" };
+const RECIPE_SOURCES = {
+  "panlasangpinoy.com": "Panlasang Pinoy", "kawalingpinoy.com": "Kawaling Pinoy", "yummykitchentv.com": "Yummy Kitchen",
+  "recipesbynora.com": "Recipes by Nora", "pinoyrecipe.net": "Pinoy Recipe", "foxyfolksy.com": "Foxy Folksy",
+  "manilaspoon.com": "Manila Spoon", "pepper.ph": "Pepper.ph",
+};
 
 /** The site a recipe comes from: { name, host } ("Panlasang Pinoy", "panlasangpinoy.com"), or null. */
 function recipeSource(url) {
@@ -64,7 +68,7 @@ function loadImage(src) {
   return new Promise((resolve) => {
     if (!src) return resolve(null);
     const img = new Image();
-    img.crossOrigin = "anonymous"; // Panlasang Pinoy sends Access-Control-Allow-Origin: *
+    img.crossOrigin = "anonymous"; // Panlasang Pinoy sends Access-Control-Allow-Origin: *; a site that doesn't fails to load, and the card has no photo
     img.onload = () => resolve(img);
     img.onerror = () => resolve(null);
     img.src = src;
@@ -177,7 +181,7 @@ async function drawRecipeCard(r, lines) {
   y += 30;
   ctx.fillStyle = SHARE_C.forest; ctx.fillRect(0, y, SHARE_W, 150);
   const date = typeof LATEST_DA_DATE !== "undefined" && LATEST_DA_DATE ? formatDate(LATEST_DA_DATE) : "today";
-  text(`Prices: DA, PSA and SM, ${date}. Recipe and photo: ${src ? src.name : "Panlasang Pinoy"}.`, SHARE_PAD, y + 62, sans(24), "#B5D2BE");
+  text(`Prices: DA, PSA and SM, ${date}. Recipe and photo: ${src ? src.name : "the recipe site"}.`, SHARE_PAD, y + 62, sans(24), "#B5D2BE");
   text(recipeLink(r.id).replace("https://", ""), SHARE_PAD, y + 104, sans(24, 700), "#E6C265");
   y += 150;
 

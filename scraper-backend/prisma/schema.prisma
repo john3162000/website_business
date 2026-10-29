@@ -143,3 +143,12 @@ model PsaPrice {
   @@unique([commodity, region, period])
   @@index([period])
 }
+
+/// Pages the recipe crawl looked at and did not save ("not-recipe", "duplicate", "no-ingredients"),
+/// so the daily crawl doesn't fetch them again.
+model RecipeSkip {
+  url       String   @id
+  reason    String
+  title     String?
+  createdAt DateTime @default(now())
+}

@@ -1,33 +1,28 @@
 /**
- * Panlasang Pinoy full-site recipe scraper.
- * Walks every post sitemap and stores each new recipe: title, source link, photo
+ * Full-site recipe crawler for every site in RECIPE_SOURCES (Panlasang Pinoy first).
+ * Walks each site's post sitemaps and stores each new recipe: title, source link, photo
  * link, servings, times, course and the ingredient list. The author's description
  * and steps are not copied; only short method notes the pricing engine reads
  * ("deep fry", "discard the marinade", "oven") are kept, and the site links to the
  * original page for the full method. Recipes saved before 2026-10-27 keep the
  * fields they were saved with.
+ *
+ * Pages that are not recipes, and (for later sources) dishes already listed from an
+ * earlier site, are noted in RecipeSkip so the daily crawl doesn't fetch them again.
  */
 
-import * as cheerio from "cheerio";
 import { prisma } from "@/lib/db";
-import { ensureRecipeColumns } from "@/lib/ensure-schema";
-import { parseStructured, type RefNutrition } from "./recipe-structured";
-import { postSitemapsFromIndex, urlsFromSitemap } from "./sitemaps";
+import { ensureRecipeColumns, ensureRecipeSkipTable } from "@/lib/ensure-schema";
 import { methodNotes } from "@/lib/recipe-compile/compile";
+import { dishKey } from "./ingredient-line";
+import { parseRecipePage, type ScrapedRecipe } from "./recipe-page";
+import { RECIPE_SOURCES, type RecipeSource } from "./recipe-sources";
+import { postSitemapsFromIndex, urlsFromSitemap } from "./sitemaps";
 
-const BASE_URL = "https://panlasangpinoy.com";
-// The "/recipes/" landing page only lists a small curated subset (~68
-// recipes) and its pagination runs out quickly. The Yoast-generated post
-// sitemaps enumerate every published post on the site (~3000 across 3
-// files), which is the actual full catalog. Not every post is a recipe
-// (some are roundups/articles), so non-recipe pages are skipped during
-// scraping based on the absence of WPRM recipe markup.
-// Used when the sitemap index can't be read; the index also lists newer ones (post-sitemap4, …).
-const POST_SITEMAPS = [
-  `${BASE_URL}/post-sitemap.xml`,
-  `${BASE_URL}/post-sitemap2.xml`,
-  `${BASE_URL}/post-sitemap3.xml`,
-];
+// Panlasang Pinoy's "/recipes/" landing page only lists a small curated subset; the Yoast post
+// sitemaps enumerate every published post (~3000 across 3 files). Used when its index can't be read.
+const PP_POST_SITEMAPS = [1, 2, 3].map((n) => `https://panlasangpinoy.com/post-sitemap${n === 1 ? "" : n}.xml`);
+const SITEMAP_INDEXES = ["sitemap_index.xml", "wp-sitemap.xml", "sitemap.xml"];
 
 // Sitemaps change rarely: a warm server instance reuses them for a while instead of
 // downloading them again for every chunk of 4 recipes.
@@ -42,18 +37,26 @@ async function cached(key: string, load: () => Promise<string[]>): Promise<strin
   return urls;
 }
 
-/** The post sitemaps from the site's sitemap index, or the known three when it can't be read. */
-async function postSitemaps(): Promise<string[]> {
-  return cached("index", async () => {
-    try {
-      const found = postSitemapsFromIndex(await fetchHtml(`${BASE_URL}/sitemap_index.xml`));
-      return found.length ? found : POST_SITEMAPS;
-    } catch {
-      return POST_SITEMAPS;
+/** A site's post sitemaps from its sitemap index (Yoast, Rank Math or WordPress core). */
+async function postSitemaps(source: RecipeSource): Promise<string[]> {
+  return cached(`index:${source.base}`, async () => {
+    for (const name of SITEMAP_INDEXES) {
+      try {
+        const xml = await fetchHtml(`${source.base}/${name}`);
+        const found = postSitemapsFromIndex(xml);
+        if (found.length) return found;
+        // A small site's sitemap.xml can list the pages itself (no index).
+        if (/<urlset/i.test(xml) && /<loc>/i.test(xml)) return [`${source.base}/${name}`];
+      } catch {
+        // try the next index name
+      }
     }
+    return source.site === "PanlasangPinoy" ? PP_POST_SITEMAPS : [];
   });
 }
+
 const DELAY_MS = 1500;
+const USER_AGENT = "Mozilla/5.0 (compatible; SarapSulitBot/1.0; +https://john3162000.github.io/website_business/)";
 
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
@@ -61,127 +64,44 @@ function sleep(ms: number) {
 
 async function fetchHtml(url: string): Promise<string> {
   const res = await fetch(url, {
-    headers: {
-      "User-Agent": "Mozilla/5.0 (compatible; ScraperBackend/1.0)",
-      Accept: "text/html,application/xhtml+xml",
-    },
+    headers: { "User-Agent": USER_AGENT, Accept: "text/html,application/xhtml+xml,application/xml" },
     signal: AbortSignal.timeout(20000),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
   return res.text();
 }
 
-function parseTime(text: string): number | null {
-  const hourMatch = text.match(/(\d+)\s*h(our)?/i);
-  const minMatch = text.match(/(\d+)\s*m(in)?/i);
-  let minutes = 0;
-  if (hourMatch) minutes += parseInt(hourMatch[1]) * 60;
-  if (minMatch) minutes += parseInt(minMatch[1]);
-  return minutes > 0 ? minutes : null;
+// Dish keys of every saved recipe, so a later source adds new dishes only.
+let dishKeys: { at: number; keys: Set<string> } | null = null;
+async function knownDishKeys(): Promise<Set<string>> {
+  if (dishKeys && Date.now() - dishKeys.at < SITEMAP_TTL_MS) return dishKeys.keys;
+  const rows = await prisma.recipe.findMany({ select: { title: true } });
+  dishKeys = { at: Date.now(), keys: new Set(rows.map((r) => dishKey(r.title))) };
+  return dishKeys.keys;
 }
 
-interface ScrapedIngredient {
-  rawText: string;
-  name: string;
-  amount?: string;
-  unit?: string;
-  groupName?: string;
+async function skip(url: string, reason: string, title?: string) {
+  await prisma.recipeSkip.upsert({ where: { url }, create: { url, reason, title }, update: { reason, title } }).catch(() => {});
 }
 
-interface ScrapedRecipe {
-  title: string;
-  url: string;
-  imageUrl?: string;
-  servings?: number;
-  prepTime?: number;
-  cookTime?: number;
-  course?: string;
-  cuisine?: string;
-  yieldText?: string;
-  refNutrition?: RefNutrition;
-  ingredients: ScrapedIngredient[];
-  instructions: string[];
-}
-
-async function scrapeRecipePage(url: string): Promise<ScrapedRecipe | null> {
-  const html = await fetchHtml(url);
-  const $ = cheerio.load(html);
-
-  const title = $(".wprm-recipe-name").first().text().trim() || $("h1").first().text().trim();
-  if (!title) return null;
-
-  // Images are lazy-loaded (perfmatters): in the raw server HTML `src` is an
-  // inline SVG placeholder and the real URL lives in `data-src`/`data-lazy-src`.
-  // Prefer those, and reject any data: URI that slips through.
-  const pickImage = (selector: string): string | undefined => {
-    const el = $(selector).first();
-    const candidate =
-      el.attr("data-lazy-src") || el.attr("data-src") || el.attr("src") || undefined;
-    return candidate && !candidate.startsWith("data:") ? candidate : undefined;
-  };
-  const imageUrl =
-    pickImage(".wprm-recipe-image img") ||
-    $("meta[property='og:image']").attr("content") ||
-    pickImage("article img") ||
-    undefined;
-
-  const structured = parseStructured(html);
-
-  const servingsText = $(".wprm-recipe-servings").first().text().trim();
-  const servings = (servingsText ? parseInt(servingsText) || undefined : undefined) ?? structured.yieldServings ?? undefined;
-
-  const prepTime = parseTime($(".wprm-recipe-prep_time-container").text()) ?? undefined;
-  const cookTime = parseTime($(".wprm-recipe-cook_time-container").text()) ?? undefined;
-
-  const ingredients: ScrapedIngredient[] = [];
-  $(".wprm-recipe-ingredient").each((_, el) => {
-    const rawText = $(el).text().replace(/\s+/g, " ").trim();
-    if (!rawText) return;
-    const amount = $(el).find(".wprm-recipe-ingredient-amount").text().trim() || undefined;
-    const unit = $(el).find(".wprm-recipe-ingredient-unit").text().trim() || undefined;
-    const name = $(el).find(".wprm-recipe-ingredient-name").text().trim() || rawText;
-    // parseStructured walks the same non-empty lines in the same order.
-    const groupName = structured.ingredients[ingredients.length]?.group ?? undefined;
-    ingredients.push({ rawText, name, amount, unit, groupName });
-  });
-
-  const instructions: string[] = [];
-  $(".wprm-recipe-instruction-text").each((_, el) => {
-    const text = $(el).text().trim();
-    if (text) instructions.push(text);
-  });
-
-  return {
-    title, url, imageUrl, servings, prepTime, cookTime,
-    course: structured.courses.join(", ") || undefined,
-    cuisine: structured.cuisines.join(", ") || undefined,
-    yieldText: structured.yieldText ?? undefined,
-    refNutrition: structured.nutrition ?? undefined,
-    ingredients, instructions,
-  };
-}
-
-async function getRecipeUrlsFromSitemap(sitemapUrl: string): Promise<string[]> {
-  return cached(sitemapUrl, async () => urlsFromSitemap(await fetchHtml(sitemapUrl), BASE_URL));
-}
-
-// Cap on how many *new* recipes a single chunk scrapes — each one costs a
-// politeness delay plus a fetch, so this keeps a request well under typical
-// serverless time limits even on pages full of not-yet-saved recipes.
+// Cap on how many pages a single chunk fetches — each one costs a politeness delay
+// plus a fetch, so this keeps a request well under typical serverless time limits.
 const MAX_NEW_PER_CHUNK = 4;
 
 export interface RecipeCursor {
+  /** Index in RECIPE_SOURCES (absent in cursors saved before there were several sources: 0). */
+  sourceIndex?: number;
   sitemapIndex: number;
   urlIndex: number;
 }
 
 export function initialRecipeCursor(): RecipeCursor {
-  return { sitemapIndex: 0, urlIndex: 0 };
+  return { sourceIndex: 0, sitemapIndex: 0, urlIndex: 0 };
 }
 
 /**
- * Scrapes up to MAX_NEW_PER_CHUNK new recipes starting at `cursor.urlIndex`
- * in `POST_SITEMAPS[cursor.sitemapIndex]`, returning the updated cursor.
+ * Fetches up to MAX_NEW_PER_CHUNK new pages starting at `cursor.urlIndex` in the
+ * current source's sitemap `cursor.sitemapIndex`, returning the updated cursor.
  * Designed to be called repeatedly (one small chunk per request) so a full
  * crawl can be driven from short-lived serverless invocations without ever
  * risking a timeout mid-sitemap (which would otherwise lose all progress).
@@ -190,37 +110,45 @@ export async function scrapeRecipeChunk(
   cursor: RecipeCursor,
   onProgress?: (msg: string) => void
 ): Promise<{ saved: number; cursor: RecipeCursor; done: boolean }> {
+  const sourceIndex = cursor.sourceIndex ?? 0;
   const { sitemapIndex } = cursor;
-  const sitemaps = await postSitemaps();
-
-  if (sitemapIndex >= sitemaps.length) {
-    onProgress?.("All post sitemaps processed — reached the end.");
+  const source = RECIPE_SOURCES[sourceIndex];
+  if (!source) {
+    onProgress?.("Every recipe site processed — reached the end.");
     return { saved: 0, cursor, done: true };
+  }
+  const sitemaps = await postSitemaps(source);
+  if (sitemapIndex >= sitemaps.length) {
+    onProgress?.(`${source.name}: ${sitemaps.length ? "all post sitemaps processed" : "no post sitemap found"}.`);
+    return { saved: 0, cursor: { sourceIndex: sourceIndex + 1, sitemapIndex: 0, urlIndex: 0 }, done: false };
   }
 
   await ensureRecipeColumns();
+  await ensureRecipeSkipTable();
   const sitemapUrl = sitemaps[sitemapIndex];
   onProgress?.(`Fetching sitemap: ${sitemapUrl}...`);
 
   let urls: string[];
   try {
-    urls = await getRecipeUrlsFromSitemap(sitemapUrl);
+    urls = await cached(sitemapUrl, async () => urlsFromSitemap(await fetchHtml(sitemapUrl), source.base + (source.pathPrefix ?? "")));
   } catch (err) {
     // A fetch error (e.g. rate limiting) is transient — don't mark the crawl
     // as done or lose the cursor, so it can resume from this sitemap later.
     throw new Error(`Failed to load sitemap ${sitemapUrl}: ${err instanceof Error ? err.message : err}`);
   }
 
+  const next: RecipeCursor = { sourceIndex, sitemapIndex: sitemapIndex + 1, urlIndex: 0 };
   if (urls.length === 0) {
     onProgress?.(`Sitemap ${sitemapUrl} has no URLs — skipping.`);
-    return { saved: 0, cursor: { sitemapIndex: sitemapIndex + 1, urlIndex: 0 }, done: false };
+    return { saved: 0, cursor: next, done: false };
   }
 
   let saved = 0;
   let index = cursor.urlIndex;
   let newCount = 0;
-  // One query for the whole sitemap instead of one per URL: most posts are saved already.
+  // One query each for the whole sitemap instead of one per URL: most posts are seen already.
   const known = new Set((await prisma.recipe.findMany({ where: { url: { in: urls } }, select: { url: true } })).map((r) => r.url));
+  for (const s of await prisma.recipeSkip.findMany({ where: { url: { in: urls } }, select: { url: true } })) known.add(s.url);
 
   while (index < urls.length && newCount < MAX_NEW_PER_CHUNK) {
     const url = urls[index];
@@ -231,27 +159,40 @@ export async function scrapeRecipeChunk(
 
     await sleep(DELAY_MS);
     onProgress?.(`Scraping: ${url}`);
+    index++;
+    newCount++;
 
     let scraped: ScrapedRecipe | null;
     try {
-      scraped = await scrapeRecipePage(url);
+      scraped = parseRecipePage(await fetchHtml(url), url, source.dedupe);
     } catch (err) {
+      // Not noted as skipped: a failed fetch is tried again on the next run.
       onProgress?.(`Failed to scrape ${url}: ${err instanceof Error ? err.message : err}`);
-      index++;
-      newCount++;
       continue;
     }
     if (!scraped) {
-      index++;
-      newCount++;
+      if (source.dedupe) await skip(url, "not-recipe");
       continue;
+    }
+    if (source.cuisine && !source.cuisine.test(`${scraped.cuisine ?? ""} ${scraped.title}`)) {
+      await skip(url, "other-cuisine", scraped.title);
+      continue;
+    }
+    if (source.dedupe) {
+      const keys = await knownDishKeys();
+      const key = dishKey(scraped.title);
+      if (!key || keys.has(key)) {
+        await skip(url, "duplicate", scraped.title);
+        continue;
+      }
+      keys.add(key);
     }
 
     const created = await prisma.recipe.create({
       data: {
         title: scraped.title,
         url: scraped.url,
-        // A link to the photo on Panlasang Pinoy (not a copy); no description or steps (see the top of this file).
+        // A link to the photo on the source site (not a copy); no description or steps (see the top of this file).
         imageUrl: scraped.imageUrl,
         methodNotes: methodNotes(scraped.instructions) || null,
         servings: scraped.servings,
@@ -262,7 +203,7 @@ export async function scrapeRecipeChunk(
         yieldText: scraped.yieldText,
         refNutrition: scraped.refNutrition ? { ...scraped.refNutrition } : undefined,
         structuredAt: new Date(),
-        sourceSite: "PanlasangPinoy",
+        sourceSite: source.site,
         ingredients: {
           create: scraped.ingredients.map((ing) => ({
             rawText: ing.rawText,
@@ -278,16 +219,12 @@ export async function scrapeRecipeChunk(
       if ((err as { code?: string }).code === "P2002") return null;
       throw err;
     });
-    if (!created) { index++; continue; }
+    if (!created) continue;
 
     saved++;
-    newCount++;
-    index++;
-    onProgress?.(`Saved: ${scraped.title}`);
+    onProgress?.(`Saved (${source.name}): ${scraped.title}`);
   }
 
-  if (index >= urls.length) {
-    return { saved, cursor: { sitemapIndex: sitemapIndex + 1, urlIndex: 0 }, done: false };
-  }
-  return { saved, cursor: { sitemapIndex, urlIndex: index }, done: false };
+  if (index >= urls.length) return { saved, cursor: next, done: false };
+  return { saved, cursor: { sourceIndex, sitemapIndex, urlIndex: index }, done: false };
 }

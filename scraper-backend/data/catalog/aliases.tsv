@@ -1615,3 +1615,57 @@ chicken eggs boiled	FOOD	egg_hard_boiled
 egg roll wrapper	FOOD	lumpia_wrapper		
 egg roll or spring roll wrapper	FOOD	lumpia_wrapper		
 egg roll or sprig roll wrapper	FOOD	lumpia_wrapper		
+green chili	FOOD	chili_long_green		recipe sites 2026-10-29
+green chilli	FOOD	chili_long_green		recipe sites 2026-10-29
+green chilies	FOOD	chili_long_green		recipe sites 2026-10-29
+green chillies	FOOD	chili_long_green		recipe sites 2026-10-29
+green chili peppers	FOOD	chili_long_green		recipe sites 2026-10-29
+chili leaves	FOOD	chili_leaves		recipe sites 2026-10-29
+dahon ng sili	FOOD	chili_leaves		recipe sites 2026-10-29
+dried seaweed	FOOD	nori		recipe sites 2026-10-29
+roasted seaweed	FOOD	nori		recipe sites 2026-10-29
+seaweed sheets	FOOD	nori		recipe sites 2026-10-29
+chicken broth cube	FOOD	stock_cube_chicken		recipe sites 2026-10-29
+chicken bouillon cube	FOOD	stock_cube_chicken		recipe sites 2026-10-29
+beef broth cube	FOOD	stock_cube_beef		recipe sites 2026-10-29
+beef bouillon cube	FOOD	stock_cube_beef		recipe sites 2026-10-29
+bouillon cube	FOOD	stock_cube_chicken		recipe sites 2026-10-29; generic cube priced as chicken
+gulaman powder	FOOD	agar		recipe sites 2026-10-29
+unflavored gulaman powder	FOOD	agar		recipe sites 2026-10-29
+jelly powder	FOOD	gelatin_dessert		recipe sites 2026-10-29
+turnip	FOOD	singkamas		Filipino recipes call singkamas (jicama) turnip
+cream	FOOD	cream_all_purpose		[exact] plain "cream" in Filipino recipes is all-purpose cream
+all purpose cream	FOOD	cream_all_purpose		recipe sites 2026-10-29
+mami noodles	FOOD	noodles_miki		fresh egg noodles
+kamote leaves	FOOD	camote_tops		recipe sites 2026-10-29
+kamote tops	FOOD	camote_tops		recipe sites 2026-10-29
+coconut meat	FOOD	buko_meat		[exact] young coconut meat
+atsuete	FOOD	annatto_seeds		recipe sites 2026-10-29
+atsuete seeds	FOOD	annatto_seeds		recipe sites 2026-10-29
+achuete	FOOD	annatto_seeds		recipe sites 2026-10-29
+atsuete powder	FOOD	annatto_powder		recipe sites 2026-10-29
+sinamak	FOOD	vinegar_coconut		spiced coconut vinegar
+sigarilyas	FOOD	winged_bean		recipe sites 2026-10-29
+winged beans	FOOD	winged_bean		recipe sites 2026-10-29
+liquid seasoning	FOOD	seasoning_liquid_knorr		recipe sites 2026-10-29
+grated parmesan	FOOD	cheese_parmesan		recipe sites 2026-10-29
+parmesan	FOOD	cheese_parmesan		recipe sites 2026-10-29
+kewpie mayo	FOOD	mayonnaise		recipe sites 2026-10-29
+mayo	FOOD	mayonnaise		recipe sites 2026-10-29
+canned corn	FOOD	corn_kernel_canned		recipe sites 2026-10-29
+plantain bananas	FOOD	banana_saba		recipe sites 2026-10-29
+plantain	FOOD	banana_saba		recipe sites 2026-10-29
+bird's eye chilies	FOOD	chili_bird		recipe sites 2026-10-29
+bird's eye chili	FOOD	chili_bird		recipe sites 2026-10-29
+cracked peppercorns	FOOD	peppercorn_whole		recipe sites 2026-10-29
+cilantro leaves	FOOD	cilantro		recipe sites 2026-10-29
+slabs of ribs	FOOD	pork_ribs		recipe sites 2026-10-29
+paprika powder	FOOD	paprika		recipe sites 2026-10-29
+mango cubes	FOOD	mango_ripe		recipe sites 2026-10-29
+philippine mangoes	FOOD	mango_ripe		recipe sites 2026-10-29
+ice cream	FOOD	ice_cream_vanilla		recipe sites 2026-10-29
+crushed ice	WATER			recipe sites 2026-10-29
+or	HEADER			a lone "or" between two lines
+sweetened coconut shavings	FOOD	coconut_desiccated_sweet		recipe sites 2026-10-29
+tokwa	FOOD	tofu_firm		recipe sites 2026-10-29
+fried tofu	FOOD	tofu_firm		recipe sites 2026-10-29
