@@ -242,3 +242,7 @@ Each new recipe gets the same treatment as Panlasang Pinoy's:
   Changes:
   - Hops now go to `VERCEL_PROJECT_PRODUCTION_URL` (`hopOrigin()`), and a refused hop is logged.
   - Four more daily runs were added (`/api/cron/recipes/extra-1…4`), for six runs a day, 4 hours apart.
+- **Okasyon timing (owner's request).** Holiday and special-event picks are now suggested **two weeks**
+  before the occasion starts (Valentine's from Jan 31, Undas from Oct 17, and so on). **Christmas and
+  New Year** are suggested **six weeks** before the day (Christmas from Nov 13, New Year from Nov 20).
+  These are `SEASON_LEAD` and `SEASON_LEAD_BIG` in `seasons.js`.
