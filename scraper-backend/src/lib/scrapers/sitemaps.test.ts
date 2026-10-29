@@ -19,6 +19,21 @@ test("post sitemaps come from the index, numbered in order, other sitemaps left 
   assert.deepEqual(postSitemapsFromIndex("<html>blocked</html>"), []);
 });
 
+test("WordPress core and recipe post type sitemaps count too, posts first", () => {
+  const xml = `<sitemapindex>
+    <sitemap><loc>https://site.ph/wp-sitemap-posts-page-1.xml</loc></sitemap>
+    <sitemap><loc>https://site.ph/wp-sitemap-posts-post-2.xml</loc></sitemap>
+    <sitemap><loc>https://site.ph/wp-sitemap-posts-recipe-1.xml</loc></sitemap>
+    <sitemap><loc>https://site.ph/wp-sitemap-posts-post-1.xml</loc></sitemap>
+    <sitemap><loc>https://site.ph/wp-sitemap-taxonomies-category-1.xml</loc></sitemap>
+  </sitemapindex>`;
+  assert.deepEqual(postSitemapsFromIndex(xml), [
+    "https://site.ph/wp-sitemap-posts-post-1.xml",
+    "https://site.ph/wp-sitemap-posts-post-2.xml",
+    "https://site.ph/wp-sitemap-posts-recipe-1.xml",
+  ]);
+});
+
 test("page URLs from a sitemap, only on the site itself", () => {
   const xml = `<urlset>
     <url><loc>https://panlasangpinoy.com/pastil-recipe/</loc><image:image><image:loc>https://cdn.example/x.jpg</image:loc></image:image></url>
