@@ -42,8 +42,11 @@ async function postSitemaps(source: RecipeSource): Promise<string[]> {
   return cached(`index:${source.base}`, async () => {
     for (const name of SITEMAP_INDEXES) {
       try {
-        const found = postSitemapsFromIndex(await fetchHtml(`${source.base}/${name}`));
+        const xml = await fetchHtml(`${source.base}/${name}`);
+        const found = postSitemapsFromIndex(xml);
         if (found.length) return found;
+        // A small site's sitemap.xml can list the pages itself (no index).
+        if (/<urlset/i.test(xml)) return [`${source.base}/${name}`];
       } catch {
         // try the next index name
       }
@@ -127,7 +130,7 @@ export async function scrapeRecipeChunk(
 
   let urls: string[];
   try {
-    urls = await cached(sitemapUrl, async () => urlsFromSitemap(await fetchHtml(sitemapUrl), source.base));
+    urls = await cached(sitemapUrl, async () => urlsFromSitemap(await fetchHtml(sitemapUrl), source.base + (source.pathPrefix ?? "")));
   } catch (err) {
     // A fetch error (e.g. rate limiting) is transient — don't mark the crawl
     // as done or lose the cursor, so it can resume from this sitemap later.
@@ -169,6 +172,10 @@ export async function scrapeRecipeChunk(
     }
     if (!scraped) {
       if (source.dedupe) await skip(url, "not-recipe");
+      continue;
+    }
+    if (source.cuisine && !source.cuisine.test(`${scraped.cuisine ?? ""} ${scraped.title}`)) {
+      await skip(url, "other-cuisine", scraped.title);
       continue;
     }
     if (source.dedupe) {
