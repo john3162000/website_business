@@ -14,7 +14,12 @@ export function postSitemapsFromIndex(xml: string): string[] {
   const kind = (u: string) => (/recipe/.test(u.split("/").pop() ?? "") ? 1 : 0);
   const num = (u: string) => Number(u.match(/(\d*)\.xml$/)?.[1] || 1);
   const POST = /\/(?:(?:post|recipes?)-sitemap\d*|wp-sitemap-posts-(?:post|recipes?)-\d+)\.xml$/;
-  return [...new Set(urls.filter((u) => POST.test(u)))].sort((a, b) => kind(a) - kind(b) || num(a) - num(b));
+  const posts = [...new Set(urls.filter((u) => POST.test(u)))].sort((a, b) => kind(a) - kind(b) || num(a) - num(b));
+  if (posts.length) return posts;
+  // Other plugins (Google XML Sitemaps: sitemap-pt-post-2024-01.xml, …): every sub-sitemap that
+  // isn't plainly pages, archives or taxonomies, in index order.
+  const OTHER = /(?:^|[-_/])(?:page|pages|category|categories|tag|tags|post_tag|author|authors|users?|taxonom\w*|archives?|misc|images?|video|web-story|product\w*|externals?|tax)(?:[-_.\d]|$)/i;
+  return /<sitemapindex/i.test(xml) ? [...new Set(urls.filter((u) => /\.xml(?:\.gz)?(?:\?.*)?$/i.test(u) && !OTHER.test(u.split("/").pop() ?? "")))] : [];
 }
 
 /** Every page URL in one sitemap that is on `base` (other hosts are ignored). */

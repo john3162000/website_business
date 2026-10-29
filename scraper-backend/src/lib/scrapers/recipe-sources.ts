@@ -33,5 +33,4 @@ export const RECIPE_SOURCES: RecipeSource[] = [
   { site: "FoxyFolksy", name: "Foxy Folksy", base: "https://www.foxyfolksy.com", dedupe: true, cuisine: FILIPINO },
   { site: "ManilaSpoon", name: "Manila Spoon", base: "https://www.manilaspoon.com", dedupe: true, cuisine: FILIPINO },
   { site: "Pepper", name: "Pepper.ph", base: "https://www.pepper.ph", dedupe: true, pathPrefix: "/recipes/" },
-  { site: "SavoryThoughts", name: "Savory Thoughts", base: "https://www.savorythoughts.com", dedupe: true, cuisine: FILIPINO },
 ];

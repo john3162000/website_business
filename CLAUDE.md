@@ -8,7 +8,7 @@ PR, the numbers, and what is still open), read `PROGRESS.md`.
 
 **SarapSulit** is a sub-project of **FARM2FIGURE** (the owner's umbrella brand, whose logo and
 colours the site uses). Keep the name SarapSulit for the app (browser title, outreach letters).
-It ranks Filipino recipes from Panlasang Pinoy by **nutrition per peso**, using today's market prices. Users can
+It ranks Filipino recipes from Panlasang Pinoy and other Filipino recipe sites by **nutrition per peso**, using today's market prices. Users can
 browse dishes, see DA prices and how dish costs moved, build their own dish, plan a week (with a
 budget planner), find dishes from ingredients they have, set price alerts and share a recipe as
 a picture.
@@ -43,7 +43,8 @@ docs/                         static site, no build step (Tailwind CDN, plain br
 scraper-backend/
   src/lib/recipe-compile/     the engine: compile.ts, load.ts, quantity.ts, ingredient-index.ts
   src/lib/price-history.ts    compareDate / priceOn / pctChange (week, 2 weeks, month)
-  src/lib/scrapers/           DA, PSA, SM, Panlasang Pinoy scrapers
+  src/lib/scrapers/           DA, PSA, SM scrapers; recipe crawl: recipe-sources.ts (the site list),
+                              recipe-page.ts (WPRM card or JSON-LD), ingredient-line.ts (line split, dishKey)
   src/app/api/                routes (see below)
   data/catalog/*.tsv          ingredient catalog (source of truth, see "Catalog")
   scripts/build-catalog.mjs   TSVs → src/lib/recipe-compile/catalog.generated.ts
@@ -86,7 +87,7 @@ Line statuses are `ok`, `to-taste`, `optional`, `water`, `skipped`, `unmatched`,
 | `POST /api/dish` | Prices a personal dish (My Dish) |
 | `/api/scrape/*` | Admin only (`ADMIN_TOKEN`) |
 | `/api/cron/da-daily`, `/api/cron/psa` | Vercel crons: DA daily at 10:00 UTC, PSA Mondays at 11:00 UTC |
-| `/api/cron/recipes` | Vercel cron daily at 03:15 UTC: the recipe crawl, calling itself (≤150 hops) until every sitemap is read |
+| `/api/cron/recipes` | Vercel cron daily at 03:15 and 15:15 UTC: the recipe crawl, calling itself (≤150 hops) until every sitemap is read |
 
 ## Commands
 
@@ -146,20 +147,42 @@ required on `main`.
   `SNACK_TITLE` or `SIDE_TITLE`, with a test.
 - **PSA OpenSTAT needs a browser-like User-Agent** and uses "." for missing values.
 - **Panlasang Pinoy images** send `Access-Control-Allow-Origin: *`, which is why `share.js` can
-  draw them on a canvas.
+  draw them on a canvas. A site's photo without that header just fails to load and the share card
+  has no photo.
+- **A new recipe site needs a name** in `RECIPE_SOURCES` in `docs/share.js` (credit and "Paano
+  lutuin?" button); `share.test.mjs` checks every host in the backend's `recipe-sources.ts`.
 
-## Adding recipes (Panlasang Pinoy)
+## Adding recipes (recipe sites)
 
-The crawl reads every post sitemap listed in `sitemap_index.xml` and saves up to 4 new recipes per
-`POST /api/scrape/recipes` call (admin only). New recipes keep the title, source link, photo link,
-servings, times, course and ingredients, plus `methodNotes` (short phrases like "deep fry. discard the
-marinade" that the engine reads). They do **not** copy the author's description or steps; the recipe
-pop-up links to Panlasang Pinoy for the method. Unknown ingredients hide the recipe as usual.
+The crawl reads every site in `src/lib/scrapers/recipe-sources.ts`, in order. Panlasang Pinoy is first.
+Since 2026-10-29 the list also has Kawaling Pinoy, Yummy Kitchen, Recipes by Nora, Pinoy Recipe, Foxy
+Folksy, Manila Spoon and Pepper.ph.
 
-It runs by itself every day (`/api/cron/recipes`, 03:15 UTC): each run crawls for ~45 s, then calls
-itself again with the `CRON_SECRET` Vercel sends, until every sitemap is read (Hobby crons can only run
-daily, hence the hops). Progress is the RECIPES row in `ScrapingLog`; the logic is `src/lib/recipe-crawl.ts`.
-To push it along by hand from the owner's computer (the token never goes through a cloud session):
+**How it reads a site:**
+- It reads each site's post sitemaps from `sitemap_index.xml`, `wp-sitemap.xml` or a flat `sitemap.xml`.
+- It saves up to 4 pages per step.
+- A page is read from its WP Recipe Maker card or its schema.org Recipe JSON-LD (`recipe-page.ts`).
+
+**What it keeps:** the title, source link, photo link, servings, times, course and ingredients, plus
+`methodNotes` (short phrases like "deep fry. discard the marinade" that the engine reads). It does
+**not** copy the author's description or steps; the recipe pop-up links to the source site for the method.
+Unknown ingredients hide the recipe as usual.
+
+**Skipping:**
+- Sites after Panlasang Pinoy skip a dish already listed (same `dishKey`).
+- Optional per-site filters: `cuisine: /filipin|pinoy/i` for general food blogs, and `pathPrefix` (Pepper.ph `/recipes/`).
+- Pages skipped as `not-recipe`, `duplicate` or `other-cuisine` go in the `RecipeSkip` table, so the
+  daily run doesn't fetch them again. Delete a row there to re-read that page.
+
+**Adding a site:** check its robots.txt (no `Disallow: /`, no AI-crawler blocks), its terms (no
+ban on scraping or automated collection) and that its recipe pages carry Recipe JSON-LD. Then add it to
+`recipe-sources.ts` and give it a name in `docs/share.js`.
+
+**Schedule:** the crawl runs by itself twice a day (`/api/cron/recipes`, 03:15 and 15:15 UTC). Each run crawls for
+~45 s, then calls itself again with the `CRON_SECRET` Vercel sends, until every site is read (Hobby
+crons can only run daily, hence the hops). Progress is the RECIPES row in `ScrapingLog`; the logic is
+`src/lib/recipe-crawl.ts`. To push it along by hand from the owner's computer (the token never goes
+through a cloud session):
 
 ```bash
 cd scraper-backend
@@ -167,8 +190,8 @@ node scripts/add-recipes.mjs            # ADMIN_TOKEN from the environment or sc
 node scripts/add-recipes.mjs --max 50   # stop after 50 calls; run again to resume
 ```
 
-Panlasang Pinoy has about 3,000 posts, so a target of ~5,000 recipes needs a second source (the
-owner's call).
+The ~5,000-recipe target is why the other sites were added (owner's request, 2026-10-29). See
+PROGRESS.md for each site's survey result.
 
 ## Data rules
 

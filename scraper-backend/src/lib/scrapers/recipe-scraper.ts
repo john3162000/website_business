@@ -46,7 +46,7 @@ async function postSitemaps(source: RecipeSource): Promise<string[]> {
         const found = postSitemapsFromIndex(xml);
         if (found.length) return found;
         // A small site's sitemap.xml can list the pages itself (no index).
-        if (/<urlset/i.test(xml)) return [`${source.base}/${name}`];
+        if (/<urlset/i.test(xml) && /<loc>/i.test(xml)) return [`${source.base}/${name}`];
       } catch {
         // try the next index name
       }
