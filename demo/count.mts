@@ -7,9 +7,9 @@ import { ALIASES, CANONICALS, DERIVED_PRICES, EXTRA_NUTRIENTS, MANUAL_PRICES } f
 
 const API = "https://website-business-beta.vercel.app";
 const ctx: any = { aliases: ALIASES, canonicals: CANONICALS, manualPrices: MANUAL_PRICES, extraNutrients: EXTRA_NUTRIENTS, derivedPrices: DERIVED_PRICES, fnri: new Map(), da: new Map(), psa: new Map() };
-const raw: any[] = await (await fetch(`${API}/api/recipes`)).json();
+const raw: any[] = await (await fetch(`${API}/api/recipes?fresh=${Date.now()}`)).json();
 const list = Array.isArray(raw) ? raw : (raw as any).recipes;
-const live: any = await (await fetch(`${API}/api/recipes/compiled`)).json();
+const live: any = await (await fetch(`${API}/api/recipes/compiled?fresh=${Date.now()}`)).json();
 const liveById = new Map((live.recipes ?? live).map((r: any) => [r.id, r]));
 
 const host = (u: string) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return "?"; } };
