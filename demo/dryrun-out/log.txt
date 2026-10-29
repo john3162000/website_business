@@ -1,0 +1,121 @@
+live titles: 2610
+{"site":"Kawaling Pinoy","pages":627,"sampled":40,"recipes":39,"otherCuisine":0,"duplicate":12,"hidden":10,"shown":17,"failed":0,"totalLines":251,"unmatchedLines":14,"examples":["Calamansi Juice | 3 lines | 0 unknown | [¾|cup|sugar] [4|cups|water] [1|cup|calamansi juice]","Cheese Dog Bread Rolls | 7 lines | 0 unknown | [12|slices|white bread] [3||hot dogs, cut into 4 strips] [4|ounces|quick melt cheese, cut into 24 thin strips]","Mango Curry Chicken | 10 lines | 1 unknown | [2|pounds|boneless, skinless chicken breast, cut into 1 ½-inch cubes] [2|tablespoons|yellow curry powder] [||salt and pepper to taste]","Taco Rice | 15 lines | 1 unknown | [1|tablespoon|canola oil] [1||onion, peeled and chopped] [2|cloves|garlic, peeled and minced]"],"sitemaps":1}
+{"site":"Yummy Kitchen","pages":0,"sampled":0,"recipes":0,"otherCuisine":0,"duplicate":0,"hidden":0,"shown":0,"failed":0,"totalLines":0,"unmatchedLines":0,"examples":[],"sitemaps":1}
+{"site":"Recipes by Nora","pages":370,"sampled":40,"recipes":29,"otherCuisine":0,"duplicate":11,"hidden":8,"shown":10,"failed":4,"totalLines":192,"unmatchedLines":15,"examples":["Halo-Halo | 14 lines | 5 unknown | [½|cup|ube halaya] [¼|cup|sweetened saba bananas] [¼|cup|ripe mango]","Nutty Brownies (From Brownie Mix) | 8 lines | 4 unknown | [||brownie mix] [||eggs] [||water]","Beef Stir Fry with Onions and Peppers | 17 lines | 0 unknown | [3|tablespoons|soy sauce] [1|tablespoon|Shaoxing wine] [2|tablespoons|oyster sauce]","Ensaladang Talong (Filipino Eggplant Salad) | 10 lines | 1 unknown | [3|large|eggplant] [1|cup|chopped tomatoes] [½|cup|thinly sliced red onion]"],"sitemaps":1}
+{"site":"Pinoy Recipe","pages":912,"sampled":40,"recipes":17,"otherCuisine":0,"duplicate":3,"hidden":10,"shown":4,"failed":0,"totalLines":176,"unmatchedLines":40,"examples":["Buko Juice Recipe | 4 lines | 1 unknown | [2||young coconuts] [||ice cubes] [||coconut meat]","Sinigang na Bangus at Talbos ng Kamote Recipe | 8 lines | 0 unknown | [1||medium size Bangus] [1|liter|rice washing or water] [2||pcs ripe tomatoes]","Black Forest Cake Recipe | 5 lines | 3 unknown | [1||box chocolate cake mix or Hershey’s chocolate cake recipe] [1||Can Comstock Original Cherry Filling] [2|cups|of your favorite whip cream recipe]","La Paz Batchoy Recipe | 17 lines | 1 unknown | [1||kilo mami noodles] [1||medium size onion] [1/2||head garlic]"],"sitemaps":1}
+{"site":"Foxy Folksy","pages":617,"sampled":40,"recipes":16,"otherCuisine":18,"duplicate":11,"hidden":2,"shown":3,"failed":0,"totalLines":54,"unmatchedLines":2,"examples":["Kilayin (Kilawin Kapampangan) | 11 lines | 0 unknown | [2|Tablespoons|oil] [3-4|cloves|garlic] [1|medium|onion]","Ginataang Bilo bilo (glutinous rice balls in coconut milk) | 9 lines | 1 unknown | [2|cups|glutinous rice flour] [1|cup|water] [2-3|cups|water]","Seafood Salpicao | 16 lines | 1 unknown | [2|tablespoon|oil] [5|cloves|garlic] [1|cup|shiitake mushroom]","Bistek Recipe | 8 lines | 0 unknown | [1|pound|Beef Sirloin] [½|cup|soy sauce] [¼|cup|kalamansi or lemon juice]"],"sitemaps":1}
+{"site":"Manila Spoon","pages":906,"sampled":40,"recipes":3,"otherCuisine":28,"duplicate":1,"hidden":0,"shown":2,"failed":0,"totalLines":13,"unmatchedLines":0,"examples":["Green Mango Smoothie | 3 lines | 0 unknown | [2||green mangoes] [1|cup|crushed ice,] [1|Tablespoon|honey or agave]","Extra Special Mango Float (Mango Icebox Cake) | 10 lines | 0 unknown | [1|pint|(473 ml) whipping or heavy Cream,] [2|tbsp|powdered or icing sugar] [1/2-2/3|cup|sweetened condensed Milk,]"],"sitemaps":1}
+{"site":"Pepper.ph","pages":769,"sampled":40,"recipes":32,"otherCuisine":0,"duplicate":1,"hidden":16,"shown":15,"failed":0,"totalLines":326,"unmatchedLines":32,"examples":["Thai Son-in-Law Eggs | 8 lines | 0 unknown | [||neutral oil, for frying] [4||hard-boiled eggs] [2|tbsp|brown sugar]","Banana Cue (Filipino Fried Caramel-Coated Bananas) | 4 lines | 1 unknown | [||saba bananas, peeled] [||brown sugar] [||neutral oil, for frying]","Cacio e Pepe Scrambled Eggs | 5 lines | 0 unknown | [4||eggs] [1|tbsp|butter] [¼|cup|shaved Parmesan cheese, plus more for serving]","Curly Tops Hot Chocolate | 5 lines | 1 unknown | [2|cups|milk] [2|tbsp|cocoa powder] [2|tbsp|granulated sugar]"],"sitemaps":1}
+{"site":"Savory Thoughts","pages":401,"sampled":40,"recipes":0,"otherCuisine":34,"duplicate":0,"hidden":0,"shown":0,"failed":0,"totalLines":0,"unmatchedLines":0,"examples":[],"sitemaps":1}
+
+UNMATCHED NAMES (95):
+4	injoy chocolate syrup	1 tbsp inJoy Chocolate Syrup (Pinoy Recipe)
+3	wafer sticks halves	1 pc Wafer Sticks halves (Pinoy Recipe)
+2	cream	▢ ½ cup cream (Recipes by Nora)
+2	minatamis na saba	2 tbsp Minatamis na Saba (Pinoy Recipe)
+2	buko strips	1 tbsp Buko Strips (Pinoy Recipe)
+1	ripe philippine mangoes, peeled and finely chopped	2 ripe Philippine mangoes, peeled and finely chopped (Kawaling Pinoy)
+1	salsa	¼ cup salsa (Kawaling Pinoy)
+1	kamote leaves	1 bundle kamote leaves (Kawaling Pinoy)
+1	macadamia nuts, crushed	1 tablespoon macadamia nuts, crushed (Kawaling Pinoy)
+1	panutsa syrup	panutsa syrup (Kawaling Pinoy)
+1	drops pandan extract	2 drops pandan extract (Kawaling Pinoy)
+1	(about 8 ounces) panutsa	1 piece (about 8 ounces) panutsa (Kawaling Pinoy)
+1	atsuete powder	1 tablespoon atsuete powder (Kawaling Pinoy)
+1	ripe but firm philippine mangoes	2 ripe but firm Philippine mangoes (Kawaling Pinoy)
+1	dried shitake mushrooms	3 pieces dried shitake mushrooms (Kawaling Pinoy)
+1	dried mangoes, chopped	6 ounces dried mangoes, chopped (Kawaling Pinoy)
+1	dried pineapples, chopped	6 ounces dried pineapples, chopped (Kawaling Pinoy)
+1	sweetened coconut shavings	½ cup sweetened coconut shavings (Kawaling Pinoy)
+1	fried tofu cubes	1 cup fried tofu cubes (Kawaling Pinoy)
+1	ube halaya	▢ ½ cup ube halaya (Recipes by Nora)
+1	sweetened saba bananas cut into small pieces	▢ ¼ cup sweetened saba bananas cut into small pieces (Recipes by Nora)
+1	shaved or finely crushed ice	▢ 8 cups shaved or finely crushed ice (Recipes by Nora)
+1	scoops ice cream	▢ 4 scoops ice cream (Recipes by Nora)
+1	leche flan	▢ ¼ cup leche flan (Recipes by Nora)
+1	brownie mix about 18 ounces	▢ brownie mix about 18 ounces (Recipes by Nora)
+1	instant coffee or ¼ teaspoon espresso powder optional	▢ ½ teaspoon instant coffee or ¼ teaspoon espresso powder optional (Recipes by Nora)
+1	assorted nuts whole or chopped	▢ 1 cup assorted nuts whole or chopped (Recipes by Nora)
+1	bittersweet or semisweet chocolate chips or chopped	▢ ¼ cup bittersweet or semisweet chocolate chips or chopped (Recipes by Nora)
+1	bird's eye chilies (optional)	▢ Bird's eye chilies (optional) (Recipes by Nora)
+1	raspberries fresh or frozen	▢ 6 ounces raspberries fresh or frozen (Recipes by Nora)
+1	dipping sauce for serving	▢ Dipping sauce for serving (Recipes by Nora)
+1	whole or cracked peppercorns	▢ 1 teaspoon whole or cracked peppercorns (Recipes by Nora)
+1	cilantro leaves and stems optional	▢ Cilantro leaves and stems optional (Recipes by Nora)
+1	coconut meat	coconut meat (Pinoy Recipe)
+1	box chocolate cake mix or hershey’s chocolate cake recipe (prepared as directed & baked in 3 (8-inch) round pans	1 box chocolate cake mix or Hershey’s chocolate cake recipe (prepared as directed & baked in 3 (8-inch) round pans (Pinoy Recipe)
+1	comstock original cherry filling	1 Can Comstock Original Cherry Filling (Pinoy Recipe)
+1	your favorite whip cream recipe	2 cups of your favorite whip cream recipe (Pinoy Recipe)
+1	mami noodles	1 kilo mami noodles (Pinoy Recipe)
+1	inipit “a flavor of your choice” separated	10 pieces Inipit “a flavor of your choice” separated (Pinoy Recipe)
+1	3.5 x 5 plastic containers orany similar container with a lid.	2 pieces 3.5 x 5 Plastic Containers orany similar Container with a Lid. (Pinoy Recipe)
+1	ube halaya purple yam jam	1/2 cup Ube Halaya purple yam jam (Pinoy Recipe)
+1	violet food color gel (optional)	Violet food color gel (optional) (Pinoy Recipe)
+1	beef broth cube dissolved in	1 pc. Beef Broth Cube dissolved in (Pinoy Recipe)
+1	injoy classic scramble powder	3 tbsp inJoy Classic Scramble Powder (Pinoy Recipe)
+1	injoy chocolate scramble powder	3 tbsp inJoy Chocolate Scramble Powder (Pinoy Recipe)
+1	oreo or chocolate cookies	2 pcs Oreo or Chocolate Cookies (Pinoy Recipe)
+1	injoy ube scramble powder	3 tbsp inJoy Ube Scramble Powder (Pinoy Recipe)
+1	injoy boba pearls	2 tbsp inJoy Boba Pearls (Pinoy Recipe)
+1	mango cubes	1 tbsp Mango cubes (Pinoy Recipe)
+1	injoy melon scramble powder	3 tbsp inJoy Melon Scramble Powder (Pinoy Recipe)
+1	melon strips	2 tbsp Melon strips (Pinoy Recipe)
+1	box 200g maya party cupcake mix	1 box 200g Maya Party Cupcake Mix (Pinoy Recipe)
+1	27g nescafe creamy latte	1 sachet 27g Nescafe Creamy Latte (Pinoy Recipe)
+1	frosty whip cream powder	½ cup Frosty Whip Cream Powder (Pinoy Recipe)
+1	chilled nescafe creamy latte 1 sachet nescafe creamy latte dissolved in 3/4 cup hot water & chilled.	1/4 cup chilled Nescafe Creamy Latte 1 sachet Nescafe Creamy Latte dissolved in 3/4 cup hot water & chilled. (Pinoy Recipe)
+1	mini-chocolate homemade or store bought (optional)	5 pcs. mini-chocolate homemade or store bought (optional) (Pinoy Recipe)
+1	caramel syrup optional	2 tbsp. caramel syrup optional (Pinoy Recipe)
+1	6-inch cake board	1 6-inch cake board (Pinoy Recipe)
+1	box 5.5×5.5×4 preformed white box (optional for business idea only)	1 box 5.5×5.5×4 PreFormed White Box (optional for business idea only) (Pinoy Recipe)
+1	chocnut (put 1 or 2 per banana)	8-16 pcs ChocNut (Put 1 or 2 per Banana) (Pinoy Recipe)
+1	or	or (Pinoy Recipe)
+1	sinamak	¼ cup sinamak (Pinoy Recipe)
+1	plantain bananas - peeled and cubed	4 piece plantain bananas - peeled and cubed (Foxy Folksy)
+1	frozen mixed seafood - thawed	500 grams frozen mixed seafood - thawed (Foxy Folksy)
+1	bamboo sticks or skewers	bamboo sticks or skewers (Pepper.ph)
+1	curly tops, crumbled	8 pieces Curly Tops, crumbled (Pepper.ph)
+1	sigarilyas (winged beans)	250g sigarilyas (winged beans) (Pepper.ph)
+1	dried laing leaves (dried gabi leaves)	100g dried laing leaves (dried gabi leaves) (Pepper.ph)
+1	fried dilis	2 tbsp fried dilis (Pepper.ph)
+1	pamapa itum (burnt coconut paste)	½ cup pamapa itum (burnt coconut paste) (Pepper.ph)
+1	ziti pasta	500g ziti pasta (Pepper.ph)
+1	veega giniling	200–400g Veega giniling (Pepper.ph)
+1	recipe bechamel sauce	1 recipe bechamel sauce (Pepper.ph)
+1	canned corn, drained	¼–⅓ cup canned corn, drained (Pepper.ph)
+1	kewpie mayo	1 tbsp Kewpie mayo (Pepper.ph)
+1	150g cans cdo karne norte	2 150g cans CDO Karne Norte (Pepper.ph)
+1	spicy ramen	1 package spicy ramen (Pepper.ph)
+1	gochujang	2 tbsp gochujang (Pepper.ph)
+1	dry mushrooms, soaked in 3/4 cup water & sliced	2 pcs dry mushrooms, soaked in 3/4 cup water & sliced (Pepper.ph)
+1	(700ml) water	3 cups (700ml) water (Pepper.ph)
+1	truffle paste	1 tsp truffle paste (Pepper.ph)
+1	orange marmalade	½ cup orange marmalade (Pepper.ph)
+1	half queso de bola, sliced	1 half queso de bola, sliced (Pepper.ph)
+1	sukiyaki sauce	3 tbsp sukiyaki sauce (Pepper.ph)
+1	mentaiko (cod roe)	4 tbsp mentaiko (cod roe) (Pepper.ph)
+1	mentaiko	2 tbsp mentaiko (Pepper.ph)
+1	seaweed powder	½ tbsp seaweed powder (Pepper.ph)
+1	grated parmesan	¼ cup grated parmesan (Pepper.ph)
+1	liquid seasoning	1 tbsp liquid seasoning (Pepper.ph)
+1	wasabi	1 tsp wasabi (Pepper.ph)
+1	edamame, shelled	¼ cup edamame, shelled (Pepper.ph)
+1	mandarin orange slices	¼ cup mandarin orange slices (Pepper.ph)
+1	black beans	1 cup black beans (Pepper.ph)
+1	fried tortilla strips	½ cup fried tortilla strips (Pepper.ph)
+1	watercress, tough stems trimmed	200g watercress, tough stems trimmed (Pepper.ph)
+node:fs:2430
+    return binding.writeFileUtf8(
+                   ^
+
+Error: ENOENT: no such file or directory, open 'demo/dryrun-out/summary.json'
+    at writeFileSync (node:fs:2430:20)
+    at file:///home/runner/work/website_business/website_business/demo/dryrun.mts:71:1
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'demo/dryrun-out/summary.json'
+}
+
+Node.js v22.23.4
