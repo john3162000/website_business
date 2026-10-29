@@ -35,7 +35,7 @@ export interface StructuredRecipe {
 
 type JsonObject = Record<string, unknown>;
 
-function findRecipeJsonLd($: ReturnType<typeof cheerio.load>): JsonObject | null {
+export function findRecipeJsonLd($: ReturnType<typeof cheerio.load>): JsonObject | null {
   let found: JsonObject | null = null;
   $('script[type="application/ld+json"]').each((_, el) => {
     if (found) return;

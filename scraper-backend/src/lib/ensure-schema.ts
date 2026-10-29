@@ -73,3 +73,26 @@ export function ensurePsaTable(): Promise<void> {
   });
   return psaTable;
 }
+
+/**
+ * Pages the recipe crawl looked at and did not save (not a recipe, or a dish already listed from
+ * another site), so the daily crawl doesn't fetch them again (prisma/migrations/20261029000000_recipe_skip).
+ * Created here because deploys never run migrations.
+ */
+let recipeSkipTable: Promise<void> | null = null;
+
+export function ensureRecipeSkipTable(): Promise<void> {
+  recipeSkipTable ??= (async () => {
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "RecipeSkip" (
+        "url" TEXT PRIMARY KEY,
+        "reason" TEXT NOT NULL,
+        "title" TEXT,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`);
+  })().catch((err) => {
+    recipeSkipTable = null; // retry on the next request
+    throw err;
+  });
+  return recipeSkipTable;
+}

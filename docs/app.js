@@ -1,5 +1,5 @@
 // SarapSulit front end. All data comes from the scraper backend:
-//   /api/recipes           Panlasang Pinoy recipes (static)
+//   /api/recipes           recipes from Panlasang Pinoy and other recipe sites (static)
 //   /api/recipes/compiled  per-serving nutrition (FNRI) and cost (DA, DTI, SM), computed server-side
 //   /api/commodities       DA Daily Price Index, updated automatically every day
 //   /api/nutrition         FNRI Food Composition Table (only counted here)
@@ -66,7 +66,7 @@ function formatDate(d) {
   return d ? d.toLocaleDateString("en-PH", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" }) : "—";
 }
 
-// Category from the title, unless Panlasang Pinoy's own course says it clearly.
+// Category from the title, unless the recipe site's own course says it clearly.
 // Their courses are patchy ("Chicken", "Dinner", sopas as "Appetizer"), so only
 // soups, desserts and sauces are taken from them.
 function categoryFor(title, course) {
@@ -450,7 +450,7 @@ function buildModal(r, lines) {
           </div>
           <div class="space-y-2">${nutriBars}</div>
           ${r.sodium != null ? `<p class="text-xs text-gray-600 mt-2">Sodium ≈ ${Math.round(r.sodium).toLocaleString()} mg</p>` : ""}
-          ${r.refKcal ? `<p class="text-xs text-gray-500 mt-2">Panlasang Pinoy’s own estimate: ≈ ${Math.round(r.refKcal).toLocaleString()} kcal per serving (it counts all frying oil and marinade)</p>` : ""}
+          ${r.refKcal ? `<p class="text-xs text-gray-500 mt-2">${escapeHtml(src ? src.name : "The recipe site")}’s own estimate: ≈ ${Math.round(r.refKcal).toLocaleString()} kcal per serving (it counts all frying oil and marinade)</p>` : ""}
           <p class="text-xs text-gray-400 mt-3">Source: FNRI FCT · per serving estimate · edible portion and cooking losses applied</p>
         </div>
         ${insight}
