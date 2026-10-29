@@ -1,6 +1,35 @@
 live titles: 2610
-DEBUG https://yummykitchentv.com/wp-sitemap.xml: 705 bytes, first locs:  | head: <?xml version='1.0' encoding='UTF-8'?><?xml-stylesheet type='text/xsl' href='https://yummykitchentv.com/wp-content/plugins/google-sitemap-generator/sitemap.xsl'?><!-- sitemap-generator-url='http://www.arnebrachhold.de' sitemap-generator-version='4.1.25' --> <!-- generated-on='October 29, 2026 1:10 a
-Yummy Kitchen: sitemaps https://yummykitchentv.com/wp-sitemap.xml
-{"site":"Yummy Kitchen","pages":0,"sampled":0,"recipes":0,"otherCuisine":0,"duplicate":0,"hidden":0,"shown":0,"failed":0,"totalLines":0,"unmatchedLines":0,"examples":[],"sitemaps":1}
+Yummy Kitchen: sitemaps https://yummykitchentv.com/post-sitemap.xml https://yummykitchentv.com/post-sitemap2.xml
+{"site":"Yummy Kitchen","pages":1200,"sampled":40,"recipes":36,"otherCuisine":0,"duplicate":11,"hidden":15,"shown":10,"failed":0,"totalLines":291,"unmatchedLines":26,"examples":["Ube Condensed Milk Cake (No-Oven) | 14 lines | 0 unknown | [1|Can|Ube Condensed Milk] [1 ¾|Cups|All-purpose Flour] [¼|Cup|Melted Butter]","Pizza Roll Recipe (Crispy Filipino Pizza Bread Rolls) | 9 lines | 0 unknown | [15|slices|loaf bread] [||Hotdogs] [||Ham slices]","Lumpiang Sariwa Recipe – Fresh Filipino Spring Rolls with Homemade Wrapper and Sweet Sauce | 28 lines | 5 unknown | [||¼ kilo ground chicken or pork] [||1 medium potato] [||1 small carrot]","Easy Chicken Embutido Recipe – Filipino-Style Steamed Chicken Meatloaf | 18 lines | 0 unknown | [1|kg|ground chicken] [½|cup|raisins] [½|cup|carrots]"],"sitemaps":2}
+Foxy Folksy: sitemaps https://www.foxyfolksy.com/post-sitemap.xml
+{"site":"Foxy Folksy","pages":617,"sampled":40,"recipes":16,"otherCuisine":18,"duplicate":11,"hidden":2,"shown":3,"failed":0,"totalLines":54,"unmatchedLines":2,"examples":["Kilayin (Kilawin Kapampangan) | 11 lines | 0 unknown | [2|Tablespoons|oil] [3-4|cloves|garlic] [1|medium|onion]","Ginataang Bilo bilo (glutinous rice balls in coconut milk) | 9 lines | 1 unknown | [2|cups|glutinous rice flour] [1|cup|water] [2-3|cups|water]","Seafood Salpicao | 16 lines | 1 unknown | [2|tablespoon|oil] [5|cloves|garlic] [1|cup|shiitake mushroom]","Bistek Recipe | 8 lines | 0 unknown | [1|pound|Beef Sirloin] [½|cup|soy sauce] [¼|cup|kalamansi or lemon juice]"],"sitemaps":1}
+Manila Spoon: sitemaps https://www.manilaspoon.com/post-sitemap.xml
+{"site":"Manila Spoon","pages":906,"sampled":40,"recipes":3,"otherCuisine":28,"duplicate":1,"hidden":0,"shown":2,"failed":0,"totalLines":13,"unmatchedLines":0,"examples":["Green Mango Smoothie | 3 lines | 0 unknown | [2||green mangoes] [1|cup|crushed ice,] [1|Tablespoon|honey or agave]","Extra Special Mango Float (Mango Icebox Cake) | 10 lines | 0 unknown | [1|pint|(473 ml) whipping or heavy Cream,] [2|tbsp|powdered or icing sugar] [1/2-2/3|cup|sweetened condensed Milk,]"],"sitemaps":1}
 
-UNMATCHED NAMES (0):
+UNMATCHED NAMES (26):
+2	water	1 cup water (Yummy Kitchen)
+2	green chilies	2 to 3 pieces green chilies (Yummy Kitchen)
+1	medium turnip julienned	1 medium turnip julienned (Yummy Kitchen)
+1	chicken broth cube	1 chicken broth cube (Yummy Kitchen)
+1	water or as needed	½ cup water or as needed (Yummy Kitchen)
+1	fudgee barr	7 – 10 pieces of Fudgee Barr (Yummy Kitchen)
+1	& ½ cup any chocolate	1 & ½ cup any chocolate (Yummy Kitchen)
+1	breading mix	1 cup breading mix (Yummy Kitchen)
+1	bouillon cube	1 bouillon cube (Yummy Kitchen)
+1	(25 g) unflavored gulaman powder	1 sachet (25 g) unflavored gulaman powder (Yummy Kitchen)
+1	cheese cubes (optional)	½ cup cheese cubes (optional) (Yummy Kitchen)
+1	red and green food colors	Red and green food colors (Yummy Kitchen)
+1	jelly powder	1 sachet jelly powder (Yummy Kitchen)
+1	+ 1 teaspoon instant coffee granules (or powder)	5 tablespoons + 1 teaspoon instant coffee granules (or powder) (Yummy Kitchen)
+1	slurry	2 tablespoons of slurry (Yummy Kitchen)
+1	paprika powder	2 teaspoons of paprika powder (Yummy Kitchen)
+1	chocolate cookies with cream filling (crushed into chunks)	chocolate cookies with cream filling (crushed into chunks) (Yummy Kitchen)
+1	slabs of ribs	2 slabs of ribs (Yummy Kitchen)
+1	barbeque marinade	½ cup barbeque marinade (Yummy Kitchen)
+1	tambakol ( steak cut )	1 kilo tambakol ( steak cut ) (Yummy Kitchen)
+1	u0026 ½ cups water	1 u0026 ½ cups water (Yummy Kitchen)
+1	green chillies	3 - 5 green chillies (Yummy Kitchen)
+1	dried seaweed	14 grams dried seaweed (Yummy Kitchen)
+1	slurry 1 tablespoon cornstarch + 2 tablespoons water	Slurry 1 tablespoon cornstarch + 2 tablespoons water (Yummy Kitchen)
+1	plantain bananas - peeled and cubed	4 piece plantain bananas - peeled and cubed (Foxy Folksy)
+1	frozen mixed seafood - thawed	500 grams frozen mixed seafood - thawed (Foxy Folksy)
