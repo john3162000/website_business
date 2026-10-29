@@ -1,0 +1,33 @@
+name: Recipe crawl dry run
+
+# Temporary: parses sample posts from the new recipe sites offline. Never runs on main.
+on:
+  push:
+    branches: [claude/dryrun]
+    paths: [demo/dryrun.mts, .github/workflows/dryrun.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  dryrun:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: cd scraper-backend && npm ci --ignore-scripts
+      - name: Dry run
+        run: |
+          mkdir -p demo/dryrun-out
+          cd scraper-backend && node --experimental-strip-types --no-warnings ../demo/dryrun.mts 2>&1 | tee ../demo/dryrun-out/log.txt
+      - name: Commit the results
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898732+github-actions[bot]@users.noreply.github.com"
+          git add demo/dryrun-out
+          git commit -m "Dry run results [skip ci]" || echo "nothing to commit"
+          git pull --rebase && git push
