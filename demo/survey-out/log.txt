@@ -1,56 +1,304 @@
-{"site":"kawalingpinoy.com","posts":627,"sitemaps":1,"recipeJsonLd":"3/3","robots":"ok","aiBlocks":"","terms":"","note":""}
-{"site":"foxyfolksy.com","posts":617,"sitemaps":1,"recipeJsonLd":"1/3","robots":"ok","aiBlocks":"","terms":"","note":""}
-{"site":"angsarap.net","posts":0,"sitemaps":0,"recipeJsonLd":"-","robots":"ok","aiBlocks":"","terms":"","note":""}
-{"site":"pinoyrecipe.net","posts":912,"sitemaps":1,"recipeJsonLd":"0/3","robots":"ok","aiBlocks":"","terms":"","note":""}
-{"site":"rivertenkitchen.com","posts":0,"sitemaps":1,"recipeJsonLd":"-","robots":"ok","aiBlocks":"Bytespider CCBot ClaudeBot Google-Extended GPTBot anthropic-ai","terms":"","note":""}
-{"site":"salusalorecipes.com","posts":0,"sitemaps":0,"recipeJsonLd":"-","robots":"unreachable","aiBlocks":"","terms":"","note":""}
-{"site":"manilaspoon.com","posts":906,"sitemaps":1,"recipeJsonLd":"0/3","robots":"ok","aiBlocks":"","terms":"","note":""}
-{"site":"recipesbynora.com","posts":370,"sitemaps":1,"recipeJsonLd":"0/3","robots":"ok","aiBlocks":"","terms":"/disclaimer: \"1,coldfusion,comodo ssl checker,convera,copypants,crawler,crowsnest,curl,dap/nethttp,daumoa,deepseek,deepseekbot,developers\\\\\"","note":""}
-{"site":"mamasguiderecipes.com","posts":14818,"sitemaps":28,"recipeJsonLd":"0/3","robots":"ok","aiBlocks":"Bytespider claudebot","terms":"","note":""}
-(node:2589) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 terminated listeners added to [Fetch]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
-(Use `node --trace-warnings ...` to show where the warning was created)
-(node:2589) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 terminated listeners added to [Fetch]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
-(node:2589) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 terminated listeners added to [Fetch]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
-(node:2589) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 terminated listeners added to [Fetch]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
-(node:2589) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 terminated listeners added to [Fetch]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
-(node:2589) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 terminated listeners added to [Fetch]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
-(node:2589) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 terminated listeners added to [Fetch]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
-(node:2589) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 terminated listeners added to [Fetch]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
-(node:2589) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 terminated listeners added to [Fetch]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
-{"site":"lutongbahayrecipe.com","posts":1,"sitemaps":0,"recipeJsonLd":"-","robots":"ok","aiBlocks":"","terms":"","note":"flat sitemap"}
-{"site":"pinoycookingrecipes.com","posts":971,"sitemaps":0,"recipeJsonLd":"-","robots":"ok","aiBlocks":"","terms":"","note":"flat sitemap"}
-{"site":"yummykitchentv.com","posts":1200,"sitemaps":2,"recipeJsonLd":"3/3","robots":"ok","aiBlocks":"","terms":"","note":""}
-{"site":"overseaspinoycooking.net","posts":776,"sitemaps":0,"recipeJsonLd":"-","robots":"ok","aiBlocks":"","terms":"","note":"flat sitemap"}
-{"site":"thefoodietakesflight.com","posts":1697,"sitemaps":3,"recipeJsonLd":"1/3","robots":"ok","aiBlocks":"ChatGPT-User GPTBot anthropic-ai Claude-Web CCbot","terms":"","note":""}
-{"site":"kitchenconfidante.com","posts":1458,"sitemaps":2,"recipeJsonLd":"0/3","robots":"ok","aiBlocks":"","terms":"/terms: \"1,coldfusion,comodo ssl checker,convera,copypants,crawler,crowsnest,curl,dap/nethttp,daumoa,deepseek,deepseekbot,developers\\\\\"","note":""}
-{"site":"amiablefoods.com","posts":0,"sitemaps":0,"recipeJsonLd":"-","robots":"unreachable","aiBlocks":"","terms":"","note":""}
-{"site":"filipino-recipes-lutong-pinoy.com","posts":0,"sitemaps":0,"recipeJsonLd":"-","robots":"ok","aiBlocks":"","terms":"/terms: no anti-scraping clause found","note":""}
-{"site":"casabaluartefilipinorecipes.com","posts":0,"sitemaps":0,"recipeJsonLd":"-","robots":"ok","aiBlocks":"","terms":"","note":""}
-{"site":"yummy.ph","posts":0,"sitemaps":0,"recipeJsonLd":"-","robots":"unreachable","aiBlocks":"","terms":"","note":""}
-{"site":"ajinomoto.com.ph","posts":1,"sitemaps":0,"recipeJsonLd":"-","robots":"ok","aiBlocks":"","terms":"/terms: \"engage in any data mining, data harvesting, data extracting or any other similar activity in relation to\"","note":"flat sitemap"}
-{"site":"knorr.com","posts":0,"sitemaps":0,"recipeJsonLd":"-","robots":"no robots (403)","aiBlocks":"","terms":"","note":""}
-{"site":"pepper.ph","posts":945,"sitemaps":0,"recipeJsonLd":"-","robots":"ok","aiBlocks":"","terms":"","note":"flat sitemap"}
-{"site":"filipinofoodrecipes.net","posts":0,"sitemaps":0,"recipeJsonLd":"-","robots":"ok","aiBlocks":"","terms":"","note":""}
-(node:2589) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 terminated listeners added to [Fetch]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
-(node:2589) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 terminated listeners added to [Fetch]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
-(node:2589) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 terminated listeners added to [Fetch]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
-(node:2589) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 terminated listeners added to [Fetch]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
-{"site":"pinoyfoodguide.com","posts":0,"sitemaps":0,"recipeJsonLd":"-","robots":"ok","aiBlocks":"Bytespider CCBot ClaudeBot Google-Extended GPTBot anthropic-ai","terms":"/terms: no anti-scraping clause found","note":""}
-{"site":"savorythoughts.com","posts":401,"sitemaps":1,"recipeJsonLd":"3/3","robots":"ok","aiBlocks":"","terms":"","note":""}
-{"site":"ihearteating.com","posts":971,"sitemaps":2,"recipeJsonLd":"3/3","robots":"ok","aiBlocks":"","terms":"/legal: \"1,coldfusion,comodo ssl checker,convera,copypants,crawler,crowsnest,curl,dap/nethttp,daumoa,deepseek,deepseekbot,developers\\\\\"","note":""}
-{"site":"jeanelleats.com","posts":185,"sitemaps":2,"recipeJsonLd":"3/3","robots":"ok","aiBlocks":"","terms":"/terms: \"1,coldfusion,comodo ssl checker,convera,copypants,crawler,crowsnest,curl,dap/nethttp,daumoa,deepseek,deepseekbot,developers\\\\\"","note":""}
-{"site":"jainacooks.com","posts":0,"sitemaps":0,"recipeJsonLd":"-","robots":"unreachable","aiBlocks":"","terms":"","note":""}
-{"site":"seriouseats.com","posts":0,"sitemaps":0,"recipeJsonLd":"-","robots":"ok","aiBlocks":"ChatGPT-User GPTBot Google-Extended anthropic-ai CCBot Claude-SearchBot","terms":"","note":""}
-{"site":"lutongbahay.net","posts":0,"sitemaps":0,"recipeJsonLd":"-","robots":"BLOCKS *","aiBlocks":"anthropic-ai Bytespider CCBot ClaudeBot Google-Extended GPTBot","terms":"/terms: no anti-scraping clause found","note":""}
-{"site":"panlasangpinoyrecipes.com","posts":0,"sitemaps":0,"recipeJsonLd":"-","robots":"unreachable","aiBlocks":"","terms":"","note":""}
-{"site":"chefjardine.com","posts":0,"sitemaps":0,"recipeJsonLd":"-","robots":"unreachable","aiBlocks":"","terms":"","note":""}
-{"site":"foodandjourneys.net","posts":322,"sitemaps":1,"recipeJsonLd":"3/3","robots":"ok","aiBlocks":"","terms":"","note":""}
-{"site":"kusinamaster.com","posts":0,"sitemaps":0,"recipeJsonLd":"-","robots":"unreachable","aiBlocks":"","terms":"","note":""}
-{"site":"atbp.ph","posts":0,"sitemaps":0,"recipeJsonLd":"-","robots":"unreachable","aiBlocks":"","terms":"","note":""}
-{"site":"pinoyhapagkainan.com","posts":0,"sitemaps":0,"recipeJsonLd":"-","robots":"unreachable","aiBlocks":"","terms":"","note":""}
-{"site":"cookingwithcocktailrings.com","posts":979,"sitemaps":2,"recipeJsonLd":"3/3","robots":"ok","aiBlocks":"","terms":"/terms: \"1,coldfusion,comodo ssl checker,convera,copypants,crawler,crowsnest,curl,dap/nethttp,daumoa,deepseek,deepseekbot,developers\\\\\"","note":""}
-{"site":"wokandkin.com","posts":219,"sitemaps":1,"recipeJsonLd":"3/3","robots":"ok","aiBlocks":"","terms":"","note":""}
-{"site":"thepeachkitchen.com","posts":12028,"sitemaps":13,"recipeJsonLd":"0/3","robots":"ok","aiBlocks":"Bytespider CCBot ClaudeBot Google-Extended GPTBot anthropic-ai","terms":"","note":""}
-{"site":"makeitdairyfree.com","posts":1037,"sitemaps":2,"recipeJsonLd":"0/3","robots":"ok","aiBlocks":"ChatGPT-User GPTBot anthropic-ai Claude-Web CCbot","terms":"","note":""}
-
-TOTAL posts (all sites): 41441
+{
+ "site": "manilaspoon.com",
+ "robots": "User-agent: * | Disallow: /wp-admin/ | Disallow: /cdn-cgi/ | Sitemap: https://www.manilaspoon.com/sitemap_index.xml",
+ "index": "sitemap_index.xml",
+ "maps": [
+  "https://www.manilaspoon.com/post-sitemap.xml",
+  "https://www.manilaspoon.com/page-sitemap.xml",
+  "https://www.manilaspoon.com/category-sitemap.xml"
+ ],
+ "pages": 906,
+ "samples": [
+  "/penne-with-beef-and-roasted-pepper/ ld=n plugin=wprm ingClasses=0 cuisine=",
+  "/slow-cooker-pulled-pork-with-salsa-verde/ ld=Y plugin=wprm ingClasses=47 cuisine=[\"American\",\"Mexican\"]",
+  "/strawberry-and-mascarpone-bread-pudding/ ld=Y plugin=wprm ingClasses=46 cuisine=[\"American\"]",
+  "/blueberry-cookies/ ld=Y plugin=wprm ingClasses=48 cuisine=[\"American\"]",
+  "/cranberry-oat-bars/ ld=Y plugin=wprm ingClasses=56 cuisine=[\"American\"]",
+  "/blueberry-sour-cream-cake/ ld=Y plugin=wprm ingClasses=56 cuisine=[\"American\"]"
+ ],
+ "terms": "/privacy-policy: no clause"
+}
+{
+ "site": "pinoyrecipe.net",
+ "robots": "User-agent: * | Disallow: /wp-admin/ | Disallow: /?s=* | Disallow: /?pubclickenc=* | Disallow: /?utm_source=* | Disallow: /trackback/ | Disallow: /?s= | Disallow: /page/ | Disallow: /wp-admin/admin-ajax.php | User-agent: FeedBurner  | Disallow: / | Sitemap: https://www.pinoyrecipe.net/sitemap_index.xml",
+ "index": "sitemap_index.xml",
+ "maps": [
+  "https://www.pinoyrecipe.net/post-sitemap.xml",
+  "https://www.pinoyrecipe.net/page-sitemap.xml",
+  "https://www.pinoyrecipe.net/category-sitemap.xml"
+ ],
+ "pages": 912,
+ "samples": [
+  "https://www.pinoyrecipe.net/ube-macapuno-salad-recipe/ ld=n plugin=wprm ingClasses=0 cuisine=",
+  "https://www.pinoyrecipe.net/mini-leche-flan-recipe/ ld=Y plugin=wprm ingClasses=33 cuisine=[\"Filipino\"]",
+  "https://www.pinoyrecipe.net/filipino-puto-bumbong-recipe/ ld=n plugin=wprm ingClasses=0 cuisine=",
+  "https://www.pinoyrecipe.net/what-you-need-to-know-about-the-mediterranean-diet-plan/ ld=n plugin=wprm ingClasses=0 cuisine=",
+  "https://www.pinoyrecipe.net/spicy-shrimp-and-asparagus-chinese-stir-fry-recipe/ ld=n plugin=wprm ingClasses=0 cuisine=",
+  "https://www.pinoyrecipe.net/the-parenting-patch-anniversary-100-cash-giveaway/ ld=n plugin=wprm ingClasses=0 cuisine="
+ ],
+ "terms": "/privacy-policy: \"this provision is applicable provided that the data is processed by automated means and that the processing is based on the user&rsquo;s consent, on a contract which the user is part of or on pre-contrac\""
+}
+{
+ "site": "pinoycookingrecipes.com",
+ "robots": "Sitemap: https://www.pinoycookingrecipes.com/sitemap.xml | User-agent: NerdyBot | Disallow: / | User-agent: dotbot | Crawl-delay: 10 | User-agent: * | Disallow: /ajax/ | Disallow: /apps/",
+ "index": "sitemap.xml (urlset)",
+ "maps": [],
+ "pages": 971,
+ "samples": [
+  "/buko-salad.html ld=n plugin=- ingClasses=0 cuisine=",
+  "/nilagang-manok-by-bernadette.html ld=n plugin=- ingClasses=0 cuisine=",
+  "/skinless-longganisa.html ld=n plugin=- ingClasses=0 cuisine=",
+  "/recipe/chocolate-chip-cookies ld=n plugin=- ingClasses=0 cuisine=",
+  "/recipe/ube-palitaw-sa-latik ld=n plugin=- ingClasses=0 cuisine=",
+  "/recipe/mango-sticky-rice ld=n plugin=- ingClasses=0 cuisine="
+ ],
+ "terms": "/privacy-policy: no clause"
+}
+{
+ "site": "overseaspinoycooking.net",
+ "robots": "Sitemap: https://www.overseaspinoycooking.net/sitemap.xml",
+ "index": "sitemap.xml (urlset)",
+ "maps": [],
+ "pages": 776,
+ "samples": [
+  "/search/label/Binakol ld=n plugin=- ingClasses=0 cuisine=",
+  "/search/label/Embutido ld=n plugin=- ingClasses=0 cuisine=",
+  "/search/label/KareKare ld=n plugin=- ingClasses=0 cuisine=",
+  "/search/label/PorkAfritada ld=n plugin=- ingClasses=0 cuisine=",
+  "/search/label/Spanish ld=n plugin=- ingClasses=0 cuisine=",
+  "/2010/06 ld=n plugin=- ingClasses=0 cuisine="
+ ]
+}
+{
+ "site": "pepper.ph",
+ "robots": "User-Agent: * | Disallow: /admin | Disallow: /studio | Disallow: /plans | Disallow: /api | Disallow: /sign-in | Disallow: /sign-up | Disallow: /sso-callback | Sitemap: https://www.pepper.ph/sitemap.xml",
+ "index": "sitemap.xml (urlset)",
+ "maps": [],
+ "pages": 945,
+ "samples": [
+  "/recipes/sinilihan-traditional-bicol-express ld=Y plugin=- ingClasses=0 cuisine=",
+  "/recipes/kimchi-potato-salad ld=n plugin=- ingClasses=0 cuisine=",
+  "/recipes/magic-sarap-sirloin-beef-tapa ld=Y plugin=- ingClasses=0 cuisine=",
+  "/recipes/crispy-beef-tapa ld=n plugin=- ingClasses=0 cuisine=",
+  "/recipes/no-meat-chicken-nuggets ld=n plugin=- ingClasses=0 cuisine=",
+  "/reviews/best-pork-luncheon-meat-manila ld=n plugin=- ingClasses=0 cuisine="
+ ]
+}
+{
+ "site": "angsarap.net",
+ "robots": "User-agent: * | Disallow: /wp-admin/ | Sitemap: https://www.angsarap.net/sitemap.xml",
+ "index": "wp-sitemap.xml (urlset)",
+ "maps": [],
+ "pages": 0,
+ "samples": [],
+ "terms": "/privacy-policy: \"s any operation or set of operations which is performed on personal data or on sets of personal data, whether or not by automated means, such as collection, recording, organisation, structuring, storage, adaptation or alteration, retrieval, consultation,\""
+}
+{
+ "site": "salusalorecipes.com",
+ "robots": "robots fetch failed",
+ "index": null,
+ "maps": [],
+ "pages": 0,
+ "samples": []
+}
+{
+ "site": "casabaluartefilipinorecipes.com",
+ "robots": "User-agent: Mediapartners-Google | Disallow:  | User-agent: * | Disallow: /search | Disallow: /share-widget | Sitemap: https://www.casabaluartefilipinorecipes.com/sitemap.xml",
+ "index": "sitemap.xml",
+ "maps": [
+  "https://www.casabaluartefilipinorecipes.com/sitemap.xml?page=1",
+  "https://www.casabaluartefilipinorecipes.com/sitemap.xml?page=2"
+ ],
+ "pages": 936,
+ "samples": [
+  "/2020/07/ginataang-bilo-bilo.html ld=n plugin=- ingClasses=0 cuisine=",
+  "/2019/09/pork-ribs-barbecue-filipino-style.html ld=n plugin=- ingClasses=0 cuisine=",
+  "/2019/01/champorado.html ld=n plugin=- ingClasses=0 cuisine=",
+  "/2017/07/congratulations-casa-baluarte.html ld=n plugin=- ingClasses=0 cuisine=",
+  "/2016/08/grilled-blue-fin-tuna.html ld=n plugin=- ingClasses=0 cuisine=",
+  "/2015/03/steamed-tilapia.html ld=n plugin=- ingClasses=0 cuisine="
+ ]
+}
+{
+ "site": "filipino-recipes-lutong-pinoy.com",
+ "robots": "",
+ "index": "sitemap_index.xml (urlset)",
+ "maps": [],
+ "pages": 0,
+ "samples": [],
+ "terms": "/privacy-policy: no clause"
+}
+{
+ "site": "foxyfolksy.com",
+ "robots": "User-agent: * | Disallow: /wp-admin/ | Disallow: /search/ | Disallow: ?s= | Sitemap: https://www.foxyfolksy.com/sitemap_index.xml",
+ "index": "sitemap_index.xml",
+ "maps": [
+  "https://www.foxyfolksy.com/post-sitemap.xml",
+  "https://www.foxyfolksy.com/page-sitemap.xml",
+  "https://www.foxyfolksy.com/web-story-sitemap.xml",
+  "https://www.foxyfolksy.com/category-sitemap.xml"
+ ],
+ "pages": 617,
+ "samples": [
+  "/california-roll-wrap/ ld=Y plugin=wprm ingClasses=56 cuisine=[\"American\"]",
+  "/baked-sweet-potato-cubes-with-parmesan-and-sour-cream-chives-dip/ ld=Y plugin=wprm ingClasses=47 cuisine=[\"American\"]",
+  "/biscocho/ ld=Y plugin=wprm ingClasses=47 cuisine=[\"Filipino\"]",
+  "/banana-cake-with-peanut-butter-frosting/ ld=Y plugin=wprm ingClasses=66 cuisine=[\"American\"]",
+  "/cookies-and-cream-ice-cream-cake/ ld=Y plugin=wprm ingClasses=32 cuisine=[\"American\"]",
+  "/kababayan-bread/ ld=Y plugin=wprm ingClasses=76 cuisine=[\"Filipino\"]"
+ ],
+ "terms": "/privacy-policy: no clause"
+}
+{
+ "site": "yummykitchentv.com",
+ "robots": "Sitemap: https://yummykitchentv.com/wp-sitemap.xml | User-agent: * | Disallow: /wp-content/uploads/wpo/wpo-plugins-tables-list.json | User-agent: * | Disallow: | Sitemap: https://yummykitchentv.com/sitemap.xml | Sitemap: https://yummykitchentv.com/sitemap.html",
+ "index": "wp-sitemap.xml (urlset)",
+ "maps": [],
+ "pages": 0,
+ "samples": []
+}
+{
+ "site": "foodandjourneys.net",
+ "robots": "",
+ "index": "sitemap_index.xml",
+ "maps": [
+  "https://foodandjourneys.net/post-sitemap.xml",
+  "https://foodandjourneys.net/page-sitemap.xml",
+  "https://foodandjourneys.net/category-sitemap.xml"
+ ],
+ "pages": 322,
+ "samples": [
+  "https://foodandjourneys.net/tomato-and-mozzarella-pastry-rustico-leccese/ ld=Y plugin=wprm ingClasses=37 cuisine=[\"Italian\"]",
+  "https://foodandjourneys.net/spanish-chorizo-and-chickpea-stew/ ld=Y plugin=wprm ingClasses=56 cuisine=[\"Spanish\"]",
+  "https://foodandjourneys.net/what-is-fika-traditional-fika-recipes/ ld=n plugin=wprm ingClasses=0 cuisine=",
+  "https://foodandjourneys.net/danish-breakfast-buns-rundstykker/ ld=Y plugin=wprm ingClasses=37 cuisine=[\"Danish\"]",
+  "https://foodandjourneys.net/portuguese-orange-tarts/ ld=Y plugin=wprm ingClasses=41 cuisine=[\"portuguese\"]",
+  "https://foodandjourneys.net/mexican-yellow-rice/ ld=Y plugin=wprm ingClasses=37 cuisine=[\"Mexican\"]"
+ ],
+ "terms": "/privacy-policy: no clause"
+}
+{
+ "site": "wokandkin.com",
+ "robots": "User-agent: * | Disallow: | Sitemap: https://www.wokandkin.com/sitemap_index.xml",
+ "index": "sitemap_index.xml",
+ "maps": [
+  "https://www.wokandkin.com/post-sitemap.xml",
+  "https://www.wokandkin.com/page-sitemap.xml",
+  "https://www.wokandkin.com/category-sitemap.xml"
+ ],
+ "pages": 219,
+ "samples": [
+  "/sago-soup-with-taro/ ld=Y plugin=wprm ingClasses=44 cuisine=[\"Asian\",\"Chinese\",\"Vietnamese\"]",
+  "/crispy-pork-belly-stir-fried-with-asian-greens/ ld=Y plugin=wprm ingClasses=36 cuisine=[\"Asian\",\"Cantonese\",\"Chinese\"]",
+  "/pig-stomach-soup-with-peppercorns/ ld=Y plugin=wprm ingClasses=38 cuisine=[\"Asian\",\"Cantonese\",\"Chinese\"]",
+  "/crispy-egg-noodles-with-seafood/ ld=Y plugin=wprm ingClasses=102 cuisine=[\"Asian\",\"Cantonese\",\"Chinese\"]",
+  "/mien-ga/ ld=Y plugin=wprm ingClasses=112 cuisine=[\"Asian\",\"Vietnamese\"]",
+  "/steamed-lemongrass-pork-with-shrimp-paste/ ld=Y plugin=wprm ingClasses=40 cuisine=[\"Asian\",\"Chinese\"]"
+ ],
+ "terms": "/privacy-policy: no clause"
+}
+{
+ "site": "kawalingpinoy.com",
+ "robots": "User-agent: * | Disallow: /cdn-cgi/ | Disallow: /wp-admin/ | Sitemap: https://www.kawalingpinoy.com/sitemap_index.xml",
+ "index": "sitemap_index.xml",
+ "maps": [
+  "https://www.kawalingpinoy.com/post-sitemap.xml",
+  "https://www.kawalingpinoy.com/page-sitemap.xml",
+  "https://www.kawalingpinoy.com/category-sitemap.xml"
+ ],
+ "pages": 627,
+ "samples": [
+  "/banana-wrapped-salay-salay-fish/ ld=Y plugin=wprm ingClasses=32 cuisine=[\"Filipino\"]",
+  "/filipino-style-chicken-baked-macaroni/ ld=Y plugin=wprm ingClasses=63 cuisine=[\"Filipino\"]",
+  "/pork-green-bean-stir-fry/ ld=Y plugin=wprm ingClasses=49 cuisine=[\"Asian\"]",
+  "/ginisang-ampalaya-at-hipon/ ld=Y plugin=wprm ingClasses=42 cuisine=[\"Filipino\"]",
+  "/longganisa/ ld=Y plugin=wprm ingClasses=61 cuisine=[\"Filipino\"]",
+  "/filipino-style-spaghetti/ ld=Y plugin=wprm ingClasses=55 cuisine=[\"Filipino\"]"
+ ],
+ "terms": "/privacy-policy: no clause"
+}
+{
+ "site": "savorythoughts.com",
+ "robots": "",
+ "index": "sitemap_index.xml",
+ "maps": [
+  "https://www.savorythoughts.com/post-sitemap.xml",
+  "https://www.savorythoughts.com/page-sitemap.xml",
+  "https://www.savorythoughts.com/web-story-sitemap.xml",
+  "https://www.savorythoughts.com/category-sitemap.xml"
+ ],
+ "pages": 401,
+ "samples": [
+  "/dutch-baby-pancakes/ ld=Y plugin=wprm ingClasses=37 cuisine=[\"American\",\"International\"]",
+  "/avocado-green-goddess-dressing/ ld=Y plugin=wprm ingClasses=42 cuisine=[\"American\"]",
+  "/asparagus-soup/ ld=Y plugin=wprm ingClasses=42 cuisine=[\"French\"]",
+  "/tomato-basil-bisque/ ld=Y plugin=wprm ingClasses=52 cuisine=[\"American\"]",
+  "/pikliz-spicy-coleslaw-recipe/ ld=Y plugin=wprm ingClasses=25 cuisine=[\"Haitian\",\"International\"]",
+  "/shells-mac-and-cheese/ ld=Y plugin=wprm ingClasses=55 cuisine=[\"American\"]"
+ ],
+ "terms": "/privacy-policy: no clause"
+}
+{
+ "site": "recipesbynora.com",
+ "robots": "User-agent: * | Disallow: /cdn-cgi/ | Disallow: /wp-admin/ | Disallow: /wp-json/ | Disallow: /*?s= | Disallow: /*?attachment_id= | Disallow: /*?add-to-cart= | Disallow: /*&add-to-cart= | Disallow: /*?add_to_wishlist= | Disallow: /*&add_to_wishlist= | User-agent: * | Disallow: *? | Disallow: /feed/ | Sitemap: https://www.recipesbynora.com/sitemap_index.xml",
+ "index": "sitemap_index.xml",
+ "maps": [
+  "https://www.recipesbynora.com/post-sitemap.xml",
+  "https://www.recipesbynora.com/page-sitemap.xml",
+  "https://www.recipesbynora.com/category-sitemap.xml"
+ ],
+ "pages": 370,
+ "samples": [
+  "/filipino-barbecue-pork-skewers/ ld=Y plugin=wprm ingClasses=42 cuisine=[\"Filipino\"]",
+  "/yardlong-beans-sitaw/ ld=n plugin=wprm ingClasses=0 cuisine=",
+  "/saba-bananas/ ld=n plugin=wprm ingClasses=0 cuisine=",
+  "/sinigang-na-bangus-recipe/ ld=Y plugin=wprm ingClasses=63 cuisine=[\"Filipino\"]",
+  "/ginisang-okra-recipe/ ld=Y plugin=wprm ingClasses=53 cuisine=[\"Filipino\"]",
+  "/filipino-chicken-curry-recipe/ ld=Y plugin=wprm ingClasses=58 cuisine=[\"Filipino\"]"
+ ],
+ "terms": "/disclaimer: no clause"
+}
+{
+ "site": "jeanelleats.com",
+ "robots": "",
+ "index": "sitemap_index.xml",
+ "maps": [
+  "https://jeanelleats.com/post-sitemap.xml",
+  "https://jeanelleats.com/page-sitemap.xml",
+  "https://jeanelleats.com/category-sitemap.xml",
+  "https://jeanelleats.com/post_tag-sitemap.xml",
+  "https://jeanelleats.com/author-sitemap.xml"
+ ],
+ "pages": 179,
+ "samples": [
+  "https://jeanelleats.com/poke-three-ways/ ld=Y plugin=wprm ingClasses=104 cuisine=",
+  "https://jeanelleats.com/battle-of-the-dishes-season-1-all-recipes/ ld=n plugin=wprm ingClasses=0 cuisine=",
+  "https://jeanelleats.com/champorado/ ld=Y plugin=wprm ingClasses=29 cuisine=",
+  "https://jeanelleats.com/ube-coconut-custard-lactose-free/ ld=Y plugin=wprm ingClasses=34 cuisine=",
+  "https://jeanelleats.com/gyuhi/ ld=Y plugin=wprm ingClasses=21 cuisine=",
+  "https://jeanelleats.com/how-to-make-kutsinta-recipe-filipino-steamed-rice-cakes-filipino-desserts/ ld=Y plugin=wprm ingClasses=49 cuisine="
+ ],
+ "terms": "/terms: \"sites, or the internet; (h) to collect or track the personal information of others; (i) to spam, phish, pharm, pretext, spider, crawl, or scrape; (j) for any obscene or immoral purpose; or (k) to interfere with or circumvent the security features\""
+}
+{
+ "site": "kitchenconfidante.com",
+ "robots": "User-agent: * | Disallow: /cdn-cgi/ | Disallow: /wp-admin/ | Sitemap: https://kitchenconfidante.com/sitemap_index.xml",
+ "index": "sitemap_index.xml",
+ "maps": [
+  "https://kitchenconfidante.com/post-sitemap.xml",
+  "https://kitchenconfidante.com/post-sitemap2.xml",
+  "https://kitchenconfidante.com/page-sitemap.xml",
+  "https://kitchenconfidante.com/web-story-sitemap.xml",
+  "https://kitchenconfidante.com/category-sitemap.xml"
+ ],
+ "pages": 1458,
+ "samples": [
+  "https://kitchenconfidante.com/10-20-17-five-little-things ld=n plugin=wprm ingClasses=0 cuisine=",
+  "https://kitchenconfidante.com/lemon-curd-frozen-yogurt-recipe ld=n plugin=wprm ingClasses=1 cuisine=",
+  "https://kitchenconfidante.com/sweet-potato-bebinca ld=Y plugin=wprm ingClasses=46 cuisine=[\"Goan\",\"Vegetarian\"]",
+  "https://kitchenconfidante.com/churro-doughnut-holes-with-ice-cream-and-cherry-chipotle-sauce-recipe ld=Y plugin=wprm ingClasses=71 cuisine=[\"American\",\"Spanish\"]",
+  "https://kitchenconfidante.com/pissaladiere-with-prosciutto-and-olives ld=Y plugin=wprm ingClasses=41 cuisine=[\"French\"]",
+  "https://kitchenconfidante.com/warm-eggplant-mushroom-pasta-salad-recipe ld=Y plugin=wprm ingClasses=66 cuisine=[\"American\"]"
+ ],
+ "terms": "/terms: \"you must not conduct any systematic or automated data collection activities, including, but not limited to, scraping, data mining, data extraction, or data harvesting on or in relation to the website without company&#8217;s express written permissio\""
+}
