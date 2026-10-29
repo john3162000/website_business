@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { decodeEntities, dishKey, instructionTexts, isoMinutes, jsonLdImage, splitIngredientLine } from "./ingredient-line.ts";
+import { cleanText, decodeEntities, dishKey, instructionTexts, isoMinutes, jsonLdImage, splitIngredientLine } from "./ingredient-line.ts";
 
 const plain = (o: unknown) => JSON.parse(JSON.stringify(o));
 
@@ -23,6 +23,13 @@ test("splitIngredientLine keeps count-only and amount-less lines readable", () =
   // "to" starts a range only when a number follows.
   assert.deepEqual(plain(splitIngredientLine("2 tomatoes, sliced")), { rawText: "2 tomatoes, sliced", amount: "2", name: "tomatoes, sliced" });
   assert.equal(splitIngredientLine("2 to 3 cups rice").amount, "2 to 3");
+});
+
+test("cleanText fixes broken escapes, zero-width characters and '1 & ½'", () => {
+  assert.equal(cleanText("1 u0026 ½ cups\u200b water"), "1 ½ cups water");
+  assert.equal(cleanText("1 and 1/2 cup sugar"), "1 1/2 cup sugar");
+  assert.equal(cleanText("salt &amp; pepper"), "salt & pepper");
+  assert.deepEqual(plain(splitIngredientLine("1 & ½ cup any chocolate")), { rawText: "1 ½ cup any chocolate", amount: "1 ½", unit: "cup", name: "any chocolate" });
 });
 
 test("decodeEntities handles the entities JSON-LD carries", () => {

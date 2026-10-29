@@ -9,7 +9,7 @@
  */
 import * as cheerio from "cheerio";
 import { findRecipeJsonLd, parseStructured, type RefNutrition } from "./recipe-structured.ts";
-import { instructionTexts, isoMinutes, jsonLdImage, splitIngredientLine } from "./ingredient-line.ts";
+import { cleanText, instructionTexts, isoMinutes, jsonLdImage, splitIngredientLine } from "./ingredient-line.ts";
 
 export interface ScrapedIngredient {
   rawText: string;
@@ -87,11 +87,12 @@ export function parseRecipePage(html: string, url: string, requireRecipe = false
     prepTime = parseTime($(".wprm-recipe-prep_time-container").text()) ?? isoMinutes(ld?.prepTime) ?? undefined;
     cookTime = parseTime($(".wprm-recipe-cook_time-container").text()) ?? isoMinutes(ld?.cookTime) ?? undefined;
     $(".wprm-recipe-ingredient").each((_, el) => {
-      const rawText = $(el).text().replace(/\s+/g, " ").trim();
-      if (!rawText) return;
-      const amount = $(el).find(".wprm-recipe-ingredient-amount").text().trim() || undefined;
-      const unit = $(el).find(".wprm-recipe-ingredient-unit").text().trim() || undefined;
-      const name = $(el).find(".wprm-recipe-ingredient-name").text().trim() || rawText;
+      // Same empty-line rule as parseStructured, so group headings line up by position.
+      if (!$(el).text().replace(/\s+/g, " ").trim()) return;
+      const rawText = cleanText($(el).text());
+      const amount = cleanText($(el).find(".wprm-recipe-ingredient-amount").text()) || undefined;
+      const unit = cleanText($(el).find(".wprm-recipe-ingredient-unit").text()) || undefined;
+      const name = cleanText($(el).find(".wprm-recipe-ingredient-name").text()) || rawText;
       // parseStructured walks the same non-empty lines in the same order.
       const groupName = structured.ingredients[ingredients.length]?.group ?? undefined;
       ingredients.push({ rawText, name, amount, unit, groupName });
