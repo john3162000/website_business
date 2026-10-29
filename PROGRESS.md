@@ -165,3 +165,72 @@ Result: 895 of 2,031 meals fully priced (44%), and 91% of food lines priced.
   stored steps are no longer fetched or shown (they stay in the database). The share picture does the same.
   "cook/<host>" clicks are counted for monthly partner reports (needs GoatCounter). Basis for the partnership
   offers to Panlasang Pinoy and Kawaling Pinoy (`outreach/recipe-permission-emails.md`, git-ignored).
+
+## 2026-10-29: more recipe sites (target ~5,000 recipes)
+
+Panlasang Pinoy was exhausted at 2,780 database entries, so the crawl now reads other Filipino recipe sites.
+Each new recipe gets the same treatment as Panlasang Pinoy's:
+- FNRI nutrition;
+- prices in the order DA → PSA → SM/DTI → derived;
+- method notes only (no steps, description or copied photo);
+- photo link and credit, with the "Paano lutuin?" button;
+- hidden (never deleted) while an ingredient is unknown.
+
+- **Survey** (GitHub Actions, about 40 sites). Each site was checked for:
+  - post count from its sitemaps;
+  - robots.txt, including AI-crawler blocks;
+  - schema.org Recipe JSON-LD on sample posts;
+  - anti-scraping clauses in its terms (read with `<script>` removed: the first pass matched a
+    bot list inside a script).
+
+  Results, by decision:
+
+  | Decision | Site | Posts | Note |
+  |---|---|---|---|
+  | **Added** | Kawaling Pinoy | 627 | |
+  | | Yummy Kitchen | 1,200 | |
+  | | Recipes by Nora | 370 | |
+  | | Pinoy Recipe | 912 | many are articles, which are skipped |
+  | | Foxy Folksy | 617 | Filipino recipes only |
+  | | Manila Spoon | 906 | Filipino only |
+  | | Pepper.ph | 769 | `/recipes/` pages only |
+  | **Left out** | Jeanelle Eats, Kitchen Confidante | | terms forbid scraping |
+  | | The Foodie Takes Flight, Mama's Guide, The Peach Kitchen, Riverten Kitchen, Serious Eats, Pinoy Food Guide | | robots.txt blocks AI crawlers |
+  | | lutongbahay.net | | robots.txt blocks everyone |
+  | | Ajinomoto PH | | terms forbid data mining |
+  | | Food and Journeys, Wok and Kin, I Heart Eating, Cooking with Cocktail Rings, Make It Dairy Free | | not Filipino |
+  | | Savory Thoughts | | no Filipino recipes in a 40-post sample |
+  | | Casa Baluarte, Pinoy Cooking Recipes, Overseas Pinoy Cooking | | no structured recipe data |
+  | | Salu Salo, Ang Sarap, Yummy.ph, Knorr | | unreachable, or no sitemap |
+
+- **Crawler** (`recipe-sources.ts`, `recipe-page.ts`, `ingredient-line.ts`):
+  - It walks the sites in order, with a per-site cursor (`sourceIndex`).
+  - Pages are read from the WP Recipe Maker card or from JSON-LD; `recipeIngredient` strings are
+    split into amount, unit and name.
+  - Text is cleaned of broken `u0026` escapes, zero-width characters and "1 & ½".
+  - Sitemaps can be Yoast, Rank Math, WordPress core, Google XML Sitemaps or a flat `sitemap.xml`.
+  - Later sites skip dishes already listed (`dishKey`: no "recipe/easy/Filipino" noise, sorted words).
+  - Optional per-site filters: cuisine and path.
+  - Skipped pages go in a new `RecipeSkip` table so they aren't fetched again.
+  - A second daily cron run (15:15 UTC) speeds up the first full pass. The user agent is now
+    `SarapSulitBot` with a link to the site.
+- **Dry run** (40 sample posts per site, offline engine):
+
+  | Site | Recipes | Already listed | Hidden among the new ones |
+  |---|---|---|---|
+  | Kawaling Pinoy | 39 | 12 | 10 of 27 |
+  | Yummy Kitchen | 36 | 11 | 15 of 25 |
+  | Recipes by Nora | 29 | 11 | 8 of 18 |
+  | Pinoy Recipe | 17 | 3 | 10 of 14 |
+  | Pepper.ph | 32 | 1 | 16 of 31 |
+  | Foxy Folksy | 16 Filipino | 11 | |
+  | Manila Spoon | 3 Filipino | 1 | |
+
+  Projection: about 2,000–2,300 new dishes, so roughly **4,800–5,100 recipes** in the database.
+- **Catalog:** 54 aliases to foods already priced. Examples: green chilies, chili leaves, dried
+  seaweed, broth and bouillon cubes, gulaman powder, turnip (singkamas), cream, mami noodles,
+  kamote leaves, atsuete, sigarilyas, liquid seasoning, mayo, plantain, tokwa.
+- **Site:** credits and "Paano lutuin?" name every new site (`share.js`, with a test that every
+  crawled host has a name). Wording no longer assumes Panlasang Pinoy.
+- **Docs:** new root `README.md` (data sources, how a recipe becomes a price and nutrition label,
+  assumptions, recipe sources); CLAUDE.md "Adding recipes".
