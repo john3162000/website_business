@@ -126,6 +126,8 @@ function buildRecipe(raw, c) {
     kcalLow: n.kcalLow != null ? Math.round(n.kcalLow) : null,
     kcalHigh: n.kcalHigh != null ? Math.round(n.kcalHigh) : null,
     frying: n.frying || null,
+    // Vitamin C, A, iron and calcium after cooking: { method, vitaminC: [best, low, high], … } (null on older API data).
+    cooked: n.cooked || null,
     appliances: n.appliances || [],
     sodium: n.sodium ?? null,
     refKcal: n.refKcal ?? null,
@@ -343,6 +345,37 @@ function ingredientRows(lines) {
   }).join("");
 }
 
+// Sodium is a nutrient to limit: WHO advises under 2,000 mg a day for adults.
+const SODIUM_LIMIT_MG = 2000;
+const SODIUM_SALTY_PCT = 40;
+// Salty seasonings that recipes often add "to taste", which the engine can't count.
+const SALTY_SLUG = /^(salt|fish_sauce|soy_sauce|shrimp_paste|bagoong|oyster_sauce|seasoning_|stock_cube_)/;
+
+/** Sodium as a limit bar (amber, red when salty), with the saltiest ingredients and uncounted seasoning. */
+function sodiumHtml(r, lines) {
+  if (r.sodium == null) return "";
+  const mg = Math.round(r.sodium);
+  const p = Math.round((mg / SODIUM_LIMIT_MG) * 100);
+  const salty = p >= SODIUM_SALTY_PCT;
+  const counted = (lines || []).filter((l) => l.nutrients && l.nutrients.sodium > 0 && l.label);
+  const total = counted.reduce((s, l) => s + l.nutrients.sodium, 0);
+  // The one or two lines that give most of the sodium ("patis, bagoong").
+  const top = counted.sort((a, b) => b.nutrients.sodium - a.nutrients.sodium)
+    .filter((l, i) => i === 0 || l.nutrients.sodium >= 0.25 * total).slice(0, 2).map((l) => l.label.toLowerCase());
+  const toTaste = (lines || []).some((l) => l.status === "to-taste" && SALTY_SLUG.test(l.slug || ""));
+  const color = salty ? "#dc2626" : p >= 20 ? "#C9961A" : "#9ca3af";
+  return `
+    <div class="mt-2">
+      <div class="flex justify-between text-xs mb-1">
+        <span class="text-gray-600">${t("modal.sodium")}</span>
+        <span class="font-medium">≈ ${mg.toLocaleString()}mg <span class="text-gray-400">(${p}% ${t("modal.sodiumLimit")})</span></span>
+      </div>
+      <div class="bar"><div class="bar-fill" style="width:${Math.min(p, 100)}%;background:${color}"></div></div>
+      ${salty ? `<p class="text-[11px] font-semibold text-red-600 mt-1">${t("modal.salty").replace("{pct}", p)}${top.length ? ` · ${t("modal.saltyFrom")} ${escapeHtml(top.join(", "))}` : ""}</p>` : ""}
+      ${toTaste ? `<p class="text-[11px] text-gray-400 mt-0.5">${t("modal.sodiumToTaste")}</p>` : ""}
+    </div>`;
+}
+
 /**
  * The recipe pop-up. We show the dish (the source's photo, linked and credited), its cost and
  * nutrition; the cooking steps stay on the source site, behind the "Paano lutuin?" button.
@@ -358,20 +391,29 @@ function buildModal(r, lines) {
     { label: "Carbs", val: nutr.carbs, key: "carbs", unit: "g" },
     { label: "Fat", val: nutr.fat, key: "fat", unit: "g" },
     { label: "Fiber", val: nutr.fiber, key: "fiber", unit: "g" },
+    { label: "Vitamin A", val: nutr.vitaminA, key: "vitaminA", unit: "µg" },
     { label: "Vitamin C", val: nutr.vitaminC, key: "vitaminC", unit: "mg" },
     { label: "Iron", val: nutr.iron, key: "iron", unit: "mg" },
     { label: "Calcium", val: nutr.calcium, key: "calcium", unit: "mg" },
   ].map((n) => {
-    const p = pct(n.val, n.key);
+    // After cooking, when the API has it: "≈ 18mg", with the raw-ingredient value underneath.
+    const after = r.cooked && r.cooked[n.key];
+    const shown = after ? after[0] : n.val;
+    const p = pct(shown, n.key);
+    const changed = after && after[0] !== n.val;
     return `
       <div>
         <div class="flex justify-between text-xs mb-1">
           <span class="text-gray-600">${n.label}</span>
-          <span class="font-medium">${n.val}${n.unit} <span class="text-gray-400">(${p}% DRV)</span></span>
+          <span class="font-medium">${after ? "≈ " : ""}${shown}${n.unit} <span class="text-gray-400">(${p}% DRV)</span></span>
         </div>
         <div class="bar"><div class="bar-fill" style="width:${p}%"></div></div>
+        ${changed ? `<p class="text-[11px] text-gray-400 text-right mt-0.5">${after[1]}–${after[2]}${n.unit} · ${t("modal.cookedRaw")}: ${n.val}${n.unit}</p>` : ""}
       </div>`;
   }).join("");
+  const cookedNote = r.cooked
+    ? `<details class="text-xs text-gray-500 mt-2"><summary class="cursor-pointer">${t("modal.cookedNote")}: ${escapeHtml(t(`cook.${r.cooked.method}`))} ⓘ</summary><p class="mt-1">${escapeHtml(t("modal.cookedHelp"))}</p></details>`
+    : "";
 
   const strength = r.protein >= 20 ? "protein" : r.fiber >= 5 ? "fiber" : "vitamins";
   const insight = r.ranked
@@ -460,7 +502,8 @@ function buildModal(r, lines) {
             </div>
           </div>
           <div class="space-y-2">${nutriBars}</div>
-          ${r.sodium != null ? `<p class="text-xs text-gray-600 mt-2">Sodium ≈ ${Math.round(r.sodium).toLocaleString()} mg</p>` : ""}
+          ${cookedNote}
+          ${sodiumHtml(r, lines)}
           ${r.refKcal ? `<p class="text-xs text-gray-500 mt-2">${escapeHtml(src ? src.name : "The recipe site")}’s own estimate: ≈ ${Math.round(r.refKcal).toLocaleString()} kcal per serving (it counts all frying oil and marinade)</p>` : ""}
           <p class="text-xs text-gray-400 mt-3">Source: FNRI FCT · per serving estimate · edible portion and cooking losses applied</p>
         </div>

@@ -11,6 +11,7 @@
 import { isUnit, parseQuantity, type ParsedQuantity } from "./quantity.ts";
 import type { Alias, Canonical } from "./types.ts";
 import { applianceWords, detectAppliances, type Appliance } from "./appliances.ts";
+import { COOKED_KEYS, dishMethod, lineMethod, retained, type CookMethod, type CookedKey, type Retention } from "./cooking.ts";
 
 export interface Nutrients {
   kcal: number; protein: number; fat: number; carbs: number; sodium: number;
@@ -39,6 +40,9 @@ export interface CompileContext {
   psa?: Map<string, PsaPrice>;
   /** Last resort: price an item from another one (catalog derived-prices.tsv). */
   derivedPrices?: Record<string, { from: string; factor: number | null; kind: string; why: string }>;
+  /** Cooking group per raw food slug and true-retention factors (see cooking.ts); without them nothing is adjusted. */
+  cookGroups?: Record<string, string>;
+  retention?: Retention;
 }
 export interface PsaPrice {
   price: number;
@@ -82,6 +86,8 @@ export interface CompiledLine {
   /** Where the price came from: "DA" (daily market prices) or e.g. "DTI SRP 11 May 2026". */
   priceSource: string | null;
   flags: string[];
+  /** Vitamin C, vitamin A, iron and calcium left after cooking, and the method assumed for this line. */
+  cooked?: ({ method: CookMethod } & Record<CookedKey, number>) | null;
 }
 
 export interface CompiledRecipe {
@@ -102,6 +108,11 @@ export interface CompiledRecipe {
   /** Appliances named in the title or steps (oven, air fryer, grill, ...); a stove is assumed. */
   appliances: Appliance[];
   perServing: Nutrients & { kcalLow: number; kcalHigh: number };
+  /**
+   * Per serving after cooking losses (perServing stays the raw-ingredient sum, used for ranking).
+   * value is the best estimate; low–high is the range from the retention table.
+   */
+  afterCooking: { method: CookMethod; why: string; perServing: Record<CookedKey, { value: number; low: number; high: number }> };
   costPerServing: number | null;
   /** Share of weighed food lines with FNRI nutrition / with a DA price (0–1). Condiments DA doesn't sell lower costCoverage. */
   nutritionCoverage: number;
@@ -580,6 +591,10 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
   // Fatty pork that is boiled then fried or deep-fried renders fat into the oil.
   const fatFactor = frying && FATTY_PORK.test(r.title) ? 0.7 : 1;
 
+  const appliances = detectAppliances(r.title, r.instructions);
+  const dish = dishMethod(r.title, steps, frying, appliances);
+  const cookedTotal = Object.fromEntries(COOKED_KEYS.map((k) => [k, { value: 0, low: 0, high: 0 }])) as CompiledRecipe["afterCooking"]["perServing"];
+
   let kcalLow = 0, kcalHigh = 0;
   const total: Nutrients = { ...ZERO };
   let foodLines = 0, withNutrition = 0, priceable = 0, priced = 0;
@@ -601,6 +616,16 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
         line.reason = `fat renders into the frying oil: ≈ ${Math.round((1 - fatFactor) * 100)}% of its fat removed`;
       }
       line.nutrients = n;
+      // Cooking losses: only raw foods in a cooking group (cooked FNRI rows and condiments have none).
+      const group = line.slug ? ctx.cookGroups?.[line.slug] : undefined;
+      const lm = lineMethod(dish.method, group ?? "");
+      const cooked = { method: lm } as NonNullable<CompiledLine["cooked"]>;
+      for (const k of COOKED_KEYS) {
+        const [fv, lo, hi] = ctx.retention ? retained(ctx.retention, group, lm, k) : [1, 1, 1];
+        cooked[k] = n[k] * fv;
+        cookedTotal[k].value += n[k] * fv; cookedTotal[k].low += n[k] * lo; cookedTotal[k].high += n[k] * hi;
+      }
+      line.cooked = group ? cooked : null;
       withNutrition++;
       for (const k of Object.keys(total) as (keyof Nutrients)[]) total[k] += n[k];
       if (w === medium && absorbed && f.calories != null) {
@@ -655,10 +680,15 @@ export function compileRecipe(r: RecipeInput, ctx: CompileContext): CompiledReci
     servings,
     servingsAssumed,
     method: { frying, absorbedOilG: absorbed },
-    appliances: detectAppliances(r.title, r.instructions),
+    appliances,
     perServing: {
       ...(Object.fromEntries(Object.entries(total).map(([k, v]) => [k, per(v)])) as unknown as Nutrients),
       kcalLow: per(kcalLow), kcalHigh: per(kcalHigh),
+    },
+    afterCooking: {
+      method: dish.method,
+      why: dish.why,
+      perServing: Object.fromEntries(COOKED_KEYS.map((k) => [k, { value: per(cookedTotal[k].value), low: per(cookedTotal[k].low), high: per(cookedTotal[k].high) }])) as CompiledRecipe["afterCooking"]["perServing"],
     },
     costPerServing: priced ? per(cost) : null,
     nutritionCoverage: foodLines ? withNutrition / foodLines : 0,
