@@ -3,7 +3,7 @@ import { ensureNutritionColumns, ensurePsaTable, ensureRecipeColumns } from "@/l
 import { isMalformedName, parsePriceBasis } from "@/lib/da-units";
 import { compareDate } from "@/lib/price-history";
 import { yieldCount, type RefNutrition } from "@/lib/scrapers/recipe-structured";
-import { ALIASES, CANONICALS, DERIVED_PRICES, EXTRA_NUTRIENTS, MANUAL_PRICES } from "./catalog.generated.ts";
+import { ALIASES, CANONICALS, COOK_GROUPS, DERIVED_PRICES, EXTRA_NUTRIENTS, MANUAL_PRICES, RETENTION } from "./catalog.generated.ts";
 import { psaSnapshot, type PsaRow } from "./psa-snapshot.ts";
 import { compileRecipe, unknownLineCount, type CompileContext, type CompiledRecipe, type DaPrice, type FnriFood, type PsaPrice } from "./compile.ts";
 
@@ -85,7 +85,7 @@ async function loadPsa(): Promise<PsaRow[]> {
 
 
 function compileAll(recipes: Recipes, fnri: Map<string, FnriFood>, da: Map<string, DaPrice>, psa: Map<string, PsaPrice>): CompiledFromDb[] {
-  const ctx: CompileContext = { aliases: ALIASES, canonicals: CANONICALS, extraNutrients: EXTRA_NUTRIENTS, manualPrices: MANUAL_PRICES, derivedPrices: DERIVED_PRICES, fnri, da, psa };
+  const ctx: CompileContext = { aliases: ALIASES, canonicals: CANONICALS, extraNutrients: EXTRA_NUTRIENTS, manualPrices: MANUAL_PRICES, derivedPrices: DERIVED_PRICES, cookGroups: COOK_GROUPS, retention: RETENTION, fnri, da, psa };
   return recipes.map((r): CompiledFromDb => {
     const c = compileRecipe({
       id: r.id, title: r.title, servings: r.servings,
@@ -163,6 +163,14 @@ export function summarize(c: CompiledRecipe & { course?: string | null; referenc
     iron: round(c.perServing.iron, 1),
     vitaminA: round(c.perServing.vitaminA),
     vitaminC: round(c.perServing.vitaminC, 1),
+    // After cooking losses (research/cooking-nutrients): [best, low, high] per serving.
+    cooked: {
+      method: c.afterCooking.method,
+      vitaminC: [round(c.afterCooking.perServing.vitaminC.value, 1), round(c.afterCooking.perServing.vitaminC.low, 1), round(c.afterCooking.perServing.vitaminC.high, 1)],
+      vitaminA: [round(c.afterCooking.perServing.vitaminA.value), round(c.afterCooking.perServing.vitaminA.low), round(c.afterCooking.perServing.vitaminA.high)],
+      iron: [round(c.afterCooking.perServing.iron.value, 1), round(c.afterCooking.perServing.iron.low, 1), round(c.afterCooking.perServing.iron.high, 1)],
+      calcium: [round(c.afterCooking.perServing.calcium.value), round(c.afterCooking.perServing.calcium.low), round(c.afterCooking.perServing.calcium.high)],
+    },
     cost: round(c.costPerServing, 2),
     nutritionCoverage: round(c.nutritionCoverage, 2),
     costCoverage: round(c.costCoverage, 2),
@@ -219,7 +227,7 @@ export async function compileDish(dish: DishInput) {
   ]);
   const fnri = new Map<string, FnriFood>(foods.map((f) => [f.foodCode, f]));
   const psaRows = await loadPsa();
-  const ctx = (da: Map<string, DaPrice>, psa: Map<string, PsaPrice>): CompileContext => ({ aliases: ALIASES, canonicals: CANONICALS, extraNutrients: EXTRA_NUTRIENTS, manualPrices: MANUAL_PRICES, derivedPrices: DERIVED_PRICES, fnri, da, psa });
+  const ctx = (da: Map<string, DaPrice>, psa: Map<string, PsaPrice>): CompileContext => ({ aliases: ALIASES, canonicals: CANONICALS, extraNutrients: EXTRA_NUTRIENTS, manualPrices: MANUAL_PRICES, derivedPrices: DERIVED_PRICES, cookGroups: COOK_GROUPS, retention: RETENTION, fnri, da, psa });
   const input = { id: 0, ...dish };
   const now = daSnapshot(priceRows);
   const compiled = compileRecipe(input, ctx(now.da, psaSnapshot(psaRows)));

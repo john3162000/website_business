@@ -1669,3 +1669,14 @@ or	HEADER			a lone "or" between two lines
 sweetened coconut shavings	FOOD	coconut_desiccated_sweet		recipe sites 2026-10-29
 tokwa	FOOD	tofu_firm		recipe sites 2026-10-29
 fried tofu	FOOD	tofu_firm		recipe sites 2026-10-29
+coconut juice	WATER			same as buko juice: young coconut water, not priced
+long beans	FOOD	sitaw		recipe sites 2026-10-29
+sweet peas	FOOD	green_peas		recipe sites 2026-10-29
+frozen sweet peas	FOOD	green_peas		recipe sites 2026-10-29
+garbanzo beans	FOOD	chickpeas		recipe sites 2026-10-29
+miswa noodles	FOOD	miswa		recipe sites 2026-10-29
+grated ube	FOOD	ube		recipe sites 2026-10-29
+frozen grated ube	FOOD	ube		recipe sites 2026-10-29
+maggi chicken cubes	FOOD	stock_cube_chicken		recipe sites 2026-10-29
+maggi chicken cube	FOOD	stock_cube_chicken		recipe sites 2026-10-29
+funnel	EQUIPMENT			kitchen tool, not food
