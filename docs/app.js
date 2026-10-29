@@ -126,6 +126,8 @@ function buildRecipe(raw, c) {
     kcalLow: n.kcalLow != null ? Math.round(n.kcalLow) : null,
     kcalHigh: n.kcalHigh != null ? Math.round(n.kcalHigh) : null,
     frying: n.frying || null,
+    // Vitamin C, A, iron and calcium after cooking: { method, vitaminC: [best, low, high], … } (null on older API data).
+    cooked: n.cooked || null,
     appliances: n.appliances || [],
     sodium: n.sodium ?? null,
     refKcal: n.refKcal ?? null,
@@ -358,20 +360,29 @@ function buildModal(r, lines) {
     { label: "Carbs", val: nutr.carbs, key: "carbs", unit: "g" },
     { label: "Fat", val: nutr.fat, key: "fat", unit: "g" },
     { label: "Fiber", val: nutr.fiber, key: "fiber", unit: "g" },
+    { label: "Vitamin A", val: nutr.vitaminA, key: "vitaminA", unit: "µg" },
     { label: "Vitamin C", val: nutr.vitaminC, key: "vitaminC", unit: "mg" },
     { label: "Iron", val: nutr.iron, key: "iron", unit: "mg" },
     { label: "Calcium", val: nutr.calcium, key: "calcium", unit: "mg" },
   ].map((n) => {
-    const p = pct(n.val, n.key);
+    // After cooking, when the API has it: "≈ 18mg", with the raw-ingredient value underneath.
+    const after = r.cooked && r.cooked[n.key];
+    const shown = after ? after[0] : n.val;
+    const p = pct(shown, n.key);
+    const changed = after && after[0] !== n.val;
     return `
       <div>
         <div class="flex justify-between text-xs mb-1">
           <span class="text-gray-600">${n.label}</span>
-          <span class="font-medium">${n.val}${n.unit} <span class="text-gray-400">(${p}% DRV)</span></span>
+          <span class="font-medium">${after ? "≈ " : ""}${shown}${n.unit} <span class="text-gray-400">(${p}% DRV)</span></span>
         </div>
         <div class="bar"><div class="bar-fill" style="width:${p}%"></div></div>
+        ${changed ? `<p class="text-[11px] text-gray-400 text-right mt-0.5">${after[1]}–${after[2]}${n.unit} · ${t("modal.cookedRaw")}: ${n.val}${n.unit}</p>` : ""}
       </div>`;
   }).join("");
+  const cookedNote = r.cooked
+    ? `<details class="text-xs text-gray-500 mt-2"><summary class="cursor-pointer">${t("modal.cookedNote")}: ${escapeHtml(t(`cook.${r.cooked.method}`))} ⓘ</summary><p class="mt-1">${escapeHtml(t("modal.cookedHelp"))}</p></details>`
+    : "";
 
   const strength = r.protein >= 20 ? "protein" : r.fiber >= 5 ? "fiber" : "vitamins";
   const insight = r.ranked
@@ -460,6 +471,7 @@ function buildModal(r, lines) {
             </div>
           </div>
           <div class="space-y-2">${nutriBars}</div>
+          ${cookedNote}
           ${r.sodium != null ? `<p class="text-xs text-gray-600 mt-2">Sodium ≈ ${Math.round(r.sodium).toLocaleString()} mg</p>` : ""}
           ${r.refKcal ? `<p class="text-xs text-gray-500 mt-2">${escapeHtml(src ? src.name : "The recipe site")}’s own estimate: ≈ ${Math.round(r.refKcal).toLocaleString()} kcal per serving (it counts all frying oil and marinade)</p>` : ""}
           <p class="text-xs text-gray-400 mt-3">Source: FNRI FCT · per serving estimate · edible portion and cooking losses applied</p>

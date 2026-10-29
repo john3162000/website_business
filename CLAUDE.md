@@ -41,7 +41,8 @@ docs/                         static site, no build step (Tailwind CDN, plain br
   *.test.mjs                  node:test files; run each script's pure helpers in node:vm
   logo.png, favicon.png       FARM2FIGURE logo
 scraper-backend/
-  src/lib/recipe-compile/     the engine: compile.ts, load.ts, quantity.ts, ingredient-index.ts
+  src/lib/recipe-compile/     the engine: compile.ts, load.ts, quantity.ts, ingredient-index.ts,
+                              cooking.ts (vitamin C/A, iron, calcium after cooking)
   src/lib/price-history.ts    compareDate / priceOn / pctChange (week, 2 weeks, month)
   src/lib/scrapers/           DA, PSA, SM scrapers; recipe crawl: recipe-sources.ts (the site list),
                               recipe-page.ts (WPRM card or JSON-LD), ingredient-line.ts (line split, dishKey)
@@ -62,6 +63,14 @@ slug → grams bought / eaten (edible portion, frying oil absorbed, marinade fac
 **Price order:** DA daily → PSA OpenSTAT monthly (NCR, else PH national average) → SM Markets
 or DTI SRP rows in `manual-prices.tsv` → **derived prices** (`derived-prices.tsv`: parent slug ×
 factor, a yield conversion or a stand-in, shown on the site as "≈").
+
+**After cooking:** `cooking.ts` picks a method per dish (title first: sinigang → broth eaten, adobo →
+stew, kinilaw → acid, frying from the engine; leafy greens in soups and stews count as added at the end)
+and applies true-retention factors from `data/catalog/retention-factors.tsv` to raw foods listed in
+`cook-groups.tsv` (leafy_veg, veg, animal). Cooked or canned FNRI rows are never listed, so nothing is
+reduced twice. Only vitamin C, vitamin A, iron and calcium change; results go in `afterCooking` /
+the summary's `cooked` ([best, low, high]). Ranking still uses the raw-ingredient `perServing`.
+The starter factors are marked "USDA-R6 (verify)": check them against the USDA Release 6 table.
 
 Line statuses are `ok`, `to-taste`, `optional`, `water`, `skipped`, `unmatched`, `no-weight` and
 `no-nutrition`.

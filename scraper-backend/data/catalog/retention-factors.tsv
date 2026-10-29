@@ -1,0 +1,181 @@
+group	method	nutrient	factor	low	high	source	note
+leafy_veg	raw	vitaminC	1	1	1	no heat	not heated
+leafy_veg	raw	vitaminA	1	1	1	no heat	not heated
+leafy_veg	raw	iron	1	1	1	no heat	not heated
+leafy_veg	raw	calcium	1	1	1	no heat	not heated
+leafy_veg	acid	vitaminC	0.95	0.9	1	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	kinilaw: acid, no heat; acid protects vitamin C
+leafy_veg	acid	vitaminA	1	1	1	Lee2018; Lesk2006; USDA-R6 (verify)	kinilaw: acid, no heat; acid protects vitamin C
+leafy_veg	acid	iron	1	1	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	kinilaw: acid, no heat; acid protects vitamin C
+leafy_veg	acid	calcium	1	1	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	kinilaw: acid, no heat; acid protects vitamin C
+leafy_veg	blanch	vitaminC	0.75	0.6	0.9	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	short cook (≤3 min) at the end of a soup, stew or ginisa; the liquid is eaten
+leafy_veg	blanch	vitaminA	0.95	0.85	1	Lee2018; Lesk2006; USDA-R6 (verify)	short cook (≤3 min) at the end of a soup, stew or ginisa; the liquid is eaten
+leafy_veg	blanch	iron	1	0.95	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	short cook (≤3 min) at the end of a soup, stew or ginisa; the liquid is eaten
+leafy_veg	blanch	calcium	1	0.95	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	short cook (≤3 min) at the end of a soup, stew or ginisa; the liquid is eaten
+leafy_veg	boil_drained	vitaminC	0.5	0.3	0.6	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	boiled, cooking water thrown away: leached part lost
+leafy_veg	boil_drained	vitaminA	0.9	0.8	1	Lee2018; Lesk2006; USDA-R6 (verify)	boiled, cooking water thrown away: leached part lost
+leafy_veg	boil_drained	iron	0.85	0.7	0.95	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	boiled, cooking water thrown away: leached part lost
+leafy_veg	boil_drained	calcium	0.85	0.75	0.95	Kimura1990min; Bognar1998; USDA-R6 (verify)	boiled, cooking water thrown away: leached part lost
+leafy_veg	boil_broth	vitaminC	0.65	0.5	0.8	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	simmered in a broth that is eaten: leached part kept
+leafy_veg	boil_broth	vitaminA	0.9	0.8	1	Lee2018; Lesk2006; USDA-R6 (verify)	simmered in a broth that is eaten: leached part kept
+leafy_veg	boil_broth	iron	1	0.95	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	simmered in a broth that is eaten: leached part kept
+leafy_veg	boil_broth	calcium	1	0.95	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	simmered in a broth that is eaten: leached part kept
+leafy_veg	stew	vitaminC	0.45	0.3	0.65	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	long braise or stew (≥30 min), sauce eaten
+leafy_veg	stew	vitaminA	0.85	0.75	0.95	Lee2018; Lesk2006; USDA-R6 (verify)	long braise or stew (≥30 min), sauce eaten
+leafy_veg	stew	iron	1	0.95	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	long braise or stew (≥30 min), sauce eaten
+leafy_veg	stew	calcium	1	0.95	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	long braise or stew (≥30 min), sauce eaten
+leafy_veg	saute	vitaminC	0.7	0.5	0.85	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	ginisa / stir-fry, short
+leafy_veg	saute	vitaminA	0.95	0.85	1	Lee2018; Lesk2006; USDA-R6 (verify)	ginisa / stir-fry, short
+leafy_veg	saute	iron	1	0.95	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	ginisa / stir-fry, short
+leafy_veg	saute	calcium	1	0.95	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	ginisa / stir-fry, short
+leafy_veg	steam	vitaminC	0.85	0.7	0.95	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	steamed: little leaching
+leafy_veg	steam	vitaminA	0.95	0.9	1	Lee2018; Lesk2006; USDA-R6 (verify)	steamed: little leaching
+leafy_veg	steam	iron	0.95	0.85	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	steamed: little leaching
+leafy_veg	steam	calcium	0.95	0.85	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	steamed: little leaching
+leafy_veg	deep_fry	vitaminC	0.7	0.6	0.9	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	deep-fried: short time, no leaching
+leafy_veg	deep_fry	vitaminA	0.85	0.75	0.95	Lee2018; Lesk2006; USDA-R6 (verify)	deep-fried: short time, no leaching
+leafy_veg	deep_fry	iron	1	0.95	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	deep-fried: short time, no leaching
+leafy_veg	deep_fry	calcium	1	0.95	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	deep-fried: short time, no leaching
+leafy_veg	pan_fry	vitaminC	0.7	0.6	0.9	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	pan-fried
+leafy_veg	pan_fry	vitaminA	0.85	0.75	0.95	Lee2018; Lesk2006; USDA-R6 (verify)	pan-fried
+leafy_veg	pan_fry	iron	1	0.95	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	pan-fried
+leafy_veg	pan_fry	calcium	1	0.95	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	pan-fried
+leafy_veg	grill	vitaminC	0.7	0.6	0.9	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	grilled or roasted over coals: drippings lost
+leafy_veg	grill	vitaminA	0.9	0.8	0.95	Lee2018; Lesk2006; USDA-R6 (verify)	grilled or roasted over coals: drippings lost
+leafy_veg	grill	iron	1	0.95	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	grilled or roasted over coals: drippings lost
+leafy_veg	grill	calcium	1	0.95	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	grilled or roasted over coals: drippings lost
+leafy_veg	bake	vitaminC	0.65	0.5	0.8	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	oven: long dry heat
+leafy_veg	bake	vitaminA	0.9	0.8	0.95	Lee2018; Lesk2006; USDA-R6 (verify)	oven: long dry heat
+leafy_veg	bake	iron	1	0.95	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	oven: long dry heat
+leafy_veg	bake	calcium	1	0.95	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	oven: long dry heat
+leafy_veg	microwave	vitaminC	0.85	0.7	0.95	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	microwaved, little water
+leafy_veg	microwave	vitaminA	0.95	0.9	1	Lee2018; Lesk2006; USDA-R6 (verify)	microwaved, little water
+leafy_veg	microwave	iron	1	0.95	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	microwaved, little water
+leafy_veg	microwave	calcium	1	0.95	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	microwaved, little water
+leafy_veg	pressure	vitaminC	0.55	0.4	0.75	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	pressure-cooked, liquid eaten
+leafy_veg	pressure	vitaminA	0.85	0.75	0.95	Lee2018; Lesk2006; USDA-R6 (verify)	pressure-cooked, liquid eaten
+leafy_veg	pressure	iron	1	0.95	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	pressure-cooked, liquid eaten
+leafy_veg	pressure	calcium	1	0.95	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	pressure-cooked, liquid eaten
+leafy_veg	cooked	vitaminC	0.6	0.3	0.85	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	method unknown: wide range
+leafy_veg	cooked	vitaminA	0.9	0.8	1	Lee2018; Lesk2006; USDA-R6 (verify)	method unknown: wide range
+leafy_veg	cooked	iron	0.95	0.85	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	method unknown: wide range
+leafy_veg	cooked	calcium	0.95	0.85	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	method unknown: wide range
+veg	raw	vitaminC	1	1	1	no heat	not heated
+veg	raw	vitaminA	1	1	1	no heat	not heated
+veg	raw	iron	1	1	1	no heat	not heated
+veg	raw	calcium	1	1	1	no heat	not heated
+veg	acid	vitaminC	0.95	0.9	1	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	kinilaw: acid, no heat; acid protects vitamin C
+veg	acid	vitaminA	1	1	1	Lee2018; Lesk2006; USDA-R6 (verify)	kinilaw: acid, no heat; acid protects vitamin C
+veg	acid	iron	1	1	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	kinilaw: acid, no heat; acid protects vitamin C
+veg	acid	calcium	1	1	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	kinilaw: acid, no heat; acid protects vitamin C
+veg	blanch	vitaminC	0.75	0.6	0.9	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	short cook (≤3 min) at the end of a soup, stew or ginisa; the liquid is eaten
+veg	blanch	vitaminA	0.95	0.85	1	Lee2018; Lesk2006; USDA-R6 (verify)	short cook (≤3 min) at the end of a soup, stew or ginisa; the liquid is eaten
+veg	blanch	iron	1	0.95	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	short cook (≤3 min) at the end of a soup, stew or ginisa; the liquid is eaten
+veg	blanch	calcium	1	0.95	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	short cook (≤3 min) at the end of a soup, stew or ginisa; the liquid is eaten
+veg	boil_drained	vitaminC	0.55	0.35	0.7	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	boiled, cooking water thrown away: leached part lost
+veg	boil_drained	vitaminA	0.9	0.8	1	Lee2018; Lesk2006; USDA-R6 (verify)	boiled, cooking water thrown away: leached part lost
+veg	boil_drained	iron	0.9	0.75	0.95	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	boiled, cooking water thrown away: leached part lost
+veg	boil_drained	calcium	0.9	0.8	0.95	Kimura1990min; Bognar1998; USDA-R6 (verify)	boiled, cooking water thrown away: leached part lost
+veg	boil_broth	vitaminC	0.65	0.5	0.8	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	simmered in a broth that is eaten: leached part kept
+veg	boil_broth	vitaminA	0.9	0.8	1	Lee2018; Lesk2006; USDA-R6 (verify)	simmered in a broth that is eaten: leached part kept
+veg	boil_broth	iron	1	0.95	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	simmered in a broth that is eaten: leached part kept
+veg	boil_broth	calcium	1	0.95	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	simmered in a broth that is eaten: leached part kept
+veg	stew	vitaminC	0.5	0.3	0.7	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	long braise or stew (≥30 min), sauce eaten
+veg	stew	vitaminA	0.85	0.75	0.95	Lee2018; Lesk2006; USDA-R6 (verify)	long braise or stew (≥30 min), sauce eaten
+veg	stew	iron	1	0.95	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	long braise or stew (≥30 min), sauce eaten
+veg	stew	calcium	1	0.95	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	long braise or stew (≥30 min), sauce eaten
+veg	saute	vitaminC	0.7	0.5	0.85	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	ginisa / stir-fry, short
+veg	saute	vitaminA	0.95	0.85	1	Lee2018; Lesk2006; USDA-R6 (verify)	ginisa / stir-fry, short
+veg	saute	iron	1	0.95	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	ginisa / stir-fry, short
+veg	saute	calcium	1	0.95	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	ginisa / stir-fry, short
+veg	steam	vitaminC	0.85	0.7	0.95	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	steamed: little leaching
+veg	steam	vitaminA	0.95	0.9	1	Lee2018; Lesk2006; USDA-R6 (verify)	steamed: little leaching
+veg	steam	iron	0.95	0.85	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	steamed: little leaching
+veg	steam	calcium	0.95	0.85	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	steamed: little leaching
+veg	deep_fry	vitaminC	0.7	0.6	0.9	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	deep-fried: short time, no leaching
+veg	deep_fry	vitaminA	0.85	0.75	0.95	Lee2018; Lesk2006; USDA-R6 (verify)	deep-fried: short time, no leaching
+veg	deep_fry	iron	1	0.95	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	deep-fried: short time, no leaching
+veg	deep_fry	calcium	1	0.95	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	deep-fried: short time, no leaching
+veg	pan_fry	vitaminC	0.7	0.6	0.9	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	pan-fried
+veg	pan_fry	vitaminA	0.85	0.75	0.95	Lee2018; Lesk2006; USDA-R6 (verify)	pan-fried
+veg	pan_fry	iron	1	0.95	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	pan-fried
+veg	pan_fry	calcium	1	0.95	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	pan-fried
+veg	grill	vitaminC	0.7	0.6	0.9	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	grilled or roasted over coals: drippings lost
+veg	grill	vitaminA	0.9	0.8	0.95	Lee2018; Lesk2006; USDA-R6 (verify)	grilled or roasted over coals: drippings lost
+veg	grill	iron	1	0.95	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	grilled or roasted over coals: drippings lost
+veg	grill	calcium	1	0.95	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	grilled or roasted over coals: drippings lost
+veg	bake	vitaminC	0.65	0.5	0.8	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	oven: long dry heat
+veg	bake	vitaminA	0.9	0.8	0.95	Lee2018; Lesk2006; USDA-R6 (verify)	oven: long dry heat
+veg	bake	iron	1	0.95	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	oven: long dry heat
+veg	bake	calcium	1	0.95	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	oven: long dry heat
+veg	microwave	vitaminC	0.85	0.7	0.95	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	microwaved, little water
+veg	microwave	vitaminA	0.95	0.9	1	Lee2018; Lesk2006; USDA-R6 (verify)	microwaved, little water
+veg	microwave	iron	1	0.95	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	microwaved, little water
+veg	microwave	calcium	1	0.95	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	microwaved, little water
+veg	pressure	vitaminC	0.55	0.4	0.75	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	pressure-cooked, liquid eaten
+veg	pressure	vitaminA	0.85	0.75	0.95	Lee2018; Lesk2006; USDA-R6 (verify)	pressure-cooked, liquid eaten
+veg	pressure	iron	1	0.95	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	pressure-cooked, liquid eaten
+veg	pressure	calcium	1	0.95	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	pressure-cooked, liquid eaten
+veg	cooked	vitaminC	0.6	0.3	0.85	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	method unknown: wide range
+veg	cooked	vitaminA	0.9	0.8	1	Lee2018; Lesk2006; USDA-R6 (verify)	method unknown: wide range
+veg	cooked	iron	0.95	0.85	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	method unknown: wide range
+veg	cooked	calcium	0.95	0.85	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	method unknown: wide range
+animal	raw	vitaminC	1	1	1	no heat	not heated
+animal	raw	vitaminA	1	1	1	no heat	not heated
+animal	raw	iron	1	1	1	no heat	not heated
+animal	raw	calcium	1	1	1	no heat	not heated
+animal	acid	vitaminC	0.95	0.9	1	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	kinilaw: acid, no heat; acid protects vitamin C
+animal	acid	vitaminA	1	1	1	Lee2018; Lesk2006; USDA-R6 (verify)	kinilaw: acid, no heat; acid protects vitamin C
+animal	acid	iron	1	1	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	kinilaw: acid, no heat; acid protects vitamin C
+animal	acid	calcium	1	1	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	kinilaw: acid, no heat; acid protects vitamin C
+animal	blanch	vitaminC	0.8	0.6	0.95	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	short cook (≤3 min) at the end of a soup, stew or ginisa; the liquid is eaten
+animal	blanch	vitaminA	0.9	0.8	1	Lee2018; Lesk2006; USDA-R6 (verify)	short cook (≤3 min) at the end of a soup, stew or ginisa; the liquid is eaten
+animal	blanch	iron	1	0.95	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	short cook (≤3 min) at the end of a soup, stew or ginisa; the liquid is eaten
+animal	blanch	calcium	1	1	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	short cook (≤3 min) at the end of a soup, stew or ginisa; the liquid is eaten
+animal	boil_drained	vitaminC	0.6	0.4	0.8	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	boiled, cooking water thrown away: leached part lost
+animal	boil_drained	vitaminA	0.85	0.7	0.95	Lee2018; Lesk2006; USDA-R6 (verify)	boiled, cooking water thrown away: leached part lost
+animal	boil_drained	iron	0.9	0.8	0.95	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	boiled, cooking water thrown away: leached part lost
+animal	boil_drained	calcium	0.95	0.9	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	boiled, cooking water thrown away: leached part lost
+animal	boil_broth	vitaminC	0.7	0.5	0.9	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	simmered in a broth that is eaten: leached part kept
+animal	boil_broth	vitaminA	0.85	0.7	0.95	Lee2018; Lesk2006; USDA-R6 (verify)	simmered in a broth that is eaten: leached part kept
+animal	boil_broth	iron	1	0.95	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	simmered in a broth that is eaten: leached part kept
+animal	boil_broth	calcium	1	1	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	simmered in a broth that is eaten: leached part kept
+animal	stew	vitaminC	0.6	0.4	0.8	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	long braise or stew (≥30 min), sauce eaten
+animal	stew	vitaminA	0.8	0.65	0.95	Lee2018; Lesk2006; USDA-R6 (verify)	long braise or stew (≥30 min), sauce eaten
+animal	stew	iron	1	0.95	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	long braise or stew (≥30 min), sauce eaten
+animal	stew	calcium	1	1	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	long braise or stew (≥30 min), sauce eaten
+animal	pressure	vitaminC	0.6	0.4	0.8	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	pressure-cooked, liquid eaten
+animal	pressure	vitaminA	0.8	0.65	0.95	Lee2018; Lesk2006; USDA-R6 (verify)	pressure-cooked, liquid eaten
+animal	pressure	iron	1	0.95	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	pressure-cooked, liquid eaten
+animal	pressure	calcium	1	1	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	pressure-cooked, liquid eaten
+animal	saute	vitaminC	0.7	0.5	0.9	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	ginisa / stir-fry, short
+animal	saute	vitaminA	0.85	0.7	0.95	Lee2018; Lesk2006; USDA-R6 (verify)	ginisa / stir-fry, short
+animal	saute	iron	1	0.95	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	ginisa / stir-fry, short
+animal	saute	calcium	1	1	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	ginisa / stir-fry, short
+animal	steam	vitaminC	0.8	0.6	0.95	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	steamed: little leaching
+animal	steam	vitaminA	0.9	0.8	1	Lee2018; Lesk2006; USDA-R6 (verify)	steamed: little leaching
+animal	steam	iron	1	0.95	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	steamed: little leaching
+animal	steam	calcium	1	1	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	steamed: little leaching
+animal	deep_fry	vitaminC	0.7	0.5	0.9	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	deep-fried: short time, no leaching
+animal	deep_fry	vitaminA	0.8	0.65	0.95	Lee2018; Lesk2006; USDA-R6 (verify)	deep-fried: short time, no leaching
+animal	deep_fry	iron	1	0.95	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	deep-fried: short time, no leaching
+animal	deep_fry	calcium	1	1	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	deep-fried: short time, no leaching
+animal	pan_fry	vitaminC	0.7	0.5	0.9	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	pan-fried
+animal	pan_fry	vitaminA	0.8	0.65	0.95	Lee2018; Lesk2006; USDA-R6 (verify)	pan-fried
+animal	pan_fry	iron	1	0.95	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	pan-fried
+animal	pan_fry	calcium	1	1	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	pan-fried
+animal	grill	vitaminC	0.7	0.5	0.9	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	grilled or roasted over coals: drippings lost
+animal	grill	vitaminA	0.85	0.7	0.95	Lee2018; Lesk2006; USDA-R6 (verify)	grilled or roasted over coals: drippings lost
+animal	grill	iron	0.95	0.85	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	grilled or roasted over coals: drippings lost
+animal	grill	calcium	1	1	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	grilled or roasted over coals: drippings lost
+animal	bake	vitaminC	0.7	0.5	0.9	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	oven: long dry heat
+animal	bake	vitaminA	0.85	0.7	0.95	Lee2018; Lesk2006; USDA-R6 (verify)	oven: long dry heat
+animal	bake	iron	0.95	0.85	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	oven: long dry heat
+animal	bake	calcium	1	1	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	oven: long dry heat
+animal	microwave	vitaminC	0.8	0.6	0.95	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	microwaved, little water
+animal	microwave	vitaminA	0.85	0.7	0.95	Lee2018; Lesk2006; USDA-R6 (verify)	microwaved, little water
+animal	microwave	iron	1	0.95	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	microwaved, little water
+animal	microwave	calcium	1	1	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	microwaved, little water
+animal	cooked	vitaminC	0.7	0.4	0.95	Lee2018; Yuan2009; Dewanto2002; Bognar1998; USDA-R6 (verify)	method unknown: wide range
+animal	cooked	vitaminA	0.85	0.65	1	Lee2018; Lesk2006; USDA-R6 (verify)	method unknown: wide range
+animal	cooked	iron	0.95	0.85	1	Kimura1990min; Bognar1998; LombardiBoccia2002; USDA-R6 (verify)	method unknown: wide range
+animal	cooked	calcium	1	1	1	Kimura1990min; Bognar1998; USDA-R6 (verify)	method unknown: wide range
