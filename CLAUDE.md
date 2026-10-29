@@ -131,7 +131,7 @@ required on `main`.
   with CRLF.
 - **One global scope:** all `docs/*.js` files are classic scripts that share globals. Script
   order in `index.html`: weather, mydish, planner, finder, alerts, share, facts, taste, games,
-  kitchen, settings, seasons, tour, then app last. New button text gets a `data-i18n` key in settings.js `I18N`
+  kitchen, settings, feedback, seasons, tour, then app last. New button text gets a `data-i18n` key in settings.js `I18N`
   (`settings.test.mjs` fails on a missing key).
   Favourites (`favIds`, `toggleFav`, key `sarapsulit.favs.v1`) live in `app.js`. Give new
   top-level names a prefix (`SHARE_W`, `FINDER_KEY`) so they can't clash.

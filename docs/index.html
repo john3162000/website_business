@@ -357,6 +357,16 @@
     .alert-dialog { border: 0; border-radius: 1.25rem; padding: 0; width: min(24rem, calc(100vw - 2rem)); box-shadow: 0 20px 50px rgba(0, 0, 0, .25); }
     .alert-dialog::backdrop { background: rgba(15, 31, 24, .55); }
     html.dark .alert-dialog { background: #16291F; color: #E6F4EC; }
+    .feedback-dialog { width: min(28rem, calc(100vw - 2rem)); max-height: calc(100vh - 2rem); overflow-y: auto; }
+    .fb-kind { padding: .4rem .85rem; border-radius: 9999px; border: 1px solid #E7DFCB; font-size: .85rem; font-weight: 600; color: #4B5B52; }
+    .fb-kind.on { background: #163F2E; border-color: #163F2E; color: #F8F4EA; }
+    .fb-star { font-size: 1.9rem; line-height: 1; color: #CBBF9F; padding: 0 .1rem; }
+    .fb-star.on { color: #DDAE2B; }
+    .fb-hp { position: absolute; left: -10000px; width: 1px; height: 1px; opacity: 0; }
+    html.dark .fb-kind { border-color: #2B4A3A; color: #CFE3D7; }
+    html.dark .fb-kind.on { background: #DDAE2B; border-color: #DDAE2B; color: #10251A; }
+    html.dark .feedback-dialog button[type=submit] { background-color: #DDAE2B !important; color: #10251A; }
+    html.dark .feedback-dialog textarea, html.dark .feedback-dialog input { background: #10251A; border-color: #2B4A3A; color: #E6F4EC; }
     .bell-btn { opacity: .45; transition: opacity .15s, transform .15s; }
     tr:hover .bell-btn, .bell-btn:focus { opacity: 1; }
     .bell-btn:active { transform: rotate(-15deg); }
@@ -464,6 +474,7 @@
       <button onclick="showSection('finder')" id="nav-finder" data-i18n="nav.finder" class="tab-btn px-3 sm:px-4 py-2 whitespace-nowrap shrink-0 rounded-full transition-colors">Anong lulutuin?</button>
       <button onclick="showSection('game')" id="nav-game" data-i18n="nav.game" class="tab-btn px-3 sm:px-4 py-2 whitespace-nowrap shrink-0 rounded-full transition-colors">Laro 🎮</button>
     </nav>
+    <button class="theme-btn shrink-0 ml-2" onclick="openFeedback()" data-i18n-title="fb.open" aria-label="Review or suggest" title="Review or suggest">💬</button>
     <button class="theme-btn shrink-0 ml-2 font-bold" onclick="startTour()" aria-label="Quick tour" title="Paano gamitin? (quick tour)">?</button>
     <button class="theme-btn shrink-0 ml-2" onclick="openSettings()" data-i18n-title="settings.open" aria-label="Settings" title="Settings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
@@ -961,6 +972,56 @@
   </div>
 </dialog>
 
+<dialog id="feedback-dialog" class="alert-dialog feedback-dialog" onclick="if (event.target === this) this.close()">
+  <div class="p-5 flex flex-col gap-3">
+    <div class="flex items-center justify-between">
+      <p class="font-display text-xl font-semibold" data-i18n="fb.title">Tell us what you think</p>
+      <button onclick="document.getElementById('feedback-dialog').close()" class="text-gray-400 hover:text-gray-600 text-xl" data-i18n-title="fb.close" aria-label="Close" title="Close">✕</button>
+    </div>
+    <form id="feedback-form" onsubmit="sendFeedback(event)" class="flex flex-col gap-3">
+      <p class="text-sm text-gray-500" data-i18n="fb.intro">We read every message. Thank you for helping make SarapSulit better!</p>
+      <div class="flex flex-wrap gap-2" role="group">
+        <button type="button" class="fb-kind" data-fb-kind="review" onclick="setFeedbackKind('review')" data-i18n="fb.review">⭐ Review</button>
+        <button type="button" class="fb-kind" data-fb-kind="suggestion" onclick="setFeedbackKind('suggestion')" data-i18n="fb.suggestion">💡 Suggestion</button>
+        <button type="button" class="fb-kind" data-fb-kind="problem" onclick="setFeedbackKind('problem')" data-i18n="fb.problem">⚠️ Problem</button>
+      </div>
+      <div id="feedback-stars-row">
+        <p class="text-sm text-gray-600" data-i18n="fb.stars">How many stars?</p>
+        <div class="flex gap-1 mt-1">
+          <button type="button" class="fb-star" data-fb-star="1" onclick="setFeedbackRating(1)" aria-label="1 star">☆</button>
+          <button type="button" class="fb-star" data-fb-star="2" onclick="setFeedbackRating(2)" aria-label="2 stars">☆</button>
+          <button type="button" class="fb-star" data-fb-star="3" onclick="setFeedbackRating(3)" aria-label="3 stars">☆</button>
+          <button type="button" class="fb-star" data-fb-star="4" onclick="setFeedbackRating(4)" aria-label="4 stars">☆</button>
+          <button type="button" class="fb-star" data-fb-star="5" onclick="setFeedbackRating(5)" aria-label="5 stars">☆</button>
+        </div>
+      </div>
+      <label class="text-sm text-gray-600"><span data-i18n="fb.message">Message</span>
+        <textarea name="message" rows="4" maxlength="2000" data-i18n-ph="fb.message.ph" placeholder="E.g. I'd love more budget fish dishes…" class="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
+      </label>
+      <label class="text-sm text-gray-600"><span data-i18n="fb.name">Name (optional)</span>
+        <input name="fbname" maxlength="80" autocomplete="name" class="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+      </label>
+      <label class="text-sm text-gray-600"><span data-i18n="fb.contact">Email or Facebook, if you'd like a reply</span>
+        <input name="contact" maxlength="120" autocomplete="email" class="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+      </label>
+      <input name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="fb-hp">
+      <p id="feedback-error" class="text-xs text-red-600" aria-live="polite"></p>
+      <div class="flex justify-end gap-2">
+        <button type="button" onclick="document.getElementById('feedback-dialog').close()" class="px-4 py-2 rounded-full text-sm text-gray-600 hover:bg-gray-50" data-i18n="fb.cancel">Cancel</button>
+        <button type="submit" class="px-4 py-2 rounded-full text-sm font-semibold bg-green-800 text-amber-50 hover:bg-green-700 disabled:opacity-50" data-i18n="fb.send">Send</button>
+      </div>
+    </form>
+    <div id="feedback-done" class="hidden text-center py-4">
+      <p class="text-4xl">🙏</p>
+      <p class="font-display text-lg font-semibold mt-2" data-i18n="fb.thanks">Thank you! We got it.</p>
+    </div>
+    <div class="border-t border-gray-100 pt-3 text-xs text-gray-500 flex flex-col gap-1">
+      <p data-i18n="fb.direct">Or contact us directly:</p>
+      <p>✉️ <a data-contact-email class="text-green-700 underline" href="mailto:jamaigue1@up.edu.ph">jamaigue1@up.edu.ph</a> · 📘 <a data-contact-fb class="text-green-700 underline" target="_blank" rel="noopener" href="https://www.facebook.com/search/top?q=John%20Maigue">John Maigue</a></p>
+    </div>
+  </div>
+</dialog>
+
 <!-- ═══════════════════════════════════ RECIPE MODAL ═══════════════════════════════════ -->
 <div class="modal-bg" id="recipe-modal" onclick="closeModal(event)">
   <div class="bg-white rounded-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
@@ -974,6 +1035,12 @@
     <div class="flex items-center gap-3">
       <span class="bg-amber-50 rounded-xl p-1.5"><img src="logo.png" alt="" class="h-8 w-8"></span>
       <div><p class="brand-word" style="color:#F8F4EA;font-size:.75rem">FARM2FIGURE</p><p class="text-green-300 text-xs mt-1">Masarap, masustansya, sulit.</p></div>
+    </div>
+    <div class="text-xs text-green-200 flex flex-col items-center sm:items-start gap-1.5 shrink-0 whitespace-nowrap">
+      <p class="font-semibold text-green-100 uppercase tracking-wide" data-i18n="contact.title">Contact us</p>
+      <p>✉️ <a data-contact-email class="underline decoration-green-500 hover:text-white" href="mailto:jamaigue1@up.edu.ph">jamaigue1@up.edu.ph</a></p>
+      <p>📘 Facebook: <a data-contact-fb class="underline decoration-green-500 hover:text-white" target="_blank" rel="noopener" href="https://www.facebook.com/search/top?q=John%20Maigue">John Maigue</a></p>
+      <button onclick="openFeedback()" class="mt-1 px-3 py-1.5 rounded-full bg-amber-400 text-green-950 font-semibold hover:bg-amber-300" data-i18n="contact.feedback">💬 Review or suggestion</button>
     </div>
     <div class="text-green-300 text-xs">
       <p>Data: DA Price Monitoring (<span data-da-date>latest</span>) · PSA OpenSTAT · Panlasang Pinoy, Kawaling Pinoy and other recipe sites · FNRI Food Composition Table</p>
@@ -994,6 +1061,7 @@
 <script src="games.js"></script>
 <script src="kitchen.js"></script>
 <script src="settings.js"></script>
+<script src="feedback.js"></script>
 <script src="seasons.js"></script>
 <script src="tour.js"></script>
 <script src="app.js"></script>

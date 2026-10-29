@@ -152,3 +152,20 @@ model RecipeSkip {
   title     String?
   createdAt DateTime @default(now())
 }
+
+/// Reviews ("review", 1–5 stars), suggestions and problem reports sent from the site's 💬 dialog.
+model Feedback {
+  id        Int      @id @default(autoincrement())
+  kind      String
+  rating    Int?
+  message   String   @db.Text
+  name      String?
+  contact   String?
+  page      String?
+  lang      String?
+  /// sha256 of the sender's IP, only for the hourly limit; the IP itself is not stored.
+  ipHash    String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
