@@ -1,7 +1,8 @@
-{"total":{"recipes":2780,"articles":742,"offlineHidden":96,"shown":1942,"liveHidden":96}}
-{"site":"panlasangpinoy.com","recipes":2780,"articles":742,"liveHidden":96,"offlineHidden":96,"shown":1942}
+{"total":{"recipes":2790,"articles":742,"offlineHidden":97,"shown":1951,"liveHidden":97}}
+{"site":"panlasangpinoy.com","recipes":2781,"articles":742,"liveHidden":96,"offlineHidden":96,"shown":1943}
+{"site":"kawalingpinoy.com","recipes":9,"articles":0,"liveHidden":1,"offlineHidden":1,"shown":8}
 
-UNMATCHED (100 names; recipes, lines, example, sites):
+UNMATCHED (101 names; recipes, lines, example, sites):
 2	2	liquid smoke optional	1 teaspoon liquid smoke optional	panlasangpinoy.com
 2	2	coffee	½ cup coffee	panlasangpinoy.com
 2	2	patties cdo ulam burger	6 patties CDO Ulam Burger	panlasangpinoy.com
@@ -102,3 +103,4 @@ UNMATCHED (100 names; recipes, lines, example, sites):
 1	1	thai peanut sauce dipping sauce - see recipe below	1 cup of Thai Peanut Sauce Dipping Sauce - see recipe below	panlasangpinoy.com
 1	1	sweet red bean paste	1/4 cup sweet red bean paste	panlasangpinoy.com
 1	1	tvp textured vegetable protein	1/4 cup TVP Textured Vegetable Protein	panlasangpinoy.com
+1	1	black beans, rinsed and drained	1 cup black beans, rinsed and drained	kawalingpinoy.com
