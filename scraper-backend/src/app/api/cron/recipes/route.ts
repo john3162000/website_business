@@ -35,6 +35,11 @@ export async function GET(request: Request) {
       saved += last.saved;
       steps++;
       if (last.done) break;
+      // A sitemap couldn't be loaded: stop this run; the next hourly run tries again.
+      if (last.pause) {
+        console.error(`recipe crawl hop ${hop} paused: ${last.pause}`);
+        break;
+      }
     }
   } catch (err) {
     // The run keeps its cursor (ERROR); tomorrow's cron resumes it. No hop, so an outage can't loop.
@@ -43,7 +48,7 @@ export async function GET(request: Request) {
     return Response.json({ ok: false, hop, steps, saved, error: message }, { status: 500 });
   }
 
-  const more = !!last && !last.done && hop + 1 < MAX_HOPS;
+  const more = !!last && !last.done && !last.pause && hop + 1 < MAX_HOPS;
   console.log(`recipe crawl hop ${hop}: ${steps} steps, ${saved} new, total this run ${last?.itemsScraped ?? 0}${last?.done ? ", done" : ""}${more ? ", next hop" : ""}`);
   if (more) {
     const next = new URL(url.pathname, hopOrigin(request, url));

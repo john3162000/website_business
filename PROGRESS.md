@@ -285,3 +285,15 @@ labels were mixed up. These are the two fixes the owner approved first.
   - Totals: 2,089 dishes shown, 156 hidden.
   - 6 more aliases added: coconut juice (as water, like buko juice), long beans, sweet peas,
     garbanzo beans and miswa noodles.
+- **Progress at 15:00 UTC:**
+  - Database: 3,234 entries, of which 742 are Panlasang Pinoy articles.
+  - By site: Kawaling Pinoy 413 (finished) and Yummy Kitchen 40 (in progress).
+  - On the site: 2,254 shown and 222 hidden.
+- **Sitemap failures no longer stall the crawl.**
+  - The 14:53 run stopped on `yummykitchentv.com/post-sitemap.xml: fetch failed`. Its sitemap had
+    loaded earlier, so the failure looks intermittent.
+  - A failed sitemap now pauses the run, and the next hourly run tries again.
+  - After 3 failed runs in a row, that sitemap is skipped for the current pass, so the sites after
+    it aren't held back. The next full pass reads it again.
+  - The pause shows in the RECIPES `ScrapingLog` message and in the logs as `recipe crawl hop N paused:`.
+- **More aliases:** grated and frozen grated ube, MAGGI chicken cubes, and "funnel" (equipment).
