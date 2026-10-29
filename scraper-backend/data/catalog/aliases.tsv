@@ -1680,3 +1680,13 @@ frozen grated ube	FOOD	ube		recipe sites 2026-10-29
 maggi chicken cubes	FOOD	stock_cube_chicken		recipe sites 2026-10-29
 maggi chicken cube	FOOD	stock_cube_chicken		recipe sites 2026-10-29
 funnel	EQUIPMENT			kitchen tool, not food
+unflavoured gelatin powder	FOOD	gelatin_unflavored		recipe sites 2026-10-29
+unflavoured gelatin	FOOD	gelatin_unflavored		recipe sites 2026-10-29
+crushed grahams	FOOD	graham_cracker		recipe sites 2026-10-29
+grahams	FOOD	graham_cracker		recipe sites 2026-10-29
+cayenne powder	FOOD	cayenne_pepper		recipe sites 2026-10-29
+cayenne	FOOD	cayenne_pepper		recipe sites 2026-10-29
+pork broth cube	FOOD	stock_cube_pork		recipe sites 2026-10-29
+chocolate chunks	FOOD	chocolate_chips		semi-sweet chunks, same food as chips
+chopped chocolate	FOOD	chocolate_dark		recipe sites 2026-10-29
+chocolate	FOOD	chocolate_dark		[exact] plain "chocolate" in baking: dark or semi-sweet
