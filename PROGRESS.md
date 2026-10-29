@@ -234,3 +234,11 @@ Each new recipe gets the same treatment as Panlasang Pinoy's:
   crawled host has a name). Wording no longer assumes Panlasang Pinoy.
 - **Docs:** new root `README.md` (data sources, how a recipe becomes a price and nutrition label,
   assumptions, recipe sources); CLAUDE.md "Adding recipes".
+- **Crawl hop fix (same day).** The first multi-site run at 03:15 UTC saved only one hop's worth
+  (9 Kawaling Pinoy recipes). The self-call that starts the next hop went to `request.url`. Inside a
+  function that can be the deployment's own `*.vercel.app` URL, which Vercel Authentication guards, so
+  the chain stopped.
+
+  Changes:
+  - Hops now go to `VERCEL_PROJECT_PRODUCTION_URL` (`hopOrigin()`), and a refused hop is logged.
+  - Four more daily runs were added (`/api/cron/recipes/extra-1…4`), for six runs a day, 4 hours apart.
