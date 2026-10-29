@@ -293,7 +293,7 @@ function dishResultHtml(data) {
     <div class="bg-white rounded-2xl shadow p-5">
       <div class="flex flex-wrap gap-3">
         <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-center"><p class="text-2xl font-bold text-amber-700">${r.costCoverage < 1 ? `₱${r.costPerServing}+` : `₱${r.costPerServing}`}</p><p class="text-xs text-amber-600 font-medium">Per Serving</p></div>
-        <div class="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-center"><p class="text-2xl font-bold text-green-700">${r.ranked ? r.valueScore : "—"}</p><p class="text-xs text-green-600 font-medium">Sulit Score</p></div>
+        ${sulitTile(r)}
         <div class="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-center"><p class="text-2xl font-bold text-blue-700">${r.nutritionScore}</p><p class="text-xs text-blue-600 font-medium">Nutrition Score</p></div>
         <div class="bg-gray-50 border rounded-xl px-4 py-3 text-center"><p class="text-2xl font-bold text-gray-700">${r.calories.toLocaleString()}</p><p class="text-xs text-gray-500 font-medium">kcal/serving</p></div>
       </div>
