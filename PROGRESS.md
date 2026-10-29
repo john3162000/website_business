@@ -279,3 +279,9 @@ labels were mixed up. These are the two fixes the owner approved first.
   - A run is now capped at 5 hops.
   - `vercel.json` runs the crawl every hour: 24 daily cron entries, `extra-1…22` plus the original two.
   - Expected rate: about 70 recipes an hour, until every site has been read once.
+- **Progress at 10:40 UTC:**
+  - Database: 2,987 entries, of which 742 are Panlasang Pinoy articles.
+  - Kawaling Pinoy: 206 recipes (146 shown, 60 hidden by unknown ingredients).
+  - Totals: 2,089 dishes shown, 156 hidden.
+  - 6 more aliases added: coconut juice (as water, like buko juice), long beans, sweet peas,
+    garbanzo beans and miswa noodles.
