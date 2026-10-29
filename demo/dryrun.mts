@@ -30,7 +30,8 @@ console.log(`live titles: ${keys.size}`);
 
 const unmatched = new Map<string, { n: number; ex: string }>();
 const summary: any[] = [];
-for (const src of RECIPE_SOURCES.slice(1)) {
+const ONLY = process.env.ONLY ? new RegExp(process.env.ONLY, "i") : null;
+for (const src of RECIPE_SOURCES.slice(1).filter((s) => !ONLY || ONLY.test(s.name))) {
   const row: any = { site: src.name, pages: 0, sampled: 0, recipes: 0, otherCuisine: 0, duplicate: 0, hidden: 0, shown: 0, failed: 0, totalLines: 0, unmatchedLines: 0, examples: [] };
   try {
     let maps: string[] = [];
@@ -38,7 +39,15 @@ for (const src of RECIPE_SOURCES.slice(1)) {
       try { const x = await get(`${src.base}/${n}`); maps = postSitemapsFromIndex(x); if (!maps.length && /<urlset/i.test(x)) maps = [`${src.base}/${n}`]; if (maps.length) break; } catch {}
     }
     const urls: string[] = [];
-    for (const m of maps) { try { urls.push(...urlsFromSitemap(await get(m), src.base + (src.pathPrefix ?? ""))); } catch {} }
+    for (const m of maps) {
+      try {
+        const x = await get(m);
+        const got = urlsFromSitemap(x, src.base + (src.pathPrefix ?? ""));
+        if (!got.length) console.log(`DEBUG ${m}: ${x.length} bytes, first locs: ${[...x.matchAll(/<loc>([^<]*)<\/loc>/g)].slice(0, 3).map((q) => q[1]).join(" ")} | head: ${x.slice(0, 300).replace(/\s+/g, " ")}`);
+        urls.push(...got);
+      } catch (e: any) { console.log(`DEBUG ${m}: ${e.message}`); }
+    }
+    console.log(`${src.name}: sitemaps ${maps.join(" ")}`);
     row.pages = urls.length; row.sitemaps = maps.length;
     const step = Math.max(1, Math.floor(urls.length / PER_SITE));
     for (let i = 0; i < urls.length && row.sampled < PER_SITE; i += step) {

@@ -13,7 +13,11 @@ const SHARE_C = { forest: "#163F2E", green: "#2F7A55", cream: "#F8F4EA", gold: "
 /** The link that opens this recipe on the site. */
 // Partner recipe sites: we show their photo (linked) and send "Paano lutuin?" clicks to them;
 // their steps are never shown here.
-const RECIPE_SOURCES = { "panlasangpinoy.com": "Panlasang Pinoy", "kawalingpinoy.com": "Kawaling Pinoy" };
+const RECIPE_SOURCES = {
+  "panlasangpinoy.com": "Panlasang Pinoy", "kawalingpinoy.com": "Kawaling Pinoy", "yummykitchentv.com": "Yummy Kitchen",
+  "recipesbynora.com": "Recipes by Nora", "pinoyrecipe.net": "Pinoy Recipe", "foxyfolksy.com": "Foxy Folksy",
+  "manilaspoon.com": "Manila Spoon", "pepper.ph": "Pepper.ph", "savorythoughts.com": "Savory Thoughts",
+};
 
 /** The site a recipe comes from: { name, host } ("Panlasang Pinoy", "panlasangpinoy.com"), or null. */
 function recipeSource(url) {
