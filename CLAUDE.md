@@ -87,7 +87,7 @@ Line statuses are `ok`, `to-taste`, `optional`, `water`, `skipped`, `unmatched`,
 | `POST /api/dish` | Prices a personal dish (My Dish) |
 | `/api/scrape/*` | Admin only (`ADMIN_TOKEN`) |
 | `/api/cron/da-daily`, `/api/cron/psa` | Vercel crons: DA daily at 10:00 UTC, PSA Mondays at 11:00 UTC |
-| `/api/cron/recipes`, `…-pm`, `…/extra-1…4` | Vercel crons daily at 03:15, 07:15, 11:15, 15:15, 19:15 and 23:15 UTC: the recipe crawl, calling itself (≤150 hops, via the production domain) until every sitemap is read |
+| `/api/cron/recipes`, `…-pm`, `…/extra-1…22` | Vercel crons, one every hour at :15 UTC (Hobby fires them any time in that hour): the recipe crawl, 5 hops of ~45 s each via the production domain |
 
 ## Commands
 
@@ -151,7 +151,8 @@ required on `main`.
   has no photo.
 - **Vercel Authentication guards deployment URLs** (`ssoProtection: all_except_custom_domains`);
   only the production domains are public. A function calling itself must use
-  `VERCEL_PROJECT_PRODUCTION_URL` (`hopOrigin()`), not `request.url`.
+  `VERCEL_PROJECT_PRODUCTION_URL` (`hopOrigin()`), not `request.url`. Self-calls nest at most 5
+  deep: the sixth gets **HTTP 508 Loop Detected**.
 - **A new recipe site needs a name** in `RECIPE_SOURCES` in `docs/share.js` (credit and "Paano
   lutuin?" button); `share.test.mjs` checks every host in the backend's `recipe-sources.ts`.
 
@@ -181,9 +182,10 @@ Unknown ingredients hide the recipe as usual.
 ban on scraping or automated collection) and that its recipe pages carry Recipe JSON-LD. Then add it to
 `recipe-sources.ts` and give it a name in `docs/share.js`.
 
-**Schedule:** the crawl runs by itself six times a day (`/api/cron/recipes`, `recipes-pm` and `recipes/extra-1…4`, every 4 hours from 03:15 UTC). Each run crawls for
-~45 s, then calls itself again with the `CRON_SECRET` Vercel sends, until every site is read (Hobby
-crons can only run daily, hence the hops). Progress is the RECIPES row in `ScrapingLog`; the logic is
+**Schedule:** the crawl runs by itself every hour (`/api/cron/recipes`, `recipes-pm` and `recipes/extra-1…22`).
+Each run crawls for ~45 s, then calls itself again with the `CRON_SECRET` Vercel sends, up to 5 hops
+(~70 recipes). Vercel's loop protection answers a sixth nested self-call with HTTP 508, so there are
+more runs instead of longer chains. Hobby crons can only run daily, which is why there are 24 entries. Progress is the RECIPES row in `ScrapingLog`; the logic is
 `src/lib/recipe-crawl.ts`. To push it along by hand from the owner's computer (the token never goes
 through a cloud session):
 

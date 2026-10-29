@@ -271,3 +271,11 @@ labels were mixed up. These are the two fixes the owner approved first.
   - The recipe cards and pop-up can't be used by keyboard or screen reader (P0).
   - Random week and Best Value pick dishes that aren't ulam.
   - Phone pages are long.
+- **Hourly crawl.** After the hop fix, the 07:xx run chained 5 hops and saved 80 recipes, about
+  13–16 per 45-second hop. Vercel then refused the sixth nested self-call with **HTTP 508 Loop
+  Detected**.
+
+  Changes:
+  - A run is now capped at 5 hops.
+  - `vercel.json` runs the crawl every hour: 24 daily cron entries, `extra-1…22` plus the original two.
+  - Expected rate: about 70 recipes an hour, until every site has been read once.

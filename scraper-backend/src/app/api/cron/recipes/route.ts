@@ -6,8 +6,10 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 const TIME_BUDGET_MS = 45_000;
-// Each hop is one function run of up to ~45 s; this caps a day's crawl at about two hours.
-const MAX_HOPS = 150;
+// Each hop is one function run of up to ~45 s. Vercel's loop protection refuses a function's
+// sixth nested call to itself (HTTP 508, seen 2026-10-29), so a run is 5 hops (~70 recipes) and
+// vercel.json schedules a run every hour instead.
+const MAX_HOPS = 5;
 
 /**
  * Daily recipe crawl, started by Vercel Cron (see vercel.json). Runs crawl steps (4 new recipes
