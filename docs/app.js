@@ -345,6 +345,37 @@ function ingredientRows(lines) {
   }).join("");
 }
 
+// Sodium is a nutrient to limit: WHO advises under 2,000 mg a day for adults.
+const SODIUM_LIMIT_MG = 2000;
+const SODIUM_SALTY_PCT = 40;
+// Salty seasonings that recipes often add "to taste", which the engine can't count.
+const SALTY_SLUG = /^(salt|fish_sauce|soy_sauce|shrimp_paste|bagoong|oyster_sauce|seasoning_|stock_cube_)/;
+
+/** Sodium as a limit bar (amber, red when salty), with the saltiest ingredients and uncounted seasoning. */
+function sodiumHtml(r, lines) {
+  if (r.sodium == null) return "";
+  const mg = Math.round(r.sodium);
+  const p = Math.round((mg / SODIUM_LIMIT_MG) * 100);
+  const salty = p >= SODIUM_SALTY_PCT;
+  const counted = (lines || []).filter((l) => l.nutrients && l.nutrients.sodium > 0 && l.label);
+  const total = counted.reduce((s, l) => s + l.nutrients.sodium, 0);
+  // The one or two lines that give most of the sodium ("patis, bagoong").
+  const top = counted.sort((a, b) => b.nutrients.sodium - a.nutrients.sodium)
+    .filter((l, i) => i === 0 || l.nutrients.sodium >= 0.25 * total).slice(0, 2).map((l) => l.label.toLowerCase());
+  const toTaste = (lines || []).some((l) => l.status === "to-taste" && SALTY_SLUG.test(l.slug || ""));
+  const color = salty ? "#dc2626" : p >= 20 ? "#C9961A" : "#9ca3af";
+  return `
+    <div class="mt-2">
+      <div class="flex justify-between text-xs mb-1">
+        <span class="text-gray-600">${t("modal.sodium")}</span>
+        <span class="font-medium">≈ ${mg.toLocaleString()}mg <span class="text-gray-400">(${p}% ${t("modal.sodiumLimit")})</span></span>
+      </div>
+      <div class="bar"><div class="bar-fill" style="width:${Math.min(p, 100)}%;background:${color}"></div></div>
+      ${salty ? `<p class="text-[11px] font-semibold text-red-600 mt-1">${t("modal.salty").replace("{pct}", p)}${top.length ? ` · ${t("modal.saltyFrom")} ${escapeHtml(top.join(", "))}` : ""}</p>` : ""}
+      ${toTaste ? `<p class="text-[11px] text-gray-400 mt-0.5">${t("modal.sodiumToTaste")}</p>` : ""}
+    </div>`;
+}
+
 /**
  * The recipe pop-up. We show the dish (the source's photo, linked and credited), its cost and
  * nutrition; the cooking steps stay on the source site, behind the "Paano lutuin?" button.
@@ -472,7 +503,7 @@ function buildModal(r, lines) {
           </div>
           <div class="space-y-2">${nutriBars}</div>
           ${cookedNote}
-          ${r.sodium != null ? `<p class="text-xs text-gray-600 mt-2">Sodium ≈ ${Math.round(r.sodium).toLocaleString()} mg</p>` : ""}
+          ${sodiumHtml(r, lines)}
           ${r.refKcal ? `<p class="text-xs text-gray-500 mt-2">${escapeHtml(src ? src.name : "The recipe site")}’s own estimate: ≈ ${Math.round(r.refKcal).toLocaleString()} kcal per serving (it counts all frying oil and marinade)</p>` : ""}
           <p class="text-xs text-gray-400 mt-3">Source: FNRI FCT · per serving estimate · edible portion and cooking losses applied</p>
         </div>
