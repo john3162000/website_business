@@ -87,7 +87,7 @@ Line statuses are `ok`, `to-taste`, `optional`, `water`, `skipped`, `unmatched`,
 | `POST /api/dish` | Prices a personal dish (My Dish) |
 | `/api/scrape/*` | Admin only (`ADMIN_TOKEN`) |
 | `/api/cron/da-daily`, `/api/cron/psa` | Vercel crons: DA daily at 10:00 UTC, PSA Mondays at 11:00 UTC |
-| `/api/cron/recipes` | Vercel cron daily at 03:15 and 15:15 UTC: the recipe crawl, calling itself (≤150 hops) until every sitemap is read |
+| `/api/cron/recipes`, `/api/cron/recipes-pm` | Vercel crons daily at 03:15 and 15:15 UTC: the recipe crawl, calling itself (≤150 hops) until every sitemap is read |
 
 ## Commands
 
