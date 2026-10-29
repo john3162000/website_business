@@ -32,11 +32,24 @@ export function decodeEntities(s: string): string {
 }
 
 /**
+ * Page text as a person reads it: entities decoded, a broken JSON escape ("u0026" for "&") fixed,
+ * zero-width characters dropped, spaces collapsed, and "1 & ½" / "1 and 1/2" written "1 ½".
+ */
+export function cleanText(s: string): string {
+  return decodeEntities(s)
+    .replace(/\\?u0026/g, "&")
+    .replace(/[\u200b-\u200d\u2060\ufeff]/g, "")
+    .replace(/\s+/g, " ")
+    .replace(/\b(\d+)\s*(?:&|and)\s*(\d+\s*\/\s*\d+|[½¼¾⅓⅔⅛⅜⅝⅞⅕])/g, "$1 $2")
+    .trim();
+}
+
+/**
  * "2 tbsp fish sauce" → {amount "2", unit "tbsp", name "fish sauce"}; "1 (14 oz) can coconut milk"
  * keeps the package in the name for parseQuantity; "salt and pepper to taste" has no amount.
  */
 export function splitIngredientLine(text: string): SplitLine {
-  const rawText = decodeEntities(text).replace(/<[^>]+>/g, " ").replace(/^▢\s*/, "").replace(/\s+/g, " ").trim();
+  const rawText = cleanText(decodeEntities(text).replace(/<[^>]+>/g, " ").replace(/^\s*▢\s*/, ""));
   const m = rawText.match(AMOUNT_RE);
   if (!m) return { rawText, name: rawText };
   const amount = m[1].replace(/\s+/g, " ").trim();

@@ -64,6 +64,7 @@ for (const src of RECIPE_SOURCES.slice(1).filter((s) => !ONLY || ONLY.test(s.nam
       row.totalLines += c.lines.length; row.unmatchedLines += um.length;
       if (um.length) row.hidden++; else row.shown++;
       if (row.examples.length < 4) row.examples.push(`${r.title} | ${r.ingredients.length} lines | ${um.length} unknown | ${r.ingredients.slice(0, 3).map((x) => `[${x.amount ?? ""}|${x.unit ?? ""}|${x.name}]`).join(" ")}`);
+      for (const l of um as any[]) if (/water|chil/i.test(l.text)) console.log(`UNM ${JSON.stringify(r.ingredients.find((x) => x.rawText === l.text) ?? l.text)} -> ${JSON.stringify({ status: l.status, reason: l.reason })}`);
       for (const l of um as any[]) {
         const k = nameKey(splitIngredientLine(l.text).name);
         const e = unmatched.get(k) ?? { n: 0, ex: `${l.text} (${src.name})` };
