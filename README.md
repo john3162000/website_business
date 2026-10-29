@@ -92,7 +92,7 @@ The crawl (`scraper-backend/src/lib/scrapers/recipe-sources.ts`) reads each site
 - **Sites left out:** sites whose terms forbid scraping, that block AI crawlers in robots.txt, or
   that have no structured recipe data.
 
-It runs by itself twice a day (`/api/cron/recipes`, 03:15 and 15:15 UTC), politely: one page every 1.5 s, with
+It runs by itself six times a day (every 4 hours from 03:15 UTC), politely: one page every 1.5 s, with
 a `SarapSulitBot` user agent that links to the site. Pages that aren't recipes, or are duplicates,
 are remembered (`RecipeSkip`) so they aren't fetched again.
 

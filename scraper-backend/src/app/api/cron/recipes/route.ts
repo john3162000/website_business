@@ -1,5 +1,6 @@
 import { requireCron } from "@/lib/admin-auth";
 import { crawlStep } from "@/lib/recipe-crawl";
+import { hopOrigin } from "@/lib/hop-origin";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -43,10 +44,12 @@ export async function GET(request: Request) {
   const more = !!last && !last.done && hop + 1 < MAX_HOPS;
   console.log(`recipe crawl hop ${hop}: ${steps} steps, ${saved} new, total this run ${last?.itemsScraped ?? 0}${last?.done ? ", done" : ""}${more ? ", next hop" : ""}`);
   if (more) {
-    const next = new URL(url.pathname, url.origin);
+    const next = new URL(url.pathname, hopOrigin(request, url));
     next.searchParams.set("hop", String(hop + 1));
     // Start the next hop and return; it runs on its own (we only wait for it to be accepted).
-    await fetch(next, { headers: { authorization: request.headers.get("authorization") ?? "" }, signal: AbortSignal.timeout(5000) }).catch(() => {});
+    // A quick non-2xx (401 from Vercel Authentication, 503) means the chain stopped: log it.
+    const res = await fetch(next, { headers: { authorization: request.headers.get("authorization") ?? "" }, signal: AbortSignal.timeout(5000) }).catch(() => null);
+    if (res && !res.ok) console.error(`recipe crawl hop ${hop + 1} refused: HTTP ${res.status} from ${next.host}`);
   }
   return Response.json({ ok: true, hop, steps, saved, itemsScraped: last?.itemsScraped ?? 0, done: !!last?.done, nextHop: more });
 }
