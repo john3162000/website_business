@@ -1,8 +1,11 @@
-{"total":{"recipes":2790,"articles":742,"offlineHidden":97,"shown":1951,"liveHidden":97}}
+{"total":{"recipes":2987,"articles":742,"offlineHidden":156,"shown":2089,"liveHidden":156}}
 {"site":"panlasangpinoy.com","recipes":2781,"articles":742,"liveHidden":96,"offlineHidden":96,"shown":1943}
-{"site":"kawalingpinoy.com","recipes":9,"articles":0,"liveHidden":1,"offlineHidden":1,"shown":8}
+{"site":"kawalingpinoy.com","recipes":206,"articles":0,"liveHidden":60,"offlineHidden":60,"shown":146}
 
-UNMATCHED (101 names; recipes, lines, example, sites):
+UNMATCHED (164 names; recipes, lines, example, sites):
+5	5	coconut juice	2 cups coconut juice	kawalingpinoy.com
+3	3	kecap manis	3 tablespoons kecap manis	panlasangpinoy.com,kawalingpinoy.com
+3	3	long beans, ends trimmed and cut into 3-inch lengths	½ bunch long beans, ends trimmed and cut into 3-inch lengths	kawalingpinoy.com
 2	2	liquid smoke optional	1 teaspoon liquid smoke optional	panlasangpinoy.com
 2	2	coffee	½ cup coffee	panlasangpinoy.com
 2	2	patties cdo ulam burger	6 patties CDO Ulam Burger	panlasangpinoy.com
@@ -10,6 +13,11 @@ UNMATCHED (101 names; recipes, lines, example, sites):
 2	2	taba ng talangka	¼ cup taba ng talangka	panlasangpinoy.com
 2	2	hollandaise sauce	Hollandaise sauce	panlasangpinoy.com
 2	2	chili sauce	2 teaspoons chili sauce	panlasangpinoy.com
+2	2	ube halaya	¼ cup ube halaya	kawalingpinoy.com
+2	2	frozen sweet peas, thawed	1 cup frozen sweet peas, thawed	kawalingpinoy.com
+2	2	garbanzo beans, drained	½ cup garbanzo beans, drained	kawalingpinoy.com
+2	2	miswa noodles	2 ounces miswa noodles	kawalingpinoy.com
+2	2	dried shitake mushrooms	2 pieces dried shitake mushrooms	kawalingpinoy.com
 1	1	furikake	5 Tablespoons Furikake	panlasangpinoy.com
 1	1	ox feet veal shanks, cleaned	1 1/2 lb ox feet veal shanks, cleaned	panlasangpinoy.com
 1	1	cooked kikiam quekiam, sliced	1/4 lb cooked Kikiam quekiam, sliced	panlasangpinoy.com
@@ -19,7 +27,6 @@ UNMATCHED (101 names; recipes, lines, example, sites):
 1	1	maggi kari	1 pack Maggi Kari	panlasangpinoy.com
 1	1	kikiam	8 ounces kikiam	panlasangpinoy.com
 1	1	gochujang see notes below	2 tablespoons gochujang see notes below	panlasangpinoy.com
-1	1	kecap manis	3 tablespoons kecap manis	panlasangpinoy.com
 1	1	sambal oelek	2 teaspoons sambal oelek	panlasangpinoy.com
 1	1	kikiam sliced diagonally	4 pieces kikiam sliced diagonally	panlasangpinoy.com
 1	1	laing cooked	1 cup laing cooked	panlasangpinoy.com
@@ -104,3 +111,59 @@ UNMATCHED (101 names; recipes, lines, example, sites):
 1	1	sweet red bean paste	1/4 cup sweet red bean paste	panlasangpinoy.com
 1	1	tvp textured vegetable protein	1/4 cup TVP Textured Vegetable Protein	panlasangpinoy.com
 1	1	black beans, rinsed and drained	1 cup black beans, rinsed and drained	kawalingpinoy.com
+1	1	whole large dalag (mudfish), gutted, scaled, cleaned and cut into serving parts	1 whole large dalag (mudfish), gutted, scaled, cleaned and cut into serving parts	kawalingpinoy.com
+1	1	16 ounces) frozen grated ube, thawed	1 package (16 ounces) frozen grated ube, thawed	kawalingpinoy.com
+1	1	12 ounces) macapuno strings, drained	1 bottle (12 ounces) macapuno strings, drained	kawalingpinoy.com
+1	1	pandan extract	1 tablespoon pandan extract	kawalingpinoy.com
+1	1	ripe manila mangoes	6 ripe Manila mangoes	kawalingpinoy.com
+1	1	large ripe manila mangoes, peeled and cubed	2 large ripe Manila mangoes, peeled and cubed	kawalingpinoy.com
+1	1	ramekins	6 ramekins	kawalingpinoy.com
+1	1	12 ounces) wonton wrappers, cut into thin strips	1 package (12 ounces) wonton wrappers, cut into thin strips	kawalingpinoy.com
+1	1	edamame	½ cup edamame	kawalingpinoy.com
+1	1	8 ounces) whole mushrooms, drained	1 can (8 ounces) whole mushrooms, drained	kawalingpinoy.com
+1	1	chili paste (sambal oelek)	1 teaspoon chili paste (sambal oelek)	kawalingpinoy.com
+1	1	24 pieces) springroll wrappers	1 package (24 pieces) springroll wrappers	kawalingpinoy.com
+1	1	17 ounces) fresh yakisoba noodles	1 package (17 ounces) fresh yakisoba noodles	kawalingpinoy.com
+1	1	salsa	¼ cup salsa	kawalingpinoy.com
+1	1	large pear, peeled, seeded, and quartered	1 large pear, peeled, seeded, and quartered	kawalingpinoy.com
+1	1	14 ounces) fresh lomi noodles	1 package (14 ounces) fresh lomi noodles	kawalingpinoy.com
+1	1	balut, cooked and peeled	4 balut, cooked and peeled	kawalingpinoy.com
+1	1	danggit	8 pieces danggit	kawalingpinoy.com
+1	1	sriracha chili sauce	1 tablespoon Sriracha chili sauce	kawalingpinoy.com
+1	1	48 grams) clear, unflavored jelly mix	½ pack (48 grams) clear, unflavored Jelly Mix	kawalingpinoy.com
+1	1	large ripe manila mangoes	6 large ripe Manila mangoes	kawalingpinoy.com
+1	1	chinese wine	2 tablespoons Chinese wine	kawalingpinoy.com
+1	1	seafood soup base	1 tablespoon seafood soup base	kawalingpinoy.com
+1	1	ripe but firm saba bananas	4 ripe but firm Saba bananas	kawalingpinoy.com
+1	1	instant coffee	2 tablespoons instant coffee	kawalingpinoy.com
+1	1	calabasa, peeled, seeded and cut into ½ inch cubes	2 cups calabasa, peeled, seeded and cut into ½ inch cubes	kawalingpinoy.com
+1	1	pork bones	3 pounds pork bones	kawalingpinoy.com
+1	1	beef bones, with marrow	2 pounds beef bones, with marrow	kawalingpinoy.com
+1	1	msg	¼ teaspoon MSG	kawalingpinoy.com
+1	1	chicken skin	3 pounds chicken skin	kawalingpinoy.com
+1	1	drops pandan extract	4 drops pandan extract	kawalingpinoy.com
+1	1	instant coffee granules	2 tablespoons instant coffee granules	kawalingpinoy.com
+1	1	pickle juice	¼ cup pickle juice	kawalingpinoy.com
+1	1	sweet gherkin pickles, cut into 1/inch thickness	6 pieces sweet Gherkin pickles, cut into 1/inch thickness	kawalingpinoy.com
+1	1	about 2 pounds) whole catfish, cleaned and gutted	1 (about 2 pounds) whole catfish, cleaned and gutted	kawalingpinoy.com
+1	1	about 2 pounds) whole catfish, cleaned, gutted, and cut into parts	2 pounds (about 2 pounds) whole catfish, cleaned, gutted, and cut into parts	kawalingpinoy.com
+1	1	6-inch) radish, peeled and sliced to ½-inch thick half-rounds	1 (6-inch) radish, peeled and sliced to ½-inch thick half-rounds	kawalingpinoy.com
+1	1	pot just large enough to fit suman and enough water to cover for boiling	pot just large enough to fit suman and enough water to cover for boiling	kawalingpinoy.com
+1	1	12 ounces) spam, cut crosswise into 10 slices	1 can (12 ounces) Spam, cut crosswise into 10 slices	kawalingpinoy.com
+1	1	chili sauce to taste	chili sauce to taste	kawalingpinoy.com
+1	1	desiccated coconut	2 cups desiccated coconut	kawalingpinoy.com
+1	1	desiccated coconut, unsweetened	¼ cup desiccated coconut, unsweetened	kawalingpinoy.com
+1	1	round shumai wrappers	1 package round shumai wrappers	kawalingpinoy.com
+1	1	sweetened saba bananas	½ cup sweetened saba bananas	kawalingpinoy.com
+1	1	sweetened macapuno	¼ cup sweetened macapuno	kawalingpinoy.com
+1	1	leche flan	1 cup leche flan	kawalingpinoy.com
+1	1	ube, cooked, mashed and chilled	1 cup ube, cooked, mashed and chilled	kawalingpinoy.com
+1	1	macapuno strips, rinsed and drained well	1 cup macapuno strips, rinsed and drained well	kawalingpinoy.com
+1	1	cooked ube, mashed	2 cups cooked ube, mashed	kawalingpinoy.com
+1	1	manila mangoes (about 2 ½ cups), peeled and chopped	3 Manila mangoes (about 2 ½ cups), peeled and chopped	kawalingpinoy.com
+1	1	cremini mushrooms, sliced thinly	½ pound cremini mushrooms, sliced thinly	kawalingpinoy.com
+1	1	peeled and sliced thinly	1 peeled and sliced thinly	kawalingpinoy.com
+1	1	ripe but firm saba bananas, peeled and sliced lengthwise into about ¼ inch-thick	6 ripe but firm saba bananas, peeled and sliced lengthwise into about ¼ inch-thick	kawalingpinoy.com
+1	1	seedless strawberry jam	¼ cup seedless strawberry jam	kawalingpinoy.com
+1	1	15 ounces) sweet kernel corn, drained	1 can (15 ounces) sweet kernel corn, drained	kawalingpinoy.com
+1	1	oysters, (meat only), drained well	2 pounds oysters, (meat only), drained well	kawalingpinoy.com
