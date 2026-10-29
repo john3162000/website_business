@@ -187,6 +187,10 @@ Unknown ingredients hide the recipe as usual.
 - Pages skipped as `not-recipe`, `duplicate` or `other-cuisine` go in the `RecipeSkip` table, so the
   daily run doesn't fetch them again. Delete a row there to re-read that page.
 
+**When a sitemap won't load:** the run pauses, and the next hourly run retries. After 3 failed runs in
+a row that sitemap is skipped for the current pass; the next full pass reads it again. Look for
+`recipe crawl hop N paused:` in the Vercel logs.
+
 **Adding a site:** check its robots.txt (no `Disallow: /`, no AI-crawler blocks), its terms (no
 ban on scraping or automated collection) and that its recipe pages carry Recipe JSON-LD. Then add it to
 `recipe-sources.ts` and give it a name in `docs/share.js`.

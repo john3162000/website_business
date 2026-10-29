@@ -10,7 +10,7 @@ const TYPE = "RECIPES";
  * finished one starts over (already-saved URLs are skipped quickly, so a new run only
  * fetches posts added since).
  */
-export async function crawlStep(): Promise<{ done: boolean; itemsScraped: number; saved: number; cursor?: RecipeCursor }> {
+export async function crawlStep(): Promise<{ done: boolean; itemsScraped: number; saved: number; cursor?: RecipeCursor; pause?: string }> {
   let log = await prisma.scrapingLog.findFirst({ where: { type: TYPE, status: "RUNNING" } });
 
   if (!log) {
@@ -47,8 +47,11 @@ export async function crawlStep(): Promise<{ done: boolean; itemsScraped: number
       });
       return { done: true, itemsScraped, saved: result.saved };
     }
-    await prisma.scrapingLog.update({ where: { id: logId }, data: { itemsScraped, cursor: JSON.stringify(result.cursor) } });
-    return { done: false, itemsScraped, saved: result.saved, cursor: result.cursor };
+    await prisma.scrapingLog.update({
+      where: { id: logId },
+      data: { itemsScraped, cursor: JSON.stringify(result.cursor), ...(result.pause ? { message: result.pause } : {}) },
+    });
+    return { done: false, itemsScraped, saved: result.saved, cursor: result.cursor, pause: result.pause };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     // ERROR keeps the cursor, so the next step resumes from the same place.
