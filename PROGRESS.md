@@ -319,3 +319,10 @@ labels were mixed up. These are the two fixes the owner approved first.
   - The 10:00 run saved 0 recipes from about 30 pages. Page-fetch failures are now also logged
     (`recipe crawl Failed to scrape …`), so a site refusing the crawler would show up in the logs.
   - Aliases added: dilis, tortilla.
+- **Progress at 18:20 UTC, Oct 30:**
+  - **4,246 entries**, of which 746 are articles.
+  - Finished: Yummy Kitchen 683, Kawaling Pinoy 413, Recipes by Nora 127.
+  - In progress: Pinoy Recipe 241 (162 hidden, mostly sponsored brand mixes and packaging such as
+    cupcake liners and cake boards), and Foxy Folksy has started.
+  - On the site: 2,887 shown and 613 hidden.
+  - Alias added: "icy cold water" and "icy water" now count as water (11 Pinoy Recipe dishes).
