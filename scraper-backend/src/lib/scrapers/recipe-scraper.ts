@@ -177,8 +177,11 @@ export async function scrapeRecipeChunk(
     try {
       scraped = parseRecipePage(await fetchHtml(url), url, source.dedupe);
     } catch (err) {
-      // Not noted as skipped: a failed fetch is tried again on the next run.
-      onProgress?.(`Failed to scrape ${url}: ${err instanceof Error ? err.message : err}`);
+      // Not noted as skipped: a failed fetch is tried again on the next pass. Logged too, so a site
+      // that starts refusing the crawler shows up in the Vercel logs, not only in ScrapingLog.
+      const why = `Failed to scrape ${url}: ${err instanceof Error ? err.message : err}`;
+      console.warn(`recipe crawl ${why}`);
+      onProgress?.(why);
       continue;
     }
     if (!scraped) {

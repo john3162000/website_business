@@ -311,3 +311,11 @@ labels were mixed up. These are the two fixes the owner approved first.
   - Overnight the crawl added about 35 recipes an hour, below the expected ~60.
   - Aliases added: cumin powder, plain cocoa, misspelled "brocolli", green/yellow food colouring,
     canton noodles, kitchen twine (equipment).
+- **Progress at 10:15 UTC, Oct 30:**
+  - **4,004 entries**, of which 745 are articles.
+  - By site: Panlasang Pinoy 2,781, Yummy Kitchen 683, Kawaling Pinoy 413 and Recipes by Nora 127
+    (in progress).
+  - On the site: 2,805 shown and 454 hidden.
+  - The 10:00 run saved 0 recipes from about 30 pages. Page-fetch failures are now also logged
+    (`recipe crawl Failed to scrape …`), so a site refusing the crawler would show up in the logs.
+  - Aliases added: dilis, tortilla.

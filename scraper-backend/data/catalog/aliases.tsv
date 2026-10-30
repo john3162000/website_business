@@ -1700,3 +1700,5 @@ food coloring	FOOD	food_coloring_red		any food colouring, as the other colours
 food color	FOOD	food_coloring_red		any food colouring, as the other colours
 canton noodles	FOOD	noodles_pancit_canton		recipe sites 2026-10-30
 kitchen twine	EQUIPMENT			kitchen tool, not food
+dilis	FOOD	anchovies_dried		dried anchovies (dilis)
+tortilla	FOOD	tortilla_flour		recipe sites 2026-10-30
