@@ -304,3 +304,10 @@ labels were mixed up. These are the two fixes the owner approved first.
   - The crawl runs about 60 recipes an hour, with no paused sitemaps.
   - Aliases added: British "unflavoured gelatin", grahams, cayenne, pork broth cube, chocolate
     chunks/chopped/plain chocolate.
+- **Progress at 03:45 UTC, Oct 30:**
+  - Database: 3,753 entries, of which 744 are articles.
+  - By site: Panlasang Pinoy 2,781, Yummy Kitchen 559 (in progress) and Kawaling Pinoy 413.
+  - On the site: 2,625 shown and 384 hidden.
+  - Overnight the crawl added about 35 recipes an hour, below the expected ~60.
+  - Aliases added: cumin powder, plain cocoa, misspelled "brocolli", green/yellow food colouring,
+    canton noodles, kitchen twine (equipment).

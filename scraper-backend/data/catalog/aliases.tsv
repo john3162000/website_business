@@ -1690,3 +1690,13 @@ pork broth cube	FOOD	stock_cube_pork		recipe sites 2026-10-29
 chocolate chunks	FOOD	chocolate_chips		semi-sweet chunks, same food as chips
 chopped chocolate	FOOD	chocolate_dark		recipe sites 2026-10-29
 chocolate	FOOD	chocolate_dark		[exact] plain "chocolate" in baking: dark or semi-sweet
+cumin powder	FOOD	cumin_ground		recipe sites 2026-10-30
+cocoa	FOOD	cocoa_powder		[exact] plain "cocoa" in baking
+brocolli florets	FOOD	broccoli		common misspelling
+brocolli	FOOD	broccoli		common misspelling
+green food coloring	FOOD	food_coloring_red		any food colouring, as the other colours
+yellow food color	FOOD	food_coloring_red		any food colouring, as the other colours
+food coloring	FOOD	food_coloring_red		any food colouring, as the other colours
+food color	FOOD	food_coloring_red		any food colouring, as the other colours
+canton noodles	FOOD	noodles_pancit_canton		recipe sites 2026-10-30
+kitchen twine	EQUIPMENT			kitchen tool, not food
