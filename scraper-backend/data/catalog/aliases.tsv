@@ -1702,3 +1702,5 @@ canton noodles	FOOD	noodles_pancit_canton		recipe sites 2026-10-30
 kitchen twine	EQUIPMENT			kitchen tool, not food
 dilis	FOOD	anchovies_dried		dried anchovies (dilis)
 tortilla	FOOD	tortilla_flour		recipe sites 2026-10-30
+icy cold water	WATER			like "ice cold water"
+icy water	WATER			like "ice water"
