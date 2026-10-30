@@ -1,44 +1,49 @@
-{"total":{"recipes":3475,"articles":744,"offlineHidden":308,"shown":2423,"liveHidden":308}}
+{"total":{"recipes":3753,"articles":744,"offlineHidden":384,"shown":2625,"liveHidden":384}}
 {"site":"panlasangpinoy.com","recipes":2781,"articles":742,"liveHidden":96,"offlineHidden":96,"shown":1943}
-{"site":"kawalingpinoy.com","recipes":413,"articles":0,"liveHidden":112,"offlineHidden":112,"shown":301}
-{"site":"yummykitchentv.com","recipes":281,"articles":2,"liveHidden":100,"offlineHidden":100,"shown":179}
+{"site":"yummykitchentv.com","recipes":559,"articles":2,"liveHidden":177,"offlineHidden":177,"shown":380}
+{"site":"kawalingpinoy.com","recipes":413,"articles":0,"liveHidden":111,"offlineHidden":111,"shown":302}
 
-UNMATCHED (349 names; recipes, lines, example, sites):
+UNMATCHED (445 names; recipes, lines, example, sites):
 7	7	ube halaya	¼ cup ube halaya	kawalingpinoy.com,yummykitchentv.com
+5	5	desiccated coconut	2 cups desiccated coconut	kawalingpinoy.com,yummykitchentv.com
 4	5	instant coffee	2 tablespoons instant coffee	kawalingpinoy.com,yummykitchentv.com
-4	4	desiccated coconut	2 cups desiccated coconut	kawalingpinoy.com,yummykitchentv.com
 4	5	coffee powder	1 teaspoon coffee powder	yummykitchentv.com
 3	3	kecap manis	3 tablespoons kecap manis	panlasangpinoy.com,kawalingpinoy.com
+3	3	pandan extract	1 tablespoon pandan extract	kawalingpinoy.com,yummykitchentv.com
 3	3	drops pandan extract	4 drops pandan extract	kawalingpinoy.com
 3	3	instant coffee granules	2 tablespoons instant coffee granules	kawalingpinoy.com
 3	3	dried shitake mushrooms	2 pieces dried shitake mushrooms	kawalingpinoy.com
-3	3	chopped chocolate	1½ cups chopped chocolate	yummykitchentv.com
-3	3	chocolate chunks	1 cup chocolate chunks	yummykitchentv.com
+3	3	chocolate syrup	Chocolate Syrup	yummykitchentv.com
+3	3	cumin powder	1 tablespoon cumin powder	yummykitchentv.com
 2	2	kikiam	8 ounces kikiam	panlasangpinoy.com,yummykitchentv.com
 2	2	liquid smoke optional	1 teaspoon liquid smoke optional	panlasangpinoy.com
 2	2	coffee	½ cup coffee	panlasangpinoy.com
 2	2	patties cdo ulam burger	6 patties CDO Ulam Burger	panlasangpinoy.com
 2	2	cdo crispy burger patties	6 CDO Crispy burger patties	panlasangpinoy.com
+2	2	gochujang	1 tablespoon Gochujang	panlasangpinoy.com,yummykitchentv.com
 2	2	taba ng talangka	¼ cup taba ng talangka	panlasangpinoy.com
 2	2	instant noodles	3 ounces instant noodles	panlasangpinoy.com,yummykitchentv.com
 2	2	hollandaise sauce	Hollandaise sauce	panlasangpinoy.com
 2	2	chili sauce	2 teaspoons chili sauce	panlasangpinoy.com
 2	2	12 ounces) macapuno strings, drained	1 bottle (12 ounces) macapuno strings, drained	kawalingpinoy.com
-2	2	pandan extract	1 tablespoon pandan extract	kawalingpinoy.com
 2	2	pork bones	3 pounds pork bones	kawalingpinoy.com,yummykitchentv.com
 2	2	pickle juice	¼ cup pickle juice	kawalingpinoy.com
-2	2	cayenne powder	¼ teaspoon cayenne powder	kawalingpinoy.com,yummykitchentv.com
+2	2	cocoa	3 tablespoons cocoa	kawalingpinoy.com,yummykitchentv.com
+2	2	kitchen twine	kitchen twine	kawalingpinoy.com,yummykitchentv.com
+2	2	glazed fruits	2 cups glazed fruits	kawalingpinoy.com,yummykitchentv.com
 2	3	14 ounces) dulce de leche	1 can (14 ounces) dulce de leche	kawalingpinoy.com
 2	2	milo powder	2-3 sachets Milo powder	yummykitchentv.com
-2	2	chocolate syrup	Chocolate Syrup	yummykitchentv.com
 2	2	instant coffee powder	½ tsp Instant coffee powder	yummykitchentv.com
-2	2	crushed grahams	1 to 2 cups crushed grahams	yummykitchentv.com
+2	2	cheese powder	2 teaspoons cheese powder	yummykitchentv.com
 2	2	chopped chillies	chopped chillies	yummykitchentv.com
 2	2	dessicated coconut	¼ cup dessicated coconut	yummykitchentv.com
-2	2	chocolate	¾ cup chocolate	yummykitchentv.com
-2	2	pork broth cube	1 pork broth cube	yummykitchentv.com
-2	3	unflavoured gelatin powder	1 pack unflavoured gelatin powder	yummykitchentv.com
+2	2	green food coloring	1 teaspoon green food coloring	yummykitchentv.com
+2	2	coffee powder (optional)	1 teaspoon coffee powder (optional)	yummykitchentv.com
 2	2	premade 6 or 8 inch pizza dough	2 Premade 6 or 8 inch Pizza Dough	yummykitchentv.com
+2	2	yellow food color	yellow food color	yummykitchentv.com
+2	2	canton noodles	200 grams canton noodles	yummykitchentv.com
+2	2	brocolli florets	1 1/2 cup brocolli florets	yummykitchentv.com
+2	2	kremdensada	1 ½ can kremdensada	yummykitchentv.com
 1	1	furikake	5 Tablespoons Furikake	panlasangpinoy.com
 1	1	ox feet veal shanks, cleaned	1 1/2 lb ox feet veal shanks, cleaned	panlasangpinoy.com
 1	1	cooked kikiam quekiam, sliced	1/4 lb cooked Kikiam quekiam, sliced	panlasangpinoy.com
@@ -55,7 +60,6 @@ UNMATCHED (349 names; recipes, lines, example, sites):
 1	1	curry sauce mix	3 ounces curry sauce mix	panlasangpinoy.com
 1	1	sibot	25 g sibot	panlasangpinoy.com
 1	1	goat skin cleaned	2 lbs. goat skin cleaned	panlasangpinoy.com
-1	1	gochujang	1 tablespoon Gochujang	panlasangpinoy.com
 1	1	tahure fermented bean curd, mashed	3 ounces tahure fermented bean curd, mashed	panlasangpinoy.com
 1	1	knorr cream of pumpkin soup	70 g Knorr Cream of Pumpkin Soup	panlasangpinoy.com
 1	1	toasted rice powder	1 ½ tablespoons toasted rice powder	panlasangpinoy.com
@@ -195,7 +199,6 @@ UNMATCHED (349 names; recipes, lines, example, sites):
 1	1	panutsa syrup	panutsa syrup	kawalingpinoy.com
 1	1	about 8 ounces) panutsa	1 piece (about 8 ounces) panutsa	kawalingpinoy.com
 1	1	medium camote , peeled and cut into 1-inch lengths matchsticks	1 medium camote , peeled and cut into 1-inch lengths matchsticks	kawalingpinoy.com
-1	1	cocoa	3 tablespoons cocoa	kawalingpinoy.com
 1	1	dried ancho chiles	12 dried ancho chiles	kawalingpinoy.com
 1	1	dried guajillo chiles	3 dried guajillo chiles	kawalingpinoy.com
 1	1	pak choi, stems trimmed and leaves separated	2 bunches pak choi, stems trimmed and leaves separated	kawalingpinoy.com
@@ -212,7 +215,6 @@ UNMATCHED (349 names; recipes, lines, example, sites):
 1	1	about 4 pieces) frog legs	1 pound (about 4 pieces) frog legs	kawalingpinoy.com
 1	1	frog legs	4 frog legs	kawalingpinoy.com
 1	1	hog casings, about 12 to 15 feet	hog casings, about 12 to 15 feet	kawalingpinoy.com
-1	1	kitchen twine	kitchen twine	kawalingpinoy.com
 1	1	uncooked fusilli pasta	1 cup uncooked fusilli pasta	kawalingpinoy.com
 1	1	gherkins pickles, chopped	¼ cup gherkins pickles, chopped	kawalingpinoy.com
 1	1	mashed cooked ube	½ cup mashed cooked ube	kawalingpinoy.com
@@ -225,7 +227,6 @@ UNMATCHED (349 names; recipes, lines, example, sites):
 1	1	orange concentrate	¼ cup orange concentrate	kawalingpinoy.com
 1	1	allspice	⅛ teaspoon allspice	kawalingpinoy.com
 1	1	glazed cherries	3 teaspoons glazed cherries	kawalingpinoy.com
-1	1	glazed fruits	2 cups glazed fruits	kawalingpinoy.com
 1	1	pili nuts	1 cup pili nuts	kawalingpinoy.com
 1	1	large guyabano fruit, ripe	1 large guyabano fruit, ripe	kawalingpinoy.com
 1	1	unsweetened shredded coconut	2 tablespoons unsweetened shredded coconut	kawalingpinoy.com
@@ -243,7 +244,6 @@ UNMATCHED (349 names; recipes, lines, example, sites):
 1	1	sweet gherkins pickles, sliced	¼ cup sweet gherkins pickles, sliced	kawalingpinoy.com
 1	1	persian cucumbers halved lengthwise and cut into 1-inch cubes	4 Persian cucumbers halved lengthwise and cut into 1-inch cubes	kawalingpinoy.com
 1	1	l(20 ounces) ychee in light syrup	1 can l(20 ounces) ychee in light syrup	kawalingpinoy.com
-1	1	cayenne	½ teaspoon cayenne	kawalingpinoy.com
 1	1	nutella well chilled	1 cup Nutella well chilled	kawalingpinoy.com
 1	1	ppunds tamban (sardine)	3 ppunds tamban (sardine)	kawalingpinoy.com
 1	1	cream of corn 425g	1 Can Cream of Corn 425g	yummykitchentv.com
@@ -272,9 +272,6 @@ UNMATCHED (349 names; recipes, lines, example, sites):
 1	1	coffee granules	2 tablespoon coffee granules	yummykitchentv.com
 1	1	chocolate sprinkles	Chocolate sprinkles	yummykitchentv.com
 1	1	candies	Candies	yummykitchentv.com
-1	1	grated chocolate	Grated chocolate	yummykitchentv.com
-1	1	cheese powder	2 teaspoons cheese powder	yummykitchentv.com
-1	1	chocolate about 226g, divided	8 ounces chocolate about 226g, divided	yummykitchentv.com
 1	1	ice scramble powder or shake powder	1 kilo ice scramble powder or shake powder	yummykitchentv.com
 1	1	chocolate sauce as needed	Chocolate sauce as needed	yummykitchentv.com
 1	1	candy sprinkles as needed	Candy sprinkles as needed	yummykitchentv.com
@@ -288,7 +285,6 @@ UNMATCHED (349 names; recipes, lines, example, sites):
 1	1	kinchay minced	1 tablespoon kinchay minced	yummykitchentv.com
 1	1	sili	1/2 to 1 teaspoon sili	yummykitchentv.com
 1	1	ribs	1250 grams ribs	yummykitchentv.com
-1	1	cumin powder	1 tablespoon cumin powder	yummykitchentv.com
 1	1	taupe wrapper	7 to 8 pieces taupe wrapper	yummykitchentv.com
 1	1	hershey’s choco syrup	Hershey’s choco syrup	yummykitchentv.com
 1	1	24g) milo powder	9 packets (24g) milo powder	yummykitchentv.com
@@ -314,7 +310,6 @@ UNMATCHED (349 names; recipes, lines, example, sites):
 1	1	lomi noodles	½ kilo lomi noodles	yummykitchentv.com
 1	1	gelatine powder	10 grams gelatine powder	yummykitchentv.com
 1	1	biya	½ kilo biya	yummykitchentv.com
-1	1	chocolate (chopped)	½ cup chocolate (chopped)	yummykitchentv.com
 1	1	hot cream	½ cup hot cream	yummykitchentv.com
 1	1	chocnut powder	85 grams Chocnut powder	yummykitchentv.com
 1	1	chocnut	3 pieces Chocnut	yummykitchentv.com
@@ -327,10 +322,8 @@ UNMATCHED (349 names; recipes, lines, example, sites):
 1	1	mustasa	2 bunches mustasa	yummykitchentv.com
 1	1	saba	½ kilo saba	yummykitchentv.com
 1	1	pandan extract flavor	1 teaspoon pandan extract flavor	yummykitchentv.com
-1	1	green food coloring	1 teaspoon green food coloring	yummykitchentv.com
 1	1	fresh buko (shredded)	1 cup fresh buko (shredded)	yummykitchentv.com
 1	1	niyog	1 cup of niyog	yummykitchentv.com
-1	1	coffee powder (optional)	1 teaspoon coffee powder (optional)	yummykitchentv.com
 1	1	medium sized bananas or 1 cup of chopped bananas	3 medium sized bananas or 1 cup of chopped bananas	yummykitchentv.com
 1	1	fudgee barr	7 – 10 pieces of Fudgee Barr	yummykitchentv.com
 1	1	any chocolate	1 ½ cup any chocolate	yummykitchentv.com
@@ -353,3 +346,106 @@ UNMATCHED (349 names; recipes, lines, example, sites):
 1	1	dairy option in notes*	*dairy option in notes*	yummykitchentv.com
 1	1	picked yellow radishes	6 – 8 picked yellow radishes	yummykitchentv.com
 1	1	instant oatmeal	3 cups instant oatmeal	yummykitchentv.com
+1	1	brioche buns	3 brioche buns	yummykitchentv.com
+1	1	cream-o cookies	1 pack Cream-o cookies	yummykitchentv.com
+1	1	large green sili	3 pieces large green sili	yummykitchentv.com
+1	1	medium sized radish (sliced)	1 medium sized radish (sliced)	yummykitchentv.com
+1	1	knorr sinigang sa sampalok original mix	44 g Knorr Sinigang sa Sampalok Original Mix	yummykitchentv.com
+1	1	medium-size apple	1 medium-size apple	yummykitchentv.com
+1	1	198g) mushroom pieces and stems (strained)	1 can (198g) mushroom pieces and stems (strained)	yummykitchentv.com
+1	1	220g) pepperoni	1 pack (220g) pepperoni	yummykitchentv.com
+1	1	hotcake mix	200g Hotcake mix	yummykitchentv.com
+1	1	fudgee bar macapuno cake	4 Fudgee bar macapuno cake	yummykitchentv.com
+1	1	fudgee bar chocolate cake	4 Fudgee bar chocolate cake	yummykitchentv.com
+1	1	kakang gata	2 cups kakang gata	yummykitchentv.com
+1	1	moringga leaves	moringga leaves	yummykitchentv.com
+1	1	mixed berry powdered juice	3 teaspoon mixed berry powdered juice	yummykitchentv.com
+1	1	sprinkles for topping	sprinkles for topping	yummykitchentv.com
+1	1	small can meatloaf (or any meat of choice)	1 small can meatloaf (or any meat of choice)	yummykitchentv.com
+1	1	25g) gelatin powder (unflavored)	1 sachet (25g) gelatin powder (unflavored)	yummykitchentv.com
+1	1	red food color	red food color	yummykitchentv.com
+1	1	dessicated coconut (or the sapal from coconut pressing)	1 cup dessicated coconut (or the sapal from coconut pressing)	yummykitchentv.com
+1	1	breading mix	1 cup breading mix	yummykitchentv.com
+1	1	cooked pepperoni	cooked pepperoni	yummykitchentv.com
+1	1	pizza seasoning (optional)	pizza seasoning (optional)	yummykitchentv.com
+1	1	chili paste	1 teaspoon chili paste	yummykitchentv.com
+1	1	chocolate cake bar	5 - 6 pieces chocolate cake bar	yummykitchentv.com
+1	1	25g orange gelatin powder (unflavored)	1 sachet 25g orange gelatin powder (unflavored)	yummykitchentv.com
+1	1	few drops of melon flavor optional	few drops of melon flavor optional	yummykitchentv.com
+1	1	meat loaf	1 can meat loaf	yummykitchentv.com
+1	1	preserved blueberry	1 can preserved blueberry	yummykitchentv.com
+1	1	kikiam (or squidballs or both)	1 cup kikiam (or squidballs or both)	yummykitchentv.com
+1	1	plain sponge cake	3 pieces plain sponge cake	yummykitchentv.com
+1	1	medium-sized prawns	½ kilo medium-sized prawns	yummykitchentv.com
+1	1	all purpose seasoning	1 teaspoon all purpose seasoning	yummykitchentv.com
+1	1	food coloring	food coloring	yummykitchentv.com
+1	1	milo choco drink	1 cup milo choco drink	yummykitchentv.com
+1	2	25 g) gelatine powder	1 sachet (25 g) gelatine powder	yummykitchentv.com
+1	1	kabuteng mamunso (freshly harvested) optional	3 kabuteng mamunso (freshly harvested) optional	yummykitchentv.com
+1	1	115 g) mushroom (drained)	1 can (115 g) mushroom (drained)	yummykitchentv.com
+1	1	cheese cubes (optional)	½ cup cheese cubes (optional)	yummykitchentv.com
+1	1	red and green food colors	Red and green food colors	yummykitchentv.com
+1	1	pineapple syrup (from chunks)	1 cup pineapple syrup (from chunks)	yummykitchentv.com
+1	1	red, green and yellow food colors	Red, green and yellow food colors	yummykitchentv.com
+1	1	strawberry syrup	Strawberry syrup	yummykitchentv.com
+1	1	rainbow candy sprinkles	Rainbow candy sprinkles	yummykitchentv.com
+1	1	unripe saba bananas	15 to 20 unripe saba bananas	yummykitchentv.com
+1	1	1 teaspoon instant coffee granules (or powder)	5 tablespoons + 1 teaspoon instant coffee granules (or powder)	yummykitchentv.com
+1	1	dried oregano powder (optional)	1/2 teaspoon dried oregano powder (optional)	yummykitchentv.com
+1	1	moringa leaves	1/4 cup moringa leaves	yummykitchentv.com
+1	1	spiral pasta	375 grams spiral pasta	yummykitchentv.com
+1	1	ube food flavoring	Ube food flavoring	yummykitchentv.com
+1	1	chinese twine	3 tablespoons chinese twine	yummykitchentv.com
+1	1	medium brocolli (chopped)	1 medium brocolli (chopped)	yummykitchentv.com
+1	1	slurry (½ tablespoon)	Slurry (½ tablespoon)	yummykitchentv.com
+1	1	loaf breads	Loaf breads	yummykitchentv.com
+1	1	black beans	2 tablespoons of black beans	yummykitchentv.com
+1	1	spam (or any meatloaf)	2 cans Spam (or any meatloaf)	yummykitchentv.com
+1	1	spam (chopped)	¾ cups spam (chopped)	yummykitchentv.com
+1	1	pasta noodles	500 grams pasta noodles	yummykitchentv.com
+1	1	gochujang paste	1 1/2 tablespoons gochujang paste	yummykitchentv.com
+1	1	barbecue sticks	Barbecue sticks	yummykitchentv.com
+1	1	milo powder (6 - 7 sachets)	1 ½ cup milo powder (6 - 7 sachets)	yummykitchentv.com
+1	1	gelatin powder	1 sachet gelatin powder	yummykitchentv.com
+1	1	pickled radish	3 pieces pickled radish	yummykitchentv.com
+1	1	oregano leaves	½ teaspoon of oregano leaves	yummykitchentv.com
+1	1	mang tomas sarsa	4 tablespoons mang tomas sarsa	yummykitchentv.com
+1	1	ear mushrooms	20 grams ear mushrooms	yummykitchentv.com
+1	1	gochujang sauce	2 tablespoons of gochujang sauce	yummykitchentv.com
+1	1	shrimp broth cube	1 piece shrimp broth cube	yummykitchentv.com
+1	1	2 teaspoon instant coffee granules	½ tablespoon + 2 teaspoon instant coffee granules	yummykitchentv.com
+1	1	yellow gelatin powder	1 sachet yellow gelatin powder	yummykitchentv.com
+1	1	fruit cocktail juice	fruit cocktail juice	yummykitchentv.com
+1	2	oregano powder	½ teaspoon of oregano powder	yummykitchentv.com
+1	1	calamansi extract	2 tablespoon calamansi extract	yummykitchentv.com
+1	1	a bunch of coriander	A bunch of coriander	yummykitchentv.com
+1	1	slurry	2 tablespoons of slurry	yummykitchentv.com
+1	1	dried labahita	¼ cup of dried labahita	yummykitchentv.com
+1	1	green long chilies (sliced)	Green long chilies (sliced)	yummykitchentv.com
+1	1	chillies (optional)	chillies (optional)	yummykitchentv.com
+1	1	very unripe saba bananas	3 - 5 very unripe Saba bananas	yummykitchentv.com
+1	1	kikiam (sliced)	300 grams kikiam (sliced)	yummykitchentv.com
+1	1	black peppercorns	1 teaspoon black peppercorns	yummykitchentv.com
+1	1	chocolate cookies with cream filling (crushed into chunks)	chocolate cookies with cream filling (crushed into chunks)	yummykitchentv.com
+1	1	equal gold or stevia	8 sachets Equal gold or Stevia	yummykitchentv.com
+1	1	a jar of nutella	A jar of Nutella	yummykitchentv.com
+1	1	shredded buko	1/2 cup shredded buko	yummykitchentv.com
+1	1	mixed veggies	1/2 cup mixed veggies	yummykitchentv.com
+1	1	short ribs	700 grams short ribs	yummykitchentv.com
+1	1	fudgee bar (or any brand)	6 - 8 pieces Fudgee bar (or any brand)	yummykitchentv.com
+1	1	kremdensada (chilled overnight)	1 1/2 can Kremdensada (chilled overnight)	yummykitchentv.com
+1	1	medium-sized bananas	5 medium-sized bananas	yummykitchentv.com
+1	1	fresh or packaged hofan noodles	500 grams fresh or packaged hofan noodles	yummykitchentv.com
+1	1	frozen mixed veggies	1/2 cup frozen mixed veggies	yummykitchentv.com
+1	1	red cherries	1/2 cup red cherries	yummykitchentv.com
+1	1	green cherries	1/2 cup green cherries	yummykitchentv.com
+1	1	red and green cherries	red and green cherries	yummykitchentv.com
+1	1	frozen siomai	20 pieces frozen siomai	yummykitchentv.com
+1	1	6 cups of water	5 6 cups of water	yummykitchentv.com
+1	1	kinchay (chopped)	1 bunch kinchay (chopped)	yummykitchentv.com
+1	1	bayleaf	1 piece bayleaf	yummykitchentv.com
+1	1	gochujang to taste	Gochujang to taste	yummykitchentv.com
+1	1	cajun seasoning	2 tablespoons cajun seasoning	yummykitchentv.com
+1	1	red pimentos	2 cans red pimentos	yummykitchentv.com
+1	1	yellow cheddar, grated	1/2 cup yellow cheddar, grated	yummykitchentv.com
+1	1	white cheddar, grated	1/2 cup white cheddar, grated	yummykitchentv.com
