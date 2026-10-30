@@ -1,23 +1,37 @@
-{"total":{"recipes":4004,"articles":745,"offlineHidden":454,"shown":2805,"liveHidden":454}}
+{"total":{"recipes":4246,"articles":746,"offlineHidden":613,"shown":2887,"liveHidden":613}}
 {"site":"panlasangpinoy.com","recipes":2781,"articles":742,"liveHidden":96,"offlineHidden":96,"shown":1943}
-{"site":"yummykitchentv.com","recipes":683,"articles":2,"liveHidden":198,"offlineHidden":198,"shown":483}
-{"site":"kawalingpinoy.com","recipes":413,"articles":0,"liveHidden":111,"offlineHidden":111,"shown":302}
+{"site":"yummykitchentv.com","recipes":683,"articles":2,"liveHidden":196,"offlineHidden":196,"shown":485}
+{"site":"kawalingpinoy.com","recipes":413,"articles":0,"liveHidden":110,"offlineHidden":110,"shown":303}
+{"site":"pinoyrecipe.net","recipes":241,"articles":1,"liveHidden":162,"offlineHidden":162,"shown":78}
 {"site":"recipesbynora.com","recipes":127,"articles":1,"liveHidden":49,"offlineHidden":49,"shown":77}
+{"site":"foxyfolksy.com","recipes":1,"articles":0,"liveHidden":0,"offlineHidden":0,"shown":1}
 
-UNMATCHED (528 names; recipes, lines, example, sites):
-8	8	ube halaya	¼ cup ube halaya	kawalingpinoy.com,yummykitchentv.com,recipesbynora.com
-5	5	desiccated coconut	2 cups desiccated coconut	kawalingpinoy.com,yummykitchentv.com
+UNMATCHED (873 names; recipes, lines, example, sites):
+11	11	icy cold water	6-7 tbsp. icy cold water	pinoyrecipe.net
+10	10	ube halaya	¼ cup ube halaya	kawalingpinoy.com,yummykitchentv.com,recipesbynora.com,pinoyrecipe.net
+8	8	box 200g frosty whip cream powder, whipped according to package	1 box 200g Frosty Whip Cream Powder, whipped according to package	pinoyrecipe.net
+6	6	desiccated coconut	2 cups desiccated coconut	kawalingpinoy.com,yummykitchentv.com,pinoyrecipe.net
+6	6	chocolate syrup	Chocolate Syrup	yummykitchentv.com,pinoyrecipe.net
+5	5	pandan extract	1 tablespoon pandan extract	kawalingpinoy.com,yummykitchentv.com,pinoyrecipe.net
+5	5	12oz. plastic cups	4 pieces 12oz. plastic cups	pinoyrecipe.net
 4	5	instant coffee	2 tablespoons instant coffee	kawalingpinoy.com,yummykitchentv.com
 4	5	coffee powder	1 teaspoon coffee powder	yummykitchentv.com
 4	4	instant coffee or ¼ teaspoon espresso powder (optional)	½ teaspoon instant coffee or ¼ teaspoon espresso powder (optional)	recipesbynora.com
 4	4	box brownie mix (about 18 ounces)	1 box brownie mix (about 18 ounces)	recipesbynora.com
+4	4	box 200g maya party cupcake mix	1 box 200g Maya Party Cupcake Mix	pinoyrecipe.net
 3	3	kecap manis	3 tablespoons kecap manis	panlasangpinoy.com,kawalingpinoy.com
 3	3	gochujang	1 tablespoon Gochujang	panlasangpinoy.com,yummykitchentv.com,recipesbynora.com
-3	3	pandan extract	1 tablespoon pandan extract	kawalingpinoy.com,yummykitchentv.com
 3	3	drops pandan extract	4 drops pandan extract	kawalingpinoy.com
 3	3	instant coffee granules	2 tablespoons instant coffee granules	kawalingpinoy.com
 3	3	dried shitake mushrooms	2 pieces dried shitake mushrooms	kawalingpinoy.com
-3	3	chocolate syrup	Chocolate Syrup	yummykitchentv.com
+3	3	milo powder	2-3 sachets Milo powder	yummykitchentv.com,pinoyrecipe.net
+3	3	sprinkles	Sprinkles	yummykitchentv.com,pinoyrecipe.net
+3	3	box 200g frosty whip cream powder	1 box 200g Frosty Whip Cream Powder	pinoyrecipe.net
+3	3	8-inch cake board	2 8-inch cake board	pinoyrecipe.net
+3	3	box 100g frosty whip cream powder	1/2 box 100g Frosty Whip Cream Powder	pinoyrecipe.net
+3	3	cupcake liners 2oz.	15 pcs cupcake liners 2oz.	pinoyrecipe.net
+3	3	1oz. paper liners	24 1oz. Paper Liners	pinoyrecipe.net
+3	3	medium clear view pastry container	8 medium Clear View Pastry Container	pinoyrecipe.net
 2	2	kikiam	8 ounces kikiam	panlasangpinoy.com,yummykitchentv.com
 2	2	liquid smoke optional	1 teaspoon liquid smoke optional	panlasangpinoy.com
 2	2	coffee	½ cup coffee	panlasangpinoy.com
@@ -30,24 +44,49 @@ UNMATCHED (528 names; recipes, lines, example, sites):
 2	2	12 ounces) macapuno strings, drained	1 bottle (12 ounces) macapuno strings, drained	kawalingpinoy.com
 2	2	pork bones	3 pounds pork bones	kawalingpinoy.com,yummykitchentv.com
 2	2	pickle juice	¼ cup pickle juice	kawalingpinoy.com
-2	2	dilis	1 pound dilis	kawalingpinoy.com,yummykitchentv.com
+2	2	dashi	4 cups dashi	kawalingpinoy.com,pinoyrecipe.net
 2	2	glazed fruits	2 cups glazed fruits	kawalingpinoy.com,yummykitchentv.com
 2	3	14 ounces) dulce de leche	1 can (14 ounces) dulce de leche	kawalingpinoy.com
-2	2	milo powder	2-3 sachets Milo powder	yummykitchentv.com
 2	2	instant coffee powder	½ tsp Instant coffee powder	yummykitchentv.com
 2	2	cheese powder	2 teaspoons cheese powder	yummykitchentv.com
 2	2	chopped chillies	chopped chillies	yummykitchentv.com
 2	2	dessicated coconut	¼ cup dessicated coconut	yummykitchentv.com
-2	2	tortilla	4 pcs. Tortilla	yummykitchentv.com
 2	2	coffee powder (optional)	1 teaspoon coffee powder (optional)	yummykitchentv.com
 2	2	premade 6 or 8 inch pizza dough	2 Premade 6 or 8 inch Pizza Dough	yummykitchentv.com
 2	2	chili paste	1 teaspoon chili paste	yummykitchentv.com
+2	2	strawberry syrup	Strawberry syrup	yummykitchentv.com,pinoyrecipe.net
 2	2	kremdensada	1 ½ can kremdensada	yummykitchentv.com
 2	2	a bunch of coriander	A bunch of coriander	yummykitchentv.com
 2	2	cajun seasoning	2 tablespoons cajun seasoning	yummykitchentv.com
 2	3	sriracha to taste	Sriracha to taste	yummykitchentv.com
+2	2	turmeric	1 tablespoon turmeric	yummykitchentv.com,pinoyrecipe.net
 2	2	instant coffee or ¼ teaspoon espresso powder optional	½ teaspoon instant coffee or ¼ teaspoon espresso powder optional	recipesbynora.com
 2	2	box brownie mix about 18 ounces	1 box brownie mix about 18 ounces	recipesbynora.com
+2	2	sprinkles of your choice	1/8 cup Sprinkles of your choice	pinoyrecipe.net
+2	2	box devils food cake mix bake according to package direction & divide the batter into 2 pans.	1 box Devils Food Cake Mix bake according to package direction & divide the batter into 2 pans.	pinoyrecipe.net
+2	2	2g nescafe classic	1 sachet 2g Nescafe Classic	pinoyrecipe.net
+2	2	cumin seeds	1 tsp cumin seeds	pinoyrecipe.net
+2	2	colored sprinkles optional	1 tbsp. colored sprinkles optional	pinoyrecipe.net
+2	2	wafer sticks halves (optional)	6 pcs. wafer sticks halves (optional)	pinoyrecipe.net
+2	2	6oz. plastic cups	6 pcs. 6oz. plastic cups	pinoyrecipe.net
+2	2	mini-plastic spoons	6 pcs. mini-plastic spoons	pinoyrecipe.net
+2	2	white sprinkles	2 tbsp. white sprinkles	pinoyrecipe.net
+2	2	cupcake toppers optional	15 pcs. cupcake toppers optional	pinoyrecipe.net
+2	2	paper liners 1oz.	40-42 pcs Paper Liners 1oz.	pinoyrecipe.net
+2	4	22g milo powder	2 sachet 22g MILO Powder	pinoyrecipe.net
+2	2	silver sprinkles	1 tbsp. silver sprinkles	pinoyrecipe.net
+2	2	25g nissin cubee wafer	1 pack 25g Nissin Cubee Wafer	pinoyrecipe.net
+2	3	minatamis na saba	2 tbsp Minatamis na Saba	pinoyrecipe.net
+2	3	buko strips	1 tbsp Buko Strips	pinoyrecipe.net
+2	2	injoy ube scramble powder	3 tbsp inJoy Ube Scramble Powder	pinoyrecipe.net
+2	2	yakult	2 bottles Yakult	pinoyrecipe.net
+2	2	frosty whip cream powder	½ cup Frosty Whip Cream Powder	pinoyrecipe.net
+2	2	6-inch cake board	1 6-inch cake board	pinoyrecipe.net
+2	2	fruit cocktail syrup	1 ½ cups Fruit Cocktail Syrup	pinoyrecipe.net
+2	2	sweet chilli sauce	Sweet Chilli Sauce	pinoyrecipe.net
+2	2	frosty boy whip cream powder (click to buy)	1¼ cup Frosty Boy Whip Cream Powder (click to buy)	pinoyrecipe.net
+2	2	200ml plastic deli containers for desserts (click to buy)	5 pcs 200ml Plastic Deli Containers for Desserts (click to buy)	pinoyrecipe.net
+2	2	sticker label optional	5 pcs. Sticker Label optional	pinoyrecipe.net
 1	1	furikake	5 Tablespoons Furikake	panlasangpinoy.com
 1	1	ox feet veal shanks, cleaned	1 1/2 lb ox feet veal shanks, cleaned	panlasangpinoy.com
 1	1	cooked kikiam quekiam, sliced	1/4 lb cooked Kikiam quekiam, sliced	panlasangpinoy.com
@@ -193,7 +232,6 @@ UNMATCHED (528 names; recipes, lines, example, sites):
 1	1	cellophane or japanese paper cut into 3 x 3-inch squares	cellophane or Japanese paper cut into 3 x 3-inch squares	kawalingpinoy.com
 1	1	manila mangoes, peeled and sliced	Manila mangoes, peeled and sliced	kawalingpinoy.com
 1	1	16 ounces) asian vegetable stir-fry mix	1 package (16 ounces) Asian vegetable stir-fry mix	kawalingpinoy.com
-1	1	dashi	4 cups dashi	kawalingpinoy.com
 1	1	7 ounces each) fresh udon noodles	2 packs (7 ounces each) fresh udon noodles	kawalingpinoy.com
 1	1	shichimi togarashi (japanese 7-spice)	shichimi togarashi (Japanese 7-spice)	kawalingpinoy.com
 1	1	fermented black beans, drained and rinsed	2 Tablespoons fermented black beans, drained and rinsed	kawalingpinoy.com
@@ -279,7 +317,6 @@ UNMATCHED (528 names; recipes, lines, example, sites):
 1	1	papaya slices	Papaya slices	yummykitchentv.com
 1	1	other fruits of your choice	Other fruits of your choice	yummykitchentv.com
 1	1	water divided	3 cups water divided	yummykitchentv.com
-1	1	sprinkles	Sprinkles	yummykitchentv.com
 1	1	instant coffee powder or granules	2 tablespoons instant coffee powder or granules	yummykitchentv.com
 1	1	crumbled biscuits	Crumbled biscuits	yummykitchentv.com
 1	1	medium-sized leche flan	6 pieces medium-sized leche flan	yummykitchentv.com
@@ -384,7 +421,6 @@ UNMATCHED (528 names; recipes, lines, example, sites):
 1	1	red and green food colors	Red and green food colors	yummykitchentv.com
 1	1	pineapple syrup (from chunks)	1 cup pineapple syrup (from chunks)	yummykitchentv.com
 1	1	red, green and yellow food colors	Red, green and yellow food colors	yummykitchentv.com
-1	1	strawberry syrup	Strawberry syrup	yummykitchentv.com
 1	1	rainbow candy sprinkles	Rainbow candy sprinkles	yummykitchentv.com
 1	1	unripe saba bananas	15 to 20 unripe saba bananas	yummykitchentv.com
 1	1	1 teaspoon instant coffee granules (or powder)	5 tablespoons + 1 teaspoon instant coffee granules (or powder)	yummykitchentv.com
@@ -456,7 +492,6 @@ UNMATCHED (528 names; recipes, lines, example, sites):
 1	1	sliced loaf breads	Sliced Loaf Breads	yummykitchentv.com
 1	1	bonito flakes	Bonito Flakes	yummykitchentv.com
 1	1	canned mushrooms ( chopped and drained )	1 cup canned mushrooms ( chopped and drained )	yummykitchentv.com
-1	1	turmeric	1 tablespoon turmeric	yummykitchentv.com
 1	1	ube halaya or jam	1/2 cup ube halaya or jam	yummykitchentv.com
 1	1	or 1 cup chocolate	2/3 or 1 cup chocolate	yummykitchentv.com
 1	1	hot topokki sauce	150 grams hot topokki sauce	yummykitchentv.com
@@ -533,3 +568,42 @@ UNMATCHED (528 names; recipes, lines, example, sites):
 1	1	pancit bato noodles	1 pound pancit bato noodles	recipesbynora.com
 1	1	pandan extract or 1 teaspoon vanilla optional	½ teaspoon pandan extract or 1 teaspoon vanilla optional	recipesbynora.com
 1	1	pandan extract or ½ teaspoon vanilla optional	¼ teaspoon pandan extract or ½ teaspoon vanilla optional	recipesbynora.com
+1	1	box devils food cake mix bake according to package direction	1 box Devils Food Cake Mix bake according to package direction	pinoyrecipe.net
+1	1	swiss miss chocolate drink powder	2 pack Swiss Miss Chocolate Drink Powder	pinoyrecipe.net
+1	1	caramel syrup	2 cups Caramel Syrup	pinoyrecipe.net
+1	1	2oz. cupcake liners	24 2oz. cupcake liners	pinoyrecipe.net
+1	1	mini-leche flan	4 pcs. mini-Leche Flan	pinoyrecipe.net
+1	1	macapuno	2 tbsp. macapuno	pinoyrecipe.net
+1	1	caramel syrup to decorate the glass (optional)	1/8 cup caramel syrup to decorate the glass (optional)	pinoyrecipe.net
+1	1	blender and a staw	Blender and a Staw	pinoyrecipe.net
+1	1	scoop each vanilla chocolate and strawberry ice cream	1 scoop each vanilla chocolate and strawberry ice cream	pinoyrecipe.net
+1	1	2oz. mini-puto molds or any similar tart molds	24 2oz. mini-Puto Molds or any similar Tart Molds	pinoyrecipe.net
+1	1	lato seaweed	1/2 kilo Lato seaweed	pinoyrecipe.net
+1	1	melon pieces	1 Cup Melon pieces	pinoyrecipe.net
+1	1	box 200g frosty whipping cream powder	1 box 200g Frosty Whipping Cream Powder	pinoyrecipe.net
+1	1	ferrero unwrapped halves or whole	6-8 pcs. Ferrero unwrapped halves or whole	pinoyrecipe.net
+1	1	chocolate flavored stick-o cut into 2 inches	3 pcs. chocolate flavored Stick-O cut into 2 inches	pinoyrecipe.net
+1	1	biscoff cookie finely crushed (you can crushed graham)	1 pc. Biscoff Cookie finely crushed (you can crushed graham)	pinoyrecipe.net
+1	1	300g nestle cream	1 can 300g Nestle Cream	pinoyrecipe.net
+1	1	maraschino cherry to decorate	Maraschino Cherry to decorate	pinoyrecipe.net
+1	1	full cream evaporated milk	1 cup full cream evaporated milk	pinoyrecipe.net
+1	1	jolly maraschino cherry cut in quarter	4 pcs. Jolly Maraschino Cherry cut in quarter	pinoyrecipe.net
+1	1	oreo cookies roughly crushed (discard cream filling)	10 pcs. Oreo Cookies roughly crushed (discard cream filling)	pinoyrecipe.net
+1	1	a drizzle of chocolate syrup or caramel syrup on top	A drizzle of chocolate syrup or caramel syrup on top	pinoyrecipe.net
+1	1	nestle cream	1 cup nestle cream	pinoyrecipe.net
+1	1	pistachio nuts roughly chopped for toppings	½ cup pistachio nuts roughly chopped for toppings	pinoyrecipe.net
+1	1	colored cellophane (optional)	colored cellophane (optional)	pinoyrecipe.net
+1	1	fresh guyabano fruit seeds removed	1/2 cup fresh Guyabano fruit seeds removed	pinoyrecipe.net
+1	1	or 2 boxes 200g frosty whipping cream powder	3 cups or 2 boxes 200g Frosty Whipping Cream Powder	pinoyrecipe.net
+1	1	mini oreo’s divided	24 pcs. mini Oreo’s divided	pinoyrecipe.net
+1	1	oreo crumbs finely crushed	½ cup Oreo crumbs finely crushed	pinoyrecipe.net
+1	1	tortang corned beef patties here's the recipe for the tortang corned beef	6 pieces Tortang Corned Beef Patties here's the recipe for the Tortang Corned Beef	pinoyrecipe.net
+1	1	chinese plum sauce	6 tablespoons Chinese plum sauce	pinoyrecipe.net
+1	1	small orange	1 small Orange	pinoyrecipe.net
+1	1	ice pops mold	Ice Pops mold	pinoyrecipe.net
+1	1	small paper cups	8 small paper cups	pinoyrecipe.net
+1	1	popsicle sticks	8 popsicle sticks	pinoyrecipe.net
+1	1	box 96g jello classic vanilla pudding mix	1 box 96g Jello Classic Vanilla Pudding Mix	pinoyrecipe.net
+1	1	cool whip for topping (i’m using frosty whipped cream)	1 cup cool whip for topping (I’m using frosty whipped cream)	pinoyrecipe.net
+1	1	or 1 box 200g frosty whipping cream powder	1½ cups or 1 box 200g Frosty Whipping Cream Powder	pinoyrecipe.net
+1	1	sweetened banana chips roughly chopped	1 cup sweetened banana chips roughly chopped	pinoyrecipe.net
