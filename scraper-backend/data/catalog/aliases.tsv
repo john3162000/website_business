@@ -1704,3 +1704,19 @@ dilis	FOOD	anchovies_dried		dried anchovies (dilis)
 tortilla	FOOD	tortilla_flour		recipe sites 2026-10-30
 icy cold water	WATER			like "ice cold water"
 icy water	WATER			like "ice water"
+whole black peppercorns	FOOD	peppercorn_whole		recipe sites 2026-10-31
+black peppercorns	FOOD	peppercorn_whole		recipe sites 2026-10-31
+turmeric	FOOD	turmeric_powder		[exact] measured by spoon: ground
+pickle relish	FOOD	pickle_relish_sweet		PH pickle relish is the sweet kind
+sriracha	FOOD	sriracha		recipe sites 2026-10-31
+fusilli	FOOD	penne		dry pasta, as farfalle
+shredded cheddar	FOOD	cheese_cheddar		recipe sites 2026-10-31
+magic sarap	FOOD	seasoning_magic_sarap		recipe sites 2026-10-31
+short ribs	FOOD	beef_short_ribs		recipe sites 2026-10-31
+fresh coriander	FOOD	cilantro		coriander leaves = cilantro
+coriander leaves	FOOD	cilantro		coriander leaves = cilantro
+reserved pasta water	WATER			cooking water
+pasta water	WATER			cooking water
+soda water	WATER			carbonated water, 0 kcal
+coconut water	WATER			as young coconut water / buko juice
+cooking cream	FOOD	cream_all_purpose		PH cooking cream = all-purpose cream
