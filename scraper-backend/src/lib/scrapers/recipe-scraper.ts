@@ -180,6 +180,12 @@ export async function scrapeRecipeChunk(
       // Not noted as skipped: a failed fetch is tried again on the next pass. Logged too, so a site
       // that starts refusing the crawler shows up in the Vercel logs, not only in ScrapingLog.
       const why = `Failed to scrape ${url}: ${err instanceof Error ? err.message : err}`;
+      // HTTP 508 (Loop Detected) comes from Vercel when a site hosted there (Pepper.ph) is fetched
+      // from deep in our own hop chain. Stay on this page and stop the run; the next hourly run reads
+      // it from its first hop.
+      if (/\bHTTP 508\b/.test(why)) {
+        return { saved, cursor: { sourceIndex, sitemapIndex, urlIndex: index - 1 }, done: false, pause: `${why} (retried next run)` };
+      }
       console.warn(`recipe crawl ${why}`);
       onProgress?.(why);
       continue;

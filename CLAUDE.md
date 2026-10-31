@@ -161,7 +161,8 @@ required on `main`.
 - **Vercel Authentication guards deployment URLs** (`ssoProtection: all_except_custom_domains`);
   only the production domains are public. A function calling itself must use
   `VERCEL_PROJECT_PRODUCTION_URL` (`hopOrigin()`), not `request.url`. Self-calls nest at most 5
-  deep: the sixth gets **HTTP 508 Loop Detected**.
+  deep: the sixth gets **HTTP 508 Loop Detected**. Outbound fetches to sites that are also on Vercel
+  (Pepper.ph) count too: from the 5th hop they get 508, so a 508 on a page pauses the run at that page.
 - **A new recipe site needs a name** in `RECIPE_SOURCES` in `docs/share.js` (credit and "Paano
   lutuin?" button); `share.test.mjs` checks every host in the backend's `recipe-sources.ts`.
 

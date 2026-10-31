@@ -326,3 +326,15 @@ labels were mixed up. These are the two fixes the owner approved first.
     cupcake liners and cake boards), and Foxy Folksy has started.
   - On the site: 2,887 shown and 613 hidden.
   - Alias added: "icy cold water" and "icy water" now count as water (11 Pinoy Recipe dishes).
+- **Progress at 16:20 UTC, Oct 31:**
+  - **4,778 entries**, of which 762 are articles.
+  - By site: Panlasang Pinoy 2,782, Yummy Kitchen 685, Kawaling Pinoy 413, Pepper.ph 393 (in progress),
+    Pinoy Recipe 241, Recipes by Nora 127, Foxy Folksy 88 and Manila Spoon 49.
+  - On the site: 3,168 shown and 848 hidden.
+- **HTTP 508 from Pepper.ph.** Pepper.ph is also hosted on Vercel, and every page fetched in a run's
+  last hop (hop 4) came back 508 Loop Detected. Vercel counts our self-call chain toward its loop
+  limit, and that includes our outbound fetches to other Vercel sites. A 508 on a page now stops the
+  run at that page, so the next hourly run reads it from its first hop.
+- **Aliases added:** whole/black peppercorns, turmeric, pickle relish, sriracha, fusilli,
+  shredded cheddar, Magic Sarap, short ribs, fresh coriander, cooking cream.
+  Treated as water: pasta water, soda water, coconut water.
