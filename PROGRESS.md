@@ -338,3 +338,42 @@ labels were mixed up. These are the two fixes the owner approved first.
 - **Aliases added:** whole/black peppercorns, turmeric, pickle relish, sriracha, fusilli,
   shredded cheddar, Magic Sarap, short ribs, fresh coriander, cooking cream.
   Treated as water: pasta water, soda water, coconut water.
+
+## 2026-11-01: first full pass of all recipe sites done
+
+The crawl's run at 03:51 UTC read every sitemap of every site and found nothing new, so the first
+pass is complete. From now on, the hourly runs only pick up newly published posts.
+
+| Site | Saved | Articles | Shown on the site | Hidden (unknown ingredient) |
+|---|---|---|---|---|
+| Panlasang Pinoy | 2,782 | 742 | 1,944 | 96 |
+| Yummy Kitchen | 685 | 2 | 493 | 190 |
+| Pepper.ph (`/recipes/`) | 467 | 17 | 259 | 191 |
+| Kawaling Pinoy | 413 | 0 | 306 | 107 |
+| Pinoy Recipe | 241 | 1 | 82 | 158 |
+| Recipes by Nora | 127 | 1 | 78 | 48 |
+| Foxy Folksy (Filipino only) | 88 | 0 | 57 | 31 |
+| Manila Spoon (Filipino only) | 49 | 0 | 36 | 13 |
+| **Total** | **4,852** | **763** | **3,255** | **834** |
+
+**Against the ~5,000 goal:**
+- The database has 4,852 entries, 97% of the goal.
+- **4,089** of them are actual dishes (not articles), and 3,255 of those show on the site today.
+- Since Oct 29, the new sites added **2,070** dishes after skipping duplicates of dishes already listed.
+
+**What would add the most from here:**
+1. **New catalog foods for the most common unknown ingredients.** Each one needs sourced FNRI nutrition
+   plus a DA, PSA, SM or DTI price. The top ones by recipes they hide:
+   - ube halaya (12)
+   - gochujang (11)
+   - desiccated coconut (8)
+   - instant coffee (~15 across its spellings)
+   - pandan extract (8)
+   - chocolate syrup (6)
+   - garam masala (4)
+
+   Together these would bring back about 70 dishes. The long tail, about 1,100 different names, is
+   mostly brand mixes, packaging and one-off items.
+2. **One or two more Filipino recipe sites** that pass the same checks: robots.txt, terms, and
+   Recipe JSON-LD on their pages.
+3. **Our own recipes for dishes no site has,** such as pastil and other Mindanao dishes.
