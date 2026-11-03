@@ -403,3 +403,15 @@ pass is complete. From now on, the hourly runs only pick up newly published post
   - The 💬 header button opens a dialog for a review (1–5 stars), a suggestion or a problem report.
   - Messages are saved by `POST /api/feedback` and listed on /admin. If saving fails, the visitor's
     email app opens with the message filled in.
+
+## 2026-11-04: Impeccable design system in the repo
+
+- **New files:**
+  - `PRODUCT.md`: users, purpose, Taglish voice, honest-price principles.
+  - `DESIGN.md` and `.impeccable/design.json`: "The Honest Palengke" tokens and rules.
+  - The 2026-10-29 critique (22/40).
+  - The Impeccable skill for Claude Code (`.claude/skills`, `.claude/agents`) and for Copilot
+    (`.github/skills`, `.github/agents`, `.github/hooks`).
+- **Naming:** follows CLAUDE.md. The app is SarapSulit, a sub-project of FARM2FIGURE.
+- **Left out:** the engine binaries (downloaded on first run), live-mode sessions and machine
+  settings are git-ignored.
