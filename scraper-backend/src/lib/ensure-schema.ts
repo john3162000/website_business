@@ -96,3 +96,29 @@ export function ensureRecipeSkipTable(): Promise<void> {
   });
   return recipeSkipTable;
 }
+
+/** Reviews and suggestions from the site (prisma/migrations/20261029010000_feedback). */
+let feedbackTable: Promise<void> | null = null;
+
+export function ensureFeedbackTable(): Promise<void> {
+  feedbackTable ??= (async () => {
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "Feedback" (
+        "id" SERIAL PRIMARY KEY,
+        "kind" TEXT NOT NULL,
+        "rating" INTEGER,
+        "message" TEXT NOT NULL,
+        "name" TEXT,
+        "contact" TEXT,
+        "page" TEXT,
+        "lang" TEXT,
+        "ipHash" TEXT,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "Feedback_createdAt_idx" ON "Feedback"("createdAt")`);
+  })().catch((err) => {
+    feedbackTable = null; // retry on the next request
+    throw err;
+  });
+  return feedbackTable;
+}
