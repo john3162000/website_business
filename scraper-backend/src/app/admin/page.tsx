@@ -238,6 +238,125 @@ function AdminTokenField() {
   );
 }
 
+interface VisitStats {
+  today: string;
+  users: { today: number; last7: number; last30: number; allTime: number };
+  visitsToday: number;
+  newToday: number;
+  returningToday: number;
+  daily: { day: string; users: number; visits: number }[];
+  cities: { city: string; region: string; country: string; users: number }[];
+  countries: { country: string; users: number }[];
+}
+
+/** Users counted by IP (stored only as a salted hash), from /api/visit. */
+function Visitors() {
+  const [stats, setStats] = useState<VisitStats | null>(null);
+  const [error, setError] = useState("");
+  async function load() {
+    setError("");
+    const res = await fetch("/api/visit", { headers: { "x-admin-token": readAdminToken() } });
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !data?.users) return setError(data?.error ?? `HTTP ${res.status}`);
+    setStats(data);
+  }
+  const max = Math.max(1, ...(stats?.daily.map((d) => d.users) ?? [1]));
+  return (
+    <section className="bg-white rounded-xl border p-5 mb-6">
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <h2 className="text-lg font-bold">Users (by IP address)</h2>
+        <button onClick={load} className="px-4 py-1.5 rounded-lg bg-green-700 text-white text-sm font-semibold">{stats ? "Refresh" : "Show"}</button>
+      </div>
+      {error && <p className="text-sm text-red-600">{error}</p>}
+      {stats && (
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center mb-4">
+            {[["Today", stats.users.today], ["Last 7 days", stats.users.last7], ["Last 30 days", stats.users.last30], ["All time", stats.users.allTime]].map(([label, n]) => (
+              <div key={label} className="rounded-lg bg-gray-50 p-3">
+                <p className="text-2xl font-bold">{Number(n).toLocaleString()}</p>
+                <p className="text-xs text-gray-500">{label}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-sm text-gray-600 mb-3">
+            Today: {stats.newToday} new, {stats.returningToday} returning, {stats.visitsToday} visits.
+          </p>
+          <div className="flex items-end gap-0.5 h-24 mb-1" aria-label="Users per day, last 30 days">
+            {stats.daily.map((d) => (
+              <div key={d.day} title={`${d.day}: ${d.users} users, ${d.visits} visits`} className="flex-1 bg-green-600 rounded-t" style={{ height: `${(d.users / max) * 100}%`, minHeight: d.users ? 2 : 0 }} />
+            ))}
+          </div>
+          <p className="text-xs text-gray-400 mb-4">Users per day, last 30 days (Manila time)</p>
+          <div className="grid sm:grid-cols-2 gap-4 text-sm">
+            <div>
+              <h3 className="font-semibold mb-1">Top cities (30 days)</h3>
+              <ul>{stats.cities.map((c) => <li key={`${c.city}-${c.region}-${c.country}`} className="flex justify-between border-t py-1"><span>{c.city}{c.region ? `, ${c.region}` : ""} · {c.country}</span><span>{c.users}</span></li>)}</ul>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-1">Countries (30 days)</h3>
+              <ul>{stats.countries.map((c) => <li key={c.country} className="flex justify-between border-t py-1"><span>{c.country}</span><span>{c.users}</span></li>)}</ul>
+            </div>
+          </div>
+          <p className="text-xs text-gray-400 mt-3">Each IP address is stored only as a salted hash, never as the address itself.</p>
+        </>
+      )}
+    </section>
+  );
+}
+
+interface FeedbackRow {
+  id: number;
+  kind: string;
+  rating: number | null;
+  message: string;
+  name: string | null;
+  contact: string | null;
+  page: string | null;
+  createdAt: string;
+}
+
+/** Reviews and suggestions sent from the site's 💬 dialog. */
+function FeedbackList() {
+  const [rows, setRows] = useState<FeedbackRow[] | null>(null);
+  const [error, setError] = useState("");
+  async function load() {
+    setError("");
+    const res = await fetch("/api/feedback", { headers: { "x-admin-token": readAdminToken() } });
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !Array.isArray(data)) return setError(data?.error ?? `HTTP ${res.status}`);
+    setRows(data);
+  }
+  const rated = rows?.filter((r) => r.rating) ?? [];
+  const avg = rated.length ? rated.reduce((a, r) => a + (r.rating ?? 0), 0) / rated.length : null;
+  return (
+    <section className="bg-white rounded-xl border p-5 mt-6">
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <h2 className="text-lg font-bold">Reviews and suggestions</h2>
+        <button onClick={load} className="px-4 py-1.5 rounded-lg bg-green-700 text-white text-sm font-semibold">{rows ? "Refresh" : "Show"}</button>
+      </div>
+      {error && <p className="text-sm text-red-600">{error}</p>}
+      {rows && (
+        <p className="text-sm text-gray-500 mb-3">
+          {rows.length} messages{avg != null ? ` · ★ ${avg.toFixed(1)} average from ${rated.length} reviews` : ""}
+        </p>
+      )}
+      <ul className="space-y-3">
+        {rows?.map((r) => (
+          <li key={r.id} className="border-t pt-3 text-sm">
+            <p className="text-xs text-gray-500">
+              {new Date(r.createdAt).toLocaleString("en-PH")} · {r.kind}
+              {r.rating ? ` · ${"★".repeat(r.rating)}${"☆".repeat(5 - r.rating)}` : ""}
+              {r.page ? ` · from ${r.page}` : ""}
+            </p>
+            <p className="whitespace-pre-wrap mt-1">{r.message}</p>
+            {(r.name || r.contact) && <p className="text-xs text-gray-600 mt-1">— {[r.name, r.contact].filter(Boolean).join(" · ")}</p>}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export default function AdminPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-10">
@@ -250,11 +369,15 @@ export default function AdminPage() {
 
       <AdminTokenField />
 
+      <Visitors />
+
       <div className="space-y-6">
         {TYPES.map((t) => (
           <Section key={t.type} type={t.type} label={t.label} desc={t.desc} chunked={t.chunked} />
         ))}
       </div>
+
+      <FeedbackList />
     </div>
   );
 }

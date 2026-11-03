@@ -1,5 +1,5 @@
 // SarapSulit front end. All data comes from the scraper backend:
-//   /api/recipes           Panlasang Pinoy recipes (static)
+//   /api/recipes           recipes from Panlasang Pinoy and other recipe sites (static)
 //   /api/recipes/compiled  per-serving nutrition (FNRI) and cost (DA, DTI, SM), computed server-side
 //   /api/commodities       DA Daily Price Index, updated automatically every day
 //   /api/nutrition         FNRI Food Composition Table (only counted here)
@@ -66,7 +66,7 @@ function formatDate(d) {
   return d ? d.toLocaleDateString("en-PH", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" }) : "—";
 }
 
-// Category from the title, unless Panlasang Pinoy's own course says it clearly.
+// Category from the title, unless the recipe site's own course says it clearly.
 // Their courses are patchy ("Chicken", "Dinner", sopas as "Appetizer"), so only
 // soups, desserts and sauces are taken from them.
 function categoryFor(title, course) {
@@ -126,6 +126,8 @@ function buildRecipe(raw, c) {
     kcalLow: n.kcalLow != null ? Math.round(n.kcalLow) : null,
     kcalHigh: n.kcalHigh != null ? Math.round(n.kcalHigh) : null,
     frying: n.frying || null,
+    // Vitamin C, A, iron and calcium after cooking: { method, vitaminC: [best, low, high], … } (null on older API data).
+    cooked: n.cooked || null,
     appliances: n.appliances || [],
     sodium: n.sodium ?? null,
     refKcal: n.refKcal ?? null,
@@ -241,7 +243,7 @@ const SULIT_LEVELS = [
   { min: 0.9, segs: 5, label: "Super sulit" },
   { min: 0.7, segs: 4, label: "Sulit" },
   { min: 0.4, segs: 3, label: "Okay" },
-  { min: 0.15, segs: 2, label: "Medyo mahal" },
+  { min: 0.15, segs: 2, label: "Hindi gaano sulit" },
   { min: 0, segs: 1, label: "Mahal" },
 ];
 
@@ -261,6 +263,19 @@ function sulitMeter(r, big = false) {
   const top = Math.max(1, Math.round((1 - lv.pct) * 100));
   return `<div class="sulit-meter l${lv.segs}${big ? " big" : ""}" title="Sulit Score ${r.valueScore}: better value than ${Math.round(lv.pct * 100)}% of dishes (top ${top}%)">${
     Array.from({ length: 5 }, (_, i) => `<i class="${i < lv.segs ? "on" : ""}"></i>`).join("")}<span>${lv.label}</span></div>`;
+}
+
+/** The pop-up's value tile: the meter's word and where the dish ranks, not the raw score. */
+function sulitTile(r) {
+  const lv = r.ranked ? sulitLevel(r.valueScore) : null;
+  const sub = lv ? t("modal.betterThan").replace("{pct}", Math.round(lv.pct * 100)) : t("modal.unranked");
+  // Green only for good value; the low levels take the meter's warm colours.
+  const tone = !lv ? "text-gray-700" : lv.segs >= 4 ? "text-green-700" : lv.segs === 3 ? "text-amber-700" : "text-red-700";
+  return `<div class="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-center"${lv ? ` title="Sulit Score ${r.valueScore}"` : ""}>
+            <p class="text-lg font-bold ${tone} leading-8">${lv ? lv.label : "—"}</p>
+            <p class="text-xs text-green-700 font-medium">${t("modal.sulit")}</p>
+            <p class="text-[11px] text-green-700 mt-0.5">${sub}</p>
+          </div>`;
 }
 
 // ═══════════════ RENDER ═══════════════
@@ -284,15 +299,15 @@ function buildRecipeCard(r) {
       <div class="relative h-44 bg-amber-100 overflow-hidden">
         ${img}
         ${forYouBadge(r)}
-        ${r.costIncomplete ? `<div class="absolute top-2 left-2 bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow" title="No price yet for ${escapeHtml(r.costGaps.join(", "))}">⚠ Incomplete price</div>` : ""}
+        ${r.costIncomplete ? `<div class="absolute top-2 left-2 bg-amber-800 text-amber-50 text-xs font-bold px-2 py-1 rounded-full shadow" title="No price yet for ${escapeHtml(r.costGaps.join(", "))}">⚠ Incomplete price</div>` : ""}
       </div>
       <div class="p-4 flex flex-col gap-2 flex-1">
         <h3 class="font-semibold text-gray-900 leading-snug group-hover:text-green-700 transition-colors">${escapeHtml(r.title)}</h3>
-        <span class="text-xs text-gray-400 uppercase tracking-wide">${escapeHtml(r.category)}</span>
+        <span class="text-xs text-gray-500 uppercase tracking-wide">${escapeHtml(r.category)}</span>
         ${sulitMeter(r)}
         <div class="flex flex-wrap gap-1 mt-auto pt-2">
-          <span class="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-medium">${costText(r)}/serving</span>
-          <span class="text-xs ${scoreColor(r.nutritionScore / 10)} px-2 py-0.5 rounded-full font-semibold">Nutri: ${r.nutritionScore}</span>
+          <span class="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-medium"${r.costCoverage < 1 ? ` title="${t("card.plusLegend")}"` : ""}>${costText(r)}/serving</span>
+          <span class="text-xs bg-gray-50 border border-gray-200 text-gray-700 px-2 py-0.5 rounded-full font-semibold" title="Nutrition score">${t("card.nutrition")}: ${r.nutritionScore}</span>
           <span class="text-xs text-gray-500">${r.protein}g protein</span>
         </div>
       </div>
@@ -325,9 +340,40 @@ function ingredientRows(lines) {
         <p class="font-medium text-sm">${escapeHtml(l.text)}</p>
         <p class="text-xs text-gray-400">${escapeHtml(grams + kcal)}${note ? ` · ${escapeHtml(note)}` : ""}</p>
       </div>
-      <p class="text-sm font-semibold text-amber-700 whitespace-nowrap text-right"${why ? ` title="${escapeHtml(why.replace(/^price-[a-z-]+: /, "Assumed: "))}"` : ""}>${l.cost != null ? (derived ? "≈₱" : "₱") + l.cost.toFixed(2) : ""}${source ? `<span class="block text-[10px] font-normal ${derived ? "text-amber-600" : "text-gray-400"}">${escapeHtml(source)}</span>` : ""}</p>
+      <p class="text-sm font-semibold text-amber-700 whitespace-nowrap text-right"${why ? ` title="${escapeHtml(why.replace(/^price-[a-z-]+: /, "Assumed: "))}"` : ""}>${l.cost != null ? (derived ? "≈₱" : "₱") + l.cost.toFixed(2) : ""}${source ? `<span class="block text-[11px] font-normal ${derived ? "text-amber-700" : "text-gray-500"}">${escapeHtml(source)}</span>` : ""}</p>
     </div>`;
   }).join("");
+}
+
+// Sodium is a nutrient to limit: WHO advises under 2,000 mg a day for adults.
+const SODIUM_LIMIT_MG = 2000;
+const SODIUM_SALTY_PCT = 40;
+// Salty seasonings that recipes often add "to taste", which the engine can't count.
+const SALTY_SLUG = /^(salt|fish_sauce|soy_sauce|shrimp_paste|bagoong|oyster_sauce|seasoning_|stock_cube_)/;
+
+/** Sodium as a limit bar (amber, red when salty), with the saltiest ingredients and uncounted seasoning. */
+function sodiumHtml(r, lines) {
+  if (r.sodium == null) return "";
+  const mg = Math.round(r.sodium);
+  const p = Math.round((mg / SODIUM_LIMIT_MG) * 100);
+  const salty = p >= SODIUM_SALTY_PCT;
+  const counted = (lines || []).filter((l) => l.nutrients && l.nutrients.sodium > 0 && l.label);
+  const total = counted.reduce((s, l) => s + l.nutrients.sodium, 0);
+  // The one or two lines that give most of the sodium ("patis, bagoong").
+  const top = counted.sort((a, b) => b.nutrients.sodium - a.nutrients.sodium)
+    .filter((l, i) => i === 0 || l.nutrients.sodium >= 0.25 * total).slice(0, 2).map((l) => l.label.toLowerCase());
+  const toTaste = (lines || []).some((l) => l.status === "to-taste" && SALTY_SLUG.test(l.slug || ""));
+  const color = salty ? "#dc2626" : p >= 20 ? "#C9961A" : "#9ca3af";
+  return `
+    <div class="mt-2">
+      <div class="flex justify-between text-xs mb-1">
+        <span class="text-gray-600">${t("modal.sodium")}</span>
+        <span class="font-medium">≈ ${mg.toLocaleString()}mg <span class="text-gray-400">(${p}% ${t("modal.sodiumLimit")})</span></span>
+      </div>
+      <div class="bar"><div class="bar-fill" style="width:${Math.min(p, 100)}%;background:${color}"></div></div>
+      ${salty ? `<p class="text-[11px] font-semibold text-red-600 mt-1">${t("modal.salty").replace("{pct}", p)}${top.length ? ` · ${t("modal.saltyFrom")} ${escapeHtml(top.join(", "))}` : ""}</p>` : ""}
+      ${toTaste ? `<p class="text-[11px] text-gray-400 mt-0.5">${t("modal.sodiumToTaste")}</p>` : ""}
+    </div>`;
 }
 
 /**
@@ -345,20 +391,29 @@ function buildModal(r, lines) {
     { label: "Carbs", val: nutr.carbs, key: "carbs", unit: "g" },
     { label: "Fat", val: nutr.fat, key: "fat", unit: "g" },
     { label: "Fiber", val: nutr.fiber, key: "fiber", unit: "g" },
+    { label: "Vitamin A", val: nutr.vitaminA, key: "vitaminA", unit: "µg" },
     { label: "Vitamin C", val: nutr.vitaminC, key: "vitaminC", unit: "mg" },
     { label: "Iron", val: nutr.iron, key: "iron", unit: "mg" },
     { label: "Calcium", val: nutr.calcium, key: "calcium", unit: "mg" },
   ].map((n) => {
-    const p = pct(n.val, n.key);
+    // After cooking, when the API has it: "≈ 18mg", with the raw-ingredient value underneath.
+    const after = r.cooked && r.cooked[n.key];
+    const shown = after ? after[0] : n.val;
+    const p = pct(shown, n.key);
+    const changed = after && after[0] !== n.val;
     return `
       <div>
         <div class="flex justify-between text-xs mb-1">
           <span class="text-gray-600">${n.label}</span>
-          <span class="font-medium">${n.val}${n.unit} <span class="text-gray-400">(${p}% DRV)</span></span>
+          <span class="font-medium">${after ? "≈ " : ""}${shown}${n.unit} <span class="text-gray-400">(${p}% DRV)</span></span>
         </div>
         <div class="bar"><div class="bar-fill" style="width:${p}%"></div></div>
+        ${changed ? `<p class="text-[11px] text-gray-400 text-right mt-0.5">${after[1]}–${after[2]}${n.unit} · ${t("modal.cookedRaw")}: ${n.val}${n.unit}</p>` : ""}
       </div>`;
   }).join("");
+  const cookedNote = r.cooked
+    ? `<details class="text-xs text-gray-500 mt-2"><summary class="cursor-pointer">${t("modal.cookedNote")}: ${escapeHtml(t(`cook.${r.cooked.method}`))} ⓘ</summary><p class="mt-1">${escapeHtml(t("modal.cookedHelp"))}</p></details>`
+    : "";
 
   const strength = r.protein >= 20 ? "protein" : r.fiber >= 5 ? "fiber" : "vitamins";
   const insight = r.ranked
@@ -391,17 +446,14 @@ function buildModal(r, lines) {
       <div class="md:col-span-2 space-y-6">
         ${r.img ? `<figure class="modal-photo"><img src="${escapeHtml(r.img)}" alt="${escapeHtml(r.title)}">${src ? srcLink("photo-credit", `📷 ${escapeHtml(src.name)}`) : ""}</figure>` : ""}
         <div class="flex flex-wrap gap-3">
-          <div class="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-center">
-            <p class="text-2xl font-bold text-green-700">${r.ranked ? r.valueScore : "—"}</p>
-            <p class="text-xs text-green-600 font-medium">Sulit Score</p>
-          </div>
+          ${sulitTile(r)}
           <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-center">
             <p class="text-2xl font-bold text-amber-700">${costText(r)}</p>
-            <p class="text-xs text-amber-600 font-medium">Per Serving</p>
+            <p class="text-xs text-amber-700 font-medium">${t("modal.perServing")}</p>
           </div>
           <div class="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-center">
             <p class="text-2xl font-bold text-blue-700">${r.nutritionScore}</p>
-            <p class="text-xs text-blue-600 font-medium">Nutrition Score</p>
+            <p class="text-xs text-blue-700 font-medium">${t("modal.nutrition")}</p>
           </div>
           <div class="bg-gray-50 border rounded-xl px-4 py-3 text-center">
             <p class="text-2xl font-bold text-gray-700">${kcalText(r)}</p>
@@ -420,6 +472,7 @@ function buildModal(r, lines) {
             <div class="text-right">
               <p class="font-bold text-amber-700">₱${r.cost.total.toFixed(0)}${r.costCoverage < 1 ? "+" : ""}</p>
               <p class="text-xs text-gray-400">${costText(r)}/serving × ${r.servings} servings${r.costCoverage < 1 ? ` · ${Math.round(r.costCoverage * 100)}% of ingredients (by weight) priced` : ""}</p>
+              ${r.costCoverage < 1 ? `<p class="text-xs text-amber-700">${t("card.plusLegend")}</p>` : ""}
             </div>
           </div>
           ${r.costPerServing > 0 ? `<button onclick="openAlertDialog('dish', ${r.id})" class="mt-2 text-xs font-semibold text-green-700 hover:underline">🔔 Alert me when this gets cheaper</button>` : ""}
@@ -449,8 +502,9 @@ function buildModal(r, lines) {
             </div>
           </div>
           <div class="space-y-2">${nutriBars}</div>
-          ${r.sodium != null ? `<p class="text-xs text-gray-600 mt-2">Sodium ≈ ${Math.round(r.sodium).toLocaleString()} mg</p>` : ""}
-          ${r.refKcal ? `<p class="text-xs text-gray-500 mt-2">Panlasang Pinoy’s own estimate: ≈ ${Math.round(r.refKcal).toLocaleString()} kcal per serving (it counts all frying oil and marinade)</p>` : ""}
+          ${cookedNote}
+          ${sodiumHtml(r, lines)}
+          ${r.refKcal ? `<p class="text-xs text-gray-500 mt-2">${escapeHtml(src ? src.name : "The recipe site")}’s own estimate: ≈ ${Math.round(r.refKcal).toLocaleString()} kcal per serving (it counts all frying oil and marinade)</p>` : ""}
           <p class="text-xs text-gray-400 mt-3">Source: FNRI FCT · per serving estimate · edible portion and cooking losses applied</p>
         </div>
         ${insight}
@@ -762,7 +816,7 @@ function filterRecipes() {
   }
 
   if (typeof kitchenSummary === "function") document.querySelectorAll("[data-kitchen-summary]").forEach((el) => { el.textContent = kitchenSummary(); });
-  document.getElementById("result-count").textContent = `${filtered.length.toLocaleString()} recipe${filtered.length !== 1 ? "s" : ""} found${forYou ? " · sorted by your panlasa 🧠" : ""}`;
+  document.getElementById("result-count").textContent = `${filtered.length.toLocaleString()} recipe${filtered.length !== 1 ? "s" : ""} found${forYou ? " · sorted by your panlasa 🧠" : ""} · ${t("card.plusLegend")}`;
   // Render in pages so 2,000 cards don't block the page.
   const shown = filtered.slice(0, browseLimit);
   document.getElementById("browse-grid").innerHTML = shown.length > 0

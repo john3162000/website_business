@@ -37,3 +37,10 @@ test("recipe source: partner sites by name, others by host", () => {
   assert.equal(recipeSource("https://example.org/x").name, "example.org");
   assert.equal(recipeSource("not a url"), null);
 });
+
+test("every site the crawler reads has a display name for its credit", () => {
+  const src = readFileSync(new URL("../scraper-backend/src/lib/scrapers/recipe-sources.ts", import.meta.url), "utf8");
+  const hosts = [...src.matchAll(/base: "https?:\/\/(?:www\.)?([^"/]+)"/g)].map((m) => m[1]);
+  assert.ok(hosts.length >= 2);
+  for (const host of hosts) assert.notEqual(recipeSource(`https://${host}/x/`).name, host, `${host} needs a name in RECIPE_SOURCES`);
+});

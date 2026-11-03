@@ -73,3 +73,80 @@ export function ensurePsaTable(): Promise<void> {
   });
   return psaTable;
 }
+
+/**
+ * Pages the recipe crawl looked at and did not save (not a recipe, or a dish already listed from
+ * another site), so the daily crawl doesn't fetch them again (prisma/migrations/20261029000000_recipe_skip).
+ * Created here because deploys never run migrations.
+ */
+let recipeSkipTable: Promise<void> | null = null;
+
+export function ensureRecipeSkipTable(): Promise<void> {
+  recipeSkipTable ??= (async () => {
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "RecipeSkip" (
+        "url" TEXT PRIMARY KEY,
+        "reason" TEXT NOT NULL,
+        "title" TEXT,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`);
+  })().catch((err) => {
+    recipeSkipTable = null; // retry on the next request
+    throw err;
+  });
+  return recipeSkipTable;
+}
+
+/** Site visits for counting users (prisma/migrations/20261103000000_visit). */
+let visitTable: Promise<void> | null = null;
+
+export function ensureVisitTable(): Promise<void> {
+  visitTable ??= (async () => {
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "Visit" (
+        "id" SERIAL PRIMARY KEY,
+        "day" TEXT NOT NULL,
+        "visitor" TEXT NOT NULL,
+        "country" TEXT,
+        "region" TEXT,
+        "city" TEXT,
+        "page" TEXT,
+        "lang" TEXT,
+        "hits" INTEGER NOT NULL DEFAULT 1,
+        "firstSeen" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "lastSeen" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`);
+    await prisma.$executeRawUnsafe(`CREATE UNIQUE INDEX IF NOT EXISTS "Visit_day_visitor_key" ON "Visit"("day", "visitor")`);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "Visit_visitor_idx" ON "Visit"("visitor")`);
+  })().catch((err) => {
+    visitTable = null; // retry on the next request
+    throw err;
+  });
+  return visitTable;
+}
+
+/** Reviews and suggestions from the site (prisma/migrations/20261029010000_feedback). */
+let feedbackTable: Promise<void> | null = null;
+
+export function ensureFeedbackTable(): Promise<void> {
+  feedbackTable ??= (async () => {
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "Feedback" (
+        "id" SERIAL PRIMARY KEY,
+        "kind" TEXT NOT NULL,
+        "rating" INTEGER,
+        "message" TEXT NOT NULL,
+        "name" TEXT,
+        "contact" TEXT,
+        "page" TEXT,
+        "lang" TEXT,
+        "ipHash" TEXT,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "Feedback_createdAt_idx" ON "Feedback"("createdAt")`);
+  })().catch((err) => {
+    feedbackTable = null; // retry on the next request
+    throw err;
+  });
+  return feedbackTable;
+}

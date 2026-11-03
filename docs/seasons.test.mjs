@@ -22,18 +22,33 @@ test("Easter and the movable Sundays", () => {
 });
 
 test("what's on today, nearest first", () => {
-  assert.deepEqual(on(2026, 10, 28), ["undas+3"]); // Undas shows 10 days ahead
+  assert.deepEqual(on(2026, 10, 28), ["undas+3"]);
   assert.deepEqual(on(2026, 11, 1), ["undas"]);
   assert.deepEqual(on(2026, 11, 3), []);
-  assert.deepEqual(on(2026, 12, 1), ["pasko+15"]); // Christmas 3 weeks ahead of Simbang Gabi
-  assert.deepEqual(on(2026, 12, 24), ["pasko"]);
+  assert.deepEqual(on(2026, 12, 1), ["pasko+15", "bagongtaon+25"]);
+  assert.deepEqual(on(2026, 12, 24), ["pasko", "bagongtaon+2"]);
   assert.deepEqual(on(2026, 12, 31), ["bagongtaon"]);
-  assert.deepEqual(on(2027, 1, 1), ["bagongtaon"]); // the window crosses into the new year
+  assert.deepEqual(on(2027, 1, 1), ["bagongtaon", "sinulog+14"]); // the window crosses into the new year
   assert.deepEqual(on(2026, 4, 3), ["semanasanta"]); // Good Friday 2026
-  assert.deepEqual(on(2026, 3, 6), ["kuwaresma"]); // a Lenten Friday
+  assert.deepEqual(on(2026, 3, 6), ["kuwaresma", "eidfitr+14"]); // a Lenten Friday
   assert.ok(on(2026, 2, 14).includes("valentines"));
   assert.ok(on(2026, 2, 14).includes("cny+3")); // Feb 17, 2026
   assert.deepEqual(on(2026, 3, 20).filter((k) => k.startsWith("eid")), ["eidfitr"]);
+});
+
+test("occasions are suggested two weeks ahead; Christmas and New Year six weeks before the day", () => {
+  // Valentine's (Feb 14): from Jan 31.
+  assert.ok(!on(2027, 1, 30).some((k) => k.startsWith("valentines")));
+  assert.ok(on(2027, 1, 31).includes("valentines+14"));
+  // Undas (Oct 31): from Oct 17.
+  assert.deepEqual(on(2026, 10, 16), []);
+  assert.deepEqual(on(2026, 10, 17), ["undas+14"]);
+  // Christmas (Dec 25): from Nov 13, six weeks before.
+  assert.deepEqual(on(2026, 11, 12), []);
+  assert.deepEqual(on(2026, 11, 13), ["pasko+33"]);
+  // New Year (Jan 1): from Nov 20, six weeks before.
+  assert.ok(!on(2026, 11, 19).some((k) => k.startsWith("bagongtaon")));
+  assert.ok(on(2026, 11, 20).includes("bagongtaon+36"));
 });
 
 test("the next date of each occasion; undated ones have none", () => {

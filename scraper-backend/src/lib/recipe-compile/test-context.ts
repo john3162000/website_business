@@ -2,7 +2,7 @@
 // so tests use real FNRI values and DA prices without a database.
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { ALIASES, CANONICALS, DERIVED_PRICES, EXTRA_NUTRIENTS, MANUAL_PRICES } from "./catalog.generated.ts";
+import { ALIASES, CANONICALS, COOK_GROUPS, DERIVED_PRICES, EXTRA_NUTRIENTS, MANUAL_PRICES, RETENTION } from "./catalog.generated.ts";
 import type { CompileContext, DaPrice, FnriFood } from "./compile.ts";
 
 const root = join(import.meta.dirname, "../../..");
@@ -20,5 +20,5 @@ export function testContext(): CompileContext {
     const per = label.startsWith("₱/pc") ? "piece" : label.startsWith("₱/bottle") ? "bottle" : "kg";
     da.set(r[0], { price: n(r[2]), unit: { per, pieceGrams: n(r[4]), bottleMl: n(r[5]) } });
   }
-  return { aliases: ALIASES, canonicals: CANONICALS, extraNutrients: EXTRA_NUTRIENTS, manualPrices: MANUAL_PRICES, derivedPrices: DERIVED_PRICES, fnri, da };
+  return { aliases: ALIASES, canonicals: CANONICALS, extraNutrients: EXTRA_NUTRIENTS, manualPrices: MANUAL_PRICES, derivedPrices: DERIVED_PRICES, cookGroups: COOK_GROUPS, retention: RETENTION, fnri, da };
 }

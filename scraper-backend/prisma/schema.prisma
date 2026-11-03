@@ -143,3 +143,49 @@ model PsaPrice {
   @@unique([commodity, region, period])
   @@index([period])
 }
+
+/// Pages the recipe crawl looked at and did not save ("not-recipe", "duplicate", "no-ingredients"),
+/// so the daily crawl doesn't fetch them again.
+model RecipeSkip {
+  url       String   @id
+  reason    String
+  title     String?
+  createdAt DateTime @default(now())
+}
+
+/// One row per visitor per day (Manila time), for counting users. `visitor` is a salted SHA-256
+/// of the IP address (the IP itself is never stored); country/region/city come from Vercel's
+/// IP geolocation headers.
+model Visit {
+  id        Int      @id @default(autoincrement())
+  day       String
+  visitor   String
+  country   String?
+  region    String?
+  city      String?
+  page      String?
+  lang      String?
+  hits      Int      @default(1)
+  firstSeen DateTime @default(now())
+  lastSeen  DateTime @default(now())
+
+  @@unique([day, visitor])
+  @@index([visitor])
+}
+
+/// Reviews ("review", 1–5 stars), suggestions and problem reports sent from the site's 💬 dialog.
+model Feedback {
+  id        Int      @id @default(autoincrement())
+  kind      String
+  rating    Int?
+  message   String   @db.Text
+  name      String?
+  contact   String?
+  page      String?
+  lang      String?
+  /// sha256 of the sender's IP, only for the hourly limit; the IP itself is not stored.
+  ipHash    String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}

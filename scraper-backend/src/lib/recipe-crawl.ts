@@ -4,13 +4,13 @@ import { initialRecipeCursor, scrapeRecipeChunk, type RecipeCursor } from "@/lib
 const TYPE = "RECIPES";
 
 /**
- * One step of the Panlasang Pinoy crawl (up to 4 new recipes), shared by the admin
+ * One step of the recipe crawl over every site in RECIPE_SOURCES (up to 4 pages), shared by the admin
  * button (POST /api/scrape/recipes) and the daily cron (/api/cron/recipes). Progress lives
  * in a RECIPES ScrapingLog row: a RUNNING or interrupted run resumes from its cursor, and a
  * finished one starts over (already-saved URLs are skipped quickly, so a new run only
  * fetches posts added since).
  */
-export async function crawlStep(): Promise<{ done: boolean; itemsScraped: number; saved: number; cursor?: RecipeCursor }> {
+export async function crawlStep(): Promise<{ done: boolean; itemsScraped: number; saved: number; cursor?: RecipeCursor; pause?: string }> {
   let log = await prisma.scrapingLog.findFirst({ where: { type: TYPE, status: "RUNNING" } });
 
   if (!log) {
@@ -30,7 +30,7 @@ export async function crawlStep(): Promise<{ done: boolean; itemsScraped: number
   } else {
     cursor = initialRecipeCursor();
     log = await prisma.scrapingLog.create({
-      data: { type: TYPE, status: "RUNNING", message: "Starting the Panlasang Pinoy recipe crawl...", cursor: JSON.stringify(cursor) },
+      data: { type: TYPE, status: "RUNNING", message: "Starting the recipe crawl...", cursor: JSON.stringify(cursor) },
     });
   }
   const logId = log!.id;
@@ -47,8 +47,11 @@ export async function crawlStep(): Promise<{ done: boolean; itemsScraped: number
       });
       return { done: true, itemsScraped, saved: result.saved };
     }
-    await prisma.scrapingLog.update({ where: { id: logId }, data: { itemsScraped, cursor: JSON.stringify(result.cursor) } });
-    return { done: false, itemsScraped, saved: result.saved, cursor: result.cursor };
+    await prisma.scrapingLog.update({
+      where: { id: logId },
+      data: { itemsScraped, cursor: JSON.stringify(result.cursor), ...(result.pause ? { message: result.pause } : {}) },
+    });
+    return { done: false, itemsScraped, saved: result.saved, cursor: result.cursor, pause: result.pause };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     // ERROR keeps the cursor, so the next step resumes from the same place.

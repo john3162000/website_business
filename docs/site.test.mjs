@@ -51,9 +51,18 @@ test("sulit meter: dishes are placed by how they rank against all others", () =>
   assert.equal(ctx.sulitLevel(100, scores).label, "Super sulit"); // better than 99%
   assert.equal(ctx.sulitLevel(75, scores).segs, 4);
   assert.equal(ctx.sulitLevel(50, scores).label, "Okay");
-  assert.equal(ctx.sulitLevel(20, scores).label, "Medyo mahal");
+  assert.equal(ctx.sulitLevel(20, scores).label, "Hindi gaano sulit"); // low value, not "expensive"
   assert.equal(ctx.sulitLevel(1, scores).segs, 1);
   assert.equal(ctx.sulitLevel(5, []), null);
+});
+
+test("the header tabs and the phone tab bar use the same section names", () => {
+  const html = read("index.html");
+  const header = html.slice(html.indexOf('<nav class="flex gap-1'), html.indexOf("</nav>"));
+  const bottom = html.slice(html.indexOf('<nav class="bottom-nav"'));
+  const keys = (s) => [...s.matchAll(/data-i18n="(nav\.[a-z]+)"/g)].map((m) => m[1]);
+  assert.ok(keys(header).length >= 6);
+  assert.deepEqual(keys(bottom).slice(0, keys(header).length), keys(header));
 });
 
 test("the price table's hidden label stays inside its scroll box (Prices fits a phone)", () => {

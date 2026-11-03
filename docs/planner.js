@@ -210,7 +210,7 @@ const SWEET_TITLE = /\b(mamon|ensaymada|silvanas?|sans rival|food for the gods|m
 
 /**
  * The slot series a dish fits: "almusal", "ulam" (Tanghalian / Hapunan) and/or "meryenda".
- * From the title, the site category and Panlasang Pinoy's course. Sauces fit none.
+ * From the title, the site category and the recipe site's course. Sauces fit none.
  */
 function mealTypes(recipe) {
   const title = recipe.title || "", course = recipe.course || "", cat = recipe.category || "";

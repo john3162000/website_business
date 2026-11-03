@@ -8,7 +8,7 @@ PR, the numbers, and what is still open), read `PROGRESS.md`.
 
 **SarapSulit** is a sub-project of **FARM2FIGURE** (the owner's umbrella brand, whose logo and
 colours the site uses). Keep the name SarapSulit for the app (browser title, outreach letters).
-It ranks Filipino recipes from Panlasang Pinoy by **nutrition per peso**, using today's market prices. Users can
+It ranks Filipino recipes from Panlasang Pinoy and other Filipino recipe sites by **nutrition per peso**, using today's market prices. Users can
 browse dishes, see DA prices and how dish costs moved, build their own dish, plan a week (with a
 budget planner), find dishes from ingredients they have, set price alerts and share a recipe as
 a picture.
@@ -41,9 +41,11 @@ docs/                         static site, no build step (Tailwind CDN, plain br
   *.test.mjs                  node:test files; run each script's pure helpers in node:vm
   logo.png, favicon.png       FARM2FIGURE logo
 scraper-backend/
-  src/lib/recipe-compile/     the engine: compile.ts, load.ts, quantity.ts, ingredient-index.ts
+  src/lib/recipe-compile/     the engine: compile.ts, load.ts, quantity.ts, ingredient-index.ts,
+                              cooking.ts (vitamin C/A, iron, calcium after cooking)
   src/lib/price-history.ts    compareDate / priceOn / pctChange (week, 2 weeks, month)
-  src/lib/scrapers/           DA, PSA, SM, Panlasang Pinoy scrapers
+  src/lib/scrapers/           DA, PSA, SM scrapers; recipe crawl: recipe-sources.ts (the site list),
+                              recipe-page.ts (WPRM card or JSON-LD), ingredient-line.ts (line split, dishKey)
   src/app/api/                routes (see below)
   data/catalog/*.tsv          ingredient catalog (source of truth, see "Catalog")
   scripts/build-catalog.mjs   TSVs → src/lib/recipe-compile/catalog.generated.ts
@@ -61,6 +63,14 @@ slug → grams bought / eaten (edible portion, frying oil absorbed, marinade fac
 **Price order:** DA daily → PSA OpenSTAT monthly (NCR, else PH national average) → SM Markets
 or DTI SRP rows in `manual-prices.tsv` → **derived prices** (`derived-prices.tsv`: parent slug ×
 factor, a yield conversion or a stand-in, shown on the site as "≈").
+
+**After cooking:** `cooking.ts` picks a method per dish (title first: sinigang → broth eaten, adobo →
+stew, kinilaw → acid, frying from the engine; leafy greens in soups and stews count as added at the end)
+and applies true-retention factors from `data/catalog/retention-factors.tsv` to raw foods listed in
+`cook-groups.tsv` (leafy_veg, veg, animal). Cooked or canned FNRI rows are never listed, so nothing is
+reduced twice. Only vitamin C, vitamin A, iron and calcium change; results go in `afterCooking` /
+the summary's `cooked` ([best, low, high]). Ranking still uses the raw-ingredient `perServing`.
+The starter factors are marked "USDA-R6 (verify)": check them against the USDA Release 6 table.
 
 Line statuses are `ok`, `to-taste`, `optional`, `water`, `skipped`, `unmatched`, `no-weight` and
 `no-nutrition`.
@@ -84,9 +94,11 @@ Line statuses are `ok`, `to-taste`, `optional`, `water`, `skipped`, `unmatched`,
 | `/api/commodities` | DA prices, with `changes` for a week, 2 weeks and a month back |
 | `/api/store-prices`, `/api/ingredients`, `/api/nutrition` | SM products, catalog ingredients, FNRI foods |
 | `POST /api/dish` | Prices a personal dish (My Dish) |
+| `POST /api/visit`, `GET /api/visit` | Counts a visit (salted hash of the IP, never the IP; city from Vercel's IP headers); GET is admin-only stats: users today/7/30 days/all time, new vs returning, top cities |
+| `GET /api/visit/summary` | Public totals only: users and visits in the last 24 h, 72 h and 7 days (read by the owner's daily report) |
 | `/api/scrape/*` | Admin only (`ADMIN_TOKEN`) |
 | `/api/cron/da-daily`, `/api/cron/psa` | Vercel crons: DA daily at 10:00 UTC, PSA Mondays at 11:00 UTC |
-| `/api/cron/recipes` | Vercel cron daily at 03:15 UTC: the recipe crawl, calling itself (≤150 hops) until every sitemap is read |
+| `/api/cron/recipes`, `…-pm`, `…/extra-1…22` | Vercel crons, one every hour at :15 UTC (Hobby fires them any time in that hour): the recipe crawl, 5 hops of ~45 s each via the production domain |
 
 ## Commands
 
@@ -130,7 +142,7 @@ required on `main`.
   with CRLF.
 - **One global scope:** all `docs/*.js` files are classic scripts that share globals. Script
   order in `index.html`: weather, mydish, planner, finder, alerts, share, facts, taste, games,
-  kitchen, settings, seasons, tour, then app last. New button text gets a `data-i18n` key in settings.js `I18N`
+  kitchen, settings, visits, feedback, seasons, tour, then app last. New button text gets a `data-i18n` key in settings.js `I18N`
   (`settings.test.mjs` fails on a missing key).
   Favourites (`favIds`, `toggleFav`, key `sarapsulit.favs.v1`) live in `app.js`. Give new
   top-level names a prefix (`SHARE_W`, `FINDER_KEY`) so they can't clash.
@@ -146,20 +158,52 @@ required on `main`.
   `SNACK_TITLE` or `SIDE_TITLE`, with a test.
 - **PSA OpenSTAT needs a browser-like User-Agent** and uses "." for missing values.
 - **Panlasang Pinoy images** send `Access-Control-Allow-Origin: *`, which is why `share.js` can
-  draw them on a canvas.
+  draw them on a canvas. A site's photo without that header just fails to load and the share card
+  has no photo.
+- **Vercel Authentication guards deployment URLs** (`ssoProtection: all_except_custom_domains`);
+  only the production domains are public. A function calling itself must use
+  `VERCEL_PROJECT_PRODUCTION_URL` (`hopOrigin()`), not `request.url`. Self-calls nest at most 5
+  deep: the sixth gets **HTTP 508 Loop Detected**. Outbound fetches to sites that are also on Vercel
+  (Pepper.ph) count too: from the 5th hop they get 508, so a 508 on a page pauses the run at that page.
+- **A new recipe site needs a name** in `RECIPE_SOURCES` in `docs/share.js` (credit and "Paano
+  lutuin?" button); `share.test.mjs` checks every host in the backend's `recipe-sources.ts`.
 
-## Adding recipes (Panlasang Pinoy)
+## Adding recipes (recipe sites)
 
-The crawl reads every post sitemap listed in `sitemap_index.xml` and saves up to 4 new recipes per
-`POST /api/scrape/recipes` call (admin only). New recipes keep the title, source link, photo link,
-servings, times, course and ingredients, plus `methodNotes` (short phrases like "deep fry. discard the
-marinade" that the engine reads). They do **not** copy the author's description or steps; the recipe
-pop-up links to Panlasang Pinoy for the method. Unknown ingredients hide the recipe as usual.
+The crawl reads every site in `src/lib/scrapers/recipe-sources.ts`, in order. Panlasang Pinoy is first.
+Since 2026-10-29 the list also has Kawaling Pinoy, Yummy Kitchen, Recipes by Nora, Pinoy Recipe, Foxy
+Folksy, Manila Spoon and Pepper.ph.
 
-It runs by itself every day (`/api/cron/recipes`, 03:15 UTC): each run crawls for ~45 s, then calls
-itself again with the `CRON_SECRET` Vercel sends, until every sitemap is read (Hobby crons can only run
-daily, hence the hops). Progress is the RECIPES row in `ScrapingLog`; the logic is `src/lib/recipe-crawl.ts`.
-To push it along by hand from the owner's computer (the token never goes through a cloud session):
+**How it reads a site:**
+- It reads each site's post sitemaps from `sitemap_index.xml`, `wp-sitemap.xml` or a flat `sitemap.xml`.
+- It saves up to 4 pages per step.
+- A page is read from its WP Recipe Maker card or its schema.org Recipe JSON-LD (`recipe-page.ts`).
+
+**What it keeps:** the title, source link, photo link, servings, times, course and ingredients, plus
+`methodNotes` (short phrases like "deep fry. discard the marinade" that the engine reads). It does
+**not** copy the author's description or steps; the recipe pop-up links to the source site for the method.
+Unknown ingredients hide the recipe as usual.
+
+**Skipping:**
+- Sites after Panlasang Pinoy skip a dish already listed (same `dishKey`).
+- Optional per-site filters: `cuisine: /filipin|pinoy/i` for general food blogs, and `pathPrefix` (Pepper.ph `/recipes/`).
+- Pages skipped as `not-recipe`, `duplicate` or `other-cuisine` go in the `RecipeSkip` table, so the
+  daily run doesn't fetch them again. Delete a row there to re-read that page.
+
+**When a sitemap won't load:** the run pauses, and the next hourly run retries. After 3 failed runs in
+a row that sitemap is skipped for the current pass; the next full pass reads it again. Look for
+`recipe crawl hop N paused:` in the Vercel logs.
+
+**Adding a site:** check its robots.txt (no `Disallow: /`, no AI-crawler blocks), its terms (no
+ban on scraping or automated collection) and that its recipe pages carry Recipe JSON-LD. Then add it to
+`recipe-sources.ts` and give it a name in `docs/share.js`.
+
+**Schedule:** the crawl runs by itself every hour (`/api/cron/recipes`, `recipes-pm` and `recipes/extra-1…22`).
+Each run crawls for ~45 s, then calls itself again with the `CRON_SECRET` Vercel sends, up to 5 hops
+(~70 recipes). Vercel's loop protection answers a sixth nested self-call with HTTP 508, so there are
+more runs instead of longer chains. Hobby crons can only run daily, which is why there are 24 entries. Progress is the RECIPES row in `ScrapingLog`; the logic is
+`src/lib/recipe-crawl.ts`. To push it along by hand from the owner's computer (the token never goes
+through a cloud session):
 
 ```bash
 cd scraper-backend
@@ -167,8 +211,8 @@ node scripts/add-recipes.mjs            # ADMIN_TOKEN from the environment or sc
 node scripts/add-recipes.mjs --max 50   # stop after 50 calls; run again to resume
 ```
 
-Panlasang Pinoy has about 3,000 posts, so a target of ~5,000 recipes needs a second source (the
-owner's call).
+The ~5,000-recipe target is why the other sites were added (owner's request, 2026-10-29). See
+PROGRESS.md for each site's survey result.
 
 ## Data rules
 
