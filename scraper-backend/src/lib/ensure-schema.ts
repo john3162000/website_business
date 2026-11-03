@@ -97,6 +97,34 @@ export function ensureRecipeSkipTable(): Promise<void> {
   return recipeSkipTable;
 }
 
+/** Site visits for counting users (prisma/migrations/20261103000000_visit). */
+let visitTable: Promise<void> | null = null;
+
+export function ensureVisitTable(): Promise<void> {
+  visitTable ??= (async () => {
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "Visit" (
+        "id" SERIAL PRIMARY KEY,
+        "day" TEXT NOT NULL,
+        "visitor" TEXT NOT NULL,
+        "country" TEXT,
+        "region" TEXT,
+        "city" TEXT,
+        "page" TEXT,
+        "lang" TEXT,
+        "hits" INTEGER NOT NULL DEFAULT 1,
+        "firstSeen" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "lastSeen" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`);
+    await prisma.$executeRawUnsafe(`CREATE UNIQUE INDEX IF NOT EXISTS "Visit_day_visitor_key" ON "Visit"("day", "visitor")`);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "Visit_visitor_idx" ON "Visit"("visitor")`);
+  })().catch((err) => {
+    visitTable = null; // retry on the next request
+    throw err;
+  });
+  return visitTable;
+}
+
 /** Reviews and suggestions from the site (prisma/migrations/20261029010000_feedback). */
 let feedbackTable: Promise<void> | null = null;
 

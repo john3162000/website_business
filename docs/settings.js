@@ -143,6 +143,7 @@ const I18N = {
   "settings.done": ["Tapos", "Done"],
   "settings.on": ["Bukas", "On"],
   "settings.off": ["Sarado", "Off"],
+  "privacy.visits": ["Binibilang namin ang mga bumibisita gamit ang IP address, na naka-scramble na code lang ang itinatago (hindi ang mismong address), at kung saang lungsod galing. Hindi binibilang ang browser na naka-“Do Not Track”.", "We count visitors by IP address, stored only as a scrambled code (never the address itself), plus the city it comes from. Browsers set to “Do Not Track” aren't counted."],
   "fb.open": ["Mag-review o mag-suggest", "Review or suggest"],
   "fb.title": ["Ano'ng masasabi mo?", "Tell us what you think"],
   "fb.intro": ["Binabasa namin lahat. Salamat sa pagtulong na gumanda ang SarapSulit!", "We read every message. Thank you for helping make SarapSulit better!"],

@@ -94,6 +94,8 @@ Line statuses are `ok`, `to-taste`, `optional`, `water`, `skipped`, `unmatched`,
 | `/api/commodities` | DA prices, with `changes` for a week, 2 weeks and a month back |
 | `/api/store-prices`, `/api/ingredients`, `/api/nutrition` | SM products, catalog ingredients, FNRI foods |
 | `POST /api/dish` | Prices a personal dish (My Dish) |
+| `POST /api/visit`, `GET /api/visit` | Counts a visit (salted hash of the IP, never the IP; city from Vercel's IP headers); GET is admin-only stats: users today/7/30 days/all time, new vs returning, top cities |
+| `GET /api/visit/summary` | Public totals only: users and visits in the last 24 h, 72 h and 7 days (read by the owner's daily report) |
 | `/api/scrape/*` | Admin only (`ADMIN_TOKEN`) |
 | `/api/cron/da-daily`, `/api/cron/psa` | Vercel crons: DA daily at 10:00 UTC, PSA Mondays at 11:00 UTC |
 | `/api/cron/recipes`, `…-pm`, `…/extra-1…22` | Vercel crons, one every hour at :15 UTC (Hobby fires them any time in that hour): the recipe crawl, 5 hops of ~45 s each via the production domain |
@@ -140,7 +142,7 @@ required on `main`.
   with CRLF.
 - **One global scope:** all `docs/*.js` files are classic scripts that share globals. Script
   order in `index.html`: weather, mydish, planner, finder, alerts, share, facts, taste, games,
-  kitchen, settings, feedback, seasons, tour, then app last. New button text gets a `data-i18n` key in settings.js `I18N`
+  kitchen, settings, visits, feedback, seasons, tour, then app last. New button text gets a `data-i18n` key in settings.js `I18N`
   (`settings.test.mjs` fails on a missing key).
   Favourites (`favIds`, `toggleFav`, key `sarapsulit.favs.v1`) live in `app.js`. Give new
   top-level names a prefix (`SHARE_W`, `FINDER_KEY`) so they can't clash.
