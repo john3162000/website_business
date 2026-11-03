@@ -101,6 +101,8 @@ function showTourStep() {
   if (typeof window === "undefined" || !window.document) return;
   const s = tourStore();
   if (!s || !shouldAutoTour(s, window.location.hash)) return;
-  const go = () => (typeof DATA_READY !== "undefined" && DATA_READY ? DATA_READY.then(() => setTimeout(startTour, 600), () => {}) : setTimeout(go, 500));
+  // After the first-visit age question (settings.js) is answered.
+  const go = () => (typeof ageDialogOpen === "function" && ageDialogOpen() ? setTimeout(go, 500)
+    : typeof DATA_READY !== "undefined" && DATA_READY ? DATA_READY.then(() => setTimeout(startTour, 600), () => {}) : setTimeout(go, 500));
   setTimeout(go, 0);
 })();

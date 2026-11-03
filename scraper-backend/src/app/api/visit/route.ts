@@ -7,6 +7,7 @@ import { clientIp, geoFrom, isBot, lastDays, manilaDay, visitorCode } from "@/li
 export const dynamic = "force-dynamic";
 
 const METHODS = "GET, POST, OPTIONS";
+const AGES = ["child", "teen", "adult", "senior"];
 const str = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) || null : null);
 
 // A secret salt, so the stored code can't be matched back to an IP by hashing every address.
@@ -15,7 +16,8 @@ const salt = () => process.env.VISIT_SALT?.trim() || process.env.CRON_SECRET?.tr
 /**
  * POST /api/visit  { page?, lang? }
  * Counts one visit: one row per visitor (salted hash of the IP) per Manila day, with the
- * country / region / city Vercel derives from the IP. The IP address itself is not stored.
+ * country / region / city Vercel derives from the IP, and the age bracket chosen on the site.
+ * The IP address itself is not stored.
  */
 export async function POST(request: Request) {
   if (isBot(request.headers.get("user-agent"))) return corsJson({ ok: true }, undefined, METHODS);
@@ -34,10 +36,12 @@ export async function POST(request: Request) {
   const { country, region, city } = geoFrom(request.headers);
   const page = str(body.page, 40);
   const lang = str(body.lang, 5);
+  const age = AGES.includes(String(body.age)) ? String(body.age) : null;
   await prisma.visit.upsert({
     where: { day_visitor: { day, visitor } },
-    create: { day, visitor, country, region, city, page, lang },
-    update: { hits: { increment: 1 }, lastSeen: new Date() },
+    create: { day, visitor, country, region, city, page, lang, age },
+    // An age bracket chosen later in the day fills in the row; it never clears one.
+    update: { hits: { increment: 1 }, lastSeen: new Date(), ...(age ? { age } : {}) },
   });
   return corsJson({ ok: true }, undefined, METHODS);
 }
@@ -82,6 +86,12 @@ export async function GET(request: Request) {
     SELECT COALESCE("country", '?') AS "country", COUNT(DISTINCT "visitor") AS "users"
     FROM "Visit" WHERE "day" >= ${from30} GROUP BY 1 ORDER BY "users" DESC LIMIT 15`;
 
+  // Each visitor's latest bracket in the 30 days, so someone who answered later counts once.
+  const ages = await prisma.$queryRaw<Row[]>`
+    SELECT COALESCE("age", 'unknown') AS "age", COUNT(*) AS "users" FROM (
+      SELECT DISTINCT ON ("visitor") "visitor", "age" FROM "Visit"
+      WHERE "day" >= ${from30} ORDER BY "visitor", ("age" IS NULL), "day" DESC
+    ) v GROUP BY 1 ORDER BY "users" DESC`;
   const byDay = new Map(daily.map((d) => [String(d.day), { users: num(d.users), visits: num(d.visits) }]));
   const usersToday = num(totals?.today);
   const newToday = num(fresh?.newToday);
@@ -95,6 +105,7 @@ export async function GET(request: Request) {
       daily: days30.map((day) => ({ day, ...(byDay.get(day) ?? { users: 0, visits: 0 }) })),
       cities: cities.map((c) => ({ city: String(c.city), region: String(c.region), country: String(c.country), users: num(c.users) })),
       countries: countries.map((c) => ({ country: String(c.country), users: num(c.users) })),
+      ages: ages.map((a) => ({ age: String(a.age), users: num(a.users) })),
     },
     { headers: { "Cache-Control": "no-store" } },
   );

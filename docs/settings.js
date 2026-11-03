@@ -8,9 +8,11 @@ const SETTINGS_KEY = "sarapsulit.settings.v1";
 const SETTINGS_LANGS = ["tl", "en"];
 const SETTINGS_DIET_KEYS = ["protein", "diabetic", "heart", "kidney", "gout", "lowcal"];
 const SETTINGS_MEAT_KEYS = ["fish", "chicken", "pork", "beef"];
+// Age brackets asked on the first visit; "senior" (60+) turns on large text and a simpler menu.
+const SETTINGS_AGES = ["child", "teen", "adult", "senior"];
 
 function defaultSettings() {
-  return { lang: "en", diets: [], meats: [], suggest: true };
+  return { lang: "en", diets: [], meats: [], suggest: true, age: null, large: false, ageAsked: false };
 }
 
 /** Saved settings, with anything unknown or broken replaced by the default. */
@@ -25,6 +27,9 @@ function readSettings(storage) {
       diets: known(v.diets, SETTINGS_DIET_KEYS),
       meats: known(v.meats, SETTINGS_MEAT_KEYS),
       suggest: v.suggest !== false,
+      age: SETTINGS_AGES.includes(v.age) ? v.age : null,
+      large: v.large === true,
+      ageAsked: v.ageAsked === true,
     };
   } catch {
     return d;
@@ -38,6 +43,21 @@ function writeSettings(storage, s) {
   } catch {
     return false;
   }
+}
+
+/**
+ * Settings after choosing an age bracket (null: prefer not to say). Seniors get large text;
+ * moving away from senior turns it off again; other choices leave a manual setting alone.
+ */
+function withAge(s, age) {
+  const a = SETTINGS_AGES.includes(age) ? age : null;
+  const large = a === "senior" ? true : s.age === "senior" ? false : s.large;
+  return { ...s, age: a, large, ageAsked: true };
+}
+
+/** Whether to ask the age bracket now: first visit only, and not when a shared recipe link opens. */
+function shouldAskAge(s, hash) {
+  return !s.ageAsked && !/^#recipe=\d+$/.test(hash || "");
 }
 
 /** `list` with `key` added, or removed when it was there. */
@@ -143,7 +163,18 @@ const I18N = {
   "settings.done": ["Tapos", "Done"],
   "settings.on": ["Bukas", "On"],
   "settings.off": ["Sarado", "Off"],
-  "privacy.visits": ["Binibilang namin ang mga bumibisita gamit ang IP address, na naka-scramble na code lang ang itinatago (hindi ang mismong address), at kung saang lungsod galing. Hindi binibilang ang browser na naka-“Do Not Track”.", "We count visitors by IP address, stored only as a scrambled code (never the address itself), plus the city it comes from. Browsers set to “Do Not Track” aren't counted."],
+  "settings.age": ["Edad at laki ng text", "Age and text size"],
+  "settings.large": ["Malaking text at simpleng menu:", "Large text and a simpler menu:"],
+  "settings.largeHelp": ["Para sa 60 pataas ito kusang bukas: mas malaking letra at button, at nakatago ang Laro.", "Turned on by itself for 60 and over: bigger letters and buttons, and Games is hidden."],
+  "age.title": ["Ilang taon ka na?", "How old are you?"],
+  "age.intro": ["Para maayos namin ang SarapSulit para sa'yo. Sa phone mo lang ito naka-save.", "So we can set up SarapSulit for you. It stays on your phone."],
+  "age.child": ["12 pababa", "12 or under"],
+  "age.teen": ["13–17", "13–17"],
+  "age.adult": ["18–59", "18–59"],
+  "age.senior": ["60 pataas", "60 and over"],
+  "age.skip": ["Ayokong sabihin", "Prefer not to say"],
+  "age.seniorNote": ["60 pataas: lalaki ang text at magiging mas simple ang menu.", "60 and over: the text gets bigger and the menu simpler."],
+  "privacy.visits": ["Binibilang namin ang mga bumibisita gamit ang IP address, na naka-scramble na code lang ang itinatago (hindi ang mismong address), kung saang lungsod galing, at ang age bracket na pinili mo. Hindi binibilang ang browser na naka-“Do Not Track”.", "We count visitors by IP address, stored only as a scrambled code (never the address itself), plus the city it comes from and the age bracket you chose. Browsers set to “Do Not Track” aren't counted."],
   "fb.open": ["Mag-review o mag-suggest", "Review or suggest"],
   "fb.title": ["Ano'ng masasabi mo?", "Tell us what you think"],
   "fb.intro": ["Binabasa namin lahat. Salamat sa pagtulong na gumanda ang SarapSulit!", "We read every message. Thank you for helping make SarapSulit better!"],
@@ -211,6 +242,37 @@ function settingsChanged() {
   }
 }
 
+// ── Age bracket and large text ──
+
+/** Large text and the simpler menu (html.senior), from the saved setting. */
+function applyAgeMode() {
+  document.documentElement.classList.toggle("senior", !!SETTINGS.large);
+}
+
+function setAge(age) {
+  SETTINGS = withAge(SETTINGS, age);
+  applyAgeMode();
+  settingsChanged();
+  if (typeof trackEvent === "function") trackEvent(`age/${SETTINGS.age || "skip"}`);
+}
+
+function setLarge(on) { SETTINGS = { ...SETTINGS, large: on }; applyAgeMode(); settingsChanged(); }
+
+function ageDialogOpen() {
+  const d = document.getElementById("age-dialog");
+  return !!d && !d.classList.contains("hidden");
+}
+
+function openAgeDialog() {
+  document.getElementById("age-dialog").classList.remove("hidden");
+}
+
+/** The first-visit answer (or "prefer not to say"); the tour starts after this closes. */
+function chooseAge(age) {
+  setAge(age);
+  document.getElementById("age-dialog").classList.add("hidden");
+}
+
 function setLang(lang) { SETTINGS = { ...SETTINGS, lang }; settingsChanged(); }
 function toggleDietSetting(key) { SETTINGS = { ...SETTINGS, diets: toggleIn(SETTINGS.diets, key) }; settingsChanged(); }
 function clearDietSetting() { SETTINGS = { ...SETTINGS, diets: [] }; settingsChanged(); }
@@ -245,6 +307,13 @@ function renderSettings() {
     <section class="set-row">
       <h3>${t("settings.lang")}</h3>
       <div class="flex flex-wrap gap-2">${settingsChoice(!en, "setLang('tl')", "🇵🇭 Tagalog")}${settingsChoice(en, "setLang('en')", "🇬🇧 English")}</div>
+    </section>
+    <section class="set-row">
+      <h3>${t("settings.age")}</h3>
+      <div class="flex flex-wrap gap-2">${SETTINGS_AGES.map((a) => settingsChoice(SETTINGS.age === a, `setAge('${a}')`, t(`age.${a}`))).join("")}</div>
+      <div class="flex flex-wrap items-center gap-2 mt-2"><span class="set-help">${t("settings.large")}</span>
+        ${settingsChoice(SETTINGS.large, "setLarge(true)", t("settings.on"))}${settingsChoice(!SETTINGS.large, "setLarge(false)", t("settings.off"))}</div>
+      <p class="set-help">${t("settings.largeHelp")}</p>
     </section>
     <section class="set-row">
       <h3>${t("settings.diet")}</h3>
@@ -303,6 +372,11 @@ function renderDietSummary() {
   if (typeof document === "undefined" || !document.getElementById) return;
   const s = settingsStore();
   if (s) SETTINGS = readSettings(s);
-  const start = () => { applyLang(); renderMeatChips(); renderDietSummary(); };
+  // Before the first paint, so a senior's page never flashes small.
+  applyAgeMode();
+  const start = () => {
+    applyLang(); renderMeatChips(); renderDietSummary();
+    if (shouldAskAge(SETTINGS, window.location.hash)) openAgeDialog();
+  };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
 })();

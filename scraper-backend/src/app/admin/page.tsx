@@ -247,7 +247,10 @@ interface VisitStats {
   daily: { day: string; users: number; visits: number }[];
   cities: { city: string; region: string; country: string; users: number }[];
   countries: { country: string; users: number }[];
+  ages?: { age: string; users: number }[];
 }
+
+const AGE_LABELS: Record<string, string> = { child: "12 or under", teen: "13–17", adult: "18–59", senior: "60 and over", unknown: "Didn't say" };
 
 /** Users counted by IP (stored only as a salted hash), from /api/visit. */
 function Visitors() {
@@ -297,6 +300,12 @@ function Visitors() {
               <ul>{stats.countries.map((c) => <li key={c.country} className="flex justify-between border-t py-1"><span>{c.country}</span><span>{c.users}</span></li>)}</ul>
             </div>
           </div>
+          {stats.ages && stats.ages.length > 0 && (
+            <div className="text-sm mt-4">
+              <h3 className="font-semibold mb-1">Age brackets (30 days)</h3>
+              <ul>{stats.ages.map((a) => <li key={a.age} className="flex justify-between border-t py-1"><span>{AGE_LABELS[a.age] ?? a.age}</span><span>{a.users}</span></li>)}</ul>
+            </div>
+          )}
           <p className="text-xs text-gray-400 mt-3">Each IP address is stored only as a salted hash, never as the address itself.</p>
         </>
       )}

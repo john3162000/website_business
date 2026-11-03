@@ -403,3 +403,19 @@ pass is complete. From now on, the hourly runs only pick up newly published post
   - The 💬 header button opens a dialog for a review (1–5 stars), a suggestion or a problem report.
   - Messages are saved by `POST /api/feedback` and listed on /admin. If saving fails, the visitor's
     email app opens with the message filled in.
+
+## 2026-11-04: age brackets and a large-text mode for older users
+
+- **First visit:** before the tour, "Ilang taon ka na?" with five choices: 12 or under, 13–17,
+  18–59, 60 and over, or "Ayokong sabihin" (prefer not to say). The answer is saved on the device
+  (`SETTINGS.age`), and the question isn't asked again or on shared recipe links.
+- **60 and over** turns on **large text and a simpler menu** (`html.senior`):
+  - about 18% bigger text and buttons;
+  - darker grey text, for readability;
+  - Laro/Games hidden, so the phone tab bar has 6 bigger tabs.
+
+  Children, teens and adults get the normal site (owner's call).
+- **Settings → "Edad at laki ng text":** change the age bracket, or switch large text on or off for
+  anyone.
+- **Statistics:** the bracket (only the bracket) is sent with the visit count. `/admin` shows users by
+  age bracket for the last 30 days, and the footer privacy note says so.

@@ -6,8 +6,8 @@ import vm from "node:vm";
 
 const ctx = vm.createContext({});
 vm.runInContext(`${readFileSync(new URL("./settings.js", import.meta.url), "utf8")}
-;globalThis.api = { readSettings, writeSettings, defaultSettings, toggleIn, t, I18N, SETTINGS_KEY };`, ctx);
-const { readSettings, writeSettings, defaultSettings, toggleIn, t, I18N, SETTINGS_KEY } = ctx.api;
+;globalThis.api = { readSettings, writeSettings, defaultSettings, toggleIn, t, I18N, SETTINGS_KEY, withAge, shouldAskAge };`, ctx);
+const { readSettings, writeSettings, defaultSettings, toggleIn, t, I18N, SETTINGS_KEY, withAge, shouldAskAge } = ctx.api;
 const plain = (v) => JSON.parse(JSON.stringify(v));
 const store = (init = {}) => {
   const m = new Map(Object.entries(init));
@@ -16,7 +16,7 @@ const store = (init = {}) => {
 
 test("settings round-trip on the device", () => {
   const s = store();
-  const want = { lang: "tl", diets: ["lowcal", "gout"], meats: ["pork"], suggest: false };
+  const want = { lang: "tl", diets: ["lowcal", "gout"], meats: ["pork"], suggest: false, age: "senior", large: true, ageAsked: true };
   assert.equal(writeSettings(s, want), true);
   assert.deepEqual(plain(readSettings(s)), want);
 });
@@ -24,11 +24,30 @@ test("settings round-trip on the device", () => {
 test("broken or unknown settings fall back to the defaults", () => {
   assert.deepEqual(plain(readSettings(store())), plain(defaultSettings()));
   assert.deepEqual(plain(readSettings(store({ [SETTINGS_KEY]: "{not json" }))), plain(defaultSettings()));
-  const odd = readSettings(store({ [SETTINGS_KEY]: JSON.stringify({ lang: "fr", diets: ["gout", "keto", "gout"], meats: "pork", suggest: "yes" }) }));
-  assert.deepEqual(plain(odd), { lang: "en", diets: ["gout"], meats: [], suggest: true });
+  const odd = readSettings(store({ [SETTINGS_KEY]: JSON.stringify({ lang: "fr", diets: ["gout", "keto", "gout"], meats: "pork", suggest: "yes", age: "elder", large: "yes" }) }));
+  assert.deepEqual(plain(odd), { lang: "en", diets: ["gout"], meats: [], suggest: true, age: null, large: false, ageAsked: false });
   const blocked = { getItem: () => { throw new Error("blocked"); }, setItem: () => { throw new Error("blocked"); } };
   assert.deepEqual(plain(readSettings(blocked)), plain(defaultSettings()));
   assert.equal(writeSettings(blocked, defaultSettings()), false);
+});
+
+test("choosing an age bracket: 60 and over turns large text on, and leaving it turns it off", () => {
+  const d = defaultSettings();
+  assert.deepEqual(plain(withAge(d, "senior")), { ...plain(d), age: "senior", large: true, ageAsked: true });
+  const senior = withAge(d, "senior");
+  assert.equal(withAge(senior, "adult").large, false);
+  // Large text chosen by hand stays on when another bracket is picked.
+  assert.equal(withAge({ ...d, large: true }, "teen").large, true);
+  // "Prefer not to say" and unknown values: no bracket, but don't ask again.
+  assert.deepEqual(plain(withAge(d, null)), { ...plain(d), ageAsked: true });
+  assert.equal(withAge(d, "elder").age, null);
+});
+
+test("the age question shows on the first visit only, and not on a shared recipe link", () => {
+  const d = defaultSettings();
+  assert.equal(shouldAskAge(d, ""), true);
+  assert.equal(shouldAskAge(d, "#recipe=123"), false);
+  assert.equal(shouldAskAge(withAge(d, null), ""), false);
 });
 
 test("toggleIn adds a choice, or removes it when it was there", () => {

@@ -12,9 +12,15 @@ function visitAllowed(nav) {
   return !nav.webdriver;
 }
 
-/** The request body: the section the visit started on and the site language. */
-function visitPayload(page, lang) {
-  return JSON.stringify({ page: String(page || "home").slice(0, 40), lang: lang === "tl" ? "tl" : "en" });
+const VISIT_AGES = ["child", "teen", "adult", "senior"];
+
+/** The request body: the section the visit started on, the site language and the age bracket (if chosen). */
+function visitPayload(page, lang, age) {
+  return JSON.stringify({
+    page: String(page || "home").slice(0, 40),
+    lang: lang === "tl" ? "tl" : "en",
+    age: VISIT_AGES.includes(age) ? age : null,
+  });
 }
 
 function sendVisit() {
@@ -25,7 +31,8 @@ function sendVisit() {
     if (!visitAllowed(typeof navigator !== "undefined" ? navigator : null)) return;
   }
   const section = document.querySelector('section[id^="section-"]:not(.hidden)')?.id.replace(/^section-/, "");
-  const body = visitPayload(section, typeof siteLang === "function" ? siteLang() : "en");
+  const age = typeof SETTINGS !== "undefined" ? SETTINGS.age : null;
+  const body = visitPayload(section, typeof siteLang === "function" ? siteLang() : "en", age);
   const url = `${API_BASE}/api/visit`;
   // text/plain keeps it a simple request (no CORS preflight); the route reads the text as JSON.
   if (navigator.sendBeacon && navigator.sendBeacon(url, new Blob([body], { type: "text/plain" }))) return;
