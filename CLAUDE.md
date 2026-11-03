@@ -41,7 +41,8 @@ docs/                         static site, no build step (Tailwind CDN, plain br
   *.test.mjs                  node:test files; run each script's pure helpers in node:vm
   logo.png, favicon.png       FARM2FIGURE logo
 scraper-backend/
-  src/lib/recipe-compile/     the engine: compile.ts, load.ts, quantity.ts, ingredient-index.ts
+  src/lib/recipe-compile/     the engine: compile.ts, load.ts, quantity.ts, ingredient-index.ts,
+                              cooking.ts (vitamin C/A, iron, calcium after cooking)
   src/lib/price-history.ts    compareDate / priceOn / pctChange (week, 2 weeks, month)
   src/lib/scrapers/           DA, PSA, SM scrapers; recipe crawl: recipe-sources.ts (the site list),
                               recipe-page.ts (WPRM card or JSON-LD), ingredient-line.ts (line split, dishKey)
@@ -62,6 +63,14 @@ slug → grams bought / eaten (edible portion, frying oil absorbed, marinade fac
 **Price order:** DA daily → PSA OpenSTAT monthly (NCR, else PH national average) → SM Markets
 or DTI SRP rows in `manual-prices.tsv` → **derived prices** (`derived-prices.tsv`: parent slug ×
 factor, a yield conversion or a stand-in, shown on the site as "≈").
+
+**After cooking:** `cooking.ts` picks a method per dish (title first: sinigang → broth eaten, adobo →
+stew, kinilaw → acid, frying from the engine; leafy greens in soups and stews count as added at the end)
+and applies true-retention factors from `data/catalog/retention-factors.tsv` to raw foods listed in
+`cook-groups.tsv` (leafy_veg, veg, animal). Cooked or canned FNRI rows are never listed, so nothing is
+reduced twice. Only vitamin C, vitamin A, iron and calcium change; results go in `afterCooking` /
+the summary's `cooked` ([best, low, high]). Ranking still uses the raw-ingredient `perServing`.
+The starter factors are marked "USDA-R6 (verify)": check them against the USDA Release 6 table.
 
 Line statuses are `ok`, `to-taste`, `optional`, `water`, `skipped`, `unmatched`, `no-weight` and
 `no-nutrition`.
@@ -87,7 +96,7 @@ Line statuses are `ok`, `to-taste`, `optional`, `water`, `skipped`, `unmatched`,
 | `POST /api/dish` | Prices a personal dish (My Dish) |
 | `/api/scrape/*` | Admin only (`ADMIN_TOKEN`) |
 | `/api/cron/da-daily`, `/api/cron/psa` | Vercel crons: DA daily at 10:00 UTC, PSA Mondays at 11:00 UTC |
-| `/api/cron/recipes`, `…-pm`, `…/extra-1…4` | Vercel crons daily at 03:15, 07:15, 11:15, 15:15, 19:15 and 23:15 UTC: the recipe crawl, calling itself (≤150 hops, via the production domain) until every sitemap is read |
+| `/api/cron/recipes`, `…-pm`, `…/extra-1…22` | Vercel crons, one every hour at :15 UTC (Hobby fires them any time in that hour): the recipe crawl, 5 hops of ~45 s each via the production domain |
 
 ## Commands
 
@@ -151,7 +160,9 @@ required on `main`.
   has no photo.
 - **Vercel Authentication guards deployment URLs** (`ssoProtection: all_except_custom_domains`);
   only the production domains are public. A function calling itself must use
-  `VERCEL_PROJECT_PRODUCTION_URL` (`hopOrigin()`), not `request.url`.
+  `VERCEL_PROJECT_PRODUCTION_URL` (`hopOrigin()`), not `request.url`. Self-calls nest at most 5
+  deep: the sixth gets **HTTP 508 Loop Detected**. Outbound fetches to sites that are also on Vercel
+  (Pepper.ph) count too: from the 5th hop they get 508, so a 508 on a page pauses the run at that page.
 - **A new recipe site needs a name** in `RECIPE_SOURCES` in `docs/share.js` (credit and "Paano
   lutuin?" button); `share.test.mjs` checks every host in the backend's `recipe-sources.ts`.
 
@@ -177,13 +188,18 @@ Unknown ingredients hide the recipe as usual.
 - Pages skipped as `not-recipe`, `duplicate` or `other-cuisine` go in the `RecipeSkip` table, so the
   daily run doesn't fetch them again. Delete a row there to re-read that page.
 
+**When a sitemap won't load:** the run pauses, and the next hourly run retries. After 3 failed runs in
+a row that sitemap is skipped for the current pass; the next full pass reads it again. Look for
+`recipe crawl hop N paused:` in the Vercel logs.
+
 **Adding a site:** check its robots.txt (no `Disallow: /`, no AI-crawler blocks), its terms (no
 ban on scraping or automated collection) and that its recipe pages carry Recipe JSON-LD. Then add it to
 `recipe-sources.ts` and give it a name in `docs/share.js`.
 
-**Schedule:** the crawl runs by itself six times a day (`/api/cron/recipes`, `recipes-pm` and `recipes/extra-1…4`, every 4 hours from 03:15 UTC). Each run crawls for
-~45 s, then calls itself again with the `CRON_SECRET` Vercel sends, until every site is read (Hobby
-crons can only run daily, hence the hops). Progress is the RECIPES row in `ScrapingLog`; the logic is
+**Schedule:** the crawl runs by itself every hour (`/api/cron/recipes`, `recipes-pm` and `recipes/extra-1…22`).
+Each run crawls for ~45 s, then calls itself again with the `CRON_SECRET` Vercel sends, up to 5 hops
+(~70 recipes). Vercel's loop protection answers a sixth nested self-call with HTTP 508, so there are
+more runs instead of longer chains. Hobby crons can only run daily, which is why there are 24 entries. Progress is the RECIPES row in `ScrapingLog`; the logic is
 `src/lib/recipe-crawl.ts`. To push it along by hand from the owner's computer (the token never goes
 through a cloud session):
 

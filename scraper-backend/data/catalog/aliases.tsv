@@ -1669,3 +1669,55 @@ or	HEADER			a lone "or" between two lines
 sweetened coconut shavings	FOOD	coconut_desiccated_sweet		recipe sites 2026-10-29
 tokwa	FOOD	tofu_firm		recipe sites 2026-10-29
 fried tofu	FOOD	tofu_firm		recipe sites 2026-10-29
+coconut juice	WATER			same as buko juice: young coconut water, not priced
+long beans	FOOD	sitaw		recipe sites 2026-10-29
+sweet peas	FOOD	green_peas		recipe sites 2026-10-29
+frozen sweet peas	FOOD	green_peas		recipe sites 2026-10-29
+garbanzo beans	FOOD	chickpeas		recipe sites 2026-10-29
+miswa noodles	FOOD	miswa		recipe sites 2026-10-29
+grated ube	FOOD	ube		recipe sites 2026-10-29
+frozen grated ube	FOOD	ube		recipe sites 2026-10-29
+maggi chicken cubes	FOOD	stock_cube_chicken		recipe sites 2026-10-29
+maggi chicken cube	FOOD	stock_cube_chicken		recipe sites 2026-10-29
+funnel	EQUIPMENT			kitchen tool, not food
+unflavoured gelatin powder	FOOD	gelatin_unflavored		recipe sites 2026-10-29
+unflavoured gelatin	FOOD	gelatin_unflavored		recipe sites 2026-10-29
+crushed grahams	FOOD	graham_cracker		recipe sites 2026-10-29
+grahams	FOOD	graham_cracker		recipe sites 2026-10-29
+cayenne powder	FOOD	cayenne_pepper		recipe sites 2026-10-29
+cayenne	FOOD	cayenne_pepper		recipe sites 2026-10-29
+pork broth cube	FOOD	stock_cube_pork		recipe sites 2026-10-29
+chocolate chunks	FOOD	chocolate_chips		semi-sweet chunks, same food as chips
+chopped chocolate	FOOD	chocolate_dark		recipe sites 2026-10-29
+chocolate	FOOD	chocolate_dark		[exact] plain "chocolate" in baking: dark or semi-sweet
+cumin powder	FOOD	cumin_ground		recipe sites 2026-10-30
+cocoa	FOOD	cocoa_powder		[exact] plain "cocoa" in baking
+brocolli florets	FOOD	broccoli		common misspelling
+brocolli	FOOD	broccoli		common misspelling
+green food coloring	FOOD	food_coloring_red		any food colouring, as the other colours
+yellow food color	FOOD	food_coloring_red		any food colouring, as the other colours
+food coloring	FOOD	food_coloring_red		any food colouring, as the other colours
+food color	FOOD	food_coloring_red		any food colouring, as the other colours
+canton noodles	FOOD	noodles_pancit_canton		recipe sites 2026-10-30
+kitchen twine	EQUIPMENT			kitchen tool, not food
+dilis	FOOD	anchovies_dried		dried anchovies (dilis)
+tortilla	FOOD	tortilla_flour		recipe sites 2026-10-30
+icy cold water	WATER			like "ice cold water"
+icy water	WATER			like "ice water"
+whole black peppercorns	FOOD	peppercorn_whole		recipe sites 2026-10-31
+black peppercorns	FOOD	peppercorn_whole		recipe sites 2026-10-31
+turmeric	FOOD	turmeric_powder		[exact] measured by spoon: ground
+pickle relish	FOOD	pickle_relish_sweet		PH pickle relish is the sweet kind
+sriracha	FOOD	sriracha		recipe sites 2026-10-31
+fusilli	FOOD	penne		dry pasta, as farfalle
+shredded cheddar	FOOD	cheese_cheddar		recipe sites 2026-10-31
+magic sarap	FOOD	seasoning_magic_sarap		recipe sites 2026-10-31
+short ribs	FOOD	beef_short_ribs		recipe sites 2026-10-31
+fresh coriander	FOOD	cilantro		coriander leaves = cilantro
+coriander leaves	FOOD	cilantro		coriander leaves = cilantro
+reserved pasta water	WATER			cooking water
+pasta water	WATER			cooking water
+soda water	WATER			carbonated water, 0 kcal
+coconut water	WATER			as young coconut water / buko juice
+cooking cream	FOOD	cream_all_purpose		PH cooking cream = all-purpose cream
+frozen peas	FOOD	green_peas		recipe sites 2026-11-01

@@ -93,7 +93,11 @@ export interface RecipeCursor {
   sourceIndex?: number;
   sitemapIndex: number;
   urlIndex: number;
+  /** Runs in a row that couldn't load this sitemap; after SITEMAP_TRIES it is skipped for this pass. */
+  fails?: number;
 }
+
+const SITEMAP_TRIES = 3;
 
 export function initialRecipeCursor(): RecipeCursor {
   return { sourceIndex: 0, sitemapIndex: 0, urlIndex: 0 };
@@ -109,7 +113,7 @@ export function initialRecipeCursor(): RecipeCursor {
 export async function scrapeRecipeChunk(
   cursor: RecipeCursor,
   onProgress?: (msg: string) => void
-): Promise<{ saved: number; cursor: RecipeCursor; done: boolean }> {
+): Promise<{ saved: number; cursor: RecipeCursor; done: boolean; pause?: string }> {
   const sourceIndex = cursor.sourceIndex ?? 0;
   const { sitemapIndex } = cursor;
   const source = RECIPE_SOURCES[sourceIndex];
@@ -132,9 +136,16 @@ export async function scrapeRecipeChunk(
   try {
     urls = await cached(sitemapUrl, async () => urlsFromSitemap(await fetchHtml(sitemapUrl), source.base + (source.pathPrefix ?? "")));
   } catch (err) {
-    // A fetch error (e.g. rate limiting) is transient — don't mark the crawl
-    // as done or lose the cursor, so it can resume from this sitemap later.
-    throw new Error(`Failed to load sitemap ${sitemapUrl}: ${err instanceof Error ? err.message : err}`);
+    // Usually transient (rate limiting, a network blip): pause this run and try the same sitemap on
+    // the next one. A sitemap that keeps failing is skipped for this pass, so one unreachable site
+    // can't hold back the sites after it; the next full pass reads it again.
+    const fails = (cursor.fails ?? 0) + 1;
+    const why = `Failed to load sitemap ${sitemapUrl}: ${err instanceof Error ? err.message : err}`;
+    if (fails >= SITEMAP_TRIES) {
+      onProgress?.(`${why} (${fails} runs in a row) — skipping it for this pass.`);
+      return { saved: 0, cursor: { sourceIndex, sitemapIndex: sitemapIndex + 1, urlIndex: 0 }, done: false, pause: `${why}; skipped after ${fails} tries` };
+    }
+    return { saved: 0, cursor: { ...cursor, fails }, done: false, pause: `${why} (try ${fails} of ${SITEMAP_TRIES})` };
   }
 
   const next: RecipeCursor = { sourceIndex, sitemapIndex: sitemapIndex + 1, urlIndex: 0 };
@@ -166,8 +177,17 @@ export async function scrapeRecipeChunk(
     try {
       scraped = parseRecipePage(await fetchHtml(url), url, source.dedupe);
     } catch (err) {
-      // Not noted as skipped: a failed fetch is tried again on the next run.
-      onProgress?.(`Failed to scrape ${url}: ${err instanceof Error ? err.message : err}`);
+      // Not noted as skipped: a failed fetch is tried again on the next pass. Logged too, so a site
+      // that starts refusing the crawler shows up in the Vercel logs, not only in ScrapingLog.
+      const why = `Failed to scrape ${url}: ${err instanceof Error ? err.message : err}`;
+      // HTTP 508 (Loop Detected) comes from Vercel when a site hosted there (Pepper.ph) is fetched
+      // from deep in our own hop chain. Stay on this page and stop the run; the next hourly run reads
+      // it from its first hop.
+      if (/\bHTTP 508\b/.test(why)) {
+        return { saved, cursor: { sourceIndex, sitemapIndex, urlIndex: index - 1 }, done: false, pause: `${why} (retried next run)` };
+      }
+      console.warn(`recipe crawl ${why}`);
+      onProgress?.(why);
       continue;
     }
     if (!scraped) {

@@ -246,3 +246,134 @@ Each new recipe gets the same treatment as Panlasang Pinoy's:
   before the occasion starts (Valentine's from Jan 31, Undas from Oct 17, and so on). **Christmas and
   New Year** are suggested **six weeks** before the day (Christmas from Nov 13, New Year from Nov 20).
   These are `SEASON_LEAD` and `SEASON_LEAD_BIG` in `seasons.js`.
+
+## 2026-10-29: Impeccable design critique, first quick wins
+
+The design critique (Impeccable, 22/40) found that the honesty markers were hard to read and the
+labels were mixed up. These are the two fixes the owner approved first.
+
+- **Contrast:**
+  - "⚠ Incomplete price" badge: dark amber with cream text instead of white on gold (about
+    2.7:1 before).
+  - Ingredient price-source line: 11 px and darker.
+  - Card category labels: darker grey.
+  - "Incomplete price" beside the meter: darker grey.
+  - Phone tab-bar labels: forest green at 11 px (9.6 px before).
+- **Labels:**
+  - One set of section names for the header tabs and the phone tab bar, in both languages, with
+    a test.
+  - "Nutri" became Sustansya / Nutrition, in a neutral pill (the red pill read as a warning).
+  - A legend for the "+" on prices: "“+” sa presyo: may sangkap na wala pang presyo".
+  - The pop-up and My Dish show the meter's word and "Better value than N% of dishes" instead of
+    a bare Sulit Score.
+  - "Medyo mahal" became "Hindi gaano sulit".
+- **Still open from the critique:**
+  - The recipe cards and pop-up can't be used by keyboard or screen reader (P0).
+  - Random week and Best Value pick dishes that aren't ulam.
+  - Phone pages are long.
+- **Hourly crawl.** After the hop fix, the 07:xx run chained 5 hops and saved 80 recipes, about
+  13–16 per 45-second hop. Vercel then refused the sixth nested self-call with **HTTP 508 Loop
+  Detected**.
+
+  Changes:
+  - A run is now capped at 5 hops.
+  - `vercel.json` runs the crawl every hour: 24 daily cron entries, `extra-1…22` plus the original two.
+  - Expected rate: about 70 recipes an hour, until every site has been read once.
+- **Progress at 10:40 UTC:**
+  - Database: 2,987 entries, of which 742 are Panlasang Pinoy articles.
+  - Kawaling Pinoy: 206 recipes (146 shown, 60 hidden by unknown ingredients).
+  - Totals: 2,089 dishes shown, 156 hidden.
+  - 6 more aliases added: coconut juice (as water, like buko juice), long beans, sweet peas,
+    garbanzo beans and miswa noodles.
+- **Progress at 15:00 UTC:**
+  - Database: 3,234 entries, of which 742 are Panlasang Pinoy articles.
+  - By site: Kawaling Pinoy 413 (finished) and Yummy Kitchen 40 (in progress).
+  - On the site: 2,254 shown and 222 hidden.
+- **Sitemap failures no longer stall the crawl.**
+  - The 14:53 run stopped on `yummykitchentv.com/post-sitemap.xml: fetch failed`. Its sitemap had
+    loaded earlier, so the failure looks intermittent.
+  - A failed sitemap now pauses the run, and the next hourly run tries again.
+  - After 3 failed runs in a row, that sitemap is skipped for the current pass, so the sites after
+    it aren't held back. The next full pass reads it again.
+  - The pause shows in the RECIPES `ScrapingLog` message and in the logs as `recipe crawl hop N paused:`.
+- **More aliases:** grated and frozen grated ube, MAGGI chicken cubes, and "funnel" (equipment).
+- **Progress at 19:45 UTC:**
+  - Database: 3,475 entries, of which 744 are articles.
+  - By site: Panlasang Pinoy 2,781, Kawaling Pinoy 413 and Yummy Kitchen 281 (in progress).
+  - On the site: 2,423 shown and 308 hidden.
+  - The crawl runs about 60 recipes an hour, with no paused sitemaps.
+  - Aliases added: British "unflavoured gelatin", grahams, cayenne, pork broth cube, chocolate
+    chunks/chopped/plain chocolate.
+- **Progress at 03:45 UTC, Oct 30:**
+  - Database: 3,753 entries, of which 744 are articles.
+  - By site: Panlasang Pinoy 2,781, Yummy Kitchen 559 (in progress) and Kawaling Pinoy 413.
+  - On the site: 2,625 shown and 384 hidden.
+  - Overnight the crawl added about 35 recipes an hour, below the expected ~60.
+  - Aliases added: cumin powder, plain cocoa, misspelled "brocolli", green/yellow food colouring,
+    canton noodles, kitchen twine (equipment).
+- **Progress at 10:15 UTC, Oct 30:**
+  - **4,004 entries**, of which 745 are articles.
+  - By site: Panlasang Pinoy 2,781, Yummy Kitchen 683, Kawaling Pinoy 413 and Recipes by Nora 127
+    (in progress).
+  - On the site: 2,805 shown and 454 hidden.
+  - The 10:00 run saved 0 recipes from about 30 pages. Page-fetch failures are now also logged
+    (`recipe crawl Failed to scrape …`), so a site refusing the crawler would show up in the logs.
+  - Aliases added: dilis, tortilla.
+- **Progress at 18:20 UTC, Oct 30:**
+  - **4,246 entries**, of which 746 are articles.
+  - Finished: Yummy Kitchen 683, Kawaling Pinoy 413, Recipes by Nora 127.
+  - In progress: Pinoy Recipe 241 (162 hidden, mostly sponsored brand mixes and packaging such as
+    cupcake liners and cake boards), and Foxy Folksy has started.
+  - On the site: 2,887 shown and 613 hidden.
+  - Alias added: "icy cold water" and "icy water" now count as water (11 Pinoy Recipe dishes).
+- **Progress at 16:20 UTC, Oct 31:**
+  - **4,778 entries**, of which 762 are articles.
+  - By site: Panlasang Pinoy 2,782, Yummy Kitchen 685, Kawaling Pinoy 413, Pepper.ph 393 (in progress),
+    Pinoy Recipe 241, Recipes by Nora 127, Foxy Folksy 88 and Manila Spoon 49.
+  - On the site: 3,168 shown and 848 hidden.
+- **HTTP 508 from Pepper.ph.** Pepper.ph is also hosted on Vercel, and every page fetched in a run's
+  last hop (hop 4) came back 508 Loop Detected. Vercel counts our self-call chain toward its loop
+  limit, and that includes our outbound fetches to other Vercel sites. A 508 on a page now stops the
+  run at that page, so the next hourly run reads it from its first hop.
+- **Aliases added:** whole/black peppercorns, turmeric, pickle relish, sriracha, fusilli,
+  shredded cheddar, Magic Sarap, short ribs, fresh coriander, cooking cream.
+  Treated as water: pasta water, soda water, coconut water.
+
+## 2026-11-01: first full pass of all recipe sites done
+
+The crawl's run at 03:51 UTC read every sitemap of every site and found nothing new, so the first
+pass is complete. From now on, the hourly runs only pick up newly published posts.
+
+| Site | Saved | Articles | Shown on the site | Hidden (unknown ingredient) |
+|---|---|---|---|---|
+| Panlasang Pinoy | 2,782 | 742 | 1,944 | 96 |
+| Yummy Kitchen | 685 | 2 | 493 | 190 |
+| Pepper.ph (`/recipes/`) | 467 | 17 | 259 | 191 |
+| Kawaling Pinoy | 413 | 0 | 306 | 107 |
+| Pinoy Recipe | 241 | 1 | 82 | 158 |
+| Recipes by Nora | 127 | 1 | 78 | 48 |
+| Foxy Folksy (Filipino only) | 88 | 0 | 57 | 31 |
+| Manila Spoon (Filipino only) | 49 | 0 | 36 | 13 |
+| **Total** | **4,852** | **763** | **3,255** | **834** |
+
+**Against the ~5,000 goal:**
+- The database has 4,852 entries, 97% of the goal.
+- **4,089** of them are actual dishes (not articles), and 3,255 of those show on the site today.
+- Since Oct 29, the new sites added **2,070** dishes after skipping duplicates of dishes already listed.
+
+**What would add the most from here:**
+1. **New catalog foods for the most common unknown ingredients.** Each one needs sourced FNRI nutrition
+   plus a DA, PSA, SM or DTI price. The top ones by recipes they hide:
+   - ube halaya (12)
+   - gochujang (11)
+   - desiccated coconut (8)
+   - instant coffee (~15 across its spellings)
+   - pandan extract (8)
+   - chocolate syrup (6)
+   - garam masala (4)
+
+   Together these would bring back about 70 dishes. The long tail, about 1,100 different names, is
+   mostly brand mixes, packaging and one-off items.
+2. **One or two more Filipino recipe sites** that pass the same checks: robots.txt, terms, and
+   Recipe JSON-LD on their pages.
+3. **Our own recipes for dishes no site has,** such as pastil and other Mindanao dishes.
