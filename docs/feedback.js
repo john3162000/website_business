@@ -4,8 +4,8 @@
 
 const FEEDBACK_EMAIL = "jamaigue1@up.edu.ph";
 const FEEDBACK_FB_NAME = "John Maigue";
-// The owner's Facebook profile link goes here; until then, a Facebook search for the name.
-const FEEDBACK_FB_URL = "https://www.facebook.com/search/top?q=John%20Maigue";
+// The owner's Facebook profile.
+const FEEDBACK_FB_URL = "https://www.facebook.com/john.maigue.37";
 const FEEDBACK_KINDS = ["review", "suggestion", "problem"];
 
 let feedbackKind = "review";
