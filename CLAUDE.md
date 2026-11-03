@@ -95,6 +95,7 @@ Line statuses are `ok`, `to-taste`, `optional`, `water`, `skipped`, `unmatched`,
 | `/api/store-prices`, `/api/ingredients`, `/api/nutrition` | SM products, catalog ingredients, FNRI foods |
 | `POST /api/dish` | Prices a personal dish (My Dish) |
 | `POST /api/visit`, `GET /api/visit` | Counts a visit (salted hash of the IP, never the IP; city from Vercel's IP headers); GET is admin-only stats: users today/7/30 days/all time, new vs returning, top cities |
+| `GET /api/visit/summary` | Public totals only: users and visits in the last 24 h, 72 h and 7 days (read by the owner's daily report) |
 | `/api/scrape/*` | Admin only (`ADMIN_TOKEN`) |
 | `/api/cron/da-daily`, `/api/cron/psa` | Vercel crons: DA daily at 10:00 UTC, PSA Mondays at 11:00 UTC |
 | `/api/cron/recipes`, `…-pm`, `…/extra-1…22` | Vercel crons, one every hour at :15 UTC (Hobby fires them any time in that hour): the recipe crawl, 5 hops of ~45 s each via the production domain |
