@@ -377,3 +377,24 @@ pass is complete. From now on, the hourly runs only pick up newly published post
 2. **One or two more Filipino recipe sites** that pass the same checks: robots.txt, terms, and
    Recipe JSON-LD on their pages.
 3. **Our own recipes for dishes no site has,** such as pastil and other Mindanao dishes.
+
+## 2026-11-03: user counting by IP address; remaining tasks
+
+- **Users by IP address (owner's choice, instead of GoatCounter).**
+  - `POST /api/visit` records one row per visitor per Manila day. The visitor is identified by a
+    **salted SHA-256 of the IP**, so the IP itself is never stored. Country, region and city come
+    from Vercel's IP geolocation headers.
+  - Bots aren't counted, and neither are browsers with Do Not Track or Global Privacy Control on.
+  - `docs/visits.js` sends one visit per browser session, and a footer line (English and Tagalog)
+    tells visitors how they are counted.
+  - `/admin` has a "Users (by IP address)" panel: users today and in the last 7 and 30 days, all-time
+    users, new vs returning, users per day, top cities and countries.
+- **Remaining SarapSulit tasks (owner's list, Nov 3):**
+  1. Age brackets: a simpler, larger-text mode for older users ("matatanda"); not needed for children.
+  2. A more advanced AI model to suggest the best recipe for the user's taste ("panlasa").
+  3. Location- and IP-based user counting (this entry).
+  4. Email hospitals, dietitians, stakeholders and NGOs.
+  5. A framework design for NGOs feeding many people.
+  6. Collect all DA price data and analyse which produce is cheapest in which season
+     (e.g. tomato in February).
+  7. Listen to the audio recording (file still to be shared).
