@@ -406,9 +406,9 @@ pass is complete. From now on, the hourly runs only pick up newly published post
 
 ## 2026-11-04: age brackets and a large-text mode for older users
 
-- **First visit:** before the tour, "Ilang taon ka na?" with seven choices: 12 or under, 13–17,
-  18–29, 30–44, 45–59, 60 and over, or "Ayokong sabihin" (prefer not to say). The adult range is
-  split three ways at the owner's request. The answer is saved on the device
+- **First visit:** before the tour, "Ilang taon ka na?" with six choices: 12 or under, 13–17,
+  18–29, 30–44, 45–59, and 60 and over. An answer is required (no "prefer not to say", owner's
+  call), and the adult range is split three ways at the owner's request. The answer is saved on the device
   (`SETTINGS.age`), and the question isn't asked again or on shared recipe links.
 - **60 and over** turns on **large text and a simpler menu** (`html.senior`):
   - about 18% bigger text and buttons;

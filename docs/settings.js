@@ -46,7 +46,7 @@ function writeSettings(storage, s) {
 }
 
 /**
- * Settings after choosing an age bracket (null: prefer not to say). Seniors get large text;
+ * Settings after choosing an age bracket (an unknown value counts as none). Seniors get large text;
  * moving away from senior turns it off again; other choices leave a manual setting alone.
  */
 function withAge(s, age) {
@@ -174,7 +174,6 @@ const I18N = {
   "age.adult": ["30–44", "30–44"],
   "age.midlife": ["45–59", "45–59"],
   "age.senior": ["60 pataas", "60 and over"],
-  "age.skip": ["Ayokong sabihin", "Prefer not to say"],
   "age.seniorNote": ["60 pataas: lalaki ang text at magiging mas simple ang menu.", "60 and over: the text gets bigger and the menu simpler."],
   "privacy.visits": ["Binibilang namin ang mga bumibisita gamit ang IP address, na naka-scramble na code lang ang itinatago (hindi ang mismong address), kung saang lungsod galing, at ang age bracket na pinili mo. Hindi binibilang ang browser na naka-“Do Not Track”.", "We count visitors by IP address, stored only as a scrambled code (never the address itself), plus the city it comes from and the age bracket you chose. Browsers set to “Do Not Track” aren't counted."],
   "fb.open": ["Mag-review o mag-suggest", "Review or suggest"],
@@ -269,7 +268,7 @@ function openAgeDialog() {
   document.getElementById("age-dialog").classList.remove("hidden");
 }
 
-/** The first-visit answer (or "prefer not to say"); the tour starts after this closes. */
+/** The first-visit answer (required: the dialog has no skip); the tour starts after this closes. */
 function chooseAge(age) {
   setAge(age);
   document.getElementById("age-dialog").classList.add("hidden");
