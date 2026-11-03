@@ -7,7 +7,7 @@ import { clientIp, geoFrom, isBot, lastDays, manilaDay, visitorCode } from "@/li
 export const dynamic = "force-dynamic";
 
 const METHODS = "GET, POST, OPTIONS";
-const AGES = ["child", "teen", "adult", "senior"];
+const AGES = ["child", "teen", "young", "adult", "midlife", "senior"];
 const str = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) || null : null);
 
 // A secret salt, so the stored code can't be matched back to an IP by hashing every address.

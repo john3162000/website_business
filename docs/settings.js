@@ -9,7 +9,7 @@ const SETTINGS_LANGS = ["tl", "en"];
 const SETTINGS_DIET_KEYS = ["protein", "diabetic", "heart", "kidney", "gout", "lowcal"];
 const SETTINGS_MEAT_KEYS = ["fish", "chicken", "pork", "beef"];
 // Age brackets asked on the first visit; "senior" (60+) turns on large text and a simpler menu.
-const SETTINGS_AGES = ["child", "teen", "adult", "senior"];
+const SETTINGS_AGES = ["child", "teen", "young", "adult", "midlife", "senior"];
 
 function defaultSettings() {
   return { lang: "en", diets: [], meats: [], suggest: true, age: null, large: false, ageAsked: false };
@@ -170,7 +170,9 @@ const I18N = {
   "age.intro": ["Para maayos namin ang SarapSulit para sa'yo. Sa phone mo lang ito naka-save.", "So we can set up SarapSulit for you. It stays on your phone."],
   "age.child": ["12 pababa", "12 or under"],
   "age.teen": ["13–17", "13–17"],
-  "age.adult": ["18–59", "18–59"],
+  "age.young": ["18–29", "18–29"],
+  "age.adult": ["30–44", "30–44"],
+  "age.midlife": ["45–59", "45–59"],
   "age.senior": ["60 pataas", "60 and over"],
   "age.skip": ["Ayokong sabihin", "Prefer not to say"],
   "age.seniorNote": ["60 pataas: lalaki ang text at magiging mas simple ang menu.", "60 and over: the text gets bigger and the menu simpler."],

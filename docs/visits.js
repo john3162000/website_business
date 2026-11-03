@@ -12,7 +12,7 @@ function visitAllowed(nav) {
   return !nav.webdriver;
 }
 
-const VISIT_AGES = ["child", "teen", "adult", "senior"];
+const VISIT_AGES = ["child", "teen", "young", "adult", "midlife", "senior"];
 
 /** The request body: the section the visit started on, the site language and the age bracket (if chosen). */
 function visitPayload(page, lang, age) {

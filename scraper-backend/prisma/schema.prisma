@@ -165,7 +165,8 @@ model Visit {
   city      String?
   page      String?
   lang      String?
-  /// Age bracket the visitor chose on the site: child, teen, adult, senior (or null).
+  /// Age bracket the visitor chose on the site: child (≤12), teen (13–17), young (18–29), adult (30–44),
+  /// midlife (45–59), senior (60+), or null.
   age       String?
   hits      Int      @default(1)
   firstSeen DateTime @default(now())

@@ -6,8 +6,8 @@ import vm from "node:vm";
 
 const ctx = vm.createContext({});
 vm.runInContext(`${readFileSync(new URL("./taste.js", import.meta.url), "utf8")}
-;globalThis.api = { TASTE_TAGS, tasteVector, solveLinear, learnTaste, tasteProfile, tasteScore, tasteReasons, recommendDishes, tasteModelFrom, similarDishes, dishWords, tasteVariance, pickToLearn, dishKind };`, ctx);
-const { TASTE_TAGS, tasteVector, solveLinear, learnTaste, tasteProfile, tasteScore, tasteReasons, recommendDishes, tasteModelFrom, similarDishes, dishWords, tasteVariance, pickToLearn, dishKind } = ctx.api;
+;globalThis.api = { TASTE_TAGS, tasteVector, solveLinear, learnTaste, tasteProfile, tasteScore, tasteReasons, recommendDishes, tasteModelFrom, similarDishes, dishWords, tasteVariance, pickToLearn, dishKind, addSignal, signalStrengths, implicitTaste, blendTaste, diversify, TASTE_MIN_ANSWERS };`, ctx);
+const { TASTE_TAGS, tasteVector, solveLinear, learnTaste, tasteProfile, tasteScore, tasteReasons, recommendDishes, tasteModelFrom, similarDishes, dishWords, tasteVariance, pickToLearn, dishKind, addSignal, signalStrengths, implicitTaste, blendTaste, diversify, TASTE_MIN_ANSWERS } = ctx.api;
 
 const tags = (r) => Array.from(TASTE_TAGS).filter((_, i) => tasteVector(r)[i]).map((t) => t.key);
 const R = (id, title, ingredientNames = [], extra = {}) => ({ id, title, ingredientNames, img: "x.jpg", costPerServing: 50, category: "Main Dish", ...extra });
@@ -111,4 +111,66 @@ test("ulam and meryenda are learned separately", () => {
   assert.equal(tasteModelFrom([ulam, kakanin], ratings, {}).answers, 2);
   const m = { weights: TASTE_TAGS.map(() => 0), seen: TASTE_TAGS.map(() => 0) };
   assert.deepEqual(Array.from(recommendDishes(m, [ulam, kakanin], {}, 5, tasteVector, "meryenda"), (p) => p.r.id), [2]);
+});
+
+// ── Level 2: learning from what people do ──
+
+const DAY = 86400000;
+const NOW = Date.UTC(2026, 10, 4);
+const idx = (key) => Array.from(TASTE_TAGS).findIndex((t) => t.key === key);
+
+test("signals: actions are saved per dish, opens are counted, favourites aren't stored here", () => {
+  let s = addSignal({}, 7, "open", NOW);
+  s = addSignal(s, 7, "open", NOW + 1000);
+  s = addSignal(s, 7, "cook", NOW + 2000);
+  s = addSignal(s, 7, "fav", NOW);
+  s = addSignal(s, 7, "bogus", NOW);
+  assert.deepEqual(JSON.parse(JSON.stringify(s)), { 7: { open: NOW + 1000, opens: 2, cook: NOW + 2000 } });
+});
+
+test("signal strength: favourite > cook > plan > repeated opens > one open, and old signals fade", () => {
+  const sig = { 1: { cook: NOW }, 2: { plan: NOW }, 3: { open: NOW, opens: 1 }, 4: { open: NOW, opens: 4 }, 5: { cook: NOW - 90 * DAY } };
+  const s = signalStrengths(sig, new Set([9]), NOW);
+  assert.equal(s.get("9"), 1);
+  assert.ok(s.get("1") > s.get("2") && s.get("2") > s.get("4") && s.get("4") > s.get("3"));
+  assert.ok(Math.abs(s.get("5") - 0.8 / 4) < 1e-9); // two half-lives
+});
+
+test("the behaviour profile likes the tags that show up more among liked dishes than overall", () => {
+  const dishes = [
+    R(1, "Sinigang na Baboy", ["pork", "tamarind"], { category: "Soup" }),
+    R(2, "Sinigang na Hipon", ["shrimp", "tamarind"], { category: "Soup" }),
+    R(3, "Pork Menudo", ["pork", "tomato sauce"]),
+    R(4, "Lechon Kawali", ["pork belly"], { frying: "deep" }),
+    R(5, "Chicken Adobo", ["chicken", "vinegar"]),
+    R(6, "Tinola", ["chicken", "ginger"], { category: "Soup" }),
+  ];
+  const vecs = dishes.map((r) => ({ id: r.id, x: tasteVector(r) }));
+  const liked = signalStrengths({ 6: { cook: NOW } }, new Set([1, 2]), NOW);
+  const m = implicitTaste(liked, vecs);
+  assert.ok(m.weights[idx("sabaw")] > 0.2, "soups liked");
+  assert.ok(m.weights[idx("prito")] < 0, "fried not liked");
+  assert.ok(m.strength > 2.7 && m.answers === 3);
+  // Nothing liked: no profile.
+  assert.equal(implicitTaste(new Map(), vecs).strength, 0);
+});
+
+test("blending: either model alone, both added, or none", () => {
+  const d = Array.from(TASTE_TAGS).length;
+  const explicit = { weights: new Array(d).fill(0.1), bias: 0, seen: new Array(d).fill(1), answers: TASTE_MIN_ANSWERS, A: [] };
+  const implicit = { weights: new Array(d).fill(0.5), bias: 0, seen: new Array(d).fill(2), answers: 3, strength: 2.5 };
+  assert.equal(blendTaste(null, { ...implicit, strength: 1 }), null);
+  assert.equal(blendTaste(explicit, null), explicit);
+  assert.equal(blendTaste({ ...explicit, answers: 1 }, implicit).source, "behaviour");
+  const both = blendTaste(explicit, implicit);
+  assert.equal(both.source, "both");
+  assert.ok(Math.abs(both.weights[0] - (0.1 + 0.6 * 0.5)) < 1e-9);
+  assert.equal(both.answers, TASTE_MIN_ANSWERS + 3);
+});
+
+test("diversify trades a little score for variety", () => {
+  const a = [1, 0, 0], b = [0, 1, 0];
+  const items = [{ id: "adobo1", x: a, score: 1 }, { id: "adobo2", x: a, score: 0.99 }, { id: "adobo3", x: a, score: 0.98 }, { id: "sinigang", x: b, score: 0.8 }];
+  assert.deepEqual([...diversify(items, 2).map((i) => i.id)], ["adobo1", "sinigang"]);
+  assert.deepEqual([...diversify(items, 4).map((i) => i.id)].sort(), ["adobo1", "adobo2", "adobo3", "sinigang"]);
 });

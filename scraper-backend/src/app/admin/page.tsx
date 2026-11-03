@@ -250,7 +250,7 @@ interface VisitStats {
   ages?: { age: string; users: number }[];
 }
 
-const AGE_LABELS: Record<string, string> = { child: "12 or under", teen: "13–17", adult: "18–59", senior: "60 and over", unknown: "Didn't say" };
+const AGE_LABELS: Record<string, string> = { child: "12 or under", teen: "13–17", young: "18–29", adult: "30–44", midlife: "45–59", senior: "60 and over", unknown: "Didn't say" };
 
 /** Users counted by IP (stored only as a salted hash), from /api/visit. */
 function Visitors() {
