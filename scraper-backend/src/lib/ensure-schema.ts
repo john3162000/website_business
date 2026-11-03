@@ -118,6 +118,7 @@ export function ensureVisitTable(): Promise<void> {
       )`);
     await prisma.$executeRawUnsafe(`CREATE UNIQUE INDEX IF NOT EXISTS "Visit_day_visitor_key" ON "Visit"("day", "visitor")`);
     await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "Visit_visitor_idx" ON "Visit"("visitor")`);
+    await prisma.$executeRawUnsafe(`ALTER TABLE "Visit" ADD COLUMN IF NOT EXISTS "age" TEXT`);
   })().catch((err) => {
     visitTable = null; // retry on the next request
     throw err;

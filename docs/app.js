@@ -384,7 +384,7 @@ function buildModal(r, lines) {
   const nutr = r.nutrition;
   const ingRows = lines ? ingredientRows(lines) : `<p class="text-sm text-gray-400">Loading ingredients…</p>`;
   const src = r.url ? recipeSource(r.url) : null;
-  const srcLink = (cls, label) => `<a href="${escapeHtml(r.url)}" target="_blank" rel="noopener" class="${cls}" data-ev="cook/${escapeHtml(src.host)}" onclick="trackEvent(this.dataset.ev)">${label}</a>`;
+  const srcLink = (cls, label) => `<a href="${escapeHtml(r.url)}" target="_blank" rel="noopener" class="${cls}" data-ev="cook/${escapeHtml(src.host)}" onclick="trackEvent(this.dataset.ev); if (typeof recordTasteSignal === 'function') recordTasteSignal(${r.id}, 'cook')">${label}</a>`;
 
   const nutriBars = [
     { label: "Protein", val: nutr.protein, key: "protein", unit: "g" },
@@ -609,6 +609,7 @@ function toggleFav(id) {
   const favs = favIds();
   if (favs.has(id)) favs.delete(id); else favs.add(id);
   try { localStorage.setItem(FAV_KEY, JSON.stringify([...favs])); } catch { /* not saved */ }
+  if (typeof tasteModelChanged === "function") tasteModelChanged(); // favourites shape the taste profile
   // Redraw every star for this dish in place.
   document.querySelectorAll(`[data-fav="${id}"]`).forEach((b) => {
     const tmp = document.createElement("div");
@@ -680,7 +681,9 @@ function renderPriceForYou(fellById = new Map()) {
   if (typeof suggestOn === "function" && !suggestOn()) { box.classList.add("hidden"); return; }
   const model = currentTasteModel("ulam");
   if (!model) {
-    box.innerHTML = `<p class="text-sm text-gray-600">🧠 Gusto mo ng murang ulam na bagay sa panlasa mo? <button onclick="showSection('game')" class="font-semibold text-green-800 hover:underline">Maglaro sa Laro</button> para matuto ang app.</p>`;
+    // Learning now comes from favourites and cooking too; Laro is hidden in large-text mode.
+    const laro = document.documentElement.classList.contains("senior") ? "" : ` o <button onclick="showSection('game')" class="font-semibold text-green-800 hover:underline">maglaro sa Laro</button>`;
+    box.innerHTML = `<p class="text-sm text-gray-600">🧠 Gusto mo ng murang ulam na bagay sa panlasa mo? I-☆ ang mga ulam na gusto mo${laro}: natututo ang app sa mga pinipili, niluluto at pinaplano mo.</p>`;
     box.classList.remove("hidden");
     return;
   }
@@ -968,6 +971,7 @@ async function openModal(id) {
   const r = RECIPES.find((x) => x.id === id);
   if (!r) return;
   trackEvent("recipe-open");
+  if (typeof recordTasteSignal === "function") recordTasteSignal(id, "open");
   MODAL_DATA = { id, lines: [] };
   if (history.replaceState) history.replaceState(null, "", `#recipe=${id}`);
   document.getElementById("modal-content").innerHTML = buildModal(r, null);

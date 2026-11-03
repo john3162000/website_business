@@ -357,6 +357,20 @@
     .alert-dialog { border: 0; border-radius: 1.25rem; padding: 0; width: min(24rem, calc(100vw - 2rem)); box-shadow: 0 20px 50px rgba(0, 0, 0, .25); }
     .alert-dialog::backdrop { background: rgba(15, 31, 24, .55); }
     html.dark .alert-dialog { background: #16291F; color: #E6F4EC; }
+    /* First-visit age question */
+    .age-btn { display: flex; flex-direction: column; align-items: center; gap: .3rem; padding: 1rem .5rem; border-radius: 1rem; border: 1.5px solid #E7DFCB; background: #F8F4EA; font-weight: 600; color: #163F2E; font-size: 1rem; }
+    .age-btn:hover, .age-btn:focus-visible { border-color: #256647; background: #EFF5F0; }
+    html.dark .age-card { background: #16291F; color: #E6F4EC; }
+    html.dark .age-btn { background: #10251A; border-color: #2B4A3A; color: #E6F4EC; }
+    /* Large text and a simpler menu (60 and over, or chosen in Settings) */
+    html.senior { font-size: 118%; }
+    html.senior .text-gray-400 { color: #6b7280; }
+    html.senior .text-gray-500 { color: #4b5563; }
+    html.senior .wx-btn { font-size: .85rem; padding: .5rem 1rem; min-height: 2.5rem; }
+    html.senior #nav-game, html.senior .bottom-nav [data-nav="game"] { display: none; }
+    html.senior .bottom-nav { grid-template-columns: repeat(6, 1fr); }
+    html.senior .bottom-nav button { font-size: .75rem; }
+    html.senior.dark .text-gray-400, html.senior.dark .text-gray-500 { color: #B8CCBF; }
     .feedback-dialog { width: min(28rem, calc(100vw - 2rem)); max-height: calc(100vh - 2rem); overflow-y: auto; }
     .fb-kind { padding: .4rem .85rem; border-radius: 9999px; border: 1px solid #E7DFCB; font-size: .85rem; font-weight: 600; color: #4B5B52; }
     .fb-kind.on { background: #163F2E; border-color: #163F2E; color: #F8F4EA; }
@@ -924,6 +938,25 @@
   </div>
 </section>
 
+<div id="age-dialog" class="hidden fixed inset-0 z-[150] bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4" role="dialog" aria-modal="true" aria-labelledby="age-title">
+  <div class="age-card bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-xl">
+    <div class="flex items-center gap-3 mb-2">
+      <img src="logo.png" alt="" class="h-10 w-10">
+      <p id="age-title" class="font-display text-2xl font-semibold" data-i18n="age.title">How old are you?</p>
+    </div>
+    <p class="text-sm text-gray-600 mb-4" data-i18n="age.intro">So we can set up SarapSulit for you. It stays on your phone.</p>
+    <div class="grid grid-cols-2 gap-3">
+      <button class="age-btn" onclick="chooseAge('child')"><span class="text-2xl">🧒</span><span data-i18n="age.child">12 or under</span></button>
+      <button class="age-btn" onclick="chooseAge('teen')"><span class="text-2xl">🧑</span><span data-i18n="age.teen">13–17</span></button>
+      <button class="age-btn" onclick="chooseAge('young')"><span class="text-2xl">🧑‍🎓</span><span data-i18n="age.young">18–29</span></button>
+      <button class="age-btn" onclick="chooseAge('adult')"><span class="text-2xl">🧑‍🍳</span><span data-i18n="age.adult">30–44</span></button>
+      <button class="age-btn" onclick="chooseAge('midlife')"><span class="text-2xl">🧔</span><span data-i18n="age.midlife">45–59</span></button>
+      <button class="age-btn age-senior" onclick="chooseAge('senior')"><span class="text-2xl">👵</span><span data-i18n="age.senior">60 and over</span></button>
+    </div>
+    <p class="text-xs text-gray-500 mt-3" data-i18n="age.seniorNote">60 and over: the text gets bigger and the menu simpler.</p>
+  </div>
+</div>
+
 <div id="tour" class="hidden" role="dialog" aria-modal="true" aria-labelledby="tour-title">
   <div class="tour-card">
     <div class="flex items-center justify-between gap-2 mb-1">
@@ -1051,7 +1084,7 @@
     <div class="text-green-300 text-xs">
       <p>Data: DA Price Monitoring (<span data-da-date>latest</span>) · PSA OpenSTAT · Panlasang Pinoy, Kawaling Pinoy and other recipe sites · FNRI Food Composition Table</p>
       <p class="mt-1 text-green-400">© 2026 FARM2FIGURE. All rights reserved. Recipes and photos belong to their sites, credited on each dish.</p>
-      <p class="mt-1 text-green-400/80" data-i18n="privacy.visits">We count visitors by IP address, stored only as a scrambled code (never the address itself), plus the city it comes from. Browsers set to “Do Not Track” aren't counted.</p>
+      <p class="mt-1 text-green-400/80" data-i18n="privacy.visits">We count visitors by IP address, stored only as a scrambled code (never the address itself), plus the city it comes from and the age bracket you chose. Browsers set to “Do Not Track” aren't counted.</p>
     </div>
   </div>
 </footer>
