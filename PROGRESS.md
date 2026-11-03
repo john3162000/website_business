@@ -398,3 +398,8 @@ pass is complete. From now on, the hourly runs only pick up newly published post
   6. Collect all DA price data and analyse which produce is cheapest in which season
      (e.g. tomato in February).
   7. Listen to the audio recording (file still to be shared).
+- **Contact us and 💬 Review/Suggestion** (deployed Nov 3; owner approved with "deploy").
+  - Footer: email jamaigue1@up.edu.ph and Facebook (facebook.com/john.maigue.37).
+  - The 💬 header button opens a dialog for a review (1–5 stars), a suggestion or a problem report.
+  - Messages are saved by `POST /api/feedback` and listed on /admin. If saving fails, the visitor's
+    email app opens with the message filled in.
