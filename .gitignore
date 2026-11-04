@@ -5,3 +5,14 @@
 .overnight/
 outreach/
 node_modules/
+
+# Impeccable design skill: the launcher downloads its engine binary on first run, so the
+# 20 MB bin/ folders stay out. Live-mode sessions, hook caches and machine settings are local.
+.claude/skills/impeccable/scripts/bin/
+.github/skills/impeccable/scripts/bin/
+.impeccable/live/sessions/
+.impeccable/live/annotations/
+.impeccable/hook.cache.json
+.impeccable/hook.pending.json
+.impeccable/config.local.json
+.claude/settings.local.json

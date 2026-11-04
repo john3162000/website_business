@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-29T00:00:00+08:00",
+  "title": "Design System: SarapSulit (FARM2FIGURE)",
+  "extensions": {
+    "colorMeta": {
+      "forest-deep": { "role": "primary", "displayName": "Palengke Forest", "canonical": "#163F2E", "tonalRamp": ["#081B13", "#0F2E21", "#163F2E", "#1D5239", "#2F7A55", "#87B597", "#D9E8DD", "#EFF5F0"] },
+      "forest": { "role": "primary", "displayName": "Working Forest", "canonical": "#1D5239", "tonalRamp": ["#0F2E21", "#163F2E", "#1D5239", "#256647", "#559370", "#B5D2BE", "#D9E8DD", "#EFF5F0"] },
+      "forest-bright": { "role": "primary", "displayName": "Sulit Green", "canonical": "#2F7A55", "tonalRamp": ["#163F2E", "#1D5239", "#256647", "#2F7A55", "#559370", "#87B597", "#B5D2BE", "#EFF5F0"] },
+      "gold": { "role": "secondary", "displayName": "Harvest Gold", "canonical": "#DDAE2B", "tonalRamp": ["#47330C", "#634610", "#855F0E", "#A87A12", "#DDAE2B", "#E6C265", "#EED79A", "#F8F4EA"] },
+      "gold-light": { "role": "secondary", "displayName": "Hero Gold", "canonical": "#E6C265", "tonalRamp": ["#47330C", "#855F0E", "#C9961A", "#DDAE2B", "#E6C265", "#EED79A", "#F6EBCD", "#F8F4EA"] },
+      "incomplete-amber": { "role": "secondary", "displayName": "Incomplete Amber", "canonical": "#C9961A", "tonalRamp": ["#47330C", "#634610", "#855F0E", "#A87A12", "#C9961A", "#DDAE2B", "#EED79A", "#F6EBCD"] },
+      "leaf": { "role": "tertiary", "displayName": "Logo Leaf", "canonical": "#4E9F3A", "tonalRamp": ["#14290F", "#20421A", "#2F6125", "#3E8030", "#4E9F3A", "#7DBB6C", "#B5DAA9", "#E6F3E1"] },
+      "cream": { "role": "neutral", "displayName": "Counter Cream", "canonical": "#F8F4EA", "tonalRamp": ["#3A352A", "#5C5545", "#8A8169", "#B5AC93", "#E7DFCB", "#E9E2CF", "#EFE9DA", "#F8F4EA"] },
+      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "#111827", "tonalRamp": ["#111827", "#1F2937", "#374151", "#4B5563", "#6B7280", "#9CA3AF", "#D1D5DB", "#F3F4F6"] },
+      "night-mint": { "role": "primary", "displayName": "Night Mint", "canonical": "#7CE0A3", "tonalRamp": ["#0B1712", "#173A28", "#2F5A43", "#5BBF86", "#7CE0A3", "#9BEABA", "#C4F3D6", "#E6F4EC"] },
+      "night-mango": { "role": "secondary", "displayName": "Night Mango", "canonical": "#F5B841", "tonalRamp": ["#3A2E10", "#5C4615", "#8A671C", "#C28E28", "#F5B841", "#F8CB72", "#FBDFA6", "#FDF1D8"] },
+      "rain-blue": { "role": "primary", "displayName": "Rain Blue", "canonical": "#2F5D8C", "tonalRamp": ["#0F2236", "#1E3A5F", "#2F5D8C", "#3D6FA3", "#6F95BE", "#A9C3DD", "#DBE7F3", "#E8F0F8"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Hero headline only; 2.25rem on phones, 3.75rem from sm. The accent word is italic gold." },
+      "headline": { "displayName": "Headline", "purpose": "Section h1 (Browse, Planner, Anong lulutuin?)." },
+      "title": { "displayName": "Title", "purpose": "Block h2 inside a section." },
+      "card-title": { "displayName": "Card title", "purpose": "Dish names on cards." },
+      "body": { "displayName": "Body", "purpose": "Descriptions and copy." },
+      "small": { "displayName": "Small", "purpose": "Helper text, buttons." },
+      "label": { "displayName": "Label", "purpose": "Categories, toggle rows, tags; often uppercase." },
+      "brand-word": { "displayName": "Brand word", "purpose": "FARM2FIGURE logotype under the logo only." },
+      "receipt": { "displayName": "Receipt", "purpose": "Planner receipt totals, tabular figures." }
+    },
+    "shadows": [
+      { "name": "card-rest", "value": "0 1px 3px rgba(0,0,0,.08)", "purpose": "Recipe and finder cards, skeletons." },
+      { "name": "card-hover", "value": "0 4px 12px rgba(0,0,0,.12)", "purpose": "Card hover, paired with translateY(-3px)." },
+      { "name": "floating", "value": "0 10px 30px rgba(0,0,0,.18)", "purpose": "Hero search and toasts." },
+      { "name": "dialog", "value": "0 20px 50px rgba(0,0,0,.25)", "purpose": "Alert, share and tour cards." },
+      { "name": "night-lift", "value": "0 1px 0 rgba(255,255,255,.03), 0 4px 16px rgba(0,0,0,.35)", "purpose": "All shadowed surfaces in dark mode." }
+    ],
+    "motion": [
+      { "name": "rise", "value": ".45s cubic-bezier(.2,.7,.3,1), staggered .06s", "purpose": "Cards rise in as a grid fills." },
+      { "name": "fade-in", "value": ".25s ease", "purpose": "Section switch." },
+      { "name": "seg-in", "value": ".35s ease, staggered .05s", "purpose": "Sulit meter segments fill." },
+      { "name": "sway", "value": ".9s cubic-bezier(.2,.7,.3,1)", "purpose": "Logo leaf sways once on load." },
+      { "name": "hover", "value": ".15s–.2s ease", "purpose": "Background, border, shadow and lift on hover." },
+      { "name": "theme-swap", "value": ".35s ease", "purpose": "Colour transition when toggling dark mode." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px", "purpose": "Header tabs replace the bottom bar; 2-column grids." },
+      { "name": "lg", "value": "1024px", "purpose": "4-column dish grids." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Forest pill for the main action (Search, Random week).",
+      "html": "<button class=\"ds-btn-primary\">Search</button>",
+      "css": ".ds-btn-primary { background: #163F2E; color: #F8F4EA; font-family: Inter, sans-serif; font-weight: 600; font-size: .875rem; padding: .625rem 1.25rem; border: 0; border-radius: 9999px; cursor: pointer; transition: background-color .15s; } .ds-btn-primary:hover { background: #1D5239; } .ds-btn-primary:focus-visible { outline: 2px solid #DDAE2B; outline-offset: 2px; }"
+    },
+    {
+      "name": "Toggle Chips",
+      "kind": "chip",
+      "refersTo": "toggle-chip",
+      "description": "Weather and sort toggles; one is on.",
+      "html": "<div class=\"ds-chips\"><button class=\"ds-chip ds-on\">Best value</button><button class=\"ds-chip\">Cheapest</button><button class=\"ds-chip\">Most protein</button></div>",
+      "css": ".ds-chips { display: flex; gap: .5rem; flex-wrap: wrap; } .ds-chip { border: 1px solid #e5e7eb; background: #fff; color: #4b5563; font-family: Inter, sans-serif; font-size: .75rem; font-weight: 500; padding: .35rem .8rem; border-radius: 9999px; cursor: pointer; transition: background .15s, color .15s; } .ds-chip:hover { background: #EFF5F0; } .ds-chip.ds-on { background: #1D5239; border-color: #1D5239; color: #fff; } .ds-chip:focus-visible { outline: 2px solid #2F7A55; outline-offset: 2px; }"
+    },
+    {
+      "name": "Hero Search",
+      "kind": "input",
+      "refersTo": "hero-search",
+      "description": "Cream pill search with an inset forest button, on the forest hero band.",
+      "html": "<div class=\"ds-hero\"><form class=\"ds-search\" onsubmit=\"return false\"><input type=\"search\" placeholder=\"Anong ulam ngayon?\" aria-label=\"Search dishes\"><button>Search</button></form></div>",
+      "css": ".ds-hero { background: #163F2E; padding: 2rem 1rem; } .ds-search { background: #F8F4EA; border-radius: 9999px; display: flex; align-items: center; padding: .35rem .35rem .35rem 1.1rem; box-shadow: 0 10px 30px rgba(0,0,0,.18); max-width: 32rem; margin: 0 auto; } .ds-search input { flex: 1; min-width: 0; background: transparent; border: 0; outline: none; color: #163F2E; font-family: Inter, sans-serif; font-size: 1rem; } .ds-search button { background: #163F2E; color: #F8F4EA; font-family: Inter, sans-serif; font-weight: 600; font-size: .875rem; padding: .625rem 1.25rem; border: 0; border-radius: 9999px; cursor: pointer; } .ds-search button:hover { background: #1D5239; } .ds-search:focus-within { box-shadow: 0 0 0 3px #E6C265, 0 10px 30px rgba(0,0,0,.18); }"
+    },
+    {
+      "name": "Navigation Tabs",
+      "kind": "nav",
+      "refersTo": "nav-tab-active",
+      "description": "Desktop header pill tabs on frosted cream.",
+      "html": "<nav class=\"ds-nav\"><button class=\"ds-tab ds-active\">Home</button><button class=\"ds-tab\">Browse Recipes</button><button class=\"ds-tab\">DA Prices</button><button class=\"ds-tab\">Planner</button></nav>",
+      "css": ".ds-nav { display: flex; gap: .25rem; background: rgba(248,244,234,.92); border-bottom: 1px solid #E7DFCB; padding: .75rem 1rem; } .ds-tab { color: #1D5239; background: transparent; border: 0; font-family: Inter, sans-serif; font-weight: 500; font-size: .875rem; padding: .5rem 1rem; border-radius: 9999px; cursor: pointer; transition: background-color .15s; } .ds-tab:hover { background: #E9E2CF; } .ds-tab.ds-active { background: #163F2E; color: #F8F4EA; } .ds-tab:focus-visible { outline: 2px solid #2F7A55; outline-offset: 2px; }"
+    },
+    {
+      "name": "Recipe Card",
+      "kind": "card",
+      "refersTo": "recipe-card",
+      "description": "Dish card with image, title, category, sulit meter and price/nutrition tags.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-img\">🍲</div><div class=\"ds-card-body\"><h3>Ginisang Monggo</h3><span class=\"ds-cat\">Vegetable</span><div class=\"ds-meter\"><i class=\"on\"></i><i class=\"on\"></i><i class=\"on\"></i><i class=\"on\"></i><i></i><span>Sulit</span></div><div class=\"ds-tags\"><span class=\"ds-price\">₱28/serving</span><span class=\"ds-muted\">14g protein</span></div></div></div>",
+      "css": ".ds-card { width: 16rem; background: #fff; border-radius: 1rem; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.08); transition: transform .2s ease, box-shadow .2s ease; cursor: pointer; font-family: Inter, sans-serif; } .ds-card:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,.12); } .ds-card-img { height: 9rem; background: #F6EBCD; display: flex; align-items: center; justify-content: center; font-size: 3rem; } .ds-card-body { padding: 1rem; display: flex; flex-direction: column; gap: .5rem; } .ds-card h3 { margin: 0; font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 1rem; color: #111827; } .ds-card:hover h3 { color: #1D5239; } .ds-cat { font-size: .75rem; color: #9ca3af; text-transform: uppercase; letter-spacing: .025em; } .ds-meter { display: flex; align-items: center; gap: 3px; } .ds-meter i { width: 1.1rem; height: .4rem; border-radius: 9999px; background: #E7DFCB; display: block; } .ds-meter i.on { background: #559370; } .ds-meter span { margin-left: .4rem; font-size: .7rem; font-weight: 700; color: #1D5239; } .ds-tags { display: flex; gap: .25rem; align-items: center; flex-wrap: wrap; } .ds-price { font-size: .75rem; background: #F6EBCD; color: #855F0E; padding: .125rem .5rem; border-radius: 9999px; font-weight: 500; } .ds-muted { font-size: .75rem; color: #6b7280; }"
+    },
+    {
+      "name": "Incomplete Price Badge",
+      "kind": "custom",
+      "refersTo": "incomplete-badge",
+      "description": "Honesty marker on a card image when a big share of the cost is unpriced.",
+      "html": "<span class=\"ds-incomplete\">⚠ Incomplete price</span>",
+      "css": ".ds-incomplete { display: inline-block; background: #C9961A; color: #fff; font-family: Inter, sans-serif; font-size: .75rem; font-weight: 700; padding: .25rem .5rem; border-radius: 9999px; box-shadow: 0 1px 3px rgba(0,0,0,.1); }"
+    },
+    {
+      "name": "Sulit Meter",
+      "kind": "custom",
+      "refersTo": "recipe-card",
+      "description": "Five-segment value meter, green (top) through gold to brick red (low).",
+      "html": "<div class=\"ds-sm\"><div class=\"ds-sm-row l5\"><i class=\"on\"></i><i class=\"on\"></i><i class=\"on\"></i><i class=\"on\"></i><i class=\"on\"></i><span>Super sulit</span></div><div class=\"ds-sm-row l3\"><i class=\"on\"></i><i class=\"on\"></i><i class=\"on\"></i><i></i><i></i><span>Okay</span></div><div class=\"ds-sm-row l1\"><i class=\"on\"></i><i></i><i></i><i></i><i></i><span>Mahal</span></div></div>",
+      "css": ".ds-sm { display: flex; flex-direction: column; gap: .5rem; font-family: Inter, sans-serif; } .ds-sm-row { display: flex; align-items: center; gap: 3px; } .ds-sm-row i { width: 1.8rem; height: .55rem; border-radius: 9999px; background: #E7DFCB; display: block; } .ds-sm-row span { margin-left: .4rem; font-size: .85rem; font-weight: 700; } .l5 i.on { background: #2F7A55; } .l5 span { color: #1D5239; } .l3 i.on { background: #DDAE2B; } .l3 span { color: #855F0E; } .l1 i.on { background: #C8553D; } .l1 span { color: #9A3D28; }"
+    },
+    {
+      "name": "Toast",
+      "kind": "custom",
+      "refersTo": "toast",
+      "description": "Forest confirmation toast; sits above the bottom bar on phones.",
+      "html": "<div class=\"ds-toast\">⭐ Added to favourites</div>",
+      "css": ".ds-toast { display: inline-block; background: #163F2E; color: #F8F4EA; font-family: Inter, sans-serif; font-size: .875rem; padding: .75rem 1.1rem; border-radius: 1rem; box-shadow: 0 10px 30px rgba(0,0,0,.25); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Honest Palengke",
+    "overview": "SarapSulit should feel like a tidy, trusted market stall: warm cream paper under forest-green signage, with gold marking the price tags. Friendly, within reach, and the numbers always out in the open. The palette comes from the logo (forest leaf, gold grain): green means \"go, sulit\", gold means money and value, cream is the counter everything sits on.\n\nIt is moderately dense: many dishes, prices and filters, grouped into soft cards and pill toggles so a cook can scan with one thumb. Headings use a warm editorial serif (Fraunces) for personality; everything functional uses a plain sans (Inter). Motion is light and kind: cards rise in, the sulit meter fills, the logo's leaf sways once, and all of it switches off under reduced motion.\n\nThe look has three moods built on the same structure: Day (forest and cream), Night market (dark mode: deep green with mint and mango) and Rainy (the site turns blue on rainy days). Every new surface has to work in all three.",
+    "keyCharacteristics": [
+      "Forest green and cream, with gold reserved for value and price cues",
+      "A serif for headings, a sans for UI, and a monospace receipt for totals",
+      "Pills for every control, soft 1rem cards, and a light lift on hover",
+      "Honesty markers (\"≈\", \"⚠ Incomplete price\", \"+\" after a cost) are part of the design, not noise",
+      "Mobile-first: a bottom tab bar on phones and a sticky frosted header on desktop",
+      "Three themes on one structure: day, Night market, and rainy"
+    ],
+    "rules": [
+      { "name": "The Green Means Sulit Rule", "body": "Green is for good value and active state. Red and warm oranges are only for price rises and the low end of the sulit meter. Never use green to decorate something that is bad value.", "section": "colors" },
+      { "name": "The Gold Is Money Rule", "body": "Gold and amber mark prices, value and the one accent word in the hero. Don't use gold for generic decoration or for buttons.", "section": "colors" },
+      { "name": "The Three Moods Rule", "body": "Every new colour needs a day value, a Night market value (html.dark …) and a rainy value (body.rainy …), or it must inherit cleanly from one that already has them.", "section": "colors" },
+      { "name": "The Serif Speaks, the Sans Works Rule", "body": "Fraunces is only for h1, h2, h3 and .font-display. Numbers, prices, buttons and labels are always Inter, or the monospace in receipts.", "section": "typography" },
+      { "name": "The Tabular Money Rule", "body": "Columns of prices use tabular figures (font-variant-numeric: tabular-nums) so pesos line up.", "section": "typography" },
+      { "name": "The Lift Is Earned Rule", "body": "Only things you can tap or that float above the page get a shadow. Toggle rows, section blocks and the header use borders or blur, never a shadow.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do build on Tailwind's re-pointed green-* and amber-* classes, so the day palette, the html.dark overrides and the body.rainy overrides all apply automatically.",
+      "Do give every new colour a day, a Night market and a rainy value (The Three Moods Rule).",
+      "Do use pills for every control and 1rem cards for content.",
+      "Do keep \"≈\", \"+\", \"⚠ Incomplete price\" and price sources visible at full strength.",
+      "Do use Fraunces only for headings and Inter for anything with a number in it.",
+      "Do test on a 375px phone with the bottom tab bar showing, and check the toast and tour clear it.",
+      "Do respect prefers-reduced-motion. The global rule turns off every animation and transition.",
+      "Do prefix new global CSS classes and JS names (for example share-, fx-, plan-), because all scripts share one global scope."
+    ],
+    "donts": [
+      "Don't hide or soften an honesty marker to make a card look cleaner.",
+      "Don't use green on something that is bad value, or gold as generic decoration.",
+      "Don't add shadows to flat structure (sections, toggle rows, the header). Shadows are for tappable or floating things only.",
+      "Don't add a colour without dark and rainy overrides. It will break in Night market mode or on rainy days.",
+      "Don't use Fraunces for prices, buttons or labels.",
+      "Don't put essential actions only at the top of the screen on phones. The bottom bar is where the thumb is."
+    ]
+  }
+}

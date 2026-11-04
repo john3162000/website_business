@@ -133,6 +133,22 @@ required on `main`.
 6. Commit messages end with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
    PR bodies end with `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
 
+## Design (Impeccable)
+
+The design rules live in two files at the repo root. Read them before any UI change.
+- `PRODUCT.md` covers users, voice and principles.
+- `DESIGN.md` covers the look: "The Honest Palengke". The tokens are in its frontmatter, plus
+  `.impeccable/design.json`.
+
+The Impeccable skill (`.claude/skills/impeccable`) runs design commands such as
+`/impeccable critique`, `polish`, `clarify`, `harden` and `layout`.
+- The last critique is `.impeccable/critique.md` (22/40, 2026-10-29). The P0 there (keyboard
+  and screen reader use of the recipe cards and pop-up) is still open.
+- The launcher downloads its engine binary the first time it runs, so the `bin/` folders are
+  git-ignored.
+- On Windows, its hooks need Git Bash. They live in the machine-local `.claude/settings.local.json`.
+- `.github/skills`, `.github/agents` and `.github/hooks` are the same skill for GitHub Copilot.
+
 ## Hard-won pitfalls
 
 - **Write regex escapes only with the Edit/Write tools.** A `\b` sent through a bash heredoc

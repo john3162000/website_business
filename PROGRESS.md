@@ -446,3 +446,15 @@ got personal picks. It still runs entirely on the phone: no API cost, and nothin
 - The "no profile yet" nudge now says to ☆ favourite dishes, plus "or play Laro" when Laro is shown.
 - `taste.js` helpers `addSignal`, `signalStrengths`, `implicitTaste`, `blendTaste` and `diversify`
   are tested in `taste.test.mjs`.
+
+## 2026-11-04: Impeccable design system in the repo
+
+- **New files:**
+  - `PRODUCT.md`: users, purpose, Taglish voice, honest-price principles.
+  - `DESIGN.md` and `.impeccable/design.json`: "The Honest Palengke" tokens and rules.
+  - The 2026-10-29 critique (22/40).
+  - The Impeccable skill for Claude Code (`.claude/skills`, `.claude/agents`) and for Copilot
+    (`.github/skills`, `.github/agents`, `.github/hooks`).
+- **Naming:** follows CLAUDE.md. The app is SarapSulit, a sub-project of FARM2FIGURE.
+- **Left out:** the engine binaries (downloaded on first run), live-mode sessions and machine
+  settings are git-ignored.
