@@ -200,6 +200,7 @@ async function shareRecipe(id) {
   if (!r || shareBusy) return;
   shareBusy = true;
   if (typeof trackEvent === "function") trackEvent("share");
+  if (typeof recordTasteSignal === "function") recordTasteSignal(id, "share");
   const btn = document.getElementById("share-btn");
   if (btn) btn.textContent = "Preparing picture…";
   try {

@@ -776,6 +776,7 @@ function placePicked(key) {
 
 function place(key, id) {
   plan = addToSlot(plan, key, id);
+  if (typeof recordTasteSignal === "function") recordTasteSignal(id, "plan");
   persist(); renderGrid(); renderReceipt();
 }
 

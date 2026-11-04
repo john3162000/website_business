@@ -18,7 +18,7 @@ test("a visit is counted unless the browser asks not to be tracked", () => {
   assert.equal(visitAllowed(null), false);
 });
 
-test("the visit body carries only the section and the language", () => {
-  assert.deepEqual(JSON.parse(visitPayload("planner", "tl")), { page: "planner", lang: "tl" });
-  assert.deepEqual(JSON.parse(visitPayload(undefined, "fr")), { page: "home", lang: "en" });
+test("the visit body carries only the section, the language and the age bracket", () => {
+  assert.deepEqual(JSON.parse(visitPayload("planner", "tl", "senior")), { page: "planner", lang: "tl", age: "senior" });
+  assert.deepEqual(JSON.parse(visitPayload(undefined, "fr", "99")), { page: "home", lang: "en", age: null });
 });

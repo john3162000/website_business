@@ -1,4 +1,5 @@
-// Panlasa (taste) model, level 1: everything runs on this device.
+// Panlasa (taste) model: everything runs on this device. Level 1 (below) learns from Laro;
+// level 2 adds what people do on the site (favourites, cooking, planning, sharing, opening).
 // Each dish gets taste tags from its title and ingredients (maasim, gata,
 // sabaw, ...). The player's ratings (1-10) and Versus picks train a small
 // ridge regression over those tags; the weights become the "Panlasa mo"
@@ -179,7 +180,7 @@ function tasteReasons(model, x, n = 2) {
 function recommendDishes(model, recipes, rated, n = 6, vec = tasteVector, kind = null, kindOf = dishKind) {
   const maxValue = Math.max(1, ...recipes.map((r) => r.valueScore || 0));
   const seen = new Set();
-  return recipes
+  const best = recipes
     .filter((r) => r.img && r.costPerServing > 0 && !(String(r.id) in rated) && r.category !== "Sauce & Condiment")
     .filter((r) => (kind ? kindOf(r) === kind : r.category !== "Dessert"))
     .map((r) => {
@@ -188,7 +189,121 @@ function recommendDishes(model, recipes, rated, n = 6, vec = tasteVector, kind =
     })
     .sort((a, b) => b.score - a.score)
     .filter(({ r }) => { const t = r.title.toLowerCase(); if (seen.has(t)) return false; seen.add(t); return true; })
-    .slice(0, n);
+    .slice(0, n * 4);
+  // A varied n from the best few times n.
+  return diversify(best, n);
+}
+
+// ── Level 2: learning from what people do, not only from Laro ──
+// Favourites, "Paano lutuin?" clicks, planner adds, shares and recipe opens say which dishes a person
+// is drawn to. Their taste tags, compared with how common each tag is overall, give a profile in the
+// same shape as the Laro model (one weight per tag), so everything that ranks by taste uses both.
+// Signals fade with a 45-day half-life; favourites stay until they're removed. Nothing leaves the phone.
+
+const TASTE_SIGNAL_KEY = "sarapsulit.signals.v1";
+// How much each action says about liking a dish (a favourite is the strongest).
+const TASTE_SIGNAL_WEIGHT = { fav: 1, cook: 0.8, plan: 0.7, share: 0.7, open: 0.25 };
+const TASTE_HALF_LIFE_DAYS = 45;
+const TASTE_MIN_SIGNAL = 2;     // total signal strength before the profile is used on its own
+const TASTE_IMPLICIT_MIX = 0.6; // its share when there is also a Laro model
+
+/** Signals with one more action on a dish: { [id]: { open, cook, plan, share: last time (ms), opens: count } }. */
+function addSignal(signals, id, kind, now = Date.now()) {
+  if (!TASTE_SIGNAL_WEIGHT[kind] || kind === "fav" || id == null) return signals;
+  const prev = signals[id] || {};
+  const next = { ...prev, [kind]: now };
+  if (kind === "open") next.opens = (prev.opens || 0) + 1;
+  // Keep the 300 most recent dishes, so storage stays small.
+  const out = { ...signals, [id]: next };
+  const ids = Object.keys(out);
+  if (ids.length > 300) {
+    const last = (s) => Math.max(...["open", "cook", "plan", "share"].map((k) => s[k] || 0));
+    ids.sort((a, b) => last(out[a]) - last(out[b])).slice(0, ids.length - 300).forEach((k) => delete out[k]);
+  }
+  return out;
+}
+
+/**
+ * How strongly each dish was liked, 0–1: the strongest action on it, faded by age. Repeated opens
+ * count a little more (up to 0.6), always less than a planner add.
+ */
+function signalStrengths(signals, favs, now = Date.now(), halfLife = TASTE_HALF_LIFE_DAYS) {
+  const fade = (t) => (t ? 0.5 ** ((now - t) / 86400000 / halfLife) : 0);
+  const out = new Map();
+  for (const [id, s] of Object.entries(signals || {})) {
+    const opens = Math.min(0.6, TASTE_SIGNAL_WEIGHT.open * (1 + Math.log2(s.opens || 1)));
+    const v = Math.max(
+      TASTE_SIGNAL_WEIGHT.cook * fade(s.cook), TASTE_SIGNAL_WEIGHT.plan * fade(s.plan),
+      TASTE_SIGNAL_WEIGHT.share * fade(s.share), opens * fade(s.open),
+    );
+    if (v > 0.02) out.set(String(id), v);
+  }
+  for (const id of favs || []) out.set(String(id), TASTE_SIGNAL_WEIGHT.fav);
+  return out;
+}
+
+/**
+ * The behaviour profile in the Laro model's shape: weight per tag = how much more often the tag shows
+ * up among liked dishes than among all dishes, shrunk while there is little evidence.
+ * `vecs`: [{ id, x }] for every candidate dish (the base rates).
+ */
+function implicitTaste(strengths, vecs) {
+  const d = TASTE_TAGS.length;
+  const base = new Array(d).fill(0);
+  for (const { x } of vecs) x.forEach((v, i) => { base[i] += v; });
+  const total = Math.max(1, vecs.length);
+  const liked = new Array(d).fill(0), seen = new Array(d).fill(0);
+  let sum = 0, dishes = 0;
+  for (const { id, x } of vecs) {
+    const s = strengths.get(String(id));
+    if (!s) continue;
+    sum += s; dishes++;
+    x.forEach((v, i) => { liked[i] += s * v; if (v) seen[i]++; });
+  }
+  if (!sum) return { weights: new Array(d).fill(0), bias: 0, seen, answers: 0, strength: 0 };
+  const confidence = sum / (sum + 3);
+  const weights = liked.map((l, i) => confidence * (l / sum - base[i] / total));
+  return { weights, bias: 0, seen, answers: dishes, strength: sum };
+}
+
+/**
+ * The model the site ranks with: the Laro model and the behaviour profile together, either one alone
+ * when the other has too little to go on, or null when neither does.
+ */
+function blendTaste(explicit, implicit, minAnswers = TASTE_MIN_ANSWERS, minSignal = TASTE_MIN_SIGNAL, mix = TASTE_IMPLICIT_MIX) {
+  const hasE = explicit && explicit.answers >= minAnswers;
+  const hasI = implicit && implicit.strength >= minSignal;
+  if (!hasE && !hasI) return null;
+  if (!hasI) return explicit;
+  if (!hasE) return { ...implicit, source: "behaviour" };
+  return {
+    ...explicit,
+    weights: explicit.weights.map((w, i) => w + mix * implicit.weights[i]),
+    seen: explicit.seen.map((s, i) => s + implicit.seen[i]),
+    answers: explicit.answers + implicit.answers,
+    source: "both",
+  };
+}
+
+/**
+ * Picks `n` from candidates sorted by score, trading a little score for variety (maximal marginal
+ * relevance): each next pick is penalised by its taste-tag similarity to the ones already picked,
+ * so a list isn't six adobos.
+ */
+function diversify(items, n, vecOf = (it) => it.x, lambda = 0.75) {
+  const pool = [...items];
+  const picked = [];
+  const top = Math.max(...pool.map((it) => it.score), 0) || 1;
+  while (picked.length < n && pool.length) {
+    let best = 0, bestVal = -Infinity;
+    pool.forEach((it, i) => {
+      const sim = picked.length ? Math.max(...picked.map((p) => cosine(vecOf(it), vecOf(p)))) : 0;
+      const val = lambda * (it.score / top) - (1 - lambda) * sim;
+      if (val > bestVal) { bestVal = val; best = i; }
+    });
+    picked.push(pool.splice(best, 1)[0]);
+  }
+  return picked;
 }
 
 // ── Using the model across the site (Browse sort, badges, similar dishes) ──
@@ -242,19 +357,35 @@ function tasteModelFrom(recipes, ratings, picks, kind = null, kindOf = dishKind)
   return learnTaste(rows, pairs);
 }
 
-/** This device's taste model for ulam or meryenda, or null until there are enough answers of that kind. */
+/**
+ * This device's taste model for ulam or meryenda: the Laro answers and what the person does on the
+ * site (favourites, cooking, planning, sharing, opening dishes), or null until there's enough of either.
+ */
 function currentTasteModel(kind = "ulam") {
   if (!kind) return null;
   if (!tasteModelCache.has(kind)) {
     const read = (k) => { try { return JSON.parse(localStorage.getItem(k) || "{}") || {}; } catch { return {}; } };
-    tasteModelCache.set(kind, tasteModelFrom(typeof RECIPES !== "undefined" ? RECIPES : [], read(TASTE_RATE_KEY), read(TASTE_VS_KEY), kind));
+    const recipes = typeof RECIPES !== "undefined" ? RECIPES : [];
+    const explicit = tasteModelFrom(recipes, read(TASTE_RATE_KEY), read(TASTE_VS_KEY), kind);
+    const favs = typeof favIds === "function" ? favIds() : new Set();
+    const vecs = recipes.filter((r) => dishKind(r) === kind).map((r) => ({ id: r.id, x: tasteVec(r) }));
+    const implicit = implicitTaste(signalStrengths(read(TASTE_SIGNAL_KEY), favs), vecs);
+    tasteModelCache.set(kind, blendTaste(explicit, implicit));
   }
-  const m = tasteModelCache.get(kind);
-  return m.answers >= TASTE_MIN_ANSWERS ? m : null;
+  return tasteModelCache.get(kind);
 }
 
-/** Call after a new rating or pick so the next use retrains. */
+/** Call after a new rating, pick, favourite or signal so the next use retrains. */
 function tasteModelChanged() { tasteModelCache.clear(); }
+
+/** Saves one action on a dish (open, cook, plan, share) for the taste profile. */
+function recordTasteSignal(id, kind) {
+  try {
+    const signals = JSON.parse(localStorage.getItem(TASTE_SIGNAL_KEY) || "{}") || {};
+    localStorage.setItem(TASTE_SIGNAL_KEY, JSON.stringify(addSignal(signals, id, kind)));
+  } catch { /* storage blocked: nothing learned */ }
+  tasteModelChanged();
+}
 
 // Words that say nothing about what a dish is.
 const TASTE_STOP = new Set(["cup", "cups", "tablespoon", "tablespoons", "teaspoon", "teaspoons", "pieces", "piece", "chopped", "minced", "sliced", "diced", "crushed", "large", "small", "medium", "fresh", "ground", "whole", "salt", "pepper", "water", "garlic", "onion", "onions", "cooking", "oil", "sugar", "black", "white", "cloves", "into", "with", "and", "taste", "pounds", "pound", "grams", "ounces", "optional", "about", "cut", "thinly", "finely", "leaves"]);

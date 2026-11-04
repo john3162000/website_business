@@ -404,6 +404,49 @@ pass is complete. From now on, the hourly runs only pick up newly published post
   - Messages are saved by `POST /api/feedback` and listed on /admin. If saving fails, the visitor's
     email app opens with the message filled in.
 
+## 2026-11-04: age brackets and a large-text mode for older users
+
+- **First visit:** before the tour, "Ilang taon ka na?" with six choices: 12 or under, 13–17,
+  18–29, 30–44, 45–59, and 60 and over. An answer is required (no "prefer not to say", owner's
+  call), and the adult range is split three ways at the owner's request. The answer is saved on the device
+  (`SETTINGS.age`), and the question isn't asked again or on shared recipe links.
+- **60 and over** turns on **large text and a simpler menu** (`html.senior`):
+  - about 18% bigger text and buttons;
+  - darker grey text, for readability;
+  - Laro/Games hidden, so the phone tab bar has 6 bigger tabs.
+
+  Everyone under 60 gets the normal site (owner's call).
+- **Settings → "Edad at laki ng text":** change the age bracket, or switch large text on or off for
+  anyone.
+- **Statistics:** the bracket (only the bracket) is sent with the visit count. `/admin` shows users by
+  age bracket for the last 30 days, and the footer privacy note says so.
+
+## 2026-11-04: smarter "Para sa'yo" suggestions (taste model, level 2)
+
+Until now the taste model learned only from Laro ratings and needed 5 answers, so most visitors never
+got personal picks. It still runs entirely on the phone: no API cost, and nothing leaves the device.
+
+- **Learns from what people do:**
+  - Each action counts with a set strength: favourite ★ (1.0), "Paano lutuin?" click (0.8), a dish
+    placed in the planner (0.7), share (0.7) and opening a recipe (0.25; repeated opens up to 0.6).
+  - Signals fade with a 45-day half-life; favourites count until they're removed.
+  - Stored in `sarapsulit.signals.v1`.
+- **The behaviour profile** compares, for each taste tag, how often it shows up among the dishes a
+  person engages with against how often it shows up overall. The difference is shrunk while there is
+  little evidence. It has the same shape as the Laro model, so everything that ranks by taste uses it:
+  the Browse "Para sa'yo" sort, the "bagay sa'yo" badges, the "Mura ngayon at bagay sa panlasa mo"
+  list, Random week and the Laro picks.
+- **Blending:** the Laro model and the behaviour profile are combined, with the behaviour profile
+  weighted at 0.6, or either one is used alone. The behaviour profile starts after a total signal
+  strength of 2, for example two favourites.
+- **Variety:** "Para sa'yo" picks are re-ranked (maximal marginal relevance) so a list isn't six adobos.
+- **Example (preview):** a visitor who only favourited three sinigang dishes gets "Mahilig ka sa sabaw,
+  maasim at isda". Browse sorts by their taste, and the cheap-picks list shows bangus, tahong and
+  sardinas dishes.
+- The "no profile yet" nudge now says to ☆ favourite dishes, plus "or play Laro" when Laro is shown.
+- `taste.js` helpers `addSignal`, `signalStrengths`, `implicitTaste`, `blendTaste` and `diversify`
+  are tested in `taste.test.mjs`.
+
 ## 2026-11-04: Impeccable design system in the repo
 
 - **New files:**
