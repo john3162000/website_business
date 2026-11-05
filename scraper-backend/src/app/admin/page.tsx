@@ -193,23 +193,29 @@ function Section({ type, label, desc, chunked }: { type: string; label: string; 
 
 const TOKEN_KEY = "adminToken";
 
-// In-memory copy, so the token still works for this page view when storage is blocked.
+// Kept for this tab only (sessionStorage), so it is gone when the tab closes. In-memory copy,
+// so the token still works for this page view when storage is blocked.
 let memoryToken = "";
 
 function readAdminToken(): string {
   try {
-    return localStorage.getItem(TOKEN_KEY) ?? memoryToken;
+    return sessionStorage.getItem(TOKEN_KEY) ?? memoryToken;
   } catch {
     return memoryToken;
   }
 }
 
 function AdminTokenField() {
-  // Uncontrolled input filled after mount: localStorage isn't available during SSR.
+  // Uncontrolled input filled after mount: sessionStorage isn't available during SSR.
   const ref = useRef<HTMLInputElement>(null);
   const [saved, setSaved] = useState(false);
   useEffect(() => {
     if (ref.current) ref.current.value = readAdminToken();
+    try {
+      localStorage.removeItem(TOKEN_KEY); // older versions kept it for good
+    } catch {
+      // storage blocked: nothing was kept
+    }
   }, []);
   return (
     <label className="flex flex-wrap items-center gap-2 text-sm mb-8">
@@ -222,7 +228,7 @@ function AdminTokenField() {
         onChange={(e) => {
           memoryToken = e.target.value;
           try {
-            localStorage.setItem(TOKEN_KEY, e.target.value);
+            sessionStorage.setItem(TOKEN_KEY, e.target.value);
           } catch {
             // storage blocked: memoryToken still covers this page view
           }

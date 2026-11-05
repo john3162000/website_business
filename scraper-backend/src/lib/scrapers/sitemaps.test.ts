@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { postSitemapsFromIndex, urlsFromSitemap } from "./sitemaps.ts";
+import { onSite, postSitemapsFromIndex, urlsFromSitemap } from "./sitemaps.ts";
 
 test("post sitemaps come from the index, numbered in order, other sitemaps left out", () => {
   const xml = `<?xml version="1.0"?><sitemapindex>
@@ -46,6 +46,17 @@ test("other sitemap plugins: post sitemaps are the ones that aren't pages or tax
   assert.deepEqual(postSitemapsFromIndex(xml), ["https://y.com/sitemap-pt-post-2024-02.xml", "https://y.com/sitemap-pt-post-2024-01.xml"]);
   // A urlset (no index) is not read as a list of sitemaps.
   assert.deepEqual(postSitemapsFromIndex("<urlset><url><loc>https://y.com/a.xml</loc></url></urlset>"), []);
+});
+
+test("the crawler only follows https URLs on the source's own host and path", () => {
+  assert.equal(onSite("https://panlasangpinoy.com/x/", "https://panlasangpinoy.com"), true);
+  assert.equal(onSite("https://www.panlasangpinoy.com/x/", "https://panlasangpinoy.com"), true);
+  assert.equal(onSite("https://panlasangpinoy.com.evil.net/x/", "https://panlasangpinoy.com"), false);
+  assert.equal(onSite("http://panlasangpinoy.com/x/", "https://panlasangpinoy.com"), false);
+  assert.equal(onSite("https://169.254.169.254/latest/", "https://panlasangpinoy.com"), false);
+  assert.equal(onSite("https://pepper.ph/recipes/adobo/", "https://pepper.ph/recipes/"), true);
+  assert.equal(onSite("https://pepper.ph/news/x/", "https://pepper.ph/recipes/"), false);
+  assert.equal(onSite("not a url", "https://pepper.ph"), false);
 });
 
 test("page URLs from a sitemap, only on the site itself", () => {

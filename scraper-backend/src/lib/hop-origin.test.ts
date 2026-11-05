@@ -10,3 +10,8 @@ test("the next crawl hop goes to the production domain, not the guarded deployme
   assert.equal(hopOrigin(req({ "x-forwarded-host": "website-business-beta.vercel.app" }), url, ""), "https://website-business-beta.vercel.app");
   assert.equal(hopOrigin(req(), url, undefined), "https://website-business-abc123-team.vercel.app");
 });
+
+test("in production with no production URL the hop is refused, not sent to a request-supplied host", () => {
+  assert.equal(hopOrigin(req({ "x-forwarded-host": "evil.example" }), url, undefined, "production"), null);
+  assert.equal(hopOrigin(req(), url, "website-business-beta.vercel.app", "production"), "https://website-business-beta.vercel.app");
+});

@@ -19,8 +19,12 @@ jobs:
       run:
         working-directory: scraper-backend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      # Actions are pinned to full commit SHAs (a moved tag can't change what runs);
+      # Dependabot keeps the pins and the version comments up to date.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24
           cache: npm
@@ -30,6 +34,14 @@ jobs:
       - run: npm test
       - run: npx tsc --noEmit
       - name: Site scripts parse
-        run: node --check ../docs/app.js && node --check ../docs/weather.js && node --check ../docs/mydish.js && node --check ../docs/planner.js && node --check ../docs/finder.js && node --check ../docs/alerts.js && node --check ../docs/share.js && node --check ../docs/tour.js
+        run: for f in ../docs/*.js; do node --check "$f" || exit 1; done
       - name: Site tests
         run: node --test ../docs/*.test.mjs
+      # docs/tailwind.css is built from site-css/ (it replaced the Tailwind Play CDN).
+      # Rebuild it here and fail if the committed file is stale, e.g. a new class in docs/.
+      - name: Site CSS is up to date
+        working-directory: site-css
+        run: |
+          npm ci
+          npm run build
+          git diff --exit-code -- ../docs/tailwind.css || { echo "::error::docs/tailwind.css is stale: run 'cd site-css && npm run build' and commit it"; exit 1; }
