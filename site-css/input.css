@@ -1,0 +1,4 @@
+/* Source for docs/tailwind.css. Rebuild after adding Tailwind classes to docs/: cd site-css && npm run build */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

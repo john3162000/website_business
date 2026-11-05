@@ -11,7 +11,10 @@ const GC_CODE = "sarapsulit";
 if (GC_CODE && typeof document !== "undefined") {
   const s = document.createElement("script");
   s.async = true;
-  s.src = "https://gc.zgo.at/count.js";
+  // Pinned version with subresource integrity (GoatCounter publishes count.v4.js for this).
+  s.src = "https://gc.zgo.at/count.v4.js";
+  s.integrity = "sha384-nRw6qfbWyJha9LhsOtSb2YJDyZdKvvCFh0fJYlkquSFjUxp9FVNugbfy8q1jdxI+";
+  s.crossOrigin = "anonymous";
   s.dataset.goatcounter = `https://${GC_CODE}.goatcounter.com/count`;
   document.head.appendChild(s);
 }

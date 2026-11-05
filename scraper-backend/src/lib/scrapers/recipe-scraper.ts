@@ -17,7 +17,7 @@ import { methodNotes } from "@/lib/recipe-compile/compile";
 import { dishKey } from "./ingredient-line";
 import { parseRecipePage, type ScrapedRecipe } from "./recipe-page";
 import { RECIPE_SOURCES, type RecipeSource } from "./recipe-sources";
-import { postSitemapsFromIndex, urlsFromSitemap } from "./sitemaps";
+import { onSite, postSitemapsFromIndex, urlsFromSitemap } from "./sitemaps";
 
 // Panlasang Pinoy's "/recipes/" landing page only lists a small curated subset; the Yoast post
 // sitemaps enumerate every published post (~3000 across 3 files). Used when its index can't be read.
@@ -43,7 +43,7 @@ async function postSitemaps(source: RecipeSource): Promise<string[]> {
     for (const name of SITEMAP_INDEXES) {
       try {
         const xml = await fetchHtml(`${source.base}/${name}`);
-        const found = postSitemapsFromIndex(xml);
+        const found = postSitemapsFromIndex(xml).filter((u) => onSite(u, source.base));
         if (found.length) return found;
         // A small site's sitemap.xml can list the pages itself (no index).
         if (/<urlset/i.test(xml) && /<loc>/i.test(xml)) return [`${source.base}/${name}`];

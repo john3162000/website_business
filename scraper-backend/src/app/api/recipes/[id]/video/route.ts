@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { corsJson, corsPreflight } from "@/lib/cors";
+import { checkQuery, isId } from "@/lib/query-guard";
 import { extractVideoLinks, videoSearchLinks } from "@/lib/scrapers/video-links.ts";
 
 export const dynamic = "force-dynamic";
@@ -7,7 +8,8 @@ export const maxDuration = 20;
 
 // A recipe's video rarely changes: let the CDN keep the answer for a week.
 const CACHE = { "Cache-Control": "public, s-maxage=604800, stale-while-revalidate=2592000" };
-const HEADERS = { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36" };
+// The same honest name as the recipe crawl.
+const HEADERS = { "User-Agent": "Mozilla/5.0 (compatible; SarapSulitBot/1.0; +https://john3162000.github.io/website_business/)" };
 
 /**
  * "How to cook" videos for one recipe, read from its Panlasang Pinoy page when asked.
@@ -16,9 +18,12 @@ const HEADERS = { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Apple
  * `youtube` / `tiktok` are the recipe's own videos (null when the page has none); `search`
  * always has YouTube and TikTok search links for the dish.
  */
-export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const id = Number((await params).id);
-  if (!Number.isInteger(id)) return corsJson({ error: "Invalid recipe id" }, { status: 400 });
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const q = checkQuery(request.url);
+  if (!q.ok) return corsJson({ error: q.error }, { status: 400 });
+  const raw = (await params).id;
+  if (!isId(raw)) return corsJson({ error: "Invalid recipe id" }, { status: 400 });
+  const id = Number(raw);
   const recipe = await prisma.recipe.findUnique({ where: { id }, select: { title: true, url: true } });
   if (!recipe) return corsJson({ error: "Recipe not found" }, { status: 404 });
   const search = videoSearchLinks(recipe.title);

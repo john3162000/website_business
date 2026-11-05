@@ -1,16 +1,19 @@
 import { prisma } from "@/lib/db";
 import { corsJson, corsPreflight } from "@/lib/cors";
+import { checkQuery, isId } from "@/lib/query-guard";
 import { ensureRecipeColumns } from "@/lib/ensure-schema";
 
 export const dynamic = "force-dynamic";
 
 /** Full detail for a single recipe (ingredients + ordered instructions). */
-export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const recipeId = parseInt(id, 10);
-  if (isNaN(recipeId)) {
+  const q = checkQuery(request.url);
+  if (!q.ok) return corsJson({ error: q.error }, { status: 400 });
+  if (!isId(id)) {
     return corsJson({ error: "Invalid recipe id" }, { status: 400 });
   }
+  const recipeId = Number(id);
 
   await ensureRecipeColumns();
   const recipe = await prisma.recipe.findUnique({

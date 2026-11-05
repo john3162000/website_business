@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { corsJson, corsPreflight } from "@/lib/cors";
+import { checkQuery } from "@/lib/query-guard";
 import { isMalformedName, parsePriceBasis, type PriceBasis } from "@/lib/da-units";
 import { CANONICALS } from "@/lib/recipe-compile/catalog.generated.ts";
 import { ensureNutritionColumns } from "@/lib/ensure-schema";
@@ -18,7 +19,9 @@ const PERIODS: [Period, number, number][] = [["week", 7, 5], ["twoWeeks", 14, 10
  * and, optionally, a sparkline), and the change since `compareDate`: about a
  * month back, or the earliest stored day while history is shorter than that.
  */
-export async function GET() {
+export async function GET(request: Request) {
+  const q = checkQuery(request.url);
+  if (!q.ok) return corsJson({ error: q.error }, { status: 400 });
   // All rows from the last ~35 days, oldest first, so we can fold them into
   // per-commodity history and derive the latest + previous price.
   const since = new Date();

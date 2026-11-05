@@ -1,4 +1,5 @@
 import { corsJson, corsPreflight } from "@/lib/cors";
+import { checkQuery, intIn } from "@/lib/query-guard";
 import { compileFromDb, type CompiledFromDb } from "@/lib/recipe-compile/load";
 
 export const dynamic = "force-dynamic";
@@ -50,7 +51,9 @@ function stats(recipes: CompiledFromDb[]) {
  * GET /api/recipes/nutrition-check?limit=100  → more outliers
  */
 export async function GET(request: Request) {
-  const limit = Math.min(100, Math.max(1, Number(new URL(request.url).searchParams.get("limit")) || 25));
+  const q = checkQuery(request.url, { limit: intIn(1, 100) });
+  if (!q.ok) return corsJson({ error: q.error }, { status: 400 });
+  const limit = Number(q.params.get("limit")) || 25;
   const { recipes } = await compileFromDb(null);
 
   const meals = recipes.filter((c) => !c.isArticle && !c.isCollection);

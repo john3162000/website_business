@@ -1,4 +1,5 @@
 import { corsJson, corsPreflight } from "@/lib/cors";
+import { checkQuery } from "@/lib/query-guard";
 import { compileFromDb } from "@/lib/recipe-compile/load";
 import { ingredientIndex } from "@/lib/recipe-compile/ingredient-index.ts";
 
@@ -14,7 +15,9 @@ const CACHE = { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=
  *
  * GET /api/recipes/ingredient-index → { priceDate, ingredients: [{ slug, label, count }], recipes: [{ id, i, c }] }
  */
-export async function GET() {
+export async function GET(request: Request) {
+  const q = checkQuery(request.url);
+  if (!q.ok) return corsJson({ error: q.error }, { status: 400 });
   const { priceDate, recipes } = await compileFromDb(null);
   return corsJson({ priceDate, ...ingredientIndex(recipes) }, { headers: CACHE });
 }
