@@ -14,3 +14,11 @@ updates:
     directory: /
     schedule:
       interval: monthly
+  - package-ecosystem: npm
+    directory: /site-css
+    schedule:
+      interval: monthly
+    # Stay on Tailwind v3: v4 changes the generated CSS (and the site's look).
+    ignore:
+      - dependency-name: tailwindcss
+        update-types: [version-update:semver-major]

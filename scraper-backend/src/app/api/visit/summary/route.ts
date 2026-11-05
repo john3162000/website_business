@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { corsJson, corsPreflight } from "@/lib/cors";
+import { checkQuery } from "@/lib/query-guard";
 import { ensureVisitTable } from "@/lib/ensure-schema";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +13,9 @@ const num = (v: unknown) => Number(v ?? 0);
  * last 24 hours, 72 hours and 7 days, by when each visitor was last seen. Read by the owner's
  * daily report; the detailed stats stay admin-only at GET /api/visit.
  */
-export async function GET() {
+export async function GET(request: Request) {
+  const q = checkQuery(request.url);
+  if (!q.ok) return corsJson({ error: q.error }, { status: 400 });
   await ensureVisitTable();
   const now = Date.now();
   const since = (h: number) => new Date(now - h * 3600_000);

@@ -15,6 +15,26 @@ test("site scripts have no stray control characters", () => {
   }
 });
 
+test("the page loads no unchecked outside code and keeps its content security policy", () => {
+  const html = read("index.html");
+  // Built CSS (site-css/) instead of the Tailwind Play CDN, which ran whatever it served.
+  assert.ok(!html.includes("cdn.tailwindcss.com"), "Tailwind Play CDN is back");
+  assert.ok(!read("match-review.html").includes("cdn.tailwindcss.com"), "match-review.html uses the Play CDN");
+  assert.match(html, /<link rel="stylesheet" href="tailwind\.css">\s*<\/head>/);
+  // green-700 is re-pointed at forest green #1D5239 (Tailwind writes it as rgb).
+  assert.ok(read("tailwind.css").includes("rgb(29 82 57"), "tailwind.css lacks the forest green theme");
+  // Every script tag is local (same origin), so the CSP's script hosts are only the two pinned below.
+  for (const m of html.matchAll(/<script[^>]*\ssrc="([^"]+)"/g)) assert.ok(!/^https?:/.test(m[1]), `remote script tag: ${m[1]}`);
+  const csp = html.match(/<meta http-equiv="Content-Security-Policy" content="([^"]+)">/)?.[1];
+  assert.ok(csp, "no CSP meta tag");
+  for (const part of ["default-src 'self'", "object-src 'none'", "base-uri 'self'", "https://website-business-beta.vercel.app", "https://api.open-meteo.com"]) {
+    assert.ok(csp.includes(part), `CSP lacks ${part}`);
+  }
+  assert.match(read("finder.js"), /s\.integrity = D3_SRI; s\.crossOrigin = "anonymous"/);
+  assert.match(read("finder.js"), /const D3_SRI = "sha384-[A-Za-z0-9+/]{64}"/);
+  assert.match(read("app.js"), /s\.src = "https:\/\/gc\.zgo\.at\/count\.v4\.js";\s*s\.integrity = "sha384-[A-Za-z0-9+/]{64}";\s*s\.crossOrigin = "anonymous";/);
+});
+
 test("categoryFor: clear courses win, the title decides otherwise", () => {
   const src = read("app.js");
   const ctx = vm.createContext({});

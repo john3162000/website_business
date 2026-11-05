@@ -50,8 +50,10 @@ export async function GET(request: Request) {
 
   const more = !!last && !last.done && !last.pause && hop + 1 < MAX_HOPS;
   console.log(`recipe crawl hop ${hop}: ${steps} steps, ${saved} new, total this run ${last?.itemsScraped ?? 0}${last?.done ? ", done" : ""}${more ? ", next hop" : ""}`);
-  if (more) {
-    const next = new URL(url.pathname, hopOrigin(request, url));
+  const origin = more ? hopOrigin(request, url) : null;
+  if (more && !origin) console.error(`recipe crawl hop ${hop + 1} skipped: VERCEL_PROJECT_PRODUCTION_URL is not set`);
+  if (more && origin) {
+    const next = new URL(url.pathname, origin);
     next.searchParams.set("hop", String(hop + 1));
     // Start the next hop and return; it runs on its own (we only wait for it to be accepted).
     // A quick non-2xx (401 from Vercel Authentication, 503) means the chain stopped: log it.

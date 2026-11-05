@@ -3,9 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Where code and data may come from (GitHub Pages can't send headers). The inline
+       onclick handlers still need 'unsafe-inline'; moving them to addEventListener would let it go. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://gc.zgo.at; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https: data: blob:; connect-src 'self' https://website-business-beta.vercel.app https://api.open-meteo.com https://archive-api.open-meteo.com https://*.goatcounter.com; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <title>SarapSulit — Masarap, Masustansya, Sulit!</title>
   <link rel="icon" type="image/png" href="favicon.png">
   <script>
+    // No framing by other sites (a meta CSP can't set frame-ancestors).
+    if (window.top !== window.self) { try { window.top.location = window.self.location.href; } catch (e) {} }
     (function () {
       var t = null;
       try { t = localStorage.getItem("sarapsulit.theme"); } catch (e) {}
@@ -15,19 +21,6 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    // Forest and cream: Tailwind's green and amber scales are re-pointed at the brand colours,
-    // so every bg-green-*/text-amber-* class on the site follows the theme.
-    tailwind.config = { theme: { extend: {
-      colors: {
-        green: { 50: "#EFF5F0", 100: "#D9E8DD", 200: "#B5D2BE", 300: "#87B597", 400: "#559370", 500: "#2F7A55", 600: "#256647", 700: "#1D5239", 800: "#163F2E", 900: "#0F2E21", 950: "#081B13" },
-        amber: { 50: "#F8F4EA", 100: "#F6EBCD", 200: "#EED79A", 300: "#E6C265", 400: "#DDAE2B", 500: "#C9961A", 600: "#A87A12", 700: "#855F0E", 800: "#634610", 900: "#47330C" },
-        leaf: "#4E9F3A",
-      },
-      fontFamily: { display: ["Fraunces", "Georgia", "serif"] },
-    } } };
-  </script>
   <style>
     * { font-family: 'Inter', sans-serif; }
     h1, h2, h3, .font-display { font-family: 'Fraunces', Georgia, serif !important; letter-spacing: -0.01em; }
@@ -555,6 +548,9 @@
       #weather-grid .recipe-card .h-44, #top-recipes-grid .recipe-card .h-44 { height: 9rem; }
     }
   </style>
+  <!-- Built from site-css/ (Tailwind v3 CLI): cd site-css && npm run build. After the inline
+       styles, where the Play CDN used to put its styles, so the cascade is unchanged. -->
+  <link rel="stylesheet" href="tailwind.css">
 </head>
 <body class="bg-amber-50 text-gray-900 min-h-screen flex flex-col">
 

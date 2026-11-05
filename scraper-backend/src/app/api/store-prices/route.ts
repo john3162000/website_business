@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { corsJson, corsPreflight } from "@/lib/cors";
+import { checkQuery, textUpTo } from "@/lib/query-guard";
 
 export const dynamic = "force-dynamic";
 
@@ -10,8 +11,9 @@ export const dynamic = "force-dynamic";
  * previous snapshot). Optional `?q=` filters by product name.
  */
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const q = searchParams.get("q")?.trim();
+  const check = checkQuery(request.url, { q: textUpTo(60) });
+  if (!check.ok) return corsJson({ error: check.error }, { status: 400 });
+  const q = check.params.get("q")?.trim();
 
   // All rows from the last ~45 days, oldest first, folded into per-SKU history.
   const since = new Date();

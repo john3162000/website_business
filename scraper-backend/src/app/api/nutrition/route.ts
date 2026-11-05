@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { corsJson, corsPreflight } from "@/lib/cors";
+import { checkQuery, textUpTo } from "@/lib/query-guard";
 import { ensureNutritionColumns } from "@/lib/ensure-schema";
 
 export const dynamic = "force-dynamic";
@@ -9,8 +10,9 @@ export const dynamic = "force-dynamic";
  * Optional `?q=` filters by food name (case-insensitive contains).
  */
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const q = searchParams.get("q")?.trim();
+  const check = checkQuery(request.url, { q: textUpTo(60) });
+  if (!check.ok) return corsJson({ error: check.error }, { status: 400 });
+  const q = check.params.get("q")?.trim();
   await ensureNutritionColumns();
 
   const facts = await prisma.nutritionFact.findMany({
