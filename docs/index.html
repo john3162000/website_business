@@ -468,6 +468,92 @@
     #rain { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 40; }
     #rain i { position: absolute; top: -30px; width: 1.5px; border-radius: 1px; background: linear-gradient(to bottom, rgba(186,206,232,0), rgba(140,170,210,.75)); animation: rain-fall linear infinite; }
     @keyframes rain-fall { to { transform: translate3d(-40px, 110vh, 0); } }
+
+    /* ── Keyboard focus (critique #3): one visible ring for every control, in every mood ── */
+    :root { --ring: #1D5239; }
+    html.dark { --ring: #7CE0A3; }
+    body.rainy { --ring: #2F5D8C; }
+    html.dark body.rainy { --ring: #9CC3E8; }
+    :focus-visible { outline: 3px solid var(--ring) !important; outline-offset: 2px; border-radius: .4rem; }
+    .hero-band :focus-visible, footer :focus-visible, .occ-box :focus-visible, .app-toast :focus-visible { --ring: #E6C265; }
+    ::selection { background: #D9E8DD; color: #163F2E; }
+    html.dark ::selection { background: #24402F; color: #E6F4EC; }
+
+    /* Recipe cards: the title is the button; its ::after stretches over the whole card. */
+    .recipe-card { position: relative; }
+    .rc-open { all: unset; cursor: pointer; }
+    .rc-open::after { content: ""; position: absolute; inset: 0; border-radius: 1rem; }
+    .rc-open:focus-visible { outline: none !important; }
+    .rc-open:focus-visible::after { outline: 3px solid var(--ring); outline-offset: -3px; }
+    .recipe-card:focus-within { transform: translateY(-3px); }
+
+    /* Pop-up close buttons: a 44px target that's easy to hit. */
+    .modal-x, .dlg-x { display: inline-flex; align-items: center; justify-content: center; width: 2.75rem; height: 2.75rem; flex: none; border-radius: 9999px; font-size: 1rem; line-height: 1; color: #4B5563; background: #F8F4EA; border: 1px solid #E7DFCB; transition: background .15s; }
+    .modal-x:hover, .dlg-x:hover { background: #E9E2CF; color: #111827; }
+    html.dark .modal-x, html.dark .dlg-x { background: var(--s2); border-color: var(--line); color: var(--tx); }
+
+    /* Recipe pop-up: a panel with a fixed ✕ and its own scroll; a bottom sheet on phones. */
+    .modal-panel { position: relative; background: #fff; border-radius: 1rem; width: 100%; max-width: 56rem; margin: 0 1rem; box-shadow: 0 20px 50px rgba(0, 0, 0, .25); overflow: hidden; }
+    .modal-scroll { max-height: 90vh; overflow-y: auto; overscroll-behavior: contain; }
+    .modal-x { position: absolute; top: .75rem; right: .75rem; z-index: 2; }
+    .modal-title { outline: none; }
+    .modal-title:focus-visible { outline: 3px solid var(--ring) !important; }
+    .modal-cost { margin: .35rem 0 .25rem; font-size: 1.05rem; font-weight: 700; color: #855F0E; font-variant-numeric: tabular-nums; }
+    .modal-acts { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .85rem; }
+    .modal-act { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: .15rem; min-width: 4.5rem; min-height: 3.5rem; padding: .4rem .7rem; border-radius: 1rem; border: 1px solid #E7DFCB; background: #FBF8F0; color: #1D5239; font-size: .75rem; font-weight: 600; transition: background .15s; }
+    .modal-act:hover { background: #EFF5F0; }
+    .modal-act-ico { font-size: 1rem; line-height: 1; }
+    .modal-act.modal-act-main { background: #163F2E; border-color: #163F2E; color: #F8F4EA; }
+    .modal-act.modal-act-main:hover { background: #1D5239; }
+    .modal-act.fav-btn.on { background: #F6EBCD; border-color: #E6C265; color: #855F0E; }
+    html.dark .modal-panel { background: var(--s1); }
+    html.dark .modal-cost { color: var(--mango); }
+    html.dark .modal-act { background: var(--s2); border-color: var(--line); color: var(--mint); }
+    html.dark .modal-act.modal-act-main { background: #7CE0A3; border-color: #7CE0A3; color: #0B1712; }
+    html.dark .modal-act.fav-btn.on { background: #3A2F12; border-color: #F5B841; color: #F5B841; }
+    body.rainy .modal-act.modal-act-main { background: #1e3a5f; border-color: #1e3a5f; }
+    @media (max-width: 639px) {
+      #recipe-modal { align-items: flex-end; z-index: 100; }
+      .modal-panel { margin: 0; border-radius: 1.25rem 1.25rem 0 0; }
+      .modal-scroll { max-height: 92vh; padding-bottom: env(safe-area-inset-bottom); }
+      #modal-content { padding: 1.25rem 1rem 1.5rem; }
+    }
+
+    /* Planner: the "over budget" line leads with the two amounts. */
+    .plan-over { display: flex; flex-direction: column; gap: .15rem; margin-bottom: .75rem; padding: .6rem .8rem; border-radius: .75rem; background: #F6EBCD; border: 1px solid #E6C265; color: #855F0E; font-size: .75rem; }
+    .plan-over strong { font-size: 1rem; font-variant-numeric: tabular-nums; }
+    html.dark .plan-over { background: #1C3326; border-color: #F5B841; color: #F5B841; }
+    /* Planner "start here" steps */
+    .plan-start { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; margin-bottom: 1.25rem; padding: .75rem 1rem; border-radius: 1rem; background: #EFF5F0; border: 1px solid #D9E8DD; font-size: .875rem; color: #163F2E; }
+    .plan-start b { font-family: 'Fraunces', Georgia, serif; font-size: 1rem; }
+    .plan-start ol { display: flex; flex-wrap: wrap; gap: .5rem; margin: 0; padding: 0; list-style: none; }
+    .plan-start li { display: flex; align-items: center; gap: .4rem; }
+    .plan-start .ps-n { display: inline-flex; align-items: center; justify-content: center; width: 1.4rem; height: 1.4rem; border-radius: 9999px; background: #1D5239; color: #fff; font-size: .75rem; font-weight: 700; flex: none; }
+    .plan-start button { font-weight: 600; text-decoration: underline; text-underline-offset: 3px; min-height: 2.25rem; }
+    html.dark .plan-start { background: var(--s1); border-color: var(--line); color: var(--tx); }
+    html.dark .plan-start .ps-n { background: var(--mint); color: #0B1712; }
+    body.rainy .plan-start .ps-n { background: #2f5d8c; }
+
+    /* Browse: search first; on phones the filters fold into a sheet behind "Filters (n)". */
+    .bf-toggle, .bf-sheet-head, .bf-done, .bf-backdrop { display: none; }
+    @media (max-width: 639px) {
+      .bf-toggle { display: inline-flex; align-items: center; gap: .4rem; min-height: 2.75rem; padding: 0 1rem; border-radius: 9999px; border: 1px solid #E7DFCB; background: #fff; font-size: .875rem; font-weight: 600; color: #1D5239; flex: none; }
+      .bf-toggle .bf-n { display: inline-flex; min-width: 1.3rem; height: 1.3rem; padding: 0 .3rem; align-items: center; justify-content: center; border-radius: 9999px; background: #1D5239; color: #fff; font-size: .7rem; }
+      .bf-toggle .bf-n:empty { display: none; }
+      #browse-filters { display: none !important; }
+      body.bf-open #browse-filters { display: grid !important; position: fixed; left: 0; right: 0; bottom: 0; z-index: 105; margin: 0; max-height: 85vh; overflow-y: auto; border-radius: 1.25rem 1.25rem 0 0; padding-bottom: calc(1.25rem + env(safe-area-inset-bottom)); animation: rise .25s ease both; }
+      body.bf-open .bf-backdrop { display: block; position: fixed; inset: 0; z-index: 104; background: rgba(0, 0, 0, .5); }
+      body.bf-open .bf-sheet-head { display: flex; align-items: center; justify-content: space-between; }
+      body.bf-open .bf-done { display: block; }
+      html.dark .bf-toggle { background: var(--s1); border-color: var(--line); color: var(--mint); }
+      html.dark .bf-toggle .bf-n { background: var(--mint); color: #0B1712; }
+
+      /* Home: weather picks and Top Value become swipe rows instead of one card per screen. */
+      #section-home > .mx-auto { width: 100%; } /* auto margins would size the box to the swipe row */
+      #weather-grid, #top-recipes-grid { display: flex; overflow-x: auto; gap: .75rem; margin: 0 -1rem; padding: .25rem 1rem .75rem; scroll-snap-type: x mandatory; scroll-padding: 0 1rem; overscroll-behavior-x: contain; }
+      #weather-grid > *, #top-recipes-grid > * { flex: 0 0 76%; scroll-snap-align: start; }
+      #weather-grid .recipe-card .h-44, #top-recipes-grid .recipe-card .h-44 { height: 9rem; }
+    }
   </style>
 </head>
 <body class="bg-amber-50 text-gray-900 min-h-screen flex flex-col">
@@ -598,11 +684,22 @@
       <p id="hidden-note" class="hidden text-gray-400 text-xs mt-1"></p>
     </div>
 
+    <div class="mb-5 flex items-center gap-2">
+      <input type="search" id="search-input" placeholder="Search by dish name..." data-i18n-ph="browse.search" oninput="filterRecipes()" aria-label="Search dishes"
+        class="flex-1 min-w-0 sm:flex-none sm:w-80 border border-gray-300 rounded-full px-5 py-2.5 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-green-500"/>
+      <button type="button" id="bf-toggle" class="bf-toggle" onclick="openBrowseFilters()" aria-controls="browse-filters" aria-expanded="false"><span data-i18n="browse.filters">Filters</span> <span class="bf-n" id="bf-count"></span></button>
+    </div>
+
     <!-- Okasyon: holiday and special-event picks (seasons.js) -->
     <div id="occasion-picks" class="occ-box mb-6"></div>
 
-    <!-- Filters -->
-    <div class="bg-white rounded-2xl shadow p-5 mb-6 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Filters: inline from 640px; a bottom sheet behind "Filters (n)" on phones -->
+    <div class="bf-backdrop" onclick="closeBrowseFilters()"></div>
+    <div id="browse-filters" class="bg-white rounded-2xl shadow p-5 mb-6 grid sm:grid-cols-2 lg:grid-cols-4 gap-4" aria-labelledby="bf-title">
+      <div class="bf-sheet-head">
+        <p id="bf-title" class="font-display text-xl font-semibold" data-i18n="browse.filters">Filters</p>
+        <button type="button" class="dlg-x" onclick="closeBrowseFilters()" aria-label="Isara">✕</button>
+      </div>
       <div>
         <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1" data-i18n="browse.sort">Sort by</label>
         <select id="sort-select" onchange="filterRecipes()" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
@@ -647,6 +744,7 @@
           <button onclick="setPreset('clear')" class="text-xs text-gray-400 hover:text-gray-600 px-2 py-1.5" data-i18n="browse.clear">Clear</button>
         </div>
       </div>
+      <button type="button" class="bf-done bg-green-800 hover:bg-green-700 text-amber-50 font-semibold text-sm px-6 py-3 rounded-full w-full" onclick="closeBrowseFilters()"><span data-i18n="browse.filtersDone">Show results</span> <span id="bf-done-n"></span></button>
     </div>
 
     <div class="kitchen-bar mb-4">
@@ -656,10 +754,6 @@
     <div class="flex flex-wrap items-center gap-1.5 mb-3" data-meat-chips></div>
     <div class="flex flex-wrap items-center gap-2 mb-1" data-diet-summary></div>
     <p class="text-xs text-amber-700 mb-4" data-diet-note></p>
-    <div class="mb-5">
-      <input type="text" id="search-input" placeholder="Search by dish name..." data-i18n-ph="browse.search" oninput="filterRecipes()"
-        class="w-full sm:w-80 border border-gray-300 rounded-full px-5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"/>
-    </div>
 
     <p id="result-count" class="text-sm text-gray-500 mb-4"></p>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5" id="browse-grid"></div>
@@ -775,6 +869,14 @@
   <div class="max-w-7xl mx-auto px-4 py-10 w-full">
     <h1 class="text-3xl font-bold mb-1" data-i18n="planner.title">Weekly Planner</h1>
     <p class="text-gray-500 mb-6 text-sm">Plan a week of almusal, tanghalian, meryenda and hapunan, and see what it costs: per dish, or as a shopping list per ingredient. Saved on this device only.</p>
+    <div class="plan-start" aria-labelledby="plan-start-title">
+      <b id="plan-start-title" data-i18n="plan.start">Where to start?</b>
+      <ol>
+        <li><span class="ps-n" aria-hidden="true">1</span><button type="button" onclick="planStartBudget()" data-i18n="plan.start1">Type your budget and how many you are</button></li>
+        <li><span class="ps-n" aria-hidden="true">2</span><button type="button" onclick="randomizeWeek(); planStartGrid()" data-i18n="plan.start2">or tap 🎲 Random week</button></li>
+        <li><span class="ps-n" aria-hidden="true">3</span><span data-i18n="plan.start3">Swap what you don't like, then check the receipt</span></li>
+      </ol>
+    </div>
     <div class="grid gap-5 lg:grid-cols-[17rem_minmax(0,1fr)_19rem] items-start">
       <!-- Dish picker -->
       <div id="plan-picker-card" class="bg-white rounded-2xl shadow p-4 flex flex-col gap-3 min-w-0">
@@ -851,7 +953,7 @@
         <h2 id="settings-title" class="font-display text-2xl font-bold text-green-900" data-i18n="settings.title">⚙️ Settings</h2>
         <p class="text-sm text-gray-500 mt-1" data-i18n="settings.sub">Saved on this device only.</p>
       </div>
-      <button onclick="closeSettings()" class="text-gray-500 hover:text-gray-800 text-2xl leading-none" aria-label="Close">×</button>
+      <button type="button" onclick="closeSettings()" class="dlg-x" aria-label="Isara">✕</button>
     </div>
     <div id="settings-body" class="px-5 py-3"></div>
     <div class="px-5 pb-5 flex justify-end">
@@ -862,14 +964,14 @@
 
 <!-- KITCHEN (appliances you have) -->
 <div id="kitchen-dialog" class="hidden fixed inset-0 z-[110] bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="if (event.target === this) closeKitchen()">
-  <div class="kitchen-scene w-full sm:max-w-3xl max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl">
+  <div class="kitchen-scene w-full sm:max-w-3xl max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl" role="dialog" aria-modal="true" aria-labelledby="kitchen-title">
     <div class="kitchen-wall px-5 pt-5 pb-3">
       <div class="flex items-start justify-between gap-3">
         <div>
-          <h2 class="font-display text-2xl font-bold text-green-900">Ang kusina ko 🍳</h2>
+          <h2 id="kitchen-title" class="font-display text-2xl font-bold text-green-900">Ang kusina ko 🍳</h2>
           <p class="text-sm text-gray-600 mt-1">I-tap ang mga gamit na meron ka. Itatago namin ang mga ulam na hindi mo kayang lutuin.</p>
         </div>
-        <button onclick="closeKitchen()" class="text-gray-500 hover:text-gray-800 text-2xl leading-none" aria-label="Close">×</button>
+        <button type="button" onclick="closeKitchen()" class="dlg-x" aria-label="Isara">✕</button>
       </div>
       <div class="flex gap-2 mt-3">
         <button class="wx-btn" onclick="kitchenAll(true)">Meron lahat</button>
@@ -973,7 +1075,7 @@
   </div>
 </div>
 
-<dialog id="alert-dialog" class="alert-dialog" onclick="if (event.target === this) this.close()">
+<dialog id="alert-dialog" aria-labelledby="alert-what" class="alert-dialog" onclick="if (event.target === this) this.close()">
   <form method="dialog" onsubmit="event.preventDefault(); saveAlertFromDialog()" class="p-5 flex flex-col gap-3">
     <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">🔔 Price alert</p>
     <p id="alert-what" class="font-display text-xl font-semibold"></p>
@@ -989,11 +1091,11 @@
   </form>
 </dialog>
 
-<dialog id="share-dialog" class="alert-dialog share-dialog" onclick="if (event.target === this) this.close()">
+<dialog id="share-dialog" aria-labelledby="share-title" class="alert-dialog share-dialog" onclick="if (event.target === this) this.close()">
   <div class="p-5 flex flex-col gap-3">
     <div class="flex items-center justify-between">
-      <p class="font-display text-xl font-semibold">Share this recipe</p>
-      <button onclick="document.getElementById('share-dialog').close()" class="text-gray-400 hover:text-gray-600 text-xl" aria-label="Close">✕</button>
+      <p id="share-title" class="font-display text-xl font-semibold">Share this recipe</p>
+      <button type="button" onclick="document.getElementById('share-dialog').close()" class="dlg-x" aria-label="Isara">✕</button>
     </div>
     <p class="text-sm text-gray-500">Save the picture, then send it in Messenger with the link. On a phone, the Share button sends it to Messenger directly.</p>
     <img id="share-preview" alt="Recipe picture to share" class="w-full max-h-[50vh] object-contain rounded-xl border border-gray-200 bg-amber-50">
@@ -1005,11 +1107,11 @@
   </div>
 </dialog>
 
-<dialog id="feedback-dialog" class="alert-dialog feedback-dialog" onclick="if (event.target === this) this.close()">
+<dialog id="feedback-dialog" aria-labelledby="fb-title" class="alert-dialog feedback-dialog" onclick="if (event.target === this) this.close()">
   <div class="p-5 flex flex-col gap-3">
     <div class="flex items-center justify-between">
-      <p class="font-display text-xl font-semibold" data-i18n="fb.title">Tell us what you think</p>
-      <button onclick="document.getElementById('feedback-dialog').close()" class="text-gray-400 hover:text-gray-600 text-xl" data-i18n-title="fb.close" aria-label="Close" title="Close">✕</button>
+      <p id="fb-title" class="font-display text-xl font-semibold" data-i18n="fb.title">Tell us what you think</p>
+      <button type="button" onclick="document.getElementById('feedback-dialog').close()" class="dlg-x" data-i18n-title="fb.close" aria-label="Isara" title="Close">✕</button>
     </div>
     <form id="feedback-form" onsubmit="sendFeedback(event)" class="flex flex-col gap-3">
       <p class="text-sm text-gray-500" data-i18n="fb.intro">We read every message. Thank you for helping make SarapSulit better!</p>
@@ -1057,8 +1159,9 @@
 
 <!-- ═══════════════════════════════════ RECIPE MODAL ═══════════════════════════════════ -->
 <div class="modal-bg" id="recipe-modal" onclick="closeModal(event)">
-  <div class="bg-white rounded-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
-    <div id="modal-content" class="p-6 md:p-8"></div>
+  <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title" onclick="event.stopPropagation()">
+    <button type="button" class="modal-x" onclick="closeModal()" aria-label="Isara">✕</button>
+    <div class="modal-scroll"><div id="modal-content" class="p-6 md:p-8"></div></div>
   </div>
 </div>
 

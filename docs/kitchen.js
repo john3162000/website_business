@@ -120,12 +120,14 @@ function openKitchen() {
   document.getElementById("kitchen-dialog").classList.remove("hidden");
   document.body.style.overflow = "hidden";
   renderKitchen();
+  if (typeof dlgOpen === "function") dlgOpen(document.querySelector("#kitchen-dialog .kitchen-scene"), closeKitchen);
   if (typeof trackEvent === "function") trackEvent("kitchen/open");
 }
 
 function closeKitchen() {
   document.getElementById("kitchen-dialog").classList.add("hidden");
-  document.body.style.overflow = "";
+  document.body.style.overflow = document.getElementById("recipe-modal")?.classList.contains("open") ? "hidden" : "";
+  if (typeof dlgClose === "function") dlgClose(document.querySelector("#kitchen-dialog .kitchen-scene"));
 }
 
 function toggleAppliance(key) {
@@ -140,9 +142,9 @@ function kitchenAll(on) {
   renderKitchen();
 }
 
-function renderKitchen() {
-  const { counts } = applianceCounts(RECIPES);
-  document.getElementById("kitchen-items").innerHTML = KITCHEN_ITEMS.map((i) => {
+/** The appliance tiles, from the draft (what's ticked) and how many dishes need each one. */
+function kitchenItemsHtml(counts) {
+  return KITCHEN_ITEMS.map((i) => {
     const on = kitchenDraft.has(i.key);
     const uses = i.always ? "laging meron" : `${(counts[i.key] || 0).toLocaleString()} ulam`;
     return `<button class="kitchen-item ${on ? "on" : ""}" onclick="toggleAppliance('${i.key}')" aria-pressed="${on}" ${i.always ? "disabled" : ""}>
@@ -152,6 +154,13 @@ function renderKitchen() {
       <span class="kitchen-uses">${uses}</span>
     </button>`;
   }).join("");
+}
+
+function renderKitchen() {
+  const { counts } = applianceCounts(RECIPES);
+  const grid = document.getElementById("kitchen-items");
+  const draw = () => { grid.innerHTML = kitchenItemsHtml(counts); };
+  if (typeof dlgKeepFocus === "function") dlgKeepFocus(grid, draw); else draw();
   const n = RECIPES.filter((r) => canCook(r.appliances, kitchenDraft)).length;
   document.getElementById("kitchen-count").textContent = `${n.toLocaleString()} of ${RECIPES.length.toLocaleString()} ulam ang kaya mong lutuin`;
   const facts = kitchenStandIns(kitchenDraft).map((k) => KITCHEN_FACTS[k]).filter(Boolean);

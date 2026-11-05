@@ -52,6 +52,7 @@ function startTour() {
   tourStep = 0;
   document.getElementById("tour").classList.remove("hidden");
   showTourStep();
+  if (typeof dlgOpen === "function") dlgOpen(document.querySelector("#tour .tour-card"), endTour);
 }
 
 function endTour() {
@@ -59,6 +60,7 @@ function endTour() {
   document.querySelectorAll(".tour-lit").forEach((x) => x.classList.remove("tour-lit"));
   tourLit = null;
   document.getElementById("tour").classList.add("hidden");
+  if (typeof dlgClose === "function") dlgClose(document.querySelector("#tour .tour-card"));
   const s = tourStore();
   if (s) markTourDone(s);
   showSection("home");

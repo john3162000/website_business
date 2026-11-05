@@ -169,6 +169,11 @@ The Impeccable skill (`.claude/skills/impeccable`) runs design commands such as
   rain look blue; use `setWeatherMode('sunny')` for a neutral preview.
 - **Hidden preview pane:** while the built-in browser pane is hidden, animations pause and
   screenshots can be stale. Check page state with JavaScript before trusting a screenshot.
+- **Pop-ups and keyboard:** a new div pop-up calls `dlgOpen(panel, closeFn)` when it opens and
+  `dlgClose(panel)` when it closes (`app.js`): focus moves in, Tab stays inside, Esc closes, focus
+  returns. Native `<dialog>`s with `showModal()` handle this themselves. A clickable div needs
+  `role="button" tabindex="0"`; Enter/Space then click it. Recipe cards open from their title's
+  `.rc-open` button. Close buttons use `.dlg-x` (44 px) with `aria-label="Isara"`.
 - **Planner meal sorting** (`mealTypes`, `isMainUlam` in `planner.js`) is title-based. Kakanin,
   sweets, snacks, pickles and egg how-tos are never ulam. Add new odd titles to `SWEET_TITLE`,
   `SNACK_TITLE` or `SIDE_TITLE`, with a test.

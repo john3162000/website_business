@@ -202,7 +202,11 @@ async function shareRecipe(id) {
   if (typeof trackEvent === "function") trackEvent("share");
   if (typeof recordTasteSignal === "function") recordTasteSignal(id, "share");
   const btn = document.getElementById("share-btn");
-  if (btn) btn.textContent = "Preparing picture…";
+  // The pop-up's Share button is icon + label: only the label changes while the picture is drawn.
+  const label = btn ? btn.querySelector("span:last-child") || btn : null;
+  const idle = label ? label.textContent : "";
+  if (label) label.textContent = "Preparing…";
+  if (btn) btn.setAttribute("aria-busy", "true");
   try {
     const data = typeof MODAL_DATA !== "undefined" && MODAL_DATA && MODAL_DATA.id === id ? MODAL_DATA : { lines: [] };
     const blob = await drawRecipeCard(r, data.lines);
@@ -215,7 +219,8 @@ async function shareRecipe(id) {
     showSharePanel(r, blob);
   } finally {
     shareBusy = false;
-    if (btn) btn.textContent = "💬 Share to Messenger";
+    if (label) label.textContent = idle;
+    if (btn) btn.removeAttribute("aria-busy");
   }
 }
 

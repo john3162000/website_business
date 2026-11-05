@@ -199,14 +199,16 @@ function groupGrocery(items) {
 
 // ── Meal types: which slots a dish suits (a dish can suit several) ──
 
-const MERYENDA_TITLE = /\b(turon|banana ?cue|camote ?cue|kamote ?cue|maruya|lumpia|lumpiang|shanghai|okoy|ukoy|fish ?balls?|kwek[- ]?kwek|tokneneng|siomai|siopao|empanadas?|pancit|palabok|puto|kutsinta|bibingka|suman|biko|palitaw|sapin[- ]?sapin|kakanin|maja|cassava cake|bilo[- ]?bilo|ginataang mais|ginataang halo|binignit|halo[- ]?halo|mais con yelo|sago|gulaman|buko pandan|fruit salad|ensaymada|pandesal|pan de sal|sandwich(es)?|burgers?|spaghetti|arroz caldo|lugaw|goto|champorado|cakes?|cupcakes?|cookies|brownies?|leche flan|flan|polvoron|pastillas|turrones|donuts?|doughnuts?|muffins?|bread|banana loaf|hopia|cheese sticks|french fries|nachos|camote fries)\b/i;
+const MERYENDA_TITLE = /\b(turon|banana ?cue|camote ?cue|kamote ?cue|maruya|lumpia|lumpiang|shanghai|okoy|ukoy|fish ?balls?|kwek[- ]?kwek|tokneneng|siomai|siopao|empanadas?|pancit|palabok|puto|kutsinta|bibingka|suman|biko|palitaw|sapin[- ]?sapin|kakanin|maja|cassava cake|bilo[- ]?bilo|ginataang mais|ginataang halo|binignit|halo[- ]?halo|mais con yelo|sago|gulaman|buko pandan|fruit salad|ensaymada|pandesal|pan de sal|sandwich(es)?|burgers?|spaghetti|arroz caldo|lugaw|goto|champorado|cakes?|cupcakes?|cookies|brownies?|leche flan|flan|polvoron|pastillas|turrones|donuts?|doughnuts?|muffins?|bread|banana loaf|hopia|cheese sticks|french fries|nachos|camote fries|noodle soup|ramen|pho|sopas|macaroni soup|pizzas?|pasta|lasagn\w*|fettuccine|penne|carbonara|siomai|shumai|siopao)\b/i;
 const ALMUSAL_TITLE = /(silog\b|\b(tapa|tocino|longg?anisa|daing|tuyo|danggit|champorado|lugaw|arroz caldo|goto|pandesal|pan de sal|omelet(te)?|torta|tortang|scrambled eggs?|sinangag|fried rice|garlic rice|hotcakes?|pancakes?|french toast|corned beef hash)\b)/i;
 const SNACK_COURSE = /\b(snacks?|desserts?|appetizers?|merienda|meryenda)\b/i;
 const MEAL_COURSE = /\b(main|dinner|lunch|entree|soup|side dish)\b/i;
-const SNACK_TITLE = /\b(chips|fries|nachos|popcorn|crackers?|chicharon|chicharron|tokneneng|kwek[- ]?kwek|fish ?balls?|squid ?balls?|kikiam|tornado|corndogs?|deviled eggs?|nuggets?|adobong mani|mani|(?:roasted|boiled|fried|garlic|spicy|salted) peanuts?|kropek|kornik|cornick)\b/i;
-const SIDE_TITLE = /\b(mashed potato(?:es)?|pickled?|pickles|atchara|achara|burong|buro|dip|dressing|salsa|jam|syrup|salads?|ensalada|ensaladang|sandwich(es)?|burgers?|egg rolls?|spring rolls?|lettuce wraps?|wraps?|tacos?|quesadillas?|nachos|pandesal|pan de sal|bread|buns?|toasts?|potato wedges|wedges|onion rings|lugaw|arroz caldo|goto|congee|porridge|champorado)\b/i;
+const SNACK_TITLE = /\b(chips|fries|nachos|popcorn|crackers?|chicharon|chicharron|tokneneng|kwek[- ]?kwek|fish ?balls?|squid ?balls?|kikiam|tornado|corndogs?|deviled eggs?|nuggets?|adobong mani|mani|(?:roasted|boiled|fried|garlic|spicy|salted) peanuts?|kropek|kornik|cornick|scotch eggs?|pizzas?|chizza|pizza pockets?|pizza dough|cheese (?:sticks|puffs?|rolls?)|potato (?:marbles|skins?)|pumpkin seeds|siomai|shumai|siopao|empanadas?|tamales|sliders|kani rolls|focaccia|cornbread)\b/i;
+const SIDE_TITLE = /\b(mashed potato(?:es)?|pickled?|pickles|atchara|achara|burong|buro|dip|dressing|salsa|jam|syrup|salads?|ensalada|ensaladang|sandwich(es)?|burgers?|egg rolls?|spring rolls?|lettuce wraps?|wraps?|tacos?|quesadillas?|nachos|pandesal|pan de sal|bread|buns?|toasts?|potato wedges|wedges|onion rings|lugaw|arroz caldo|goto|congee|porridge|champorado|gravy|pesto|homemade peanut butter|burritos?|burrito bowl|noodle soup|ramen|pho|sopas|macaroni soup|chowder|pasta|lasagn\w*|fettuccine|penne|carbonara|risotto)\b|^(?:how to make )?salted eggs?(?: recipe)?$/i;
+// Not a dish at all: technique how-tos, menus and round-up articles ("Add Cream to These Three Dishes").
+const NOT_DISH_TITLE = /\bhow to (?:velvet|clean|store|freeze|thaw|cut|slice|peel|devein)\b|\b(?:lunch|dinner|party) menu\b|\bdishes\b|^add\b|\bdips\b/i;
 // Sweets and kakanin are never an ulam, even when the recipe data calls them a main dish.
-const SWEET_TITLE = /\b(mamon|ensaymada|silvanas?|sans rival|food for the gods|minatamis|matamis|pastimallows?|marshmallows?|brazo|pancakes?|hotcakes?|waffles?|french toast|nilupak|pichi[- ]?pichi|puto|kutsinta|bibingka|suman|biko|palitaw|sapin[- ]?sapin|kakanin|maja|cassava cake|bilo[- ]?bilo|ginataang mais|ginataang halo|binignit|halo[- ]?halo|mais con yelo|sago|gulaman|buko pandan|fruit salad|ensaymada|cakes?|cupcakes?|cookies|brownies?|leche flan|flan|polvoron|pastillas|turrones|donuts?|doughnuts?|muffins?|banana loaf|hopia|turon|maruya|banana ?cue|camote ?cue|kamote ?cue|yema|tsokolate|champorado|espasol|tikoy|kalamay|ube halaya|halaya|jelly|gelatin|pudding|ice cream)\b/i;
+const SWEET_TITLE = /\b(mamon|ensaymada|silvanas?|sans rival|food for the gods|minatamis|matamis|pastimallows?|marshmallows?|brazo|pancakes?|hotcakes?|waffles?|french toast|nilupak|pichi[- ]?pichi|puto|kutsinta|bibingka|suman|biko|palitaw|sapin[- ]?sapin|kakanin|maja|cassava cake|bilo[- ]?bilo|ginataang mais|ginataang halo|binignit|halo[- ]?halo|mais con yelo|sago|gulaman|buko pandan|fruit salad|ensaymada|cakes?|cupcakes?|cookies|brownies?|leche flan|flan|polvoron|pastillas|turrones|donuts?|doughnuts?|muffins?|banana loaf|hopia|turon|maruya|banana ?cue|camote ?cue|kamote ?cue|yema|tsokolate|champorado|espasol|tikoy|kalamay|ube halaya|halaya|jelly|gelatin|pudding|ice cream|bibingkang|smoothies?|shakes?|milkshakes?|frozen(?: \w+)? yogurt|cheesecakes?|custard|fondant|brittle|macaroons?|mango float|crema de fruta|munchkins|overnight oats|oatmeal|chocolate|strawberr(?:y|ies)|fried milk|fudge|mochi|ice candy|buko salad)\b/i;
 
 /**
  * The slot series a dish fits: "almusal", "ulam" (Tanghalian / Hapunan) and/or "meryenda".
@@ -215,7 +217,7 @@ const SWEET_TITLE = /\b(mamon|ensaymada|silvanas?|sans rival|food for the gods|m
 function mealTypes(recipe) {
   const title = recipe.title || "", course = recipe.course || "", cat = recipe.category || "";
   const out = new Set();
-  if (cat === "Sauce & Condiment") return out;
+  if (cat === "Sauce & Condiment" || NOT_DISH_TITLE.test(title)) return out;
   if (/\bbreakfast\b/i.test(course) || ALMUSAL_TITLE.test(title)) out.add("almusal");
   const sweet = SWEET_TITLE.test(title);
   const snackish = SNACK_TITLE.test(title);
@@ -621,10 +623,10 @@ function renderGrid() {
   const body = MEALS.map((meal) => `<div class="plan-meal">${meal}</div>` + DAYS.map((day) => {
     const key = slotKey(day, meal);
     const ids = plan.slots[key] || [];
-    return `<div class="plan-cell ${key === targetSlot ? "target" : ""}" data-key="${key}" onclick="placePicked('${key}')">
+    return `<div class="plan-cell ${key === targetSlot ? "target" : ""}" data-key="${key}" role="button" tabindex="0" aria-label="${day} · ${meal}" onclick="placePicked('${key}')">
       ${ids.map((id) => {
         const r = recipes.get(id);
-        return `<div class="plan-chip" data-drag-id="${id}" data-from="${key}" onclick="event.stopPropagation();openModal(${id})" title="${escapeHtml(r ? r.title : "")}">
+        return `<div class="plan-chip" data-drag-id="${id}" data-from="${key}" role="button" tabindex="0" onclick="event.stopPropagation();openModal(${id})" title="${escapeHtml(r ? r.title : "")}">
           ${r && r.img ? `<img src="${escapeHtml(r.img)}" alt="">` : ""}<span>${escapeHtml(r ? r.title : `#${id}`)}</span>
           <button onclick="event.stopPropagation();unplan('${key}',${id})" aria-label="Remove">✕</button></div>`;
       }).join("")}
@@ -872,10 +874,35 @@ function planOnBudget() {
   document.getElementById("plan-people").value = n;
   persist(); renderGrid(); renderReceipt();
   const peso = (v) => `₱${Math.round(v).toLocaleString()}`;
-  out.className = r.fits ? "text-xs text-green-700" : "text-xs text-amber-700";
-  out.textContent = r.fits
-    ? `Planned ${peso(r.total)} of ${peso(budget)} for ${n} ${n === 1 ? "person" : "people"}: most nutritious dishes that fit.`
-    : `The cheapest week still costs ${peso(r.total)}, over ${peso(budget)}. Try “Ulam lang”, 1 ulam per meal, or a bigger budget.`;
+  if (r.fits) {
+    out.className = "text-xs text-green-700";
+    out.textContent = `Planned ${peso(r.total)} of ${peso(budget)} for ${n} ${n === 1 ? "person" : "people"}: most nutritious dishes that fit.`;
+    return;
+  }
+  // Over budget: the comparison leads, big enough to see, then what to try.
+  const tr = typeof t === "function" ? t : (k) => k;
+  out.className = "plan-over";
+  out.innerHTML = `<strong>${budgetOverText(r.total, budget, tr("plan.overBudget"))}</strong><span>${tr("plan.overTip")}</span>`;
+}
+
+/** "₱4,084 vs your ₱1,500" from the I18N template (amounts rounded, with thousands commas). */
+function budgetOverText(total, budget, template = "₱{total} vs your ₱{budget}") {
+  const n = (v) => Math.round(v).toLocaleString("en-US");
+  return template.replace("{total}", n(total)).replace("{budget}", n(budget));
+}
+
+/** "Where to start?" step 1: bring the budget box into view and put the cursor in it. */
+function planStartBudget() {
+  const box = document.getElementById("budget-text");
+  if (!box) return;
+  box.scrollIntoView({ behavior: "smooth", block: "center" });
+  box.focus({ preventScroll: true });
+}
+
+/** Step 2: after a random week, show the week grid it filled. */
+function planStartGrid() {
+  const grid = document.getElementById("plan-grid");
+  if (grid) grid.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function clearPlan() {
