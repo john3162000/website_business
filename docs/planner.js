@@ -100,12 +100,17 @@ function receiptByDish(plan, recipes) {
  * `details` maps id → { servings, lines: [{ slug, label, text, gAP, cost, priceSource, status }] }.
  */
 function receiptByIngredient(plan, details) {
+  return ingredientTotals(plannedDishes(plan).map(({ id }) => ({ id, people: plan.people })), details);
+}
+
+/** Ingredient totals for a list of { id, people } (a dish cooked for that many), summed by ingredient. */
+function ingredientTotals(entries, details) {
   const items = new Map();
   let total = 0;
-  for (const { id } of plannedDishes(plan)) {
+  for (const { id, people } of entries) {
     const d = details.get(id);
     if (!d) continue;
-    const k = plan.people / (d.servings || 4);
+    const k = people / (d.servings || 4);
     for (const l of d.lines) {
       if (!["ok", "no-nutrition"].includes(l.status) || l.gAP == null) continue;
       const key = l.slug || l.text.toLowerCase();
@@ -204,7 +209,7 @@ const ALMUSAL_TITLE = /(silog\b|\b(tapa|tocino|longg?anisa|daing|tuyo|danggit|ch
 const SNACK_COURSE = /\b(snacks?|desserts?|appetizers?|merienda|meryenda)\b/i;
 const MEAL_COURSE = /\b(main|dinner|lunch|entree|soup|side dish)\b/i;
 const SNACK_TITLE = /\b(chips|fries|nachos|popcorn|crackers?|chicharon|chicharron|tokneneng|kwek[- ]?kwek|fish ?balls?|squid ?balls?|kikiam|tornado|corndogs?|deviled eggs?|nuggets?|adobong mani|mani|(?:roasted|boiled|fried|garlic|spicy|salted) peanuts?|kropek|kornik|cornick|scotch eggs?|pizzas?|chizza|pizza pockets?|pizza dough|cheese (?:sticks|puffs?|rolls?)|potato (?:marbles|skins?)|pumpkin seeds|siomai|shumai|siopao|empanadas?|tamales|sliders|kani rolls|focaccia|cornbread)\b/i;
-const SIDE_TITLE = /\b(mashed potato(?:es)?|pickled?|pickles|atchara|achara|burong|buro|dip|dressing|salsa|jam|syrup|salads?|ensalada|ensaladang|sandwich(es)?|burgers?|egg rolls?|spring rolls?|lettuce wraps?|wraps?|tacos?|quesadillas?|nachos|pandesal|pan de sal|bread|buns?|toasts?|potato wedges|wedges|onion rings|lugaw|arroz caldo|goto|congee|porridge|champorado|gravy|pesto|homemade peanut butter|burritos?|burrito bowl|noodle soup|ramen|pho|sopas|macaroni soup|chowder|pasta|lasagn\w*|fettuccine|penne|carbonara|risotto)\b|^(?:how to make )?salted eggs?(?: recipe)?$/i;
+const SIDE_TITLE = /\b(bagoong guisado|guisadong bagoong|ginisang bagoong|mashed potato(?:es)?|pickled?|pickles|atchara|achara|burong|buro|dip|dressing|salsa|jam|syrup|salads?|ensalada|ensaladang|sandwich(es)?|burgers?|egg rolls?|spring rolls?|lettuce wraps?|wraps?|tacos?|quesadillas?|nachos|pandesal|pan de sal|bread|buns?|toasts?|potato wedges|wedges|onion rings|lugaw|arroz caldo|goto|congee|porridge|champorado|gravy|pesto|homemade peanut butter|burritos?|burrito bowl|noodle soup|ramen|pho|sopas|macaroni soup|chowder|pasta|lasagn\w*|fettuccine|penne|carbonara|risotto)\b|^(?:how to make )?salted eggs?(?: recipe)?$/i;
 // Not a dish at all: technique how-tos, menus and round-up articles ("Add Cream to These Three Dishes").
 const NOT_DISH_TITLE = /\bhow to (?:velvet|clean|store|freeze|thaw|cut|slice|peel|devein)\b|\b(?:lunch|dinner|party) menu\b|\bdishes\b|^add\b|\bdips\b/i;
 // Sweets and kakanin are never an ulam, even when the recipe data calls them a main dish.

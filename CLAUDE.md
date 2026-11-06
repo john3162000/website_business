@@ -30,6 +30,8 @@ docs/                         static site, plain browser scripts; tailwind.css i
   planner.js                  weekly planner, Random week (incl. gulay→isda→karne), budget planner,
                               mealTypes(), proteinKind(), meatTypes(), dietOk()/dietsOk() (all chosen diets),
                               grocerySection() palengke groups, drag and drop (dropSlots), Pinakamura ngayon
+  feeding.js                  "Para sa maramihan": feeding-program planner for NGOs/schools (headcount, budget per
+                              head incl. DA rice, gulay→isda→karne cycle menu, bulk grocery list, text/print)
   finder.js                   "Anong lulutuin?" ingredient finder + d3 graph
   alerts.js                   price alerts (localStorage + browser notifications)
   share.js                    share a recipe as a PNG (canvas) → share sheet / Messenger
@@ -166,7 +168,7 @@ The Impeccable skill (`.claude/skills/impeccable`) runs design commands such as
   with CRLF.
 - **One global scope:** all `docs/*.js` files are classic scripts that share globals. Script
   order in `index.html`: weather, mydish, planner, finder, alerts, share, facts, taste, games,
-  kitchen, settings, visits, feedback, seasons, pricecal, tour, then app last. New button text gets a `data-i18n` key in settings.js `I18N`
+  kitchen, settings, visits, feedback, seasons, pricecal, tour, then app last (feeding.js loads right after planner.js). New button text gets a `data-i18n` key in settings.js `I18N`
   (`settings.test.mjs` fails on a missing key).
   Favourites (`favIds`, `toggleFav`, key `sarapsulit.favs.v1`) live in `app.js`. Give new
   top-level names a prefix (`SHARE_W`, `FINDER_KEY`) so they can't clash.

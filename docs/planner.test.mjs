@@ -166,6 +166,7 @@ test("main ulam: real mains with protein; not sides of rice, egg how-tos or swee
   const R = (title, category, protein) => ({ title, category, protein });
   assert.equal(isMainUlam(R("Chicken Adobo", "Main Dish", 30)), true);
   assert.equal(mealTypes({ title: "Cream Cheese Mashed Potatoes", category: "Main Dish" }).has("ulam"), false); // a side, not ulam
+  assert.equal(mealTypes({ title: "Bagoong Guisado Recipe", category: "Main Dish" }).has("ulam"), false); // a condiment
   assert.equal(isMainUlam(R("Sinigang na Baboy", "Soup", 22)), true);
   assert.equal(isMainUlam(R("Cilantro Lime Rice", "Rice & Noodles", 4)), false);
   assert.equal(isMainUlam(R("How to Make Hard Boiled Eggs", "Main Dish", 12)), false);

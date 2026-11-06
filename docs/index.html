@@ -90,6 +90,23 @@
     .plan-chip button:hover { color: #dc2626; }
     .rc-day { display: flex; justify-content: space-between; font-weight: 700; font-size: .85rem; margin-top: .6rem; padding-bottom: .15rem; border-bottom: 1px solid #f3f4f6; }
     .rc-row { display: flex; justify-content: space-between; gap: .5rem; font-size: .8rem; padding: .2rem 0; font-variant-numeric: tabular-nums; }
+    /* Feeding program planner (feeding.js) */
+    .feed-field { display: flex; flex-direction: column; gap: .25rem; font-size: .75rem; color: #4b5563; font-weight: 600; }
+    .feed-field input { border: 1px solid #d1d5db; border-radius: .6rem; padding: .45rem .6rem; font-size: .95rem; font-weight: 500; color: #111827; background: #fff; width: 100%; }
+    .feed-stat { background: #F4F1E8; border-radius: .9rem; padding: .6rem .8rem; display: flex; flex-direction: column; }
+    .feed-stat span { font-size: .7rem; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+    .feed-stat b { font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+    html.dark .feed-field { color: var(--tx2); }
+    html.dark .feed-field input { background: var(--s1); border-color: var(--line); color: var(--tx); }
+    html.dark .feed-stat { background: var(--s1); }
+    html.dark .feed-stat span { color: var(--tx2); }
+    /* Printing the feeding plan prints only that card. */
+    @media print {
+      body.printing-feed * { visibility: hidden; }
+      body.printing-feed #feeding, body.printing-feed #feeding * { visibility: visible; }
+      body.printing-feed #feeding { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; }
+      body.printing-feed .feed-actions { display: none; }
+    }
     .rc-name { min-width: 0; color: #374151; }
     .rc-qty { color: #9ca3af; font-size: .7rem; white-space: nowrap; }
     .rc-total { display: flex; justify-content: space-between; font-weight: 800; font-size: 1rem; border-top: 2px dashed #d1d5db; margin-top: .6rem; padding-top: .5rem; }
@@ -951,6 +968,20 @@
         <button onclick="clearPlan()" class="self-start text-sm text-gray-500 hover:text-red-600 underline" data-i18n="plan.clear">Clear week</button>
       </div>
     </div>
+
+    <!-- Feeding program planner for NGOs, schools and barangays (feeding.js) -->
+    <div id="feeding" class="bg-white rounded-2xl shadow p-5 mt-10">
+      <h2 class="text-xl font-bold mb-1" data-i18n="feed.title">🍲 Para sa maramihan (feeding program)</h2>
+      <p class="text-sm text-gray-500 mb-4" data-i18n="feed.intro">For NGOs, schools and barangays: a cycle menu within your budget per head, rice included, and one bulk grocery list for everyone.</p>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+        <label class="feed-field"><span data-i18n="feed.heads">Ilang tao</span><input id="feed-heads" type="number" inputmode="numeric" min="10" max="2000" step="10" value="100"></label>
+        <label class="feed-field"><span data-i18n="feed.budget">Badyet bawat tao bawat kain (₱)</span><input id="feed-budget" type="number" inputmode="numeric" min="10" max="500" value="40"></label>
+        <label class="feed-field"><span data-i18n="feed.days">Ilang araw</span><input id="feed-days" type="number" inputmode="numeric" min="1" max="30" value="5"></label>
+        <label class="feed-field"><span data-i18n="feed.riceG">Bigas bawat tao (g, hilaw)</span><input id="feed-rice" type="number" inputmode="numeric" min="0" max="200" step="5" value="80"></label>
+      </div>
+      <button type="button" onclick="makeFeedingPlan()" class="bg-green-800 hover:bg-green-700 text-amber-50 font-semibold text-sm px-4 py-2 rounded-full" data-i18n="feed.make">Gumawa ng plano</button>
+      <div id="feed-out" class="mt-5" aria-live="polite"></div>
+    </div>
   </div>
 </section>
 
@@ -1205,6 +1236,7 @@
 <script src="weather.js"></script>
 <script src="mydish.js"></script>
 <script src="planner.js"></script>
+<script src="feeding.js"></script>
 <script src="finder.js"></script>
 <script src="alerts.js"></script>
 <script src="share.js"></script>
