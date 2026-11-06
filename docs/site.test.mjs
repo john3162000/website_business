@@ -47,9 +47,46 @@ test("categoryFor: clear courses win, the title decides otherwise", () => {
   assert.equal(categoryFor("Pork Adobo", "Main Course"), "Main Dish");
   assert.equal(categoryFor("How to Make Sinamak", null), "Sauce & Condiment");
   assert.equal(categoryFor("Chili Garlic Oil Recipe", null), "Sauce & Condiment");
+  // Kakanin and sweets the recipe site files as a main dish.
+  for (const t of ["Pichi-Pichi", "Ube Pichi Pichi Recipe", "Nilupak na Kamoteng Kahoy", "Panlasang Pinoy Bibingkang Galapong", "Banana Yogurt Smoothie", "New York Style Cheesecake", "Buko Salad Ice candy"]) {
+    assert.equal(categoryFor(t, "Main Dish"), "Dessert", t);
+  }
+  assert.equal(categoryFor("Chicken Adobo", "Main Dish"), "Main Dish");
 });
 
-test("splitHidden: recipes with an ingredient not in the catalog are hidden, not dropped silently", () => {
+test("keyboard: Tab wraps inside a pop-up, and the pop-ups carry dialog semantics", () => {
+  const src = read("app.js");
+  const ctx = vm.createContext({});
+  vm.runInContext(`${src.slice(src.indexOf("function dlgWrapIndex"), src.indexOf("function dlgFocusables"))};globalThis.dlgWrapIndex = dlgWrapIndex;`, ctx);
+  const { dlgWrapIndex } = ctx;
+  assert.equal(dlgWrapIndex(4, 5, false), 0, "Tab on the last goes to the first");
+  assert.equal(dlgWrapIndex(0, 5, true), 4, "Shift+Tab on the first goes to the last");
+  assert.equal(dlgWrapIndex(-1, 5, false), 0, "focus outside: to the first");
+  assert.equal(dlgWrapIndex(-1, 5, true), 4);
+  assert.equal(dlgWrapIndex(2, 5, false), 3);
+  assert.equal(dlgWrapIndex(0, 0, false), -1);
+  const html = read("index.html");
+  assert.match(html, /class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title"/);
+  assert.match(html, /class="modal-x"[^>]*aria-label="Isara"/);
+  assert.match(html, /:focus-visible \{ outline: 3px solid var\(--ring\)/);
+  assert.match(src, /id="modal-title" tabindex="-1" data-dlg-focus/);
+  assert.match(src, /<button type="button" class="rc-open"/, "recipe cards open from a real button");
+  // Every div pop-up registers for Esc and focus handling.
+  for (const [file, open] of [["app.js", "dlgOpen(modalPanel(), closeModal)"], ["settings.js", "closeSettings);"], ["kitchen.js", "closeKitchen);"], ["tour.js", "endTour);"]]) {
+    assert.ok(read(file).includes(open), `${file} calls dlgOpen`);
+  }
+});
+
+test("browse: the Filters (n) count", () => {
+  const src = read("app.js");
+  const ctx = vm.createContext({});
+  vm.runInContext(`${src.slice(src.indexOf("function browseFilterCount"), src.indexOf("function updateBrowseFilterCount"))};globalThis.browseFilterCount = browseFilterCount;`, ctx);
+  const { browseFilterCount } = ctx;
+  assert.equal(browseFilterCount({ sort: "valueScore", minProt: "", maxCost: "", produce: " ", minKcal: "", maxKcal: "" }), 0);
+  assert.equal(browseFilterCount({ sort: "protein", minProt: "15", maxCost: "60", produce: "kangkong", minKcal: "", maxKcal: "700" }), 5);
+});
+
+test("splitHidden:recipes with an ingredient not in the catalog are hidden, not dropped silently", () => {
   const src = read("app.js");
   const ctx = vm.createContext({});
   vm.runInContext(`${src.slice(src.indexOf("function splitHidden"), src.indexOf("async function loadData"))};globalThis.splitHidden = splitHidden;`, ctx);
