@@ -987,8 +987,17 @@ function renderWeather() {
   // Mild weather: the next best value meals after the Top Value list, in the chosen order.
   const picks = weatherPicks(mood, RECIPES, 4, undefined, pickSort)
     ?? (pickSort === "value" ? topValueMeals().slice(8, 12) : topValueMeals().slice(8, 12).sort(PICK_SORTS[pickSort].cmp));
-  document.getElementById("weather-grid").innerHTML = picks.map(buildRecipeCard).join("")
+  const grid = document.getElementById("weather-grid");
+  // The weather often arrives after someone has tabbed onto a pick: keep focus on that dish.
+  const had = grid.contains(document.activeElement) ? document.activeElement.closest("[onclick]") : null;
+  const key = had ? had.getAttribute("onclick") : null;
+  grid.innerHTML = picks.map(buildRecipeCard).join("")
     || `<p class="col-span-4 text-gray-400">No matching dishes yet.</p>`;
+  if (key) {
+    const card = [...grid.querySelectorAll("[onclick]")].find((el) => el.getAttribute("onclick") === key);
+    const el = card ? card.querySelector(".rc-open") || card : grid.querySelector(".rc-open");
+    if (el) el.focus({ preventScroll: true });
+  }
 }
 
 async function showWeather(place) {
@@ -1058,8 +1067,24 @@ function dlgKeepFocus(box, draw) {
 function dlgOpen(panel, close) {
   if (!panel) return;
   const top = DLG_STACK[DLG_STACK.length - 1];
-  if (!top || top.panel !== panel) DLG_STACK.push({ panel, opener: document.activeElement, close });
+  if (!top || top.panel !== panel) {
+    const opener = document.activeElement;
+    // A grid can redraw while the pop-up is open (weather picks arrive late); remember the card's
+    // onclick and its box so focus can go to the redrawn copy.
+    const card = opener && opener.closest ? opener.closest("[onclick]") : null;
+    const box = card && card.parentElement && card.parentElement.closest("[id]");
+    DLG_STACK.push({ panel, opener, close, openerKey: card ? card.getAttribute("onclick") : null, openerBox: box ? box.id : null });
+  }
   requestAnimationFrame(() => dlgFocusFirst(panel));
+}
+
+/** The element to give focus back to: the opener, or its redrawn copy when the grid re-rendered. */
+function dlgOpenerNow(d) {
+  if (d.opener && d.opener.isConnected) return d.opener;
+  if (!d.openerKey || !d.openerBox) return null;
+  const box = document.getElementById(d.openerBox);
+  const card = box && [...box.querySelectorAll("[onclick]")].find((el) => el.getAttribute("onclick") === d.openerKey);
+  return card ? card.querySelector(".rc-open") || card : null;
 }
 
 /** A pop-up closed: forget it and give focus back to what opened it. */
@@ -1067,7 +1092,8 @@ function dlgClose(panel) {
   const i = DLG_STACK.findIndex((d) => d.panel === panel);
   if (i < 0) return;
   const [d] = DLG_STACK.splice(i, 1);
-  if (d.opener && d.opener.isConnected && typeof d.opener.focus === "function") d.opener.focus({ preventScroll: true });
+  const back = dlgOpenerNow(d);
+  if (back && typeof back.focus === "function") back.focus({ preventScroll: true });
 }
 
 // Clickable rows drawn as divs (role="button" tabindex="0"): Enter and Space click them too.
