@@ -1,4 +1,5 @@
 import { corsJson, corsPreflight } from "@/lib/cors";
+import { checkQuery, intIn, oneOf } from "@/lib/query-guard";
 import { compileNowAndMonthAgo } from "@/lib/recipe-compile/load";
 import { dishPriceChange, MIN_COST_COVERAGE, MIN_SHARED_SHARE } from "@/lib/recipe-compile/price-movers.ts";
 
@@ -25,7 +26,9 @@ const r3 = (v: number) => Math.round(v * 1000) / 1000;
  * GET /api/recipes/price-movers?days=7   → against last week (14: two weeks, 30: a month)
  */
 export async function GET(request: Request) {
-  const params = new URL(request.url).searchParams;
+  const q = checkQuery(request.url, { limit: intIn(1, 50), days: oneOf("7", "14", "30") });
+  if (!q.ok) return corsJson({ error: q.error }, { status: 400 });
+  const params = q.params;
   const limit = Math.min(50, Math.max(1, Number(params.get("limit")) || 10));
   // ?days=7 (last week), 14 (two weeks) or 30 (a month, the default).
   const days = [7, 14, 30].includes(Number(params.get("days"))) ? Number(params.get("days")) : 30;

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { corsJson, corsPreflight } from "@/lib/cors";
+import { checkQuery } from "@/lib/query-guard";
 
 export const dynamic = "force-dynamic";
 
@@ -8,7 +9,9 @@ export const dynamic = "force-dynamic";
  * Includes ingredients with amount/unit (so the client can estimate per-serving
  * nutrition & cost) but not full instructions — fetch /api/recipes/{id} for that.
  */
-export async function GET() {
+export async function GET(request: Request) {
+  const q = checkQuery(request.url);
+  if (!q.ok) return corsJson({ error: q.error }, { status: 400 });
   const recipes = await prisma.recipe.findMany({
     orderBy: { id: "asc" },
     select: {

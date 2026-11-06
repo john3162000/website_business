@@ -22,9 +22,23 @@ export function postSitemapsFromIndex(xml: string): string[] {
   return /<sitemapindex/i.test(xml) ? [...new Set(urls.filter((u) => /\.xml(?:\.gz)?(?:\?.*)?$/i.test(u) && !OTHER.test(u.split("/").pop() ?? "")))] : [];
 }
 
+/**
+ * True when `url` is an https page on `base`'s own host (with or without "www.") and under its
+ * path. A changed or hacked sitemap can list any URL; the crawler only follows the source itself.
+ */
+export function onSite(url: string, base: string): boolean {
+  try {
+    const u = new URL(url), b = new URL(base);
+    const host = (h: string) => h.toLowerCase().replace(/^www\./, "");
+    return u.protocol === "https:" && host(u.host) === host(b.host) && u.pathname.startsWith(b.pathname);
+  } catch {
+    return false;
+  }
+}
+
 /** Every page URL in one sitemap that is on `base` (other hosts are ignored). */
 export function urlsFromSitemap(xml: string, base: string): string[] {
   return [...xml.matchAll(/<url>[\s\S]*?<loc>\s*([^<\s]+)\s*<\/loc>/g)]
     .map((m) => m[1].replace(/&amp;/g, "&"))
-    .filter((u) => u.startsWith(base));
+    .filter((u) => onSite(u, base));
 }

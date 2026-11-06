@@ -90,6 +90,20 @@ const I18N = {
   "pcal.note": ["Mula sa buwanang presyo ng PSA sa palengke ({span}, Metro Manila). Ang % ay kumpara sa karaniwang presyo ng bawat paninda sa buong taon, hindi hula ng presyo bukas.", "From PSA monthly market prices ({span}, Metro Manila). The % compares each month with that item's usual price over the year; it is a pattern, not a forecast."],
   "card.nutrition": ["Sustansya", "Nutrition"],
   "card.plusLegend": ["“+” sa presyo: may sangkap na wala pang presyo", "“+” on a price: some ingredients have no price yet"],
+  "browse.saucesOut": ["walang sawsawan at sauce dito (i-search para makita)", "sauces left out (search to find them)"],
+  "browse.filters": ["Filter", "Filters"],
+  "browse.filtersDone": ["Ipakita ang resulta", "Show results"],
+  "modal.close": ["Isara", "Close"],
+  "modal.total": ["buong ulam", "whole dish"],
+  "modal.share": ["I-share", "Share"],
+  "modal.video": ["Video", "Video"],
+  "modal.customize": ["Baguhin", "Customize"],
+  "plan.overBudget": ["₱{total} vs ₱{budget} mo", "₱{total} vs your ₱{budget}"],
+  "plan.overTip": ["Pinakamurang linggo na ito. Subukan ang “Ulam lang”, 1 ulam bawat kain, o dagdagan ang budget.", "This is the cheapest week. Try “Ulam lang”, 1 ulam per meal, or a bigger budget."],
+  "plan.start": ["Saan magsisimula?", "Where to start?"],
+  "plan.start1": ["I-type ang budget at ilan kayo", "Type your budget and how many you are"],
+  "plan.start2": ["o pindutin ang 🎲 Random week", "or tap 🎲 Random week"],
+  "plan.start3": ["Palitan ang ayaw mo, tapos tingnan ang resibo", "Swap what you don't like, then check the receipt"],
   "modal.sulit": ["Sulit meter", "Sulit meter"],
   "modal.betterThan": ["Mas sulit sa {pct}% ng ulam", "Better value than {pct}% of dishes"],
   "modal.unranked": ["Kulang pa ang data", "Not enough data"],
@@ -245,7 +259,10 @@ function settingsChanged() {
   applyLang();
   renderMeatChips();
   renderDietSummary();
-  if (!document.getElementById("settings-dialog").classList.contains("hidden")) renderSettings();
+  if (!document.getElementById("settings-dialog").classList.contains("hidden")) {
+    // Redrawn on every change: keep keyboard focus on the same control.
+    if (typeof dlgKeepFocus === "function") dlgKeepFocus(document.getElementById("settings-body"), renderSettings); else renderSettings();
+  }
   if (typeof RECIPES !== "undefined" && RECIPES.length) {
     if (typeof filterRecipes === "function") filterRecipes();
     if (typeof renderOccasion === "function") renderOccasion();
@@ -279,12 +296,15 @@ function ageDialogOpen() {
 
 function openAgeDialog() {
   document.getElementById("age-dialog").classList.remove("hidden");
+  // Required answer: focus stays inside, and Esc doesn't close it.
+  if (typeof dlgOpen === "function") dlgOpen(document.querySelector("#age-dialog .age-card"), null);
 }
 
 /** The first-visit answer (required: the dialog has no skip); the tour starts after this closes. */
 function chooseAge(age) {
   setAge(age);
   document.getElementById("age-dialog").classList.add("hidden");
+  if (typeof dlgClose === "function") dlgClose(document.querySelector("#age-dialog .age-card"));
 }
 
 function setLang(lang) { SETTINGS = { ...SETTINGS, lang }; settingsChanged(); }
@@ -298,11 +318,13 @@ function toggleMeat(key) { SETTINGS = { ...SETTINGS, meats: key ? toggleIn(SETTI
 function openSettings() {
   renderSettings();
   document.getElementById("settings-dialog").classList.remove("hidden");
+  if (typeof dlgOpen === "function") dlgOpen(document.querySelector("#settings-dialog .settings-card"), closeSettings);
   if (typeof trackEvent === "function") trackEvent("settings/open");
 }
 
 function closeSettings() {
   document.getElementById("settings-dialog").classList.add("hidden");
+  if (typeof dlgClose === "function") dlgClose(document.querySelector("#settings-dialog .settings-card"));
 }
 
 function settingsChoice(on, onclick, label) {

@@ -6,8 +6,8 @@ import vm from "node:vm";
 
 const ctx = vm.createContext({});
 vm.runInContext(`${readFileSync(new URL("./planner.js", import.meta.url), "utf8")}
-;globalThis.api = { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, isMainUlam, proteinKind, dietOk, cheapestByKind, addSavedPlan, groceryText, groceryRows, groceryHtml, grocerySection, groupGrocery, dietsOk, dietNote, meatTypes, meatOk, dropSlots, moveInPlan };`, ctx);
-const { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, isMainUlam, proteinKind, dietOk, cheapestByKind, addSavedPlan, groceryText, groceryRows, groceryHtml, grocerySection, groupGrocery, dietsOk, dietNote, meatTypes, meatOk, dropSlots, moveInPlan } = ctx.api;
+;globalThis.api = { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, budgetOverText, isMainUlam, proteinKind, dietOk, cheapestByKind, addSavedPlan, groceryText, groceryRows, groceryHtml, grocerySection, groupGrocery, dietsOk, dietNote, meatTypes, meatOk, dropSlots, moveInPlan };`, ctx);
+const { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, budgetOverText, isMainUlam, proteinKind, dietOk, cheapestByKind, addSavedPlan, groceryText, groceryRows, groceryHtml, grocerySection, groupGrocery, dietsOk, dietNote, meatTypes, meatOk, dropSlots, moveInPlan } = ctx.api;
 const plain = (v) => JSON.parse(JSON.stringify(v));
 
 test("slots: add without duplicates, at most 5, remove clears empty slots", () => {
@@ -144,6 +144,9 @@ test("budget week: most nutritious dishes that fit, total within budget", () => 
   // Too small a budget: the cheapest week, reported as over.
   const tight = budgetWeek(pools, recipes, { budget: 100, people: 2, meals: ["Tanghalian", "Hapunan"] });
   assert.equal(tight.fits, false);
+  // The over-budget line compares the two amounts up front.
+  assert.equal(budgetOverText(4083.6, 1500), "₱4,084 vs your ₱1,500");
+  assert.equal(budgetOverText(4083.6, 1500, "₱{total} vs ₱{budget} mo"), "₱4,084 vs ₱1,500 mo");
 });
 
 test("meal types: kakanin and sweets are meryenda, never ulam, even when filed as a main dish", () => {
@@ -172,6 +175,33 @@ test("main ulam: real mains with protein; not sides of rice, egg how-tos or swee
     assert.equal(mealTypes({ title: t, category: "Main Dish" }).has("ulam"), false, t);
   }
   assert.equal(mealTypes({ title: "Yummy Blueberry Pancake", category: "Main Dish" }).has("almusal"), true);
+});
+
+test("not ulam: smoothies, pizza, sauces, how-tos, pastries, noodle-soup sides (from the live list, 2026-11-05)", () => {
+  const ulam = (title, category = "Main Dish") => mealTypes({ title, category }).has("ulam");
+  for (const t of [
+    "How to Make a Banana Smoothie", "Strawberry Greek Yogurt Smoothie", "Hawaiian Pizza (No Bake)", "Two Seasons-Style Four-Cheese Pizza",
+    "Victoria's Cheezy Pizza Pocket", "Chizza", "Yogurt Pizza Dough Recipe", "Scotch Eggs Recipe", "Turkey Noodle Soup Recipe",
+    "Chicken Noodle Soup", "Beef Pho Noodle Soup", "Instant Ramen Tantanmen", "Creamy Macaroni Sopas", "How to Make Fondant",
+    "How to Make Custard", "New York Style Cheesecake", "Easy Good Shepherd-Style Peanut Brittle", "Coconut Macaroon Recipe",
+    "Peach Mango Float", "Crema de Fruta Recipe", "Healthy Frozen Blueberry Yogurt Recipe", "Sweet Avocado Overnight Oats with Honey and Almonds",
+    "How to Make Chocolate Covered Strawberries", "Dunkin-Style Choco Honey Dipped Munchkins", "Milkiest Taiwanese Fried Milk",
+    "Panlasang Pinoy Bibingkang Galapong", "Buttermilk Cornbread", "Easy Focaccia", "Cheese Sticks", "Cheese Puff", "Mary Grace-Style Cheese Rolls",
+    "Cheesy Potato Marbles", "Baked Potato Skin Recipe", "How to Bake Pumpkin Seeds", "Pork Siomai", "Japanese Shumai", "Siopao Asado Recipe",
+    "Beef Empanada", "Filipino Tamales", "Tasty Sliders Recipe", "Mango Kani Rolls", "Pinoy Pesto", "Homemade Peanut Butter", "Carne Asada Burrito Recipe",
+    "Spinach Lasagne", "Fettuccine Alfredo Recipe", "Cheesy Baked Penne Alla Vodka", "How to Make Risotto", "Corn Chowder Recipe", "Salted Eggs",
+    "How to Velvet Meat", "Special Lunch Menu", "Add All-Purpose Cream to These Three Classic Filipino Dishes", "3 Cheesy Christmas Dips with a Holiday Secret: Arla Cheese",
+    "Pichi-Pichi", "Nilupak na Kamoteng Kahoy",
+  ]) assert.equal(ulam(t), false, t);
+  // Real ulam that share a word with the rules stay ulam.
+  for (const t of [
+    "Deep Fried Bulalo with Restaurant Style Teriyaki Sauce", "Beef Kaldereta sa Gata with Peanut Butter", "Creamy Shrimp with Salted Egg",
+    "Pork Tapa with Fried Banana and Salted Egg", "Chicken Sotanghon Soup", "Pork Adobo with Boiled Eggs", "How to Cook Sinigang na Bangus",
+    "Sipo Eggs Recipe", "Chicken Pot Pie", "Salted Egg Chicken", "Salted Egg Prawns", "Salted Eggs Shrimp", "Lumpiang Shanghai Recipe", "Kinilaw na Dulong", "Chicken Hamonado Rolls",
+  ]) assert.equal(ulam(t), true, t);
+  // Pizza and pasta are still meryenda; menus and round-ups are no meal at all.
+  assert.equal(mealTypes({ title: "Hawaiian Pizza (No Bake)", category: "Main Dish" }).has("meryenda"), true);
+  assert.equal(mealTypes({ title: "Special Lunch Menu", category: "Main Dish" }).size, 0);
 });
 
 test("ulam kind: gulay, isda or karne", () => {

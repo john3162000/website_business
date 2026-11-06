@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { corsJson, corsPreflight } from "@/lib/cors";
 import { ensurePsaTable } from "@/lib/ensure-schema";
+import { checkQuery, intIn } from "@/lib/query-guard";
 import { monthPicks, seasonProfiles } from "@/lib/seasons";
 
 export const dynamic = "force-dynamic";
@@ -15,8 +16,10 @@ const manilaMonth = () => new Date(Date.now() + 8 * 3600_000).getUTCMonth();
  * twelve-month index; `cheap` / `dear` are the month's picks (index ≤ 0.95 / ≥ 1.05).
  */
 export async function GET(request: Request) {
+  const check = checkQuery(request.url, { month: intIn(1, 12) });
+  if (!check.ok) return corsJson({ error: check.error }, { status: 400 });
   await ensurePsaTable();
-  const q = Number(new URL(request.url).searchParams.get("month"));
+  const q = Number(check.params.get("month"));
   const month = q >= 1 && q <= 12 ? q - 1 : manilaMonth();
   const rows = await prisma.psaPrice.findMany({
     where: { region: { in: ["NCR", "PH"] } },

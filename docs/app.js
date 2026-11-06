@@ -11,7 +11,10 @@ const GC_CODE = "sarapsulit";
 if (GC_CODE && typeof document !== "undefined") {
   const s = document.createElement("script");
   s.async = true;
-  s.src = "https://gc.zgo.at/count.js";
+  // Pinned version with subresource integrity (GoatCounter publishes count.v4.js for this).
+  s.src = "https://gc.zgo.at/count.v4.js";
+  s.integrity = "sha384-nRw6qfbWyJha9LhsOtSb2YJDyZdKvvCFh0fJYlkquSFjUxp9FVNugbfy8q1jdxI+";
+  s.crossOrigin = "anonymous";
   s.dataset.goatcounter = `https://${GC_CODE}.goatcounter.com/count`;
   document.head.appendChild(s);
 }
@@ -77,7 +80,7 @@ function categoryFor(title, course) {
   const t = title.toLowerCase();
   if (/\b(sinigang|tinola|nilaga|bulalo|soup|sopas|molo|lomi|mami|goto|arroz caldo|lugaw|batchoy|pochero|cansi)\b/.test(t)) return "Soup";
   if (/\b(sauce|dip|dipping|dressing|gravy|marinade|vinaigrette|spread|salsa|chutney|syrup|sinamak|chili oil|garlic oil|chili garlic)\b/.test(t)) return "Sauce & Condiment";
-  if (/\b(cake|flan|halo|turon|biko|suman|puto|kakanin|ice cream|pie|cookies?|bibingka|maja|leche|dessert|brownies?|polvoron|pastillas|kutsinta|sapin|graham|buko pandan|champorado|yema|candy|tart|muffins?|cupcakes?|donuts?|doughnuts?|bread|ensaymada|silvanas|sans rival|macapuno|ube halaya|taho|gulaman)\b/.test(t)) return "Dessert";
+  if (/\b(cake|flan|halo|turon|biko|suman|puto|kakanin|ice cream|pie|cookies?|bibingka|maja|leche|dessert|brownies?|polvoron|pastillas|kutsinta|sapin|graham|buko pandan|champorado|yema|candy|tart|muffins?|cupcakes?|donuts?|doughnuts?|bread|ensaymada|silvanas|sans rival|macapuno|ube halaya|taho|gulaman|pichi[- ]?pichi|nilupak|ice candy|buko salad|palitaw|kalamay|espasol|tikoy|bilo[- ]?bilo|binignit|minatamis|smoothies?|cheesecakes?|custard|fondant|macaroons?|mango float|crema de fruta)\b|\bbibingkang\b/.test(t)) return "Dessert";
   if (/\b(pancit|bihon|canton|sotanghon|spaghetti|pasta|noodles?|rice|sinangag|carbonara|lasagna|macaroni)\b/.test(t)) return "Rice & Noodles";
   if (/\b(gulay|pinakbet|pakbet|laing|chopsuey|chop suey|ginisang|monggo|munggo|ampalaya|kangkong|talong|okra|tofu|tokwa|vegetable|salad|lumpiang gulay)\b/.test(t)) return "Vegetable Dish";
   if (/\b(bangus|tilapia|fish|isda|galunggong|tuna|salmon|shrimp|hipon|prawn|squid|pusit|crab|alimango|mussels?|tahong|clams?|halaan|seafood|daing|tuyo|tinapa)\b/.test(t)) return "Fish & Seafood";
@@ -288,9 +291,12 @@ function costText(r) {
   return r.costCoverage < 1 ? `₱${r.costPerServing}+` : `₱${r.costPerServing}`;
 }
 
+let RC_SEQ = 0; // unique ids for the cards' screen-reader price notes (a dish can be on two rows)
+
 function buildRecipeCard(r) {
+  const did = `rc-d${++RC_SEQ}`;
   const img = r.img
-    ? `<img src="${escapeHtml(r.img)}" alt="${escapeHtml(r.title)}" loading="lazy" class="recipe-img w-full h-full object-cover transition-transform duration-300"
+    ? `<img src="${escapeHtml(r.img)}" alt="" loading="lazy" class="recipe-img w-full h-full object-cover transition-transform duration-300"
          onerror="this.parentElement.innerHTML='<div class=\\'flex items-center justify-center h-full text-5xl\\'>🍽️</div>'"/>`
     : `<div class="flex items-center justify-center h-full text-5xl">🍽️</div>`;
   return `
@@ -302,7 +308,8 @@ function buildRecipeCard(r) {
         ${r.costIncomplete ? `<div class="absolute top-2 left-2 bg-amber-800 text-amber-50 text-xs font-bold px-2 py-1 rounded-full shadow" title="No price yet for ${escapeHtml(r.costGaps.join(", "))}">⚠ Incomplete price</div>` : ""}
       </div>
       <div class="p-4 flex flex-col gap-2 flex-1">
-        <h3 class="font-semibold text-gray-900 leading-snug group-hover:text-green-700 transition-colors">${escapeHtml(r.title)}</h3>
+        <h3 class="font-semibold text-gray-900 leading-snug group-hover:text-green-700 transition-colors"><button type="button" class="rc-open" aria-haspopup="dialog" aria-describedby="${did}">${escapeHtml(r.title)}</button></h3>
+        <span id="${did}" class="sr-only">${r.costPerServing > 0 ? `${costText(r)} per serving` : "no price yet"}${r.costIncomplete ? ", incomplete price" : ""}</span>
         <span class="text-xs text-gray-500 uppercase tracking-wide">${escapeHtml(r.category)}</span>
         ${sulitMeter(r)}
         <div class="flex flex-wrap gap-1 mt-auto pt-2">
@@ -428,18 +435,17 @@ function buildModal(r, lines) {
       </div>`;
 
   return `
-    <div class="flex items-center justify-between mb-4">
-      <div>
-        <h2 class="text-2xl font-bold">${escapeHtml(r.title)}</h2>
-        <span class="text-sm text-gray-500">${r.category} · ${r.servings} servings${r.servingsAssumed ? " (assumed: the recipe doesn’t say)" : ""}${(r.prepTime || 0) + (r.cookTime || 0) > 0 ? ` · ${(r.prepTime || 0) + (r.cookTime || 0)} min` : ""}</span>
-        ${src ? `<p class="text-xs text-gray-500 mt-1">Recipe &amp; photo: ${srcLink("text-green-700 font-semibold hover:underline", `${escapeHtml(src.name)} ↗`)}</p>` : ""}
-        <div class="flex flex-wrap gap-2 mt-2">
-          ${r.id ? favButton(r.id, "pill") : ""}
-          ${r.id ? `<button id="share-btn" onclick="shareRecipe(${r.id})" class="text-xs font-semibold bg-green-800 hover:bg-green-700 text-amber-50 px-3 py-1 rounded-full">💬 Share to Messenger</button>` : ""}
-          ${r.id ? `<button onclick="customizeRecipe(${r.id})" class="text-xs font-medium bg-amber-100 hover:bg-amber-200 text-amber-800 px-3 py-1 rounded-full">✏️ Customize this dish</button>` : ""}
-        </div>
-      </div>
-      <button onclick="closeModalBtn()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">✕</button>
+    <div class="mb-5">
+      <h2 id="modal-title" tabindex="-1" data-dlg-focus class="modal-title text-2xl font-bold pr-12">${escapeHtml(r.title)}</h2>
+      ${r.costPerServing > 0 ? `<p class="modal-cost"><span class="modal-cost-main">${modalCostText(r)}</span></p>` : ""}
+      <span class="text-sm text-gray-500">${r.category} · ${r.servings} servings${r.servingsAssumed ? " (assumed: the recipe doesn’t say)" : ""}${(r.prepTime || 0) + (r.cookTime || 0) > 0 ? ` · ${(r.prepTime || 0) + (r.cookTime || 0)} min` : ""}</span>
+      ${src ? `<p class="text-xs text-gray-500 mt-1">Recipe &amp; photo: ${srcLink("text-green-700 font-semibold hover:underline", `${escapeHtml(src.name)} ↗`)}</p>` : ""}
+      ${r.id ? `<div class="modal-acts" role="group" aria-label="Actions">
+        ${favButton(r.id, "act")}
+        <button type="button" id="share-btn" onclick="shareRecipe(${r.id})" class="modal-act modal-act-main"><span class="modal-act-ico" aria-hidden="true">💬</span><span>${t("modal.share")}</span></button>
+        <button type="button" onclick="modalToVideo()" class="modal-act"><span class="modal-act-ico" aria-hidden="true">▶</span><span>${t("modal.video")}</span></button>
+        <button type="button" onclick="customizeRecipe(${r.id})" class="modal-act"><span class="modal-act-ico" aria-hidden="true">✏️</span><span>${t("modal.customize")}</span></button>
+      </div>` : ""}
     </div>
 
     <div class="grid md:grid-cols-3 gap-6">
@@ -515,7 +521,9 @@ function buildModal(r, lines) {
 // Meals by Sulit Score: sauces and desserts stay searchable but aren't ranked here.
 function topValueMeals() {
   const seen = new Set();
-  return RECIPES.filter((r) => r.ranked && r.nutritionScore >= TOP_MIN_NUTRITION_SCORE && r.category !== "Dessert" && r.category !== "Sauce & Condiment")
+  // Meals only: a bowl of boiled peanuts can be very sulit, but it isn't ulam or almusal.
+  const isMeal = (r) => typeof mealTypes !== "function" || mealTypes(r).has("ulam") || mealTypes(r).has("almusal");
+  return RECIPES.filter((r) => r.ranked && r.nutritionScore >= TOP_MIN_NUTRITION_SCORE && r.category !== "Dessert" && r.category !== "Sauce & Condiment" && isMeal(r))
     .sort((a, b) => b.valueScore - a.valueScore)
     .filter((r) => { const k = r.title.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; });
 }
@@ -600,6 +608,9 @@ function favIds() {
 /** Star button for a dish; `pill` is the labelled version for the recipe pop-up. */
 function favButton(id, style) {
   const on = favIds().has(id);
+  if (style === "act") {
+    return `<button type="button" class="modal-act fav-btn ${on ? "on" : ""}" data-fav="${id}" onclick="event.stopPropagation(); toggleFav(${id})" aria-pressed="${on}"><span class="modal-act-ico" aria-hidden="true">${on ? "★" : "☆"}</span><span>Favorite</span></button>`;
+  }
   return style === "pill"
     ? `<button class="fav-btn ${on ? "on" : ""} text-xs font-semibold px-3 py-1 rounded-full border border-amber-300 ${on ? "bg-amber-100 text-amber-800" : "text-amber-700"}" data-fav="${id}" onclick="event.stopPropagation(); toggleFav(${id})">${on ? "★ Favorite" : "☆ Add to favorites"}</button>`
     : `<button class="fav-btn ${on ? "on" : ""} text-amber-500" data-fav="${id}" onclick="event.stopPropagation(); toggleFav(${id})" aria-label="${on ? "Remove from" : "Add to"} favorites" title="${on ? "Favorite" : "Add to favorites"}">${on ? "★" : "☆"}</button>`;
@@ -613,8 +624,11 @@ function toggleFav(id) {
   // Redraw every star for this dish in place.
   document.querySelectorAll(`[data-fav="${id}"]`).forEach((b) => {
     const tmp = document.createElement("div");
-    tmp.innerHTML = favButton(id, b.classList.contains("rounded-full") ? "pill" : "");
-    b.replaceWith(tmp.firstElementChild);
+    tmp.innerHTML = favButton(id, b.classList.contains("modal-act") ? "act" : b.classList.contains("rounded-full") ? "pill" : "");
+    const fresh = tmp.firstElementChild;
+    const hadFocus = document.activeElement === b;
+    b.replaceWith(fresh);
+    if (hadFocus) fresh.focus(); // keyboard users stay on the star they pressed
   });
   if (typeof renderPicker === "function" && document.getElementById("plan-picker")) renderPicker();
 }
@@ -637,7 +651,7 @@ function moverRow(m) {
     .filter((d) => d.change != null && Math.abs(d.change) >= 0.05)
     .map((d) => `${escapeHtml(d.label)} ${pctText(d.change)}`).join(", ");
   return `
-    <div class="flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 ${known ? "cursor-pointer hover:bg-gray-50" : ""}" ${known ? `onclick="openModal(${m.id})"` : ""}>
+    <div class="flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 ${known ? "cursor-pointer hover:bg-gray-50" : ""}" ${known ? `role="button" tabindex="0" onclick="openModal(${m.id})"` : ""}>
       ${rec && rec.img ? `<img src="${escapeHtml(rec.img)}" alt="" loading="lazy" class="mover-img">` : `<span class="mover-img mover-img-empty">🍽️</span>`}
       <div class="min-w-0 flex-1">
         <p class="font-medium truncate">${known ? favButton(m.id) : ""} ${escapeHtml(m.title)}</p>
@@ -792,8 +806,12 @@ function filterRecipes() {
   const minKcal = parseFloat(document.getElementById("min-kcal").value) || 0;
   const maxKcal = parseFloat(document.getElementById("max-kcal").value) || Infinity;
   const kcalFilter = minKcal > 0 || maxKcal !== Infinity;
+  // A spoonful of sauce is "cheap" and "sulit" but isn't a meal: value sorts leave sauces out
+  // unless the cook searches for one.
+  const saucesOut = (sort === "valueScore" || sort === "costPerServing") && !search;
 
   const filtered = RECIPES.filter((r) => {
+    if (saucesOut && r.category === "Sauce & Condiment") return false;
     if (typeof kitchenOk === "function" && !kitchenOk(r)) return false;
     // Settings: every chosen diet, and the Fish / Chicken / Pork / Beef chips (planner.js helpers).
     if (!dietsOk(r, activeDiets()) || !meatOk(r, activeMeats())) return false;
@@ -819,7 +837,10 @@ function filterRecipes() {
   }
 
   if (typeof kitchenSummary === "function") document.querySelectorAll("[data-kitchen-summary]").forEach((el) => { el.textContent = kitchenSummary(); });
-  document.getElementById("result-count").textContent = `${filtered.length.toLocaleString()} recipe${filtered.length !== 1 ? "s" : ""} found${forYou ? " · sorted by your panlasa 🧠" : ""} · ${t("card.plusLegend")}`;
+  document.getElementById("result-count").textContent = `${filtered.length.toLocaleString()} recipe${filtered.length !== 1 ? "s" : ""} found${forYou ? " · sorted by your panlasa 🧠" : ""}${saucesOut ? ` · ${t("browse.saucesOut")}` : ""} · ${t("card.plusLegend")}`;
+  updateBrowseFilterCount();
+  const doneN = document.getElementById("bf-done-n");
+  if (doneN) doneN.textContent = `(${filtered.length.toLocaleString()})`;
   // Render in pages so 2,000 cards don't block the page.
   const shown = filtered.slice(0, browseLimit);
   document.getElementById("browse-grid").innerHTML = shown.length > 0
@@ -831,6 +852,41 @@ function filterRecipes() {
         <p class="font-medium">No recipes match your filters</p>
         <p class="text-sm mt-1">Try widening the criteria above.</p>
        </div>`;
+}
+
+/** How many Browse filters are set (a non-default sort counts as one): the n in "Filters (n)". */
+function browseFilterCount(values) {
+  const { sort, minProt, maxCost, produce, minKcal, maxKcal } = values;
+  return [sort && sort !== "valueScore", minProt, maxCost, produce, minKcal, maxKcal].filter((v) => v && String(v).trim() !== "").length;
+}
+
+function updateBrowseFilterCount() {
+  const v = (id) => (document.getElementById(id) || {}).value || "";
+  const n = browseFilterCount({ sort: v("sort-select"), minProt: v("min-protein"), maxCost: v("max-cost"), produce: v("produce-filter"), minKcal: v("min-kcal"), maxKcal: v("max-kcal") });
+  const badge = document.getElementById("bf-count");
+  if (badge) badge.textContent = n ? String(n) : "";
+  const btn = document.getElementById("bf-toggle");
+  if (btn) btn.setAttribute("aria-label", `${t("browse.filters")}${n ? ` (${n})` : ""}`);
+}
+
+/** Phones: the filters open as a bottom sheet over the results. */
+function openBrowseFilters() {
+  document.body.classList.add("bf-open");
+  document.getElementById("bf-toggle").setAttribute("aria-expanded", "true");
+  const panel = document.getElementById("browse-filters");
+  panel.setAttribute("role", "dialog");
+  panel.setAttribute("aria-modal", "true");
+  dlgOpen(panel, closeBrowseFilters);
+}
+
+function closeBrowseFilters() {
+  if (!document.body.classList.contains("bf-open")) return;
+  document.body.classList.remove("bf-open");
+  document.getElementById("bf-toggle").setAttribute("aria-expanded", "false");
+  const panel = document.getElementById("browse-filters");
+  panel.removeAttribute("role");
+  panel.removeAttribute("aria-modal");
+  dlgClose(panel);
 }
 
 let browseLimit = 48;
@@ -931,8 +987,17 @@ function renderWeather() {
   // Mild weather: the next best value meals after the Top Value list, in the chosen order.
   const picks = weatherPicks(mood, RECIPES, 4, undefined, pickSort)
     ?? (pickSort === "value" ? topValueMeals().slice(8, 12) : topValueMeals().slice(8, 12).sort(PICK_SORTS[pickSort].cmp));
-  document.getElementById("weather-grid").innerHTML = picks.map(buildRecipeCard).join("")
+  const grid = document.getElementById("weather-grid");
+  // The weather often arrives after someone has tabbed onto a pick: keep focus on that dish.
+  const had = grid.contains(document.activeElement) ? document.activeElement.closest("[onclick]") : null;
+  const key = had ? had.getAttribute("onclick") : null;
+  grid.innerHTML = picks.map(buildRecipeCard).join("")
     || `<p class="col-span-4 text-gray-400">No matching dishes yet.</p>`;
+  if (key) {
+    const card = [...grid.querySelectorAll("[onclick]")].find((el) => el.getAttribute("onclick") === key);
+    const el = card ? card.querySelector(".rc-open") || card : grid.querySelector(".rc-open");
+    if (el) el.focus({ preventScroll: true });
+  }
 }
 
 async function showWeather(place) {
@@ -963,9 +1028,122 @@ async function loadWeatherPicks() {
   }
 }
 
+// ═══════════════ DIALOGS: focus in, Tab stays in, Esc closes, focus back ═══════════════
+// The div pop-ups (recipe, Settings, kitchen, age, tour). Native <dialog>s opened with
+// showModal() already do all of this themselves, so the keys are left to them while one is open.
+
+const DLG_STACK = []; // [{ panel, opener, close }], the top one gets the keys
+const DLG_FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/** Where Tab goes from item i of n: wraps at both ends; from outside, to the first (or last on Shift+Tab). */
+function dlgWrapIndex(i, n, back) {
+  if (!n) return -1;
+  if (i < 0) return back ? n - 1 : 0;
+  return (i + (back ? -1 : 1) + n) % n;
+}
+
+function dlgFocusables(panel) {
+  return [...panel.querySelectorAll(DLG_FOCUSABLE)].filter((el) => el.getClientRects().length > 0);
+}
+
+function dlgFocusFirst(panel) {
+  const target = panel.querySelector("[data-dlg-focus]") || dlgFocusables(panel)[0] || panel;
+  if (target === panel && !panel.hasAttribute("tabindex")) panel.setAttribute("tabindex", "-1");
+  target.focus({ preventScroll: true });
+}
+
+/** Redraw a box with `draw()` while keeping keyboard focus on the same control (by position). */
+function dlgKeepFocus(box, draw) {
+  const before = box ? dlgFocusables(box) : [];
+  const at = before.indexOf(document.activeElement);
+  draw();
+  if (at < 0 || !box) return;
+  const after = dlgFocusables(box);
+  const el = after[Math.min(at, after.length - 1)];
+  if (el) el.focus({ preventScroll: true });
+}
+
+/** A pop-up opened: remember what had focus, move focus inside. `close` runs on Esc (null: Esc does nothing). */
+function dlgOpen(panel, close) {
+  if (!panel) return;
+  const top = DLG_STACK[DLG_STACK.length - 1];
+  if (!top || top.panel !== panel) {
+    const opener = document.activeElement;
+    // A grid can redraw while the pop-up is open (weather picks arrive late); remember the card's
+    // onclick and its box so focus can go to the redrawn copy.
+    const card = opener && opener.closest ? opener.closest("[onclick]") : null;
+    const box = card && card.parentElement && card.parentElement.closest("[id]");
+    DLG_STACK.push({ panel, opener, close, openerKey: card ? card.getAttribute("onclick") : null, openerBox: box ? box.id : null });
+  }
+  requestAnimationFrame(() => dlgFocusFirst(panel));
+}
+
+/** The element to give focus back to: the opener, or its redrawn copy when the grid re-rendered. */
+function dlgOpenerNow(d) {
+  if (d.opener && d.opener.isConnected) return d.opener;
+  if (!d.openerKey || !d.openerBox) return null;
+  const box = document.getElementById(d.openerBox);
+  const card = box && [...box.querySelectorAll("[onclick]")].find((el) => el.getAttribute("onclick") === d.openerKey);
+  return card ? card.querySelector(".rc-open") || card : null;
+}
+
+/** A pop-up closed: forget it and give focus back to what opened it. */
+function dlgClose(panel) {
+  const i = DLG_STACK.findIndex((d) => d.panel === panel);
+  if (i < 0) return;
+  const [d] = DLG_STACK.splice(i, 1);
+  const back = dlgOpenerNow(d);
+  if (back && typeof back.focus === "function") back.focus({ preventScroll: true });
+}
+
+// Clickable rows drawn as divs (role="button" tabindex="0"): Enter and Space click them too.
+if (typeof document !== "undefined") document.addEventListener("keydown", (e) => {
+  const el = e.target;
+  if ((e.key !== "Enter" && e.key !== " ") || !el || !el.getAttribute || el.getAttribute("role") !== "button") return;
+  if (/^(BUTTON|A|INPUT|SELECT|TEXTAREA)$/.test(el.tagName)) return;
+  e.preventDefault();
+  el.click();
+});
+
+if (typeof document !== "undefined") document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape" && e.key !== "Tab") return;
+  if (document.querySelector("dialog[open]")) return;
+  const top = DLG_STACK[DLG_STACK.length - 1];
+  if (!top) return;
+  if (e.key === "Escape") {
+    if (top.close) { e.preventDefault(); top.close(); }
+    return;
+  }
+  const items = dlgFocusables(top.panel);
+  if (!items.length) { e.preventDefault(); return; }
+  const i = items.indexOf(document.activeElement);
+  if (i === -1 || (e.shiftKey && i === 0) || (!e.shiftKey && i === items.length - 1)) {
+    e.preventDefault();
+    items[dlgWrapIndex(i, items.length, e.shiftKey)].focus();
+  }
+});
+
 // ═══════════════ MODAL ═══════════════
 
 let MODAL_DATA = null; // { id, lines } of the open recipe, for the share picture
+
+/** "₱120+ buong ulam · ₱20+/serving": the decision numbers, right under the title. */
+function modalCostText(r) {
+  const plus = r.costCoverage < 1 ? "+" : "";
+  const total = r.cost && r.cost.total != null ? r.cost.total : r.costPerServing * r.servings;
+  return `₱${Math.round(total).toLocaleString()}${plus} ${t("modal.total")} · ${costText(r)}/serving`;
+}
+
+/** The ▶ Video action: scroll to the how-to-cook box and put focus on its first video link. */
+function modalToVideo() {
+  const box = document.getElementById("video-links");
+  if (!box) return;
+  box.closest(".cook-card").scrollIntoView({ behavior: "smooth", block: "center" });
+  const first = box.querySelector("a");
+  if (first) first.focus({ preventScroll: true });
+}
+
+function modalPanel() { return document.querySelector("#recipe-modal .modal-panel"); }
 
 async function openModal(id) {
   const r = RECIPES.find((x) => x.id === id);
@@ -974,15 +1152,27 @@ async function openModal(id) {
   if (typeof recordTasteSignal === "function") recordTasteSignal(id, "open");
   MODAL_DATA = { id, lines: [] };
   if (history.replaceState) history.replaceState(null, "", `#recipe=${id}`);
-  document.getElementById("modal-content").innerHTML = buildModal(r, null);
+  const content = document.getElementById("modal-content");
+  content.innerHTML = buildModal(r, null);
+  const scroller = document.querySelector("#recipe-modal .modal-scroll");
+  if (scroller) scroller.scrollTop = 0;
+  const x = document.querySelector("#recipe-modal .modal-x");
+  if (x) x.setAttribute("aria-label", t("modal.close"));
   document.getElementById("recipe-modal").classList.add("open");
   document.body.style.overflow = "hidden";
+  dlgOpen(modalPanel(), closeModal);
   // Only the priced ingredient lines; the steps are not loaded (they stay on the source site).
   const compiled = await fetch(`${API_BASE}/api/recipes/compiled?id=${id}`).then((res) => (res.ok ? res.json() : null)).catch(() => null);
   const lines = compiled && compiled.recipe ? compiled.recipe.lines : [];
   if (MODAL_DATA && MODAL_DATA.id === id) MODAL_DATA = { id, lines };
-  if (!document.getElementById("recipe-modal").classList.contains("open")) return;
-  document.getElementById("modal-content").innerHTML = buildModal(r, lines);
+  if (!document.getElementById("recipe-modal").classList.contains("open") || !MODAL_DATA || MODAL_DATA.id !== id) return;
+  // Redraw with the ingredients, keeping keyboard focus on the same control.
+  const before = dlgFocusables(content);
+  const at = before.indexOf(document.activeElement);
+  const onTitle = document.activeElement && document.activeElement.id === "modal-title";
+  content.innerHTML = buildModal(r, lines);
+  if (onTitle) document.getElementById("modal-title").focus({ preventScroll: true });
+  else if (at >= 0) { const after = dlgFocusables(content)[at]; if (after) after.focus({ preventScroll: true }); }
   loadVideoLinks(r);
 }
 
@@ -1048,8 +1238,11 @@ async function loadVideoLinks(r) {
 }
 
 function closeModal() {
-  document.getElementById("recipe-modal").classList.remove("open");
+  const m = document.getElementById("recipe-modal");
+  if (!m.classList.contains("open")) return;
+  m.classList.remove("open");
   document.body.style.overflow = "";
+  dlgClose(modalPanel());
   if (history.replaceState && location.hash.startsWith("#recipe=")) history.replaceState(null, "", location.pathname + location.search);
 }
 function closeModalBtn() { closeModal(); }

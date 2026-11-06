@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { ensureNutritionColumns, ensurePsaTable, ensureRecipeColumns } from "@/lib/ensure-schema";
 import { isMalformedName, parsePriceBasis } from "@/lib/da-units";
 import { compareDate } from "@/lib/price-history";
+import { memo } from "@/lib/memo";
 import { yieldCount, type RefNutrition } from "@/lib/scrapers/recipe-structured";
 import { ALIASES, CANONICALS, COOK_GROUPS, DERIVED_PRICES, EXTRA_NUTRIENTS, MANUAL_PRICES, RETENTION } from "./catalog.generated.ts";
 import { psaSnapshot, type PsaRow } from "./psa-snapshot.ts";
@@ -25,17 +26,31 @@ export interface CompiledFromDb extends CompiledRecipe {
 
 type PriceRow = { name: string; price: number | null; sourceDate: Date };
 
-async function loadInputs(onlyId: number | null, pricesSince: Date) {
-  await Promise.all([ensureNutritionColumns(), ensureRecipeColumns()]);
-  const [foods, priceRows, recipes] = await Promise.all([
-    prisma.nutritionFact.findMany({
+// FNRI foods and recent prices are the same for every request until the next price import.
+const LOAD_TTL = 5 * 60_000;
+
+function loadFoods(): Promise<Map<string, FnriFood>> {
+  return memo("fnri", LOAD_TTL, async () => {
+    const foods = await prisma.nutritionFact.findMany({
       select: { foodCode: true, calories: true, protein: true, fat: true, carbohydrates: true, sodium: true, fiber: true, calcium: true, iron: true, vitaminA: true, vitaminC: true },
-    }),
-    prisma.commodity.findMany({
-      where: { sourceDate: { gte: pricesSince }, price: { not: null } },
-      orderBy: { sourceDate: "asc" },
-      select: { name: true, price: true, sourceDate: true },
-    }),
+    });
+    return new Map<string, FnriFood>(foods.map((f) => [f.foodCode, f]));
+  });
+}
+
+function loadPrices(days: number): Promise<PriceRow[]> {
+  return memo(`prices:${days}`, LOAD_TTL, () => prisma.commodity.findMany({
+    where: { sourceDate: { gte: new Date(Date.now() - days * DAY) }, price: { not: null } },
+    orderBy: { sourceDate: "asc" },
+    select: { name: true, price: true, sourceDate: true },
+  }));
+}
+
+async function loadInputs(onlyId: number | null, priceDays: number) {
+  await Promise.all([ensureNutritionColumns(), ensureRecipeColumns()]);
+  const [fnri, priceRows, recipes] = await Promise.all([
+    loadFoods(),
+    loadPrices(priceDays),
     prisma.recipe.findMany({
       where: onlyId ? { id: onlyId } : undefined,
       orderBy: { id: "asc" },
@@ -46,7 +61,7 @@ async function loadInputs(onlyId: number | null, pricesSince: Date) {
       },
     }),
   ]);
-  return { fnri: new Map<string, FnriFood>(foods.map((f) => [f.foodCode, f])), priceRows, recipes };
+  return { fnri, priceRows, recipes };
 }
 type Recipes = Awaited<ReturnType<typeof loadInputs>>["recipes"];
 
@@ -74,12 +89,14 @@ function daSnapshot(rows: PriceRow[], asOf?: string): { da: Map<string, DaPrice>
 /** PSA prices are monthly and about a month behind: one older than this (before the snapshot day) isn't used. */
 
 /** PSA monthly NCR rows from ~6 months back; empty until the first PSA import. */
-async function loadPsa(): Promise<PsaRow[]> {
-  await ensurePsaTable();
-  return prisma.psaPrice.findMany({
-    where: { region: { in: ["NCR", "PH"] }, period: { gte: new Date(Date.now() - 200 * DAY) } },
-    orderBy: { period: "asc" },
-    select: { commodity: true, unit: true, price: true, period: true, region: true },
+function loadPsa(): Promise<PsaRow[]> {
+  return memo("psa", LOAD_TTL, async () => {
+    await ensurePsaTable();
+    return prisma.psaPrice.findMany({
+      where: { region: { in: ["NCR", "PH"] }, period: { gte: new Date(Date.now() - 200 * DAY) } },
+      orderBy: { period: "asc" },
+      select: { commodity: true, unit: true, price: true, period: true, region: true },
+    });
   });
 }
 
@@ -106,8 +123,13 @@ function compileAll(recipes: Recipes, fnri: Map<string, FnriFood>, da: Map<strin
  * Compiles recipes from the database: recipe lines (with group headings), the
  * ingredient catalog, FNRI nutrients and the latest DA prices (last 14 days).
  */
-export async function compileFromDb(onlyId: number | null): Promise<{ priceDate: string | null; recipes: CompiledFromDb[] }> {
-  const { fnri, priceRows, recipes } = await loadInputs(onlyId, new Date(Date.now() - PRICE_WINDOW_DAYS * DAY));
+export function compileFromDb(onlyId: number | null): Promise<{ priceDate: string | null; recipes: CompiledFromDb[] }> {
+  // The full list is the expensive one (every recipe): keep it per instance like the loads.
+  return onlyId ? compileFresh(onlyId) : memo("compiled:all", LOAD_TTL, () => compileFresh(null));
+}
+
+async function compileFresh(onlyId: number | null): Promise<{ priceDate: string | null; recipes: CompiledFromDb[] }> {
+  const { fnri, priceRows, recipes } = await loadInputs(onlyId, PRICE_WINDOW_DAYS);
   const { da, priceDate } = daSnapshot(priceRows);
   return { priceDate, recipes: compileAll(recipes, fnri, da, psaSnapshot(await loadPsa())) };
 }
@@ -120,7 +142,7 @@ export async function compileFromDb(onlyId: number | null): Promise<{ priceDate:
 export async function compileNowAndMonthAgo(days = 30): Promise<{
   latestDate: string | null; compareDate: string | null; now: CompiledFromDb[]; then: CompiledFromDb[];
 }> {
-  const { fnri, priceRows, recipes } = await loadInputs(null, new Date(Date.now() - 50 * DAY));
+  const { fnri, priceRows, recipes } = await loadInputs(null, 50);
   const dates = priceRows.filter((p) => p.price != null && p.price > 0).map((p) => p.sourceDate.toISOString());
   const latestDate = dates.length ? dates[dates.length - 1] : null;
   // A week or two back needs at least 5 or 10 days of history; a month back, 21.
@@ -215,17 +237,7 @@ export type DishInput = { title: string; servings: number | null; ingredients: {
  */
 export async function compileDish(dish: DishInput) {
   await ensureNutritionColumns();
-  const [foods, priceRows] = await Promise.all([
-    prisma.nutritionFact.findMany({
-      select: { foodCode: true, calories: true, protein: true, fat: true, carbohydrates: true, sodium: true, fiber: true, calcium: true, iron: true, vitaminA: true, vitaminC: true },
-    }),
-    prisma.commodity.findMany({
-      where: { sourceDate: { gte: new Date(Date.now() - 50 * DAY) }, price: { not: null } },
-      orderBy: { sourceDate: "asc" },
-      select: { name: true, price: true, sourceDate: true },
-    }),
-  ]);
-  const fnri = new Map<string, FnriFood>(foods.map((f) => [f.foodCode, f]));
+  const [fnri, priceRows] = await Promise.all([loadFoods(), loadPrices(50)]);
   const psaRows = await loadPsa();
   const ctx = (da: Map<string, DaPrice>, psa: Map<string, PsaPrice>): CompileContext => ({ aliases: ALIASES, canonicals: CANONICALS, extraNutrients: EXTRA_NUTRIENTS, manualPrices: MANUAL_PRICES, derivedPrices: DERIVED_PRICES, cookGroups: COOK_GROUPS, retention: RETENTION, fnri, da, psa });
   const input = { id: 0, ...dish };

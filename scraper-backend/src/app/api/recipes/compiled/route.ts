@@ -1,4 +1,5 @@
 import { corsJson, corsPreflight } from "@/lib/cors";
+import { checkQuery, isId } from "@/lib/query-guard";
 import { compileFromDb, summarize } from "@/lib/recipe-compile/load";
 
 export const dynamic = "force-dynamic";
@@ -14,8 +15,9 @@ export const maxDuration = 60;
  * GET /api/recipes/compiled?id=123    → one recipe with per-line detail
  */
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const onlyId = searchParams.get("id") ? Number(searchParams.get("id")) : null;
+  const q = checkQuery(request.url, { id: isId });
+  if (!q.ok) return corsJson({ error: q.error }, { status: 400 });
+  const onlyId = q.params.has("id") ? Number(q.params.get("id")) : null;
   const { priceDate, recipes: compiled } = await compileFromDb(onlyId);
 
   if (onlyId) {

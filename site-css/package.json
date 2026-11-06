@@ -1,0 +1,11 @@
+{
+  "name": "sarapsulit-site-css",
+  "private": true,
+  "description": "Builds docs/tailwind.css for the static site (replaces the Tailwind Play CDN).",
+  "scripts": {
+    "build": "tailwindcss -c tailwind.config.cjs -i input.css -o ../docs/tailwind.css --minify"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.19"
+  }
+}

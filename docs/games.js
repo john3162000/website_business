@@ -243,7 +243,7 @@ function rateHistory() {
   if (!rows.length) return "";
   return `<div class="game-card p-4 mt-4">
     <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Top mo (${Object.keys(gameRatings).length} rated)</p>
-    ${rows.map(({ r, v }) => `<div class="flex items-center justify-between gap-2 py-1 cursor-pointer" onclick="openModal(${r.id})"><span class="text-sm truncate">${escapeHtml(r.title)}</span><span class="text-sm font-bold text-green-800 shrink-0">${v}/10</span></div>`).join("")}
+    ${rows.map(({ r, v }) => `<div class="flex items-center justify-between gap-2 py-1 cursor-pointer" role="button" tabindex="0" onclick="openModal(${r.id})"><span class="text-sm truncate">${escapeHtml(r.title)}</span><span class="text-sm font-bold text-green-800 shrink-0">${v}/10</span></div>`).join("")}
   </div>`;
 }
 

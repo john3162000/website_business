@@ -6,6 +6,8 @@
 
 const FINDER_KEY = "sarapsulit.finder.v1";
 const D3_URL = "https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js";
+// Subresource integrity: the browser refuses the file if the CDN ever serves something else.
+const D3_SRI = "sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i";
 
 // Picking "Pork (any cut)" matches every catalog slug that starts with "pork_".
 const FAMILIES = {
@@ -168,7 +170,7 @@ function loadD3() {
   if (window.d3) return Promise.resolve();
   return (d3Loading ||= new Promise((resolve, reject) => {
     const s = document.createElement("script");
-    s.src = D3_URL; s.onload = resolve; s.onerror = () => { d3Loading = null; reject(new Error("graph library didn't load")); };
+    s.src = D3_URL; s.integrity = D3_SRI; s.crossOrigin = "anonymous"; s.onload = resolve; s.onerror = () => { d3Loading = null; reject(new Error("graph library didn't load")); };
     document.head.appendChild(s);
   }));
 }
@@ -275,7 +277,7 @@ function renderFinder() {
       ? `<p class="text-xs text-amber-700"><strong>Kulang (${d.missing.length}):</strong> ${d.missing.slice(0, 5).map((m) => escapeHtml(m.label)).join(", ")}${d.missing.length > 5 ? "…" : ""}
          ${d.missingCost > 0 ? ` · ~₱${d.missingCost.toFixed(2)}${d.unpricedMissing ? "+" : ""}/serving to buy` : ""}</p>`
       : `<p class="text-xs font-semibold text-green-700">✓ Kumpleto: you have everything</p>`;
-    return `<div class="finder-card" onclick="openModal(${d.id})" onmouseenter="graphFocus('d:${d.id}')" onmouseleave="graphFocus(null)">
+    return `<div class="finder-card" role="button" tabindex="0" onclick="openModal(${d.id})" onmouseenter="graphFocus('d:${d.id}')" onmouseleave="graphFocus(null)">
       ${r.img ? `<img src="${escapeHtml(r.img)}" alt="" loading="lazy">` : `<div class="plan-noimg">🍽️</div>`}
       <div class="min-w-0 flex flex-col gap-1">
         <p class="font-semibold text-gray-900 leading-snug">${typeof favButton === "function" ? favButton(d.id) : ""} ${escapeHtml(d.title)}</p>

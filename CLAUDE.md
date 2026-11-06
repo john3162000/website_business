@@ -23,7 +23,7 @@ a picture.
 ## Layout
 
 ```
-docs/                         static site, no build step (Tailwind CDN, plain browser scripts)
+docs/                         static site, plain browser scripts; tailwind.css is built from site-css/
   index.html                  all sections, styles, theme (forest and cream + dark mode)
   app.js                      data loading, Browse, Prices, recipe pop-up, nav, sulit meter, dark toggle
   weather.js                  weather picks (Open-Meteo)       mydish.js   "My Dish" builder
@@ -41,6 +41,7 @@ docs/                         static site, no build step (Tailwind CDN, plain br
                               dark mode, weather) and the Fish/Chicken/Pork/Beef chips; key sarapsulit.settings.v1
   *.test.mjs                  node:test files; run each script's pure helpers in node:vm
   logo.png, favicon.png       FARM2FIGURE logo
+site-css/                     Tailwind v3 CLI build of docs/tailwind.css (tailwind.config.cjs holds the theme)
 scraper-backend/
   src/lib/recipe-compile/     the engine: compile.ts, load.ts, quantity.ts, ingredient-index.ts,
                               cooking.ts (vitamin C/A, iron, calcium after cooking)
@@ -102,6 +103,9 @@ Line statuses are `ok`, `to-taste`, `optional`, `water`, `skipped`, `unmatched`,
 | `/api/cron/da-daily`, `/api/cron/psa` | Vercel crons: DA daily at 10:00 UTC; PSA daily at 11:00 UTC (Mondays: the update; other days: two more years of history back to 2018, then nothing) |
 | `/api/cron/recipes`, `…-pm`, `…/extra-1…22` | Vercel crons, one every hour at :15 UTC (Hobby fires them any time in that hour): the recipe crawl, 5 hops of ~45 s each via the production domain |
 
+Public GET routes refuse query params they don't list (`checkQuery`, `src/lib/query-guard.ts`) with
+a 400, so cache-busting URLs can't force a recompile. A new param must be added to the route's rules.
+
 ## Commands
 
 ```bash
@@ -109,6 +113,7 @@ cd scraper-backend && npm test                      # backend tests (node --test
 cd scraper-backend && npx tsc --noEmit              # type check
 node --test docs/*.test.mjs                         # site tests (run from repo root)
 cd scraper-backend && node scripts/build-catalog.mjs # after ANY catalog TSV edit; commit both
+cd site-css && npm ci && npm run build               # after adding Tailwind classes in docs/; commit docs/tailwind.css
 ```
 
 **Local site preview:** `.claude/launch.json` has a "site" entry (`python -m http.server 5173
@@ -117,8 +122,9 @@ The backend can't run locally: there is no `.env` or database login on this comp
 must never ask for or type one.
 
 **CI:** `.github/workflows/test.yml`, job "Backend tests and type check": `npm ci`, `npm test`,
-`tsc`, `node --check` on every `docs/*.js`, then `node --test docs/*.test.mjs`. This check is
-required on `main`.
+`tsc`, `node --check` on every `docs/*.js`, `node --test docs/*.test.mjs`, then a rebuild of
+`docs/tailwind.css` that fails if the committed file is stale. This check is required on `main`.
+Actions are pinned to commit SHAs (Dependabot updates them).
 
 ## Shipping (the owner's standing rules)
 
@@ -164,13 +170,23 @@ The Impeccable skill (`.claude/skills/impeccable`) runs design commands such as
   (`settings.test.mjs` fails on a missing key).
   Favourites (`favIds`, `toggleFav`, key `sarapsulit.favs.v1`) live in `app.js`. Give new
   top-level names a prefix (`SHARE_W`, `FINDER_KEY`) so they can't clash.
-- **The theme comes from the Tailwind config:** `index.html` re-points Tailwind's `green` to
-  forest green and `amber` to the logo's gold. Dark mode is `html.dark` overrides plus `--bg`,
+- **The theme comes from the Tailwind config:** `site-css/tailwind.config.cjs` re-points Tailwind's
+  `green` to forest green and `amber` to the logo's gold. There is no Play CDN any more: a class
+  that appears only after the build is unstyled, so rebuild `docs/tailwind.css` (CI checks it).
+  Never build class names from pieces (`bg-${c}-700`); the build can't see them.
+- **Content Security Policy:** `index.html` has a meta CSP. A new outside host (API, image CDN,
+  script) must be added there, or the browser blocks it. Outside scripts carry SRI hashes
+  (`D3_SRI` in finder.js, GoatCounter's `count.v4.js` in app.js): update the hash with the version. Dark mode is `html.dark` overrides plus `--bg`,
   `--s1`, `--mint` and similar variables.
 - **Rainy look:** `body.rainy` turns the site blue on rainy days. Screenshots taken in Manila
   rain look blue; use `setWeatherMode('sunny')` for a neutral preview.
 - **Hidden preview pane:** while the built-in browser pane is hidden, animations pause and
   screenshots can be stale. Check page state with JavaScript before trusting a screenshot.
+- **Pop-ups and keyboard:** a new div pop-up calls `dlgOpen(panel, closeFn)` when it opens and
+  `dlgClose(panel)` when it closes (`app.js`): focus moves in, Tab stays inside, Esc closes, focus
+  returns. Native `<dialog>`s with `showModal()` handle this themselves. A clickable div needs
+  `role="button" tabindex="0"`; Enter/Space then click it. Recipe cards open from their title's
+  `.rc-open` button. Close buttons use `.dlg-x` (44 px) with `aria-label="Isara"`.
 - **Planner meal sorting** (`mealTypes`, `isMainUlam` in `planner.js`) is title-based. Kakanin,
   sweets, snacks, pickles and egg how-tos are never ulam. Add new odd titles to `SWEET_TITLE`,
   `SNACK_TITLE` or `SIDE_TITLE`, with a test.

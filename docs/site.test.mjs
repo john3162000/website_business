@@ -15,6 +15,26 @@ test("site scripts have no stray control characters", () => {
   }
 });
 
+test("the page loads no unchecked outside code and keeps its content security policy", () => {
+  const html = read("index.html");
+  // Built CSS (site-css/) instead of the Tailwind Play CDN, which ran whatever it served.
+  assert.ok(!html.includes("cdn.tailwindcss.com"), "Tailwind Play CDN is back");
+  assert.ok(!read("match-review.html").includes("cdn.tailwindcss.com"), "match-review.html uses the Play CDN");
+  assert.match(html, /<link rel="stylesheet" href="tailwind\.css">\s*<\/head>/);
+  // green-700 is re-pointed at forest green #1D5239 (Tailwind writes it as rgb).
+  assert.ok(read("tailwind.css").includes("rgb(29 82 57"), "tailwind.css lacks the forest green theme");
+  // Every script tag is local (same origin), so the CSP's script hosts are only the two pinned below.
+  for (const m of html.matchAll(/<script[^>]*\ssrc="([^"]+)"/g)) assert.ok(!/^https?:/.test(m[1]), `remote script tag: ${m[1]}`);
+  const csp = html.match(/<meta http-equiv="Content-Security-Policy" content="([^"]+)">/)?.[1];
+  assert.ok(csp, "no CSP meta tag");
+  for (const part of ["default-src 'self'", "object-src 'none'", "base-uri 'self'", "https://website-business-beta.vercel.app", "https://api.open-meteo.com"]) {
+    assert.ok(csp.includes(part), `CSP lacks ${part}`);
+  }
+  assert.match(read("finder.js"), /s\.integrity = D3_SRI; s\.crossOrigin = "anonymous"/);
+  assert.match(read("finder.js"), /const D3_SRI = "sha384-[A-Za-z0-9+/]{64}"/);
+  assert.match(read("app.js"), /s\.src = "https:\/\/gc\.zgo\.at\/count\.v4\.js";\s*s\.integrity = "sha384-[A-Za-z0-9+/]{64}";\s*s\.crossOrigin = "anonymous";/);
+});
+
 test("categoryFor: clear courses win, the title decides otherwise", () => {
   const src = read("app.js");
   const ctx = vm.createContext({});
@@ -27,9 +47,46 @@ test("categoryFor: clear courses win, the title decides otherwise", () => {
   assert.equal(categoryFor("Pork Adobo", "Main Course"), "Main Dish");
   assert.equal(categoryFor("How to Make Sinamak", null), "Sauce & Condiment");
   assert.equal(categoryFor("Chili Garlic Oil Recipe", null), "Sauce & Condiment");
+  // Kakanin and sweets the recipe site files as a main dish.
+  for (const t of ["Pichi-Pichi", "Ube Pichi Pichi Recipe", "Nilupak na Kamoteng Kahoy", "Panlasang Pinoy Bibingkang Galapong", "Banana Yogurt Smoothie", "New York Style Cheesecake", "Buko Salad Ice candy"]) {
+    assert.equal(categoryFor(t, "Main Dish"), "Dessert", t);
+  }
+  assert.equal(categoryFor("Chicken Adobo", "Main Dish"), "Main Dish");
 });
 
-test("splitHidden: recipes with an ingredient not in the catalog are hidden, not dropped silently", () => {
+test("keyboard: Tab wraps inside a pop-up, and the pop-ups carry dialog semantics", () => {
+  const src = read("app.js");
+  const ctx = vm.createContext({});
+  vm.runInContext(`${src.slice(src.indexOf("function dlgWrapIndex"), src.indexOf("function dlgFocusables"))};globalThis.dlgWrapIndex = dlgWrapIndex;`, ctx);
+  const { dlgWrapIndex } = ctx;
+  assert.equal(dlgWrapIndex(4, 5, false), 0, "Tab on the last goes to the first");
+  assert.equal(dlgWrapIndex(0, 5, true), 4, "Shift+Tab on the first goes to the last");
+  assert.equal(dlgWrapIndex(-1, 5, false), 0, "focus outside: to the first");
+  assert.equal(dlgWrapIndex(-1, 5, true), 4);
+  assert.equal(dlgWrapIndex(2, 5, false), 3);
+  assert.equal(dlgWrapIndex(0, 0, false), -1);
+  const html = read("index.html");
+  assert.match(html, /class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title"/);
+  assert.match(html, /class="modal-x"[^>]*aria-label="Isara"/);
+  assert.match(html, /:focus-visible \{ outline: 3px solid var\(--ring\)/);
+  assert.match(src, /id="modal-title" tabindex="-1" data-dlg-focus/);
+  assert.match(src, /<button type="button" class="rc-open"/, "recipe cards open from a real button");
+  // Every div pop-up registers for Esc and focus handling.
+  for (const [file, open] of [["app.js", "dlgOpen(modalPanel(), closeModal)"], ["settings.js", "closeSettings);"], ["kitchen.js", "closeKitchen);"], ["tour.js", "endTour);"]]) {
+    assert.ok(read(file).includes(open), `${file} calls dlgOpen`);
+  }
+});
+
+test("browse: the Filters (n) count", () => {
+  const src = read("app.js");
+  const ctx = vm.createContext({});
+  vm.runInContext(`${src.slice(src.indexOf("function browseFilterCount"), src.indexOf("function updateBrowseFilterCount"))};globalThis.browseFilterCount = browseFilterCount;`, ctx);
+  const { browseFilterCount } = ctx;
+  assert.equal(browseFilterCount({ sort: "valueScore", minProt: "", maxCost: "", produce: " ", minKcal: "", maxKcal: "" }), 0);
+  assert.equal(browseFilterCount({ sort: "protein", minProt: "15", maxCost: "60", produce: "kangkong", minKcal: "", maxKcal: "700" }), 5);
+});
+
+test("splitHidden:recipes with an ingredient not in the catalog are hidden, not dropped silently", () => {
   const src = read("app.js");
   const ctx = vm.createContext({});
   vm.runInContext(`${src.slice(src.indexOf("function splitHidden"), src.indexOf("async function loadData"))};globalThis.splitHidden = splitHidden;`, ctx);
