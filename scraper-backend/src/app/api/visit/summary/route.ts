@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { corsJson, corsPreflight } from "@/lib/cors";
-import { checkQuery } from "@/lib/query-guard";
+import { checkQuery, textUpTo } from "@/lib/query-guard";
 import { ensureVisitTable } from "@/lib/ensure-schema";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +14,9 @@ const num = (v: unknown) => Number(v ?? 0);
  * daily report; the detailed stats stay admin-only at GET /api/visit.
  */
 export async function GET(request: Request) {
-  const q = checkQuery(request.url);
+  // The answer is never cached (no-store), so the daily report's cache-buster and the share token
+  // the Vercel tool adds (`_vercel_share`) are allowed: they can't force any extra work.
+  const q = checkQuery(request.url, { fresh: textUpTo(20), _vercel_share: textUpTo(100) });
   if (!q.ok) return corsJson({ error: q.error }, { status: 400 });
   await ensureVisitTable();
   const now = Date.now();

@@ -76,6 +76,18 @@ const I18N = {
   "nav.planner": ["Plano", "Planner"],
   "nav.finder": ["Lulutuin", "Cook"],
   "nav.game": ["Laro", "Games"],
+  "pcal.title": ["Mura ngayong", "Usually cheap in"],
+  "pcal.month": ["Buwan", "Month"],
+  "pcal.cheap": ["Karaniwang mas mura", "Usually cheaper"],
+  "pcal.dear": ["Karaniwang mas mahal", "Usually pricier"],
+  "pcal.bestMonths": ["Pinakamura tuwing", "Cheapest in"],
+  "pcal.cheapestMonths": ["Hintayin ang", "Wait for"],
+  "pcal.none": ["Walang malaking pagbabago ngayong buwan.", "Nothing moves much this month."],
+  "pcal.calendar": ["Kalendaryo ng presyo", "Price calendar"],
+  "pcal.item": ["Paninda", "Item"],
+  "pcal.keyCheap": ["mas mura kaysa karaniwan", "cheaper than usual"],
+  "pcal.keyDear": ["mas mahal kaysa karaniwan", "pricier than usual"],
+  "pcal.note": ["Mula sa buwanang presyo ng PSA sa palengke ({span}, Metro Manila). Ang % ay kumpara sa karaniwang presyo ng bawat paninda sa buong taon, hindi hula ng presyo bukas.", "From PSA monthly market prices ({span}, Metro Manila). The % compares each month with that item's usual price over the year; it is a pattern, not a forecast."],
   "card.nutrition": ["Sustansya", "Nutrition"],
   "card.plusLegend": ["“+” sa presyo: may sangkap na wala pang presyo", "“+” on a price: some ingredients have no price yet"],
   "browse.saucesOut": ["walang sawsawan at sauce dito (i-search para makita)", "sauces left out (search to find them)"],
@@ -258,6 +270,7 @@ function settingsChanged() {
     if (typeof renderReceipt === "function" && document.getElementById("plan-receipt")) renderReceipt();
     if (typeof renderPriceForYou === "function") renderPriceForYou(typeof moversFell !== "undefined" ? moversFell : new Map());
   }
+  if (typeof renderPriceCalendar === "function") renderPriceCalendar();
 }
 
 // ── Age bracket and large text ──

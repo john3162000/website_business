@@ -97,11 +97,28 @@ async function json<T>(url: string, body?: unknown): Promise<T> {
   return (await res.json()) as T;
 }
 
-/** All NCR and national monthly prices for this year and last year, from every retail table. */
-export async function fetchPsaPrices(now = new Date()): Promise<PsaRow[]> {
-  const years = [String(now.getUTCFullYear() - 1), String(now.getUTCFullYear())];
+/** The first year of PSA's 2018-based retail tables. */
+export const PSA_FIRST_YEAR = 2018;
+
+/**
+ * The years the history backfill fetches next: the two years before the earliest stored month,
+ * down to PSA_FIRST_YEAR. Empty once the history is complete. Pure, for tests.
+ */
+export function backfillYears(earliest: Date | null, now = new Date()): number[] {
+  const top = (earliest ? earliest.getUTCFullYear() : now.getUTCFullYear() - 1) - 1;
+  return [top - 1, top].filter((y) => y >= PSA_FIRST_YEAR);
+}
+
+/**
+ * All NCR and national monthly prices from every retail table, for this year and last year, or
+ * for the given years (the history backfill). PSA answers 429 to fast clients, so tables are
+ * fetched one after another with a short pause.
+ */
+export async function fetchPsaPrices(now = new Date(), yearList?: number[]): Promise<PsaRow[]> {
+  const years = (yearList ?? [now.getUTCFullYear() - 1, now.getUTCFullYear()]).map(String);
   const rows: PsaRow[] = [];
-  for (const t of PSA_TABLES) {
+  for (const [i, t] of PSA_TABLES.entries()) {
+    if (i && yearList) await new Promise((r) => setTimeout(r, 1500));
     const meta = await json<PxMeta>(BASE + t);
     rows.push(...parsePsa(meta, await json<PxData>(BASE + t, ncrQuery(meta, years))));
   }

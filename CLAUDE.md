@@ -34,6 +34,7 @@ docs/                         static site, plain browser scripts; tailwind.css i
   alerts.js                   price alerts (localStorage + browser notifications)
   share.js                    share a recipe as a PNG (canvas) → share sheet / Messenger
   tour.js                     first-time tour (Taglish), replay with the "?" header button
+  pricecal.js                 "Mura ngayong buwan" in Prices: usually cheap/dear this month + 12-month price calendar
   seasons.js                  Okasyon strip in Browse: holiday/special-event picks (Easter-based Holy Week,
                               lunar-table CNY/Eids, fixed dates), chips to look ahead
   settings.js                 ⚙️ Settings (language tl/en with I18N + data-i18n, diets, kitchen, "Suggest ka pa",
@@ -97,12 +98,13 @@ Line statuses are `ok`, `to-taste`, `optional`, `water`, `skipped`, `unmatched`,
 | `POST /api/dish` | Prices a personal dish (My Dish) |
 | `POST /api/visit`, `GET /api/visit` | Counts a visit (salted hash of the IP, never the IP; city from Vercel's IP headers); GET is admin-only stats: users today/7/30 days/all time, new vs returning, top cities |
 | `GET /api/visit/summary` | Public totals only: users and visits in the last 24 h, 72 h and 7 days (read by the owner's daily report) |
+| `GET /api/prices/seasons` | Seasonal price patterns from PSA monthly prices since 2018: a 12-month index per commodity (ratio to a centred 12-month moving average, median over years), plus the month's usually-cheap and usually-dear picks. Read by `docs/pricecal.js` ("Mura ngayong buwan" in Prices) |
 | `/api/scrape/*` | Admin only (`ADMIN_TOKEN`) |
+| `/api/cron/da-daily`, `/api/cron/psa` | Vercel crons: DA daily at 10:00 UTC; PSA daily at 11:00 UTC (Mondays: the update; other days: two more years of history back to 2018, then nothing) |
+| `/api/cron/recipes`, `…-pm`, `…/extra-1…22` | Vercel crons, one every hour at :15 UTC (Hobby fires them any time in that hour): the recipe crawl, 5 hops of ~45 s each via the production domain |
 
 Public GET routes refuse query params they don't list (`checkQuery`, `src/lib/query-guard.ts`) with
 a 400, so cache-busting URLs can't force a recompile. A new param must be added to the route's rules.
-| `/api/cron/da-daily`, `/api/cron/psa` | Vercel crons: DA daily at 10:00 UTC, PSA Mondays at 11:00 UTC |
-| `/api/cron/recipes`, `…-pm`, `…/extra-1…22` | Vercel crons, one every hour at :15 UTC (Hobby fires them any time in that hour): the recipe crawl, 5 hops of ~45 s each via the production domain |
 
 ## Commands
 
@@ -164,7 +166,7 @@ The Impeccable skill (`.claude/skills/impeccable`) runs design commands such as
   with CRLF.
 - **One global scope:** all `docs/*.js` files are classic scripts that share globals. Script
   order in `index.html`: weather, mydish, planner, finder, alerts, share, facts, taste, games,
-  kitchen, settings, visits, feedback, seasons, tour, then app last. New button text gets a `data-i18n` key in settings.js `I18N`
+  kitchen, settings, visits, feedback, seasons, pricecal, tour, then app last. New button text gets a `data-i18n` key in settings.js `I18N`
   (`settings.test.mjs` fails on a missing key).
   Favourites (`favIds`, `toggleFav`, key `sarapsulit.favs.v1`) live in `app.js`. Give new
   top-level names a prefix (`SHARE_W`, `FINDER_KEY`) so they can't clash.

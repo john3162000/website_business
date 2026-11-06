@@ -30,6 +30,16 @@
     @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
     .price-up { color: #dc2626; }
     .price-down { color: #2F7A55; }
+    /* Price calendar (pricecal.js): one cell per month, green = usually cheaper, red = pricier */
+    .pcal-cell { height: 18px; min-width: 18px; border: 2px solid transparent; border-radius: 4px; background-clip: padding-box; }
+    .pcal-key { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; }
+    .pcal-cheap2 { background-color: #2F7A55; } .pcal-cheap1 { background-color: #9CCBAF; }
+    .pcal-even { background-color: #EEF0EA; } .pcal-na { background-color: transparent; }
+    .pcal-dear1 { background-color: #F2B8B5; } .pcal-dear2 { background-color: #C2413A; }
+    th.pcal-now { color: #1D5239; text-decoration: underline; }
+    td.pcal-now { outline: 2px solid #1D5239; outline-offset: -1px; }
+    html.dark .pcal-even { background-color: rgba(255,255,255,.08); }
+    html.dark th.pcal-now { color: var(--mint); } html.dark td.pcal-now { outline-color: var(--mint); }
     .bar { height: 6px; border-radius: 9999px; background: #e5e7eb; overflow: hidden; }
     .bar-fill { height: 100%; border-radius: 9999px; background: #1D5239; transition: width .5s ease; }
     .modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:100; align-items:center; justify-content:center; }
@@ -781,6 +791,9 @@
       <button class="wx-btn on" data-period="month" onclick="setPricePeriod('month')">Last month</button>
     </div>
 
+    <!-- Usually cheap this month (PSA monthly prices since 2018, pricecal.js) -->
+    <div id="pcal" class="mb-8 hidden"></div>
+
     <!-- Cheap ulam that fit the player's taste (taste model from Laro) -->
     <div id="prices-foryou" class="mb-8 hidden"></div>
 
@@ -1203,6 +1216,7 @@
 <script src="visits.js"></script>
 <script src="feedback.js"></script>
 <script src="seasons.js"></script>
+<script src="pricecal.js"></script>
 <script src="tour.js"></script>
 <script src="app.js"></script>
 </body>
