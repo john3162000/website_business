@@ -23,7 +23,7 @@ test("PSA names read as short display names", () => {
   assert.equal(seasonName("TOMATO, 1 KG"), "Tomato");
   assert.equal(seasonName("FRESH SHELLS, TAHONG, 1 KG"), "Tahong");
   assert.equal(seasonName("RICE, REGULAR MILLED, 1 KG"), "Rice, regular milled");
-  assert.equal(seasonName("FRESH EGG, QUAIL, LOOSE, 1 PC"), "Egg, quail, loose");
+  assert.equal(seasonName("FRESH EGG, QUAIL, LOOSE, 1 PC"), "Fresh egg, quail, loose");
 });
 
 test("the seasonal index finds the cheap and dear months despite inflation", () => {
