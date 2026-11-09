@@ -99,7 +99,7 @@ Line statuses are `ok`, `to-taste`, `optional`, `water`, `skipped`, `unmatched`,
 | `/api/store-prices`, `/api/ingredients`, `/api/nutrition` | SM products, catalog ingredients, FNRI foods |
 | `POST /api/dish` | Prices a personal dish (My Dish) |
 | `POST /api/visit`, `GET /api/visit` | Counts a visit (salted hash of the IP, never the IP; city from Vercel's IP headers); GET is admin-only stats: users today/7/30 days/all time, new vs returning, top cities |
-| `GET /api/visit/summary` | Public totals only: users and visits in the last 24 h, 72 h and 7 days (read by the owner's daily report) |
+| `GET /api/visit/summary` | Public totals only: users and visits in the last 24 h, 72 h and 7 days, plus visitors per city over 7 days (`places7d`, counts only); read by the owner's daily report |
 | `GET /api/prices/seasons` | Seasonal price patterns from PSA monthly prices since 2018: a 12-month index per commodity (ratio to a centred 12-month moving average, median over years), plus the month's usually-cheap and usually-dear picks. Read by `docs/pricecal.js` ("Mura ngayong buwan" in Prices) |
 | `/api/scrape/*` | Admin only (`ADMIN_TOKEN`) |
 | `/api/cron/da-daily`, `/api/cron/psa` | Vercel crons: DA daily at 10:00 UTC; PSA daily at 11:00 UTC (Mondays: the update; other days: two more years of history back to 2018, then nothing) |
