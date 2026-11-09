@@ -64,9 +64,11 @@ function typicalRank(o, title) {
 }
 
 // How many days ahead an occasion is suggested: two weeks, so there's time to plan and shop; six
-// weeks for Christmas and New Year, which families plan (and save for) much earlier.
+// weeks for New Year and a month and a half for Christmas, which families plan (and save for)
+// much earlier (owner's choice).
 const SEASON_LEAD = 14;
 const SEASON_LEAD_BIG = 42;
+const SEASON_LEAD_XMAS = 45;
 
 /**
  * Each occasion: when it is (start and end for a year, or null), how many days ahead it starts
@@ -138,7 +140,7 @@ const OCCASIONS = [
     note: { tl: "Baon sa sementeryo: suman, biko, ginataan at pansit, para sa buong pamilyang nagbabantay.",
       en: "Food to bring to the cemetery: suman, biko, ginataan and pancit for the whole family's vigil." } },
   { key: "pasko", icon: "🎄", tl: "Pasko · Noche Buena", en: "Christmas · Noche Buena",
-    when: (y) => [SEASON_ymd(y, 12, 16), SEASON_ymd(y, 12, 25)], lead: SEASON_LEAD_BIG - 9, // 6 weeks before Dec 25
+    when: (y) => [SEASON_ymd(y, 12, 16), SEASON_ymd(y, 12, 25)], lead: SEASON_LEAD_XMAS - 9, // 1.5 months (45 days) before Dec 25: from Nov 10
     match: /\b(christmas|noche buena|hamon|ham|queso de bola|lechon|embutido|morcon|relleno|bibingka|puto bumbong|leche flan|fruit salad|buko salad|macaroni salad|spaghetti|kare[- ]?kare|menudo|caldereta|kaldereta|mechado|afritada|lengua|pancit|lumpia|shanghai|graham|buko pandan|ensaymada|tsokolate|hot chocolate|roast(ed)? chicken|cheese ?cake|mango float)\b/i,
     note: { tl: "Simbang Gabi (Dis 16–24) na may bibingka at puto bumbong, tapos Noche Buena: hamon, queso de bola, spaghetti at fruit salad.",
       en: "Simbang Gabi (Dec 16–24) with bibingka and puto bumbong, then Noche Buena: ham, queso de bola, spaghetti and fruit salad." } },
