@@ -36,16 +36,16 @@ test("what's on today, nearest first", () => {
   assert.deepEqual(on(2026, 3, 20).filter((k) => k.startsWith("eid")), ["eidfitr"]);
 });
 
-test("occasions are suggested two weeks ahead; Christmas and New Year six weeks before the day", () => {
+test("occasions are suggested two weeks ahead; New Year six weeks and Christmas 1.5 months before the day", () => {
   // Valentine's (Feb 14): from Jan 31.
   assert.ok(!on(2027, 1, 30).some((k) => k.startsWith("valentines")));
   assert.ok(on(2027, 1, 31).includes("valentines+14"));
   // Undas (Oct 31): from Oct 17.
   assert.deepEqual(on(2026, 10, 16), []);
   assert.deepEqual(on(2026, 10, 17), ["undas+14"]);
-  // Christmas (Dec 25): from Nov 13, six weeks before.
-  assert.deepEqual(on(2026, 11, 12), []);
-  assert.deepEqual(on(2026, 11, 13), ["pasko+33"]);
+  // Christmas (Dec 25): from Nov 10, a month and a half (45 days) before.
+  assert.deepEqual(on(2026, 11, 9), []);
+  assert.deepEqual(on(2026, 11, 10), ["pasko+36"]);
   // New Year (Jan 1): from Nov 20, six weeks before.
   assert.ok(!on(2026, 11, 19).some((k) => k.startsWith("bagongtaon")));
   assert.ok(on(2026, 11, 20).includes("bagongtaon+36"));

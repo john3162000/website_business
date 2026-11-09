@@ -37,7 +37,7 @@ docs/                         static site, plain browser scripts; tailwind.css i
   share.js                    share a recipe as a PNG (canvas) → share sheet / Messenger
   tour.js                     first-time tour (Taglish), replay with the "?" header button
   pricecal.js                 "Mura ngayong buwan" in Prices: usually cheap/dear this month + 12-month price calendar
-  seasons.js                  Okasyon strip in Browse: holiday/special-event picks (Easter-based Holy Week,
+  seasons.js                  Okasyon strip in Browse (2 weeks ahead; New Year 6 weeks, Christmas 45 days): holiday/special-event picks (Easter-based Holy Week,
                               lunar-table CNY/Eids, fixed dates), chips to look ahead
   settings.js                 ⚙️ Settings (language tl/en with I18N + data-i18n, diets, kitchen, "Suggest ka pa",
                               dark mode, weather) and the Fish/Chicken/Pork/Beef chips; key sarapsulit.settings.v1
