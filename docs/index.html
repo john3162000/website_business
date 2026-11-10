@@ -75,8 +75,8 @@
     .plan-dish.picked { border-color: #1D5239; background: #D9E8DD; }
     .plan-dish img, .plan-noimg { width: 2.75rem; height: 2.75rem; border-radius: .5rem; object-fit: cover; flex-shrink: 0; background: #fef3c7; display: flex; align-items: center; justify-content: center; }
     .plan-dish-title { font-size: .8rem; font-weight: 600; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .plan-dish-sub { font-size: .7rem; color: #9ca3af; margin-top: .1rem; }
-    .plan-badge { display: inline-block; margin-left: .25rem; padding: 0 .4rem; border-radius: 9999px; background: #fef3c7; color: #92400e; font-weight: 600; font-size: .65rem; }
+    .plan-dish-sub { font-size: .75rem; color: #5A6170; margin-top: .1rem; }
+    .plan-badge { display: inline-block; margin-left: .25rem; padding: 0 .4rem; border-radius: 9999px; background: #fef3c7; color: #92400e; font-weight: 600; font-size: .75rem; }
     .plan-grid { display: grid; grid-template-columns: 5.5rem repeat(7, minmax(7.5rem, 1fr)); gap: .4rem; min-width: 60rem; }
     .plan-day { font-size: .75rem; font-weight: 700; text-align: center; color: #374151; padding: .25rem 0; }
     .plan-meal { font-size: .7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: .03em; display: flex; align-items: center; }
@@ -143,7 +143,7 @@
     .fx-caret { color: #9ca3af; transition: transform .2s; }
     .fx-cat.open .fx-caret { transform: rotate(180deg); }
     .fx-dot { width: .6rem; height: .6rem; border-radius: 9999px; flex-shrink: 0; display: inline-block; }
-    .fx-count { background: #1D5239; color: #fff; border-radius: 9999px; font-size: .65rem; padding: 0 .45rem; line-height: 1.2rem; }
+    .fx-count { background: #1D5239; color: #fff; border-radius: 9999px; font-size: .75rem; padding: 0 .45rem; line-height: 1.2rem; }
     .fx-menu { padding: .4rem .5rem .5rem; border-top: 1px solid #f3f4f6; background: #fcfcfd; animation: fx-drop .18s ease-out; }
     @keyframes fx-drop { from { opacity: 0; transform: translateY(-4px); } }
     .fx-menu input { width: 100%; border: 1px solid #e5e7eb; border-radius: .5rem; padding: .35rem .6rem; font-size: .8rem; margin-bottom: .35rem; }
@@ -153,7 +153,7 @@
     .fx-opt:hover { background: #EFF5F0; }
     .fx-opt.on { background: #D9E8DD; font-weight: 600; color: #163F2E; }
     .fx-check { width: .9rem; color: #1D5239; font-weight: 800; }
-    .fx-uses { font-size: .65rem; color: #9ca3af; white-space: nowrap; }
+    .fx-uses { font-size: .75rem; color: #5A6170; white-space: nowrap; }
     .fx-have { display: flex; align-items: center; gap: .5rem; font-size: .85rem; padding: .3rem .4rem; border-radius: .5rem; animation: fx-drop .2s ease-out; }
     .fx-have:hover { background: #f9fafb; }
     .fx-have button { color: #9ca3af; font-size: .75rem; }
@@ -162,7 +162,7 @@
     .fx-graph { width: 100%; height: 34rem; display: block; cursor: grab; }
     @media (max-width: 640px) { .fx-graph { height: 24rem; } }
     .fx-graph-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 2rem; color: #94a3b8; font-size: .9rem; pointer-events: none; }
-    .fx-legend { padding: .5rem .9rem .7rem; border-top: 1px solid #262b3a; display: flex; flex-wrap: wrap; gap: .3rem .8rem; font-size: .65rem; color: #94a3b8; pointer-events: none; }
+    .fx-legend { padding: .5rem .9rem .7rem; border-top: 1px solid #262b3a; display: flex; flex-wrap: wrap; gap: .3rem .8rem; font-size: .75rem; color: #cbd5e1; pointer-events: none; }
     .fx-legend i { display: inline-block; width: .6rem; height: .6rem; border-radius: 9999px; margin-right: .3rem; vertical-align: -1px; }
     .fx-legend i.ring { background: transparent; border: 2px solid; }
     .fx-legend i.ring.ok { border-color: #4ade80; } .fx-legend i.ring.part { border-color: #fbbf24; }
@@ -231,7 +231,7 @@
     .kitchen-check { position: absolute; top: .3rem; right: .3rem; width: 1.6rem; height: 1.6rem; border-radius: 9999px; display: grid; place-items: center; font-weight: 800; font-size: .85rem; background: #1F6B47; color: #fff; box-shadow: 0 0 0 2px #fff; }
     .kitchen-item:not(.on) .kitchen-check { background: #fff; color: #6B7F70; }
     .kitchen-label { font-weight: 700; font-size: .85rem; margin-top: .35rem; color: #163F2E; }
-    .kitchen-uses { font-size: .65rem; color: #8A6A12; font-weight: 600; }
+    .kitchen-uses { font-size: .75rem; color: #8A6A12; font-weight: 600; }
     .kitchen-fact { margin-top: .9rem; background: #FBF3DC; border: 1px solid #EBD9A6; border-radius: .9rem; padding: .7rem .9rem; font-size: .82rem; display: flex; flex-direction: column; gap: .4rem; color: #3D3420; }
     .kitchen-foot { background: #F8F4EA; border-top: 1px solid #E7DFCB; position: sticky; bottom: 0; }
     .kitchen-credits { font-size: .6rem; color: #8B8577; line-height: 1.35; }
@@ -254,8 +254,8 @@
     .taste-pick { display: flex; flex-direction: column; text-align: left; gap: .15rem; }
     .taste-pick img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: .75rem; margin-bottom: .2rem; }
     .taste-pick-name { font-size: .8rem; font-weight: 600; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .taste-pick-why { font-size: .68rem; color: #1F6B47; font-weight: 600; }
-    .taste-pick-price { font-size: .68rem; color: #8A6A12; font-weight: 600; }
+    .taste-pick-why { font-size: .75rem; color: #1F6B47; font-weight: 600; }
+    .taste-pick-price { font-size: .75rem; color: #8A6A12; font-weight: 600; }
     html.dark .taste-track { background: var(--s2); }
     html.dark .taste-bar.pos, html.dark .taste-pick-why { color: var(--mint); }
     html.dark .taste-bar.pos { background: var(--mint); }
@@ -346,6 +346,7 @@
     html.dark .plan-dish { background: var(--s1); }
     html.dark .plan-dish-sub { color: var(--tx3); }
     html.dark .plan-badge { background: #3A2E10; color: var(--mango); }
+    html.dark .occ-cost, html.dark .taste-pick-price, html.dark .kitchen-uses { color: var(--mango); }
     html.dark .rc-name { color: var(--tx2); } html.dark .rc-day, html.dark .rc-total { border-color: var(--line); }
     html.dark .bar { background: var(--line); } html.dark .bar-fill { background: var(--mint); }
     html.dark .modal-bg { background: rgba(0, 0, 0, .7); }
@@ -417,7 +418,7 @@
     html.dark .app-toast { background: #7CE0A3; color: #0B1712; }
 
     .share-dialog { width: min(32rem, calc(100vw - 2rem)); }
-    .meal-tag { font-size: .62rem; font-weight: 700; padding: 0 .45rem; border-radius: 9999px; line-height: 1.1rem; }
+    .meal-tag { font-size: .75rem; font-weight: 700; padding: 0 .45rem; border-radius: 9999px; line-height: 1.1rem; }
     .meal-almusal { background: #F6EBCD; color: #855F0E; }
     .meal-ulam { background: #D9E8DD; color: #163F2E; }
     .meal-meryenda { background: #F5DCD3; color: #8A3B22; }
@@ -456,7 +457,7 @@
     .occ-card:hover { transform: translateY(-2px); }
     .occ-card img { width: 100%; height: 6.5rem; object-fit: cover; }
     .occ-name { font-size: .8rem; font-weight: 600; line-height: 1.2; padding: .45rem .55rem 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .occ-cost { font-size: .72rem; color: #8A6A12; font-weight: 700; padding: .25rem .55rem .55rem; margin-top: auto; }
+    .occ-cost { font-size: .8125rem; color: #855F0E; font-weight: 700; padding: .25rem .55rem .55rem; margin-top: auto; }
     html.dark .occ-box { background: linear-gradient(135deg, #16291F, #1E3A2B); } html.dark .occ-card { background: #16291F; color: #E6F4EC; }
     /* Settings dialog */
     .settings-card { background: #FBF8F0; box-shadow: 0 20px 50px rgba(0, 0, 0, .3); }
@@ -1234,8 +1235,8 @@
     </div>
     <div class="text-green-300 text-xs">
       <p>Data: DA Price Monitoring (<span data-da-date>latest</span>) · PSA OpenSTAT · Panlasang Pinoy, Kawaling Pinoy and other recipe sites · FNRI Food Composition Table</p>
-      <p class="mt-1 text-green-400">© 2026 FARM2FIGURE. All rights reserved. Recipes and photos belong to their sites, credited on each dish.</p>
-      <p class="mt-1 text-green-400/80" data-i18n="privacy.visits">We count visitors by IP address, stored only as a scrambled code (never the address itself), plus the city it comes from and the age bracket you chose. Browsers set to “Do Not Track” aren't counted.</p>
+      <p class="mt-1 text-green-300">© 2026 FARM2FIGURE. All rights reserved. Recipes and photos belong to their sites, credited on each dish.</p>
+      <p class="mt-1 text-green-300" data-i18n="privacy.visits">We count visitors by IP address, stored only as a scrambled code (never the address itself), plus the city it comes from and the age bracket you chose. Browsers set to “Do Not Track” aren't counted.</p>
     </div>
   </div>
 </footer>

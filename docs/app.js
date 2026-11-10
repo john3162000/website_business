@@ -282,7 +282,7 @@ function sulitTile(r) {
   return `<div class="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-center"${lv ? ` title="Sulit Score ${r.valueScore}"` : ""}>
             <p class="text-lg font-bold ${tone} leading-8">${lv ? lv.label : "—"}</p>
             <p class="text-xs text-green-700 font-medium">${t("modal.sulit")}</p>
-            <p class="text-[11px] text-green-700 mt-0.5">${sub}</p>
+            <p class="text-xs text-green-700 mt-0.5">${sub}</p>
           </div>`;
 }
 
@@ -352,7 +352,7 @@ function ingredientRows(lines) {
         <p class="font-medium text-sm">${escapeHtml(l.text)}</p>
         <p class="text-xs text-gray-400">${escapeHtml(grams + kcal)}${note ? ` · ${escapeHtml(note)}` : ""}</p>
       </div>
-      <p class="text-sm font-semibold text-amber-700 whitespace-nowrap text-right"${why ? ` title="${escapeHtml(why.replace(/^price-[a-z-]+: /, "Assumed: "))}"` : ""}>${l.cost != null ? (derived ? "≈₱" : "₱") + l.cost.toFixed(2) : ""}${source ? `<span class="block text-[11px] font-normal ${derived ? "text-amber-700" : "text-gray-500"}">${escapeHtml(source)}</span>` : ""}</p>
+      <p class="text-sm font-semibold text-amber-700 whitespace-nowrap text-right"${why ? ` title="${escapeHtml(why.replace(/^price-[a-z-]+: /, "Assumed: "))}"` : ""}>${l.cost != null ? (derived ? "≈₱" : "₱") + l.cost.toFixed(2) : ""}${source ? `<span class="block text-xs font-normal ${derived ? "text-amber-700" : "text-gray-500"}">${escapeHtml(source)}</span>` : ""}</p>
     </div>`;
   }).join("");
 }
@@ -383,8 +383,8 @@ function sodiumHtml(r, lines) {
         <span class="font-medium">≈ ${mg.toLocaleString()}mg <span class="text-gray-400">(${p}% ${t("modal.sodiumLimit")})</span></span>
       </div>
       <div class="bar"><div class="bar-fill" style="width:${Math.min(p, 100)}%;background:${color}"></div></div>
-      ${salty ? `<p class="text-[11px] font-semibold text-red-600 mt-1">${t("modal.salty").replace("{pct}", p)}${top.length ? ` · ${t("modal.saltyFrom")} ${escapeHtml(top.join(", "))}` : ""}</p>` : ""}
-      ${toTaste ? `<p class="text-[11px] text-gray-400 mt-0.5">${t("modal.sodiumToTaste")}</p>` : ""}
+      ${salty ? `<p class="text-xs font-semibold text-red-600 mt-1">${t("modal.salty").replace("{pct}", p)}${top.length ? ` · ${t("modal.saltyFrom")} ${escapeHtml(top.join(", "))}` : ""}</p>` : ""}
+      ${toTaste ? `<p class="text-xs text-gray-400 mt-0.5">${t("modal.sodiumToTaste")}</p>` : ""}
     </div>`;
 }
 
@@ -420,7 +420,7 @@ function buildModal(r, lines) {
           <span class="font-medium">${after ? "≈ " : ""}${shown}${n.unit} <span class="text-gray-400">(${p}% DRV)</span></span>
         </div>
         <div class="bar"><div class="bar-fill" style="width:${p}%"></div></div>
-        ${changed ? `<p class="text-[11px] text-gray-400 text-right mt-0.5">${after[1]}–${after[2]}${n.unit} · ${t("modal.cookedRaw")}: ${n.val}${n.unit}</p>` : ""}
+        ${changed ? `<p class="text-xs text-gray-400 text-right mt-0.5">${after[1]}–${after[2]}${n.unit} · ${t("modal.cookedRaw")}: ${n.val}${n.unit}</p>` : ""}
       </div>`;
   }).join("");
   const cookedNote = r.cooked
