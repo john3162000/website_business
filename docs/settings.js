@@ -12,7 +12,7 @@ const SETTINGS_MEAT_KEYS = ["fish", "chicken", "pork", "beef"];
 const SETTINGS_AGES = ["child", "teen", "young", "adult", "midlife", "senior"];
 
 function defaultSettings() {
-  return { lang: "tl", diets: [], meats: [], suggest: true, age: null, large: false, ageAsked: false };
+  return { lang: "tl", langChosen: false, diets: [], meats: [], suggest: true, age: null, large: false, ageAsked: false };
 }
 
 /** Saved settings, with anything unknown or broken replaced by the default. */
@@ -23,7 +23,9 @@ function readSettings(storage) {
     if (!v || typeof v !== "object") return d;
     const known = (list, allowed) => (Array.isArray(list) ? [...new Set(list.filter((k) => allowed.includes(k)))] : []);
     return {
-      lang: SETTINGS_LANGS.includes(v.lang) ? v.lang : d.lang,
+      // English only when the visitor picked it; older saves had "en" as the default and now get Tagalog.
+      lang: v.langChosen === true && SETTINGS_LANGS.includes(v.lang) ? v.lang : d.lang,
+      langChosen: v.langChosen === true,
       diets: known(v.diets, SETTINGS_DIET_KEYS),
       meats: known(v.meats, SETTINGS_MEAT_KEYS),
       suggest: v.suggest !== false,
@@ -433,7 +435,7 @@ function chooseAge(age) {
   if (typeof dlgClose === "function") dlgClose(document.querySelector("#age-dialog .age-card"));
 }
 
-function setLang(lang) { SETTINGS = { ...SETTINGS, lang }; settingsChanged(); }
+function setLang(lang) { SETTINGS = { ...SETTINGS, lang, langChosen: true }; settingsChanged(); }
 function toggleDietSetting(key) { SETTINGS = { ...SETTINGS, diets: toggleIn(SETTINGS.diets, key) }; settingsChanged(); }
 function clearDietSetting() { SETTINGS = { ...SETTINGS, diets: [] }; settingsChanged(); }
 function setSuggest(on) { SETTINGS = { ...SETTINGS, suggest: on }; settingsChanged(); }
