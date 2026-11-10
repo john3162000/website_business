@@ -444,6 +444,25 @@
     /* Okasyon (holiday picks) in Browse */
     .occ-box { background: linear-gradient(135deg, #163F2E, #1F5A3D); color: #F8F4EA; border-radius: 1.25rem; padding: 1.1rem 1.1rem 1rem; box-shadow: 0 10px 30px rgba(22, 63, 46, .25); }
     .occ-box:empty { display: none; }
+    .occ-box.occ-folded { padding: .7rem .9rem; box-shadow: none; }
+    .occ-folded .occ-icon { font-size: 1.4rem; }
+    .occ-folded .occ-title { font-size: 1.05rem; }
+    .occ-toggle { margin-left: auto; flex-shrink: 0; min-height: 2.5rem; padding: 0 .9rem; border-radius: 9999px; border: 1px solid rgba(255, 255, 255, .3); color: #F8F4EA; font-size: .8125rem; font-weight: 600; white-space: nowrap; }
+    .occ-toggle:hover { background: rgba(255, 255, 255, .1); }
+    .occ-chips .occ-more { font-weight: 700; }
+    /* A photo that failed to load (imgFallback in app.js) */
+    .img-fallback { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; min-height: 4rem; background: #F6EBCD; font-size: 2.5rem; }
+    html.dark .img-fallback { background: #1C3326; }
+    html.dark .modal-photo { background: #1C3326; }
+    /* Phones: Browse cards as compact rows (photo left), so the list isn't 18,000 px tall */
+    @media (max-width: 639px) {
+      #browse-grid { gap: .75rem; }
+      #browse-grid .recipe-card { flex-direction: row; }
+      #browse-grid .recipe-card > .relative { width: 7.5rem; height: auto; min-height: 8.5rem; flex-shrink: 0; }
+      #browse-grid .recipe-card > .p-4 { padding: .75rem .85rem; gap: .35rem; }
+      #browse-grid .recipe-card .absolute.top-2 { top: .35rem; left: .35rem; right: .35rem; white-space: normal; text-align: center; }
+      #browse-grid .img-fallback { font-size: 2rem; }
+    }
     .occ-head { display: flex; align-items: center; gap: .75rem; }
     .occ-icon { font-size: 2.1rem; line-height: 1; }
     .occ-kicker { font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #E6C265; }
@@ -800,7 +819,7 @@
     </div>
     <p class="text-sm text-gray-500 mb-6" data-i18n="prices.source">Source: Department of Agriculture Daily Price Index, NCR prevailing retail prices · updated automatically every day</p>
 
-    <div class="bg-white rounded-2xl shadow p-4 mb-6">
+    <div class="alerts-card hidden bg-white rounded-2xl shadow p-4 mb-6">
       <div class="flex items-baseline justify-between gap-2 flex-wrap">
         <h2 class="text-lg font-bold" data-i18n="prices.alerts">🔔 Your price alerts</h2>
         <span id="alerts-perm" class="text-xs text-gray-500"></span>

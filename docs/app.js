@@ -296,13 +296,23 @@ function costText(r) {
   return r.costCoverage < 1 ? `₱${r.costPerServing}+` : `₱${r.costPerServing}`;
 }
 
+/** A photo that fails to load (slow data, a site blocking hotlinks) becomes a 🍽️ tile. */
+function imgFallback(img) {
+  img.onerror = null;
+  const tile = document.createElement("span");
+  tile.className = "img-fallback " + (img.className || "");
+  tile.setAttribute("aria-hidden", "true");
+  tile.textContent = "🍽️";
+  img.replaceWith(tile);
+}
+
 let RC_SEQ = 0; // unique ids for the cards' screen-reader price notes (a dish can be on two rows)
 
 function buildRecipeCard(r) {
   const did = `rc-d${++RC_SEQ}`;
   const img = r.img
     ? `<img src="${escapeHtml(r.img)}" alt="" loading="lazy" class="recipe-img w-full h-full object-cover transition-transform duration-300"
-         onerror="this.parentElement.innerHTML='<div class=\\'flex items-center justify-center h-full text-5xl\\'>🍽️</div>'"/>`
+         onerror="imgFallback(this)"/>`
     : `<div class="flex items-center justify-center h-full text-5xl">🍽️</div>`;
   return `
     <div class="recipe-card bg-white rounded-2xl overflow-hidden shadow hover:shadow-lg transition-shadow cursor-pointer flex flex-col group"
@@ -310,7 +320,7 @@ function buildRecipeCard(r) {
       <div class="relative h-44 bg-amber-100 overflow-hidden">
         ${img}
         ${forYouBadge(r)}
-        ${r.costIncomplete ? `<div class="absolute top-2 left-2 bg-amber-800 text-amber-50 text-xs font-bold px-2 py-1 rounded-full shadow" title="No price yet for ${escapeHtml(r.costGaps.join(", "))}">⚠ Incomplete price</div>` : ""}
+        ${r.costIncomplete ? `<div class="absolute top-2 left-2 bg-amber-800 text-amber-50 text-xs font-bold px-2 py-1 rounded-full shadow" title="No price yet for ${escapeHtml(r.costGaps.join(", "))}">${t("card.incomplete")}</div>` : ""}
       </div>
       <div class="p-4 flex flex-col gap-2 flex-1">
         <h3 class="font-semibold text-gray-900 leading-snug group-hover:text-green-700 transition-colors"><button type="button" class="rc-open" aria-haspopup="dialog" aria-describedby="${did}">${escapeHtml(r.title)}</button></h3>
@@ -320,7 +330,7 @@ function buildRecipeCard(r) {
         <div class="flex flex-wrap gap-1 mt-auto pt-2">
           <span class="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-medium"${r.costCoverage < 1 ? ` title="${t("card.plusLegend")}"` : ""}>${costText(r)}/serving</span>
           <span class="text-xs bg-gray-50 border border-gray-200 text-gray-700 px-2 py-0.5 rounded-full font-semibold" title="Nutrition score">${t("card.nutrition")}: ${r.nutritionScore}</span>
-          <span class="text-xs text-gray-500">${r.protein}g protein</span>
+          <span class="text-xs text-gray-500">${r.protein}${t("card.protein")}</span>
         </div>
       </div>
     </div>`;
@@ -455,7 +465,7 @@ function buildModal(r, lines) {
 
     <div class="grid md:grid-cols-3 gap-6">
       <div class="md:col-span-2 space-y-6">
-        ${r.img ? `<figure class="modal-photo"><img src="${escapeHtml(r.img)}" alt="${escapeHtml(r.title)}">${src ? srcLink("photo-credit", `📷 ${escapeHtml(src.name)}`) : ""}</figure>` : ""}
+        ${r.img ? `<figure class="modal-photo"><img src="${escapeHtml(r.img)}" alt="" onerror="imgFallback(this)">${src ? srcLink("photo-credit", `📷 ${escapeHtml(src.name)}`) : ""}</figure>` : ""}
         <div class="flex flex-wrap gap-3">
           ${sulitTile(r)}
           <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-center">
@@ -657,7 +667,7 @@ function moverRow(m) {
     .map((d) => `${escapeHtml(d.label)} ${pctText(d.change)}`).join(", ");
   return `
     <div class="flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 ${known ? "cursor-pointer hover:bg-gray-50" : ""}" ${known ? `role="button" tabindex="0" onclick="openModal(${m.id})"` : ""}>
-      ${rec && rec.img ? `<img src="${escapeHtml(rec.img)}" alt="" loading="lazy" class="mover-img">` : `<span class="mover-img mover-img-empty">🍽️</span>`}
+      ${rec && rec.img ? `<img src="${escapeHtml(rec.img)}" alt="" loading="lazy" class="mover-img" onerror="imgFallback(this)">` : `<span class="mover-img mover-img-empty">🍽️</span>`}
       <div class="min-w-0 flex-1">
         <p class="font-medium truncate">${known ? favButton(m.id) : ""} ${escapeHtml(m.title)}</p>
         ${mealTags(m.id)}
@@ -721,7 +731,7 @@ function renderPriceForYou(fellById = new Map()) {
     <p class="text-xs text-gray-500 mb-3">Mula sa mga sagot mo sa Laro, pinakamura muna (presyo ngayon).</p>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">${picks.map(({ r, fell }) => `
       <button class="taste-pick bg-white rounded-2xl shadow p-2" onclick="openModal(${r.id})">
-        <img src="${escapeHtml(r.img)}" alt="" loading="lazy">
+        <img src="${escapeHtml(r.img)}" alt="" loading="lazy" onerror="imgFallback(this)">
         <span class="taste-pick-name">${escapeHtml(r.title)}</span>
         <span class="taste-pick-why">${escapeHtml(tasteReasons(model, tasteVec(r)).join(" · ") || "bagay sa'yo")}</span>
         <span class="taste-pick-price">₱${r.costPerServing}/serving${fell ? ` · <span class="price-down">▼ ${Math.round(-fell * 100)}%</span>` : ""}</span>
@@ -1198,7 +1208,7 @@ function similarHtml(r) {
     <h3 class="font-bold text-lg mb-3">Kahawig na ulam</h3>
     <div class="grid grid-cols-2 gap-3">${sims.map((s) => `
       <button class="taste-pick" onclick="openModal(${s.id})">
-        <img src="${escapeHtml(s.img)}" alt="" loading="lazy">
+        <img src="${escapeHtml(s.img)}" alt="" loading="lazy" onerror="imgFallback(this)">
         <span class="taste-pick-name">${escapeHtml(s.title)}</span>
         <span class="taste-pick-price">${s.costPerServing > 0 ? `₱${s.costPerServing}/serving` : ""}</span>
       </button>`).join("")}

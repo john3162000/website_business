@@ -235,6 +235,15 @@ function setOccasion(key) {
   if (typeof trackEvent === "function") trackEvent(`occasion/${key}`);
 }
 
+// Okasyon box state: null = automatic (open only when a holiday is near), true/false = the visitor's choice.
+let SEASON_OPEN = null;
+let SEASON_ALL_CHIPS = false;
+const SEASON_CHIPS = 5;
+
+function toggleOccasion() { SEASON_OPEN = !occasionIsOpen(); renderOccasion(); }
+function showAllOccasions() { SEASON_ALL_CHIPS = true; renderOccasion(); }
+function occasionIsOpen() { return SEASON_OPEN ?? (!!SEASON_PICK || activeOccasions(new Date()).length > 0); }
+
 function renderOccasion() {
   const box = document.getElementById("occasion-picks");
   if (!box || typeof RECIPES === "undefined" || !RECIPES.length) return;
@@ -258,6 +267,16 @@ function renderOccasion() {
   });
   const ok = (r) => (typeof kitchenOk !== "function" || kitchenOk(r)) && (typeof dietsOk !== "function" || dietsOk(r, activeDiets()));
   const picks = occasionPicks(o, RECIPES, 8, ok, typeof proteinKind === "function" ? proteinKind : undefined);
+  const open = occasionIsOpen();
+  const toggle = `<button type="button" class="occ-toggle" onclick="toggleOccasion()" aria-expanded="${open}">${escapeHtml(typeof t === "function" ? t(open ? "occ.hide" : "occ.show") : (open ? "▴" : "▾"))}</button>`;
+  box.classList.toggle("occ-folded", !open);
+  if (!open) {
+    box.innerHTML = `<div class="occ-head"><span class="occ-icon" aria-hidden="true">${o.icon}</span>
+      <div class="min-w-0 flex-1"><h2 class="occ-title">${escapeHtml(en ? o.en : o.tl)}</h2><p class="occ-kicker">${escapeHtml(when)}</p></div>${toggle}</div>`;
+    return;
+  }
+  const chips = SEASON_ALL_CHIPS ? order : order.slice(0, SEASON_CHIPS);
+  const more = order.length - chips.length;
   box.innerHTML = `
     <div class="occ-head">
       <span class="occ-icon" aria-hidden="true">${o.icon}</span>
@@ -265,13 +284,14 @@ function renderOccasion() {
         <p class="occ-kicker">${en ? "Special picks" : "Espesyal na handa"} · ${escapeHtml(when)}</p>
         <h2 class="occ-title">${escapeHtml(en ? o.en : o.tl)}</h2>
       </div>
+      ${toggle}
     </div>
     <p class="occ-note">${escapeHtml(en ? o.note.en : o.note.tl)}</p>
-    <div class="occ-chips">${order.map((x) => `<button class="wx-btn ${x.key === o.key ? "on" : ""}" onclick="setOccasion('${x.key}')">${x.icon} ${escapeHtml(en ? x.en : x.tl)}${active.some((a) => a.o.key === x.key) ? " •" : ""}</button>`).join("")}</div>
+    <div class="occ-chips">${chips.map((x) => `<button class="wx-btn ${x.key === o.key ? "on" : ""}" onclick="setOccasion('${x.key}')">${x.icon} ${escapeHtml(en ? x.en : x.tl)}${active.some((a) => a.o.key === x.key) ? " •" : ""}</button>`).join("")}${more > 0 ? `<button class="wx-btn occ-more" onclick="showAllOccasions()">${escapeHtml(typeof t === "function" ? t("occ.more").replace("{n}", more) : `+${more}`)}</button>` : ""}</div>
     <div class="occ-row">${picks.map((r) => `
       <button class="occ-card" onclick="openModal(${r.id})">
-        <img src="${escapeHtml(r.img)}" alt="" loading="lazy">
+        <img src="${escapeHtml(r.img)}" alt="" loading="lazy" onerror="imgFallback(this)">
         <span class="occ-name">${escapeHtml(r.title.replace(/ Recipe$/i, ""))}</span>
         <span class="occ-cost">${costText(r)}/serving</span>
-      </button>`).join("") || `<p class="text-sm text-gray-400 py-4">${en ? "No matching dishes with your Settings (diet, kitchen)." : "Walang tugmang ulam sa Settings mo (diet, kusina)."}</p>`}</div>`;
+      </button>`).join("") || `<p class="text-sm py-4" style="color:#D6E6DA">${en ? "No matching dishes with your Settings (diet, kitchen)." : "Walang tugmang ulam sa Settings mo (diet, kusina)."}</p>`}</div>`;
 }
