@@ -575,7 +575,7 @@ function renderPicker() {
          onclick="pickDish(${r.id})" title="Drag to a day, or tap then tap a slot">
       ${r.img ? `<img src="${escapeHtml(r.img)}" alt="" loading="lazy">` : `<div class="plan-noimg">🍽️</div>`}
       <div class="min-w-0"><p class="plan-dish-title">${escapeHtml(r.title)}</p>
-      <p class="plan-dish-sub">${favs.has(r.id) ? "⭐ " : ""}₱${r.costPerServing}${r.costCoverage < 1 ? "+" : ""}/serving · ${r.category}
+      <p class="plan-dish-sub">${favs.has(r.id) ? "⭐ " : ""}₱${r.costPerServing}${r.costCoverage < 1 ? "+" : ""}/serving · ${escapeHtml(catLabel(r.category))}
         ${series !== "meryenda" && types.get(r.id).has("meryenda") ? `<span class="plan-badge">Meryenda</span>` : ""}</p></div>
     </div>`).join("") || `<p class="text-sm text-gray-400 p-2">${series === "fav"
       ? "Wala pang favorites. I-tap ang ☆ sa recipe, sa DA Prices o sa “Anong lulutuin?”."

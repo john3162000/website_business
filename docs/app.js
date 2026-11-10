@@ -87,6 +87,11 @@ function categoryFor(title, course) {
   return "Main Dish";
 }
 
+/** The category as shown: Tagalog or English per the language setting (data keeps the English name). */
+function catLabel(category) {
+  return typeof t === "function" && I18N[`cat.${category}`] ? t(`cat.${category}`) : category;
+}
+
 // ═══════════════ DATA ═══════════════
 
 function buildRecipe(raw, c) {
@@ -204,7 +209,7 @@ async function loadData() {
   SULIT_SCORES = RECIPES.filter((r) => r.ranked).map((r) => r.valueScore).sort((a, b) => a - b);
   const note = document.getElementById("hidden-note");
   if (note && hidden.length) {
-    note.textContent = `${hidden.length.toLocaleString()} recipe${hidden.length !== 1 ? "s" : ""} hidden: ingredients not in our catalog yet.`;
+    note.textContent = t("browse.hidden").replace("{n}", hidden.length.toLocaleString());
     note.classList.remove("hidden");
   }
 
@@ -310,7 +315,7 @@ function buildRecipeCard(r) {
       <div class="p-4 flex flex-col gap-2 flex-1">
         <h3 class="font-semibold text-gray-900 leading-snug group-hover:text-green-700 transition-colors"><button type="button" class="rc-open" aria-haspopup="dialog" aria-describedby="${did}">${escapeHtml(r.title)}</button></h3>
         <span id="${did}" class="sr-only">${r.costPerServing > 0 ? `${costText(r)} per serving` : "no price yet"}${r.costIncomplete ? ", incomplete price" : ""}</span>
-        <span class="text-xs text-gray-500 uppercase tracking-wide">${escapeHtml(r.category)}</span>
+        <span class="text-xs text-gray-500 uppercase tracking-wide">${escapeHtml(catLabel(r.category))}</span>
         ${sulitMeter(r)}
         <div class="flex flex-wrap gap-1 mt-auto pt-2">
           <span class="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-medium"${r.costCoverage < 1 ? ` title="${t("card.plusLegend")}"` : ""}>${costText(r)}/serving</span>
@@ -438,8 +443,8 @@ function buildModal(r, lines) {
     <div class="mb-5">
       <h2 id="modal-title" tabindex="-1" data-dlg-focus class="modal-title text-2xl font-bold pr-12">${escapeHtml(r.title)}</h2>
       ${r.costPerServing > 0 ? `<p class="modal-cost"><span class="modal-cost-main">${modalCostText(r)}</span></p>` : ""}
-      <span class="text-sm text-gray-500">${r.category} · ${r.servings} servings${r.servingsAssumed ? " (assumed: the recipe doesn’t say)" : ""}${(r.prepTime || 0) + (r.cookTime || 0) > 0 ? ` · ${(r.prepTime || 0) + (r.cookTime || 0)} min` : ""}</span>
-      ${src ? `<p class="text-xs text-gray-500 mt-1">Recipe &amp; photo: ${srcLink("text-green-700 font-semibold hover:underline", `${escapeHtml(src.name)} ↗`)}</p>` : ""}
+      <span class="text-sm text-gray-500">${escapeHtml(catLabel(r.category))} · ${r.servings} ${t("modal.servings")}${r.servingsAssumed ? t("modal.servingsAssumed") : ""}${(r.prepTime || 0) + (r.cookTime || 0) > 0 ? ` · ${(r.prepTime || 0) + (r.cookTime || 0)} min` : ""}</span>
+      ${src ? `<p class="text-xs text-gray-500 mt-1">${escapeHtml(t("modal.recipePhoto"))} ${srcLink("text-green-700 font-semibold hover:underline", `${escapeHtml(src.name)} ↗`)}</p>` : ""}
       ${r.id ? `<div class="modal-acts" role="group" aria-label="Actions">
         ${favButton(r.id, "act")}
         <button type="button" id="share-btn" onclick="shareRecipe(${r.id})" class="modal-act modal-act-main"><span class="modal-act-ico" aria-hidden="true">💬</span><span>${t("modal.share")}</span></button>
@@ -463,7 +468,7 @@ function buildModal(r, lines) {
           </div>
           <div class="bg-gray-50 border rounded-xl px-4 py-3 text-center">
             <p class="text-2xl font-bold text-gray-700">${kcalText(r)}</p>
-            <p class="text-xs text-gray-500 font-medium">kcal/serving${r.frying ? " · fried: oil absorption estimated" : ""}</p>
+            <p class="text-xs text-gray-500 font-medium">${t("modal.kcalServing")}${r.frying ? t("modal.fried") : ""}</p>
           </div>
         </div>
 
@@ -471,24 +476,24 @@ function buildModal(r, lines) {
         ${typeof factBoxHtml === "function" ? factBoxHtml(r) : ""}
 
         <div>
-          <h3 class="font-bold text-lg mb-3">Ingredients</h3>
+          <h3 class="font-bold text-lg mb-3">${t("modal.ingredients")}</h3>
           <div class="space-y-2">${ingRows}</div>
           <div class="mt-3 flex justify-between text-sm bg-amber-50 rounded-xl px-4 py-3">
-            <span class="text-gray-600">Estimated total cost</span>
+            <span class="text-gray-600">${t("modal.totalCost")}</span>
             <div class="text-right">
               <p class="font-bold text-amber-700">₱${r.cost.total.toFixed(0)}${r.costCoverage < 1 ? "+" : ""}</p>
-              <p class="text-xs text-gray-400">${costText(r)}/serving × ${r.servings} servings${r.costCoverage < 1 ? ` · ${Math.round(r.costCoverage * 100)}% of ingredients (by weight) priced` : ""}</p>
+              <p class="text-xs text-gray-500">${costText(r)}/serving × ${r.servings} ${t("modal.servings")}${r.costCoverage < 1 ? ` · ${Math.round(r.costCoverage * 100)}${t("modal.priced")}` : ""}</p>
               ${r.costCoverage < 1 ? `<p class="text-xs text-amber-700">${t("card.plusLegend")}</p>` : ""}
             </div>
           </div>
-          ${r.costPerServing > 0 ? `<button onclick="openAlertDialog('dish', ${r.id})" class="mt-2 text-xs font-semibold text-green-700 hover:underline">🔔 Alert me when this gets cheaper</button>` : ""}
-          ${r.costIncomplete ? `<p class="mt-2 text-xs bg-amber-100 text-amber-900 rounded-xl px-4 py-2">⚠ <strong>Incomplete price data:</strong> no price yet for ${escapeHtml(r.costGaps.join(", "))}. The real cost is higher than shown, so this dish is listed last.</p>` : ""}
+          ${r.costPerServing > 0 ? `<button onclick="openAlertDialog('dish', ${r.id})" class="mt-2 text-xs font-semibold text-green-700 hover:underline">${t("modal.alertMe")}</button>` : ""}
+          ${r.costIncomplete ? `<p class="mt-2 text-xs bg-amber-100 text-amber-900 rounded-xl px-4 py-2">⚠ <strong>${t("modal.incomplete")}</strong> ${escapeHtml(t("modal.incompleteText").replace("{list}", r.costGaps.join(", ")))}</p>` : ""}
         </div>
 
         <div class="cook-card">
           <h3 class="font-display font-bold text-xl">Paano lutuin? 👩‍🍳</h3>
-          <p class="text-sm text-gray-600 mt-1 mb-3">${src ? `Nasa ${escapeHtml(src.name)} ang buong recipe: ang mga hakbang, tips at video ng gumawa nito.` : "Full instructions are on the original recipe page."}</p>
-          ${src ? srcLink("cook-btn", `📖 See the recipe on ${escapeHtml(src.name)} ↗`) : ""}
+          <p class="text-sm text-gray-600 mt-1 mb-3">${src ? escapeHtml(t("modal.fullRecipe").replace("{src}", src.name)) : "Full instructions are on the original recipe page."}</p>
+          ${src ? srcLink("cook-btn", escapeHtml(t("modal.seeRecipe").replace("{src}", src.name))) : ""}
           <div id="video-links" class="flex flex-wrap gap-2 mt-3" data-recipe="${r.id}"></div>
         </div>
         ${similarHtml(r)}
@@ -837,7 +842,7 @@ function filterRecipes() {
   }
 
   if (typeof kitchenSummary === "function") document.querySelectorAll("[data-kitchen-summary]").forEach((el) => { el.textContent = kitchenSummary(); });
-  document.getElementById("result-count").textContent = `${filtered.length.toLocaleString()} recipe${filtered.length !== 1 ? "s" : ""} found${forYou ? " · sorted by your panlasa 🧠" : ""}${saucesOut ? ` · ${t("browse.saucesOut")}` : ""} · ${t("card.plusLegend")}`;
+  document.getElementById("result-count").textContent = `${t("browse.found").replace("{n}", filtered.length.toLocaleString())}${forYou ? t("browse.byTaste") : ""}${saucesOut ? ` · ${t("browse.saucesOut")}` : ""} · ${t("card.plusLegend")}`;
   updateBrowseFilterCount();
   const doneN = document.getElementById("bf-done-n");
   if (doneN) doneN.textContent = `(${filtered.length.toLocaleString()})`;

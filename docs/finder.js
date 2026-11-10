@@ -281,7 +281,7 @@ function renderFinder() {
       ${r.img ? `<img src="${escapeHtml(r.img)}" alt="" loading="lazy">` : `<div class="plan-noimg">🍽️</div>`}
       <div class="min-w-0 flex flex-col gap-1">
         <p class="font-semibold text-gray-900 leading-snug">${typeof favButton === "function" ? favButton(d.id) : ""} ${escapeHtml(d.title)}</p>
-        <p class="text-xs text-gray-500">₱${r.costPerServing}${r.costCoverage < 1 ? "+" : ""}/serving · ${escapeHtml(r.category)} · uses your ${d.used.map(escapeHtml).join(", ")}</p>
+        <p class="text-xs text-gray-500">₱${r.costPerServing}${r.costCoverage < 1 ? "+" : ""}/serving · ${escapeHtml(catLabel(r.category))} · uses your ${d.used.map(escapeHtml).join(", ")}</p>
         ${miss}
       </div></div>`;
   }).join("") || (finderHave.size ? `<p class="text-sm text-gray-400">No dish uses these yet. Try adding another ingredient.</p>` : "");

@@ -124,7 +124,7 @@ function renderAlerts() {
         <button onclick="removeAlert(${i})" class="text-gray-400 hover:text-red-600 text-sm" aria-label="Remove alert">✕</button>
       </div>
     </div>`;
-  }).join("") || `<p class="text-sm text-gray-400 py-2">No alerts yet. Tap 🔔 on a price below, or “Alert me” on any recipe.</p>`;
+  }).join("") || `<p class="text-sm text-gray-500 py-2">${typeof t === "function" ? t("alerts.none") : "No alerts yet."}</p>`;
 }
 
 function toast(text) {
