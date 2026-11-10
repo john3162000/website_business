@@ -242,6 +242,8 @@ const I18N = {
   "tour.next": ["Sunod →", "Next →"],
   "age.skip": ["Laktawan muna", "Skip for now"],
   "age.skipNote": ["Pwede mong ilagay mamaya sa ⚙️ Settings.", "You can set it later in ⚙️ Settings."],
+  "kitchen.all": ["Lahat ng ulam ang ipinapakita", "Showing every dish"],
+  "kitchen.can": ["{n} ulam na kaya mong lutuin", "{n} dishes you can cook"],
   "pcal.title": ["Mura ngayong", "Usually cheap in"],
   "pcal.month": ["Buwan", "Month"],
   "pcal.cheap": ["Karaniwang mas mura", "Usually cheaper"],

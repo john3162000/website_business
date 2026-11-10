@@ -281,8 +281,8 @@ function renderOccasion() {
     <div class="occ-head">
       <span class="occ-icon" aria-hidden="true">${o.icon}</span>
       <div class="min-w-0">
-        <p class="occ-kicker">${en ? "Special picks" : "Espesyal na handa"} · ${escapeHtml(when)}</p>
         <h2 class="occ-title">${escapeHtml(en ? o.en : o.tl)}</h2>
+        <p class="occ-kicker">${escapeHtml(when)}</p>
       </div>
       ${toggle}
     </div>
