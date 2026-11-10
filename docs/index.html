@@ -98,7 +98,14 @@
     .feed-stat b { font-size: 1.15rem; font-variant-numeric: tabular-nums; }
     html.dark .feed-field { color: var(--tx2); }
     html.dark .feed-field input { background: var(--s1); border-color: var(--line); color: var(--tx); }
-    html.dark .feed-stat { background: var(--s1); }
+    html.dark .feed-stat { background: var(--s2); }
+    .feed-verdict { font-weight: 600; font-size: .95rem; padding: .6rem .9rem; border-radius: .75rem; margin-bottom: .9rem; }
+    .feed-verdict.ok { background: #EFF5F0; color: #1D5239; }
+    .feed-verdict.no { background: #FBEDE8; color: #8A3B22; }
+    html.dark .feed-verdict.ok { background: var(--s2); color: var(--mint); }
+    html.dark .feed-verdict.no { background: var(--s2); color: #F5B8A6; }
+    .plan-start-feed { display: inline-block; margin-top: .5rem; font-size: .85rem; font-weight: 600; color: #1D5239; text-decoration: underline; text-underline-offset: 3px; }
+    html.dark .plan-start-feed { color: var(--mint); }
     html.dark .feed-stat span { color: var(--tx2); }
     /* Printing the feeding plan prints only that card. */
     @media print {
@@ -902,6 +909,7 @@
         <li><span class="ps-n" aria-hidden="true">2</span><button type="button" onclick="randomizeWeek(); planStartGrid()" data-i18n="plan.start2">or tap 🎲 Random week</button></li>
         <li><span class="ps-n" aria-hidden="true">3</span><span data-i18n="plan.start3">Swap what you don't like, then check the receipt</span></li>
       </ol>
+      <a href="#feeding" class="plan-start-feed" onclick="event.preventDefault(); document.getElementById('feeding').scrollIntoView({ behavior: 'smooth', block: 'start' }); document.getElementById('feed-heads').focus({ preventScroll: true })" data-i18n="feed.link">🍲 Cooking for many? Feeding program planner below</a>
     </div>
     <div class="grid gap-5 lg:grid-cols-[17rem_minmax(0,1fr)_19rem] items-start">
       <!-- Dish picker -->
