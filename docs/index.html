@@ -611,25 +611,25 @@
   <!-- Hero -->
   <div class="hero-band text-white px-4 pt-14 pb-10">
     <div class="max-w-3xl mx-auto text-center">
-      <p class="text-xs text-green-200 tracking-wide mb-4">DA market prices · updated <span data-da-date>…</span></p>
+      <p class="text-xs text-green-200 tracking-wide mb-4"><span data-i18n="home.updated">DA market prices · updated</span> <span data-da-date>…</span></p>
       <h1 class="text-4xl sm:text-6xl font-semibold leading-[1.05] mb-4 text-amber-50">
         Masarap, masustansya, <span class="text-amber-300 italic">sulit.</span>
       </h1>
       <p class="text-base sm:text-lg text-green-100/90 mb-7 max-w-xl mx-auto">
-        Filipino dishes ranked by nutrition per peso, from today's palengke prices. Plan the week, use what you have, spend less.
+        <span data-i18n="home.lead">Filipino dishes ranked by nutrition per peso, from today's palengke prices. Plan the week, use what you have, spend less.</span>
       </p>
       <form class="hero-search max-w-lg mx-auto" onsubmit="event.preventDefault(); heroSearch(this.q.value)">
         <input name="q" type="search" placeholder="Anong ulam ngayon?" aria-label="Search dishes">
-        <button class="bg-green-800 hover:bg-green-700 text-amber-50 font-semibold text-sm px-5 py-2.5 rounded-full transition-colors">Search</button>
+        <button class="bg-green-800 hover:bg-green-700 text-amber-50 font-semibold text-sm px-5 py-2.5 rounded-full transition-colors" data-i18n="home.search">Search</button>
       </form>
       <div class="flex flex-wrap justify-center gap-2 mt-4 text-sm">
         <button onclick="showSection('finder')" class="px-4 py-1.5 rounded-full border border-white/25 hover:bg-white/10 transition-colors">Anong lulutuin? →</button>
-        <button onclick="showSection('planner')" class="px-4 py-1.5 rounded-full border border-white/25 hover:bg-white/10 transition-colors">Plan my week →</button>
+        <button onclick="showSection('planner')" class="px-4 py-1.5 rounded-full border border-white/25 hover:bg-white/10 transition-colors" data-i18n="home.plan">Plan my week →</button>
       </div>
       <div class="grid grid-cols-3 gap-4 max-w-md mx-auto mt-10 text-xs text-green-200">
-        <div class="hero-stat"><b id="stat-recipes">—</b>recipes</div>
-        <div class="hero-stat"><b id="stat-foods">—</b>FNRI foods</div>
-        <div class="hero-stat"><b id="stat-commodities">—</b>market prices</div>
+        <div class="hero-stat"><b id="stat-recipes">—</b><span data-i18n="home.statRecipes">recipes</span></div>
+        <div class="hero-stat"><b id="stat-foods">—</b><span data-i18n="home.statFoods">FNRI foods</span></div>
+        <div class="hero-stat"><b id="stat-commodities">—</b><span data-i18n="home.statPrices">market prices</span></div>
       </div>
     </div>
   </div>
@@ -641,32 +641,32 @@
       <p class="text-sm text-gray-500 mt-1" id="weather-sub">Checking the weather…</p>
       <p class="text-sm text-gray-500" id="weather-desc"></p>
       <div class="flex flex-wrap items-center gap-2 mt-4">
-        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-16">Weather</span>
-        <button class="wx-btn" data-mode="auto" onclick="setWeatherMode('auto')">📍 Auto</button>
-        <button class="wx-btn" data-mode="sunny" onclick="setWeatherMode('sunny')">☀️ Sunny</button>
-        <button class="wx-btn" data-mode="rainy" onclick="setWeatherMode('rainy')">🌧️ Rainy</button>
-        <button class="wx-btn" data-mode="cool" onclick="setWeatherMode('cool')">🌥️ Cool</button>
+        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-16" data-i18n="wx.label">Weather</span>
+        <button class="wx-btn" data-mode="auto" onclick="setWeatherMode('auto')" data-i18n="wx.auto">📍 Auto</button>
+        <button class="wx-btn" data-mode="sunny" onclick="setWeatherMode('sunny')" data-i18n="wx.sunny">☀️ Sunny</button>
+        <button class="wx-btn" data-mode="rainy" onclick="setWeatherMode('rainy')" data-i18n="wx.rainy">🌧️ Rainy</button>
+        <button class="wx-btn" data-mode="cool" onclick="setWeatherMode('cool')" data-i18n="wx.cool">🌥️ Cool</button>
       </div>
       <div class="flex flex-wrap items-center gap-2 mt-2">
-        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-16">Sort</span>
-        <button class="wx-btn" data-sort="value" onclick="setPickSort('value')">Best value</button>
-        <button class="wx-btn" data-sort="cheap" onclick="setPickSort('cheap')">Cheapest</button>
-        <button class="wx-btn" data-sort="protein" onclick="setPickSort('protein')">Most protein</button>
-        <button class="wx-btn" data-sort="kcal" onclick="setPickSort('kcal')">Fewest calories</button>
+        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-16" data-i18n="wx.sort">Sort</span>
+        <button class="wx-btn" data-sort="value" onclick="setPickSort('value')" data-i18n="wx.sort.value">Best value</button>
+        <button class="wx-btn" data-sort="cheap" onclick="setPickSort('cheap')" data-i18n="wx.sort.cheap">Cheapest</button>
+        <button class="wx-btn" data-sort="protein" onclick="setPickSort('protein')" data-i18n="wx.sort.protein">Most protein</button>
+        <button class="wx-btn" data-sort="kcal" onclick="setPickSort('kcal')" data-i18n="wx.sort.kcal">Fewest calories</button>
       </div>
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5" id="weather-grid"><div class="skel"><i style="height:11rem;border-radius:0"></i><div style="padding:1rem"><i style="height:.9rem;width:80%"></i><i style="height:.7rem;width:45%;margin-top:.6rem"></i><i style="height:1.3rem;width:60%;margin-top:1rem;border-radius:9999px"></i></div></div><div class="skel"><i style="height:11rem;border-radius:0"></i><div style="padding:1rem"><i style="height:.9rem;width:80%"></i><i style="height:.7rem;width:45%;margin-top:.6rem"></i><i style="height:1.3rem;width:60%;margin-top:1rem;border-radius:9999px"></i></div></div><div class="skel"><i style="height:11rem;border-radius:0"></i><div style="padding:1rem"><i style="height:.9rem;width:80%"></i><i style="height:.7rem;width:45%;margin-top:.6rem"></i><i style="height:1.3rem;width:60%;margin-top:1rem;border-radius:9999px"></i></div></div><div class="skel"><i style="height:11rem;border-radius:0"></i><div style="padding:1rem"><i style="height:.9rem;width:80%"></i><i style="height:.7rem;width:45%;margin-top:.6rem"></i><i style="height:1.3rem;width:60%;margin-top:1rem;border-radius:9999px"></i></div></div></div>
-    <p class="text-xs text-gray-400 mt-3">Weather by <a href="https://open-meteo.com/" target="_blank" rel="noopener" class="underline">Open-Meteo</a>. Your location is rounded to about 1 km and only used to look up the weather.</p>
+    <p class="text-xs text-gray-500 mt-3"><span data-i18n="wx.by">Weather by</span> <a href="https://open-meteo.com/" target="_blank" rel="noopener" class="underline">Open-Meteo</a>. <span data-i18n="wx.privacy">Your location is rounded to about 1 km and only used to look up the weather.</span></p>
   </div>
 
   <!-- Top Recipes -->
   <div class="max-w-6xl mx-auto px-4 py-12">
     <div class="flex items-center justify-between mb-6">
       <div>
-        <h2 class="text-2xl font-bold">Top Value Dishes Today</h2>
-        <p class="text-sm text-gray-500 mt-1">Ranked by Sulit Score (nutrition ÷ cost per serving) · <span data-da-date>latest</span> DA prices</p>
+        <h2 class="text-2xl font-bold" data-i18n="home.topTitle">Top Value Dishes Today</h2>
+        <p class="text-sm text-gray-500 mt-1"><span data-i18n="home.topSub">Ranked by Sulit Score (nutrition ÷ cost per serving) ·</span> <span data-da-date>latest</span> <span data-i18n="home.daPrices">DA prices</span></p>
       </div>
-      <button onclick="showSection('browse')" class="text-green-700 hover:underline text-sm font-medium">View all →</button>
+      <button onclick="showSection('browse')" class="text-green-700 hover:underline text-sm font-medium" data-i18n="home.viewAll">View all →</button>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5" id="top-recipes-grid"><div class="skel"><i style="height:11rem;border-radius:0"></i><div style="padding:1rem"><i style="height:.9rem;width:80%"></i><i style="height:.7rem;width:45%;margin-top:.6rem"></i><i style="height:1.3rem;width:60%;margin-top:1rem;border-radius:9999px"></i></div></div><div class="skel"><i style="height:11rem;border-radius:0"></i><div style="padding:1rem"><i style="height:.9rem;width:80%"></i><i style="height:.7rem;width:45%;margin-top:.6rem"></i><i style="height:1.3rem;width:60%;margin-top:1rem;border-radius:9999px"></i></div></div><div class="skel"><i style="height:11rem;border-radius:0"></i><div style="padding:1rem"><i style="height:.9rem;width:80%"></i><i style="height:.7rem;width:45%;margin-top:.6rem"></i><i style="height:1.3rem;width:60%;margin-top:1rem;border-radius:9999px"></i></div></div><div class="skel"><i style="height:11rem;border-radius:0"></i><div style="padding:1rem"><i style="height:.9rem;width:80%"></i><i style="height:.7rem;width:45%;margin-top:.6rem"></i><i style="height:1.3rem;width:60%;margin-top:1rem;border-radius:9999px"></i></div></div></div>
@@ -675,22 +675,22 @@
   <!-- How it works -->
   <div class="bg-white border-t border-amber-100 py-12">
     <div class="max-w-5xl mx-auto px-4">
-      <h2 class="text-2xl font-bold text-center mb-10">How It Works</h2>
+      <h2 class="text-2xl font-bold text-center mb-10" data-i18n="how.title">How It Works</h2>
       <div class="grid sm:grid-cols-3 gap-8 text-center">
         <div class="flex flex-col items-center gap-3 p-6 rounded-2xl bg-green-50">
           <span class="text-5xl">📄</span>
-          <h3 class="font-bold text-lg">DA Price Index</h3>
-          <p class="text-gray-500 text-sm leading-relaxed">Daily prevailing prices from the Department of Agriculture for Metro Manila markets — vegetables, meat, fish, rice, and more. Updated automatically every day.</p>
+          <h3 class="font-bold text-lg" data-i18n="how.da">DA Price Index</h3>
+          <p class="text-gray-500 text-sm leading-relaxed" data-i18n="how.daText">Daily prevailing prices from the Department of Agriculture for Metro Manila markets — vegetables, meat, fish, rice, and more. Updated automatically every day.</p>
         </div>
         <div class="flex flex-col items-center gap-3 p-6 rounded-2xl bg-amber-50">
           <span class="text-5xl">🥘</span>
-          <h3 class="font-bold text-lg">Filipino Recipe Sites</h3>
-          <p class="text-gray-500 text-sm leading-relaxed">Dishes from Panlasang Pinoy, Kawaling Pinoy and other Filipino recipe sites: ingredients, servings and cook time, with a link to each recipe for the steps. Ingredients are matched to DA commodity prices.</p>
+          <h3 class="font-bold text-lg" data-i18n="how.recipes">Filipino Recipe Sites</h3>
+          <p class="text-gray-500 text-sm leading-relaxed" data-i18n="how.recipesText">Dishes from Panlasang Pinoy, Kawaling Pinoy and other Filipino recipe sites: ingredients, servings and cook time, with a link to each recipe for the steps. Ingredients are matched to DA commodity prices.</p>
         </div>
         <div class="flex flex-col items-center gap-3 p-6 rounded-2xl bg-blue-50">
           <span class="text-5xl">📊</span>
-          <h3 class="font-bold text-lg">FNRI Nutrition Data</h3>
-          <p class="text-gray-500 text-sm leading-relaxed">Nutritional values from the FNRI Food Composition Table — the Philippine standard. Calories, protein, vitamins, minerals per 100g for each ingredient.</p>
+          <h3 class="font-bold text-lg" data-i18n="how.fnri">FNRI Nutrition Data</h3>
+          <p class="text-gray-500 text-sm leading-relaxed" data-i18n="how.fnriText">Nutritional values from the FNRI Food Composition Table — the Philippine standard. Calories, protein, vitamins, minerals per 100g for each ingredient.</p>
         </div>
       </div>
     </div>
@@ -703,7 +703,7 @@
   <div class="max-w-6xl mx-auto px-4 py-10 w-full">
     <h1 class="text-3xl font-bold mb-1" data-i18n="browse.title">Browse Filipino Recipes</h1>
     <div class="mb-6">
-      <p class="text-gray-500 text-sm">Filter and sort by nutrition, price, or specific produce. Prices based on <span data-da-date>the latest</span> DA data.</p>
+      <p class="text-gray-500 text-sm"><span data-i18n="browse.sub">Filter and sort by nutrition, price, or specific produce. Prices based on</span> <span data-da-date>the latest</span><span data-i18n="browse.subEnd"> DA data.</span></p>
       <p id="hidden-note" class="hidden text-gray-400 text-xs mt-1"></p>
     </div>
 
@@ -727,27 +727,27 @@
         <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1" data-i18n="browse.sort">Sort by</label>
         <select id="sort-select" onchange="filterRecipes()" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
           <option value="forYou" hidden disabled>🧠 Para sa'yo (panlasa mo)</option>
-          <option value="valueScore">Best Value (Sulit Score)</option>
-          <option value="nutritionScore">Most Nutritious</option>
-          <option value="costPerServing">Cheapest per Serving</option>
-          <option value="protein">Highest Protein</option>
-          <option value="calories">Highest Calories</option>
-          <option value="caloriesAsc">Lowest Calories</option>
-          <option value="proteinPerPeso">Most Protein per ₱</option>
-          <option value="proteinPer100kcal">Most Protein per Calorie</option>
+          <option value="valueScore" data-i18n="sort.valueScore">Best Value (Sulit Score)</option>
+          <option value="nutritionScore" data-i18n="sort.nutritionScore">Most Nutritious</option>
+          <option value="costPerServing" data-i18n="sort.costPerServing">Cheapest per Serving</option>
+          <option value="protein" data-i18n="sort.protein">Highest Protein</option>
+          <option value="calories" data-i18n="sort.calories">Highest Calories</option>
+          <option value="caloriesAsc" data-i18n="sort.caloriesAsc">Lowest Calories</option>
+          <option value="proteinPerPeso" data-i18n="sort.proteinPerPeso">Most Protein per ₱</option>
+          <option value="proteinPer100kcal" data-i18n="sort.proteinPer100kcal">Most Protein per Calorie</option>
         </select>
       </div>
       <div>
         <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1" data-i18n="browse.minProtein">Min Protein (g/serving)</label>
-        <input type="number" id="min-protein" placeholder="e.g. 15" oninput="filterRecipes()" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"/>
+        <input type="number" id="min-protein" placeholder="e.g. 15" data-i18n-ph="ph.eg15" oninput="filterRecipes()" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"/>
       </div>
       <div>
         <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1" data-i18n="browse.maxCost">Max Cost per Serving (₱)</label>
-        <input type="number" id="max-cost" placeholder="e.g. 60" oninput="filterRecipes()" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"/>
+        <input type="number" id="max-cost" placeholder="e.g. 60" data-i18n-ph="ph.eg60" oninput="filterRecipes()" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"/>
       </div>
       <div>
         <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1" data-i18n="browse.produce">Contains Produce</label>
-        <input type="text" id="produce-filter" placeholder="e.g. kangkong, pork" oninput="filterRecipes()" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"/>
+        <input type="text" id="produce-filter" placeholder="e.g. kangkong, pork" data-i18n-ph="ph.produce" oninput="filterRecipes()" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"/>
       </div>
       <div class="sm:col-span-2 lg:col-span-4 flex flex-wrap items-end gap-4 border-t border-gray-100 pt-4">
         <div>
@@ -759,11 +759,11 @@
           </div>
         </div>
         <div class="flex flex-wrap gap-2">
-          <button onclick="setPreset('light')" class="bg-white border border-gray-200 text-gray-600 text-xs px-3 py-1.5 rounded-full font-medium hover:bg-green-50">Light (≤ 400 kcal)</button>
-          <button onclick="setPreset('regular')" class="bg-white border border-gray-200 text-gray-600 text-xs px-3 py-1.5 rounded-full font-medium hover:bg-green-50">Regular (400–700)</button>
-          <button onclick="setPreset('hearty')" class="bg-white border border-gray-200 text-gray-600 text-xs px-3 py-1.5 rounded-full font-medium hover:bg-green-50">Hearty (700+)</button>
-          <button onclick="rankByProteinPerKcal()" class="bg-green-700 hover:bg-green-600 text-white text-xs px-3 py-1.5 rounded-full font-medium">💪 Rank by protein per calorie</button>
-          <button onclick="setPreset('protein')" class="bg-white border border-gray-200 text-gray-600 text-xs px-3 py-1.5 rounded-full font-medium hover:bg-green-50">High protein (25 g+)</button>
+          <button onclick="setPreset('light')" class="bg-white border border-gray-200 text-gray-600 text-xs px-3 py-1.5 rounded-full font-medium hover:bg-green-50" data-i18n="preset.light">Light (≤ 400 kcal)</button>
+          <button onclick="setPreset('regular')" class="bg-white border border-gray-200 text-gray-600 text-xs px-3 py-1.5 rounded-full font-medium hover:bg-green-50" data-i18n="preset.regular">Regular (400–700)</button>
+          <button onclick="setPreset('hearty')" class="bg-white border border-gray-200 text-gray-600 text-xs px-3 py-1.5 rounded-full font-medium hover:bg-green-50" data-i18n="preset.hearty">Hearty (700+)</button>
+          <button onclick="rankByProteinPerKcal()" class="bg-green-700 hover:bg-green-600 text-white text-xs px-3 py-1.5 rounded-full font-medium" data-i18n="preset.ppk">💪 Rank by protein per calorie</button>
+          <button onclick="setPreset('protein')" class="bg-white border border-gray-200 text-gray-600 text-xs px-3 py-1.5 rounded-full font-medium hover:bg-green-50" data-i18n="preset.protein">High protein (25 g+)</button>
           <button onclick="setPreset('clear')" class="text-xs text-gray-400 hover:text-gray-600 px-2 py-1.5" data-i18n="browse.clear">Clear</button>
         </div>
       </div>
@@ -787,25 +787,25 @@
 <section id="section-prices" class="hidden flex-col flex-1">
   <div class="max-w-6xl mx-auto px-4 py-10 w-full">
     <div class="flex items-center justify-between mb-2">
-      <h1 class="text-3xl font-bold">DA Daily Price Monitoring</h1>
+      <h1 class="text-3xl font-bold" data-i18n="prices.title">DA Daily Price Monitoring</h1>
       <span class="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full"><span data-da-date>…</span></span>
     </div>
-    <p class="text-sm text-gray-500 mb-6">Source: Department of Agriculture Daily Price Index, NCR prevailing retail prices · updated automatically every day</p>
+    <p class="text-sm text-gray-500 mb-6" data-i18n="prices.source">Source: Department of Agriculture Daily Price Index, NCR prevailing retail prices · updated automatically every day</p>
 
     <div class="bg-white rounded-2xl shadow p-4 mb-6">
       <div class="flex items-baseline justify-between gap-2 flex-wrap">
-        <h2 class="text-lg font-bold">🔔 Your price alerts</h2>
+        <h2 class="text-lg font-bold" data-i18n="prices.alerts">🔔 Your price alerts</h2>
         <span id="alerts-perm" class="text-xs text-gray-500"></span>
       </div>
       <div id="alerts-list" class="divide-y divide-gray-100"></div>
-      <p class="text-xs text-gray-400 mt-1">Saved on this device. Checked whenever you open the site and every hour while it's open.</p>
+      <p class="text-xs text-gray-500 mt-1" data-i18n="prices.alertsNote">Saved on this device. Checked whenever you open the site and every hour while it's open.</p>
     </div>
 
     <div class="flex flex-wrap items-center gap-2 mb-5">
-      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Compare with</span>
-      <button class="wx-btn" data-period="week" onclick="setPricePeriod('week')">Last week</button>
-      <button class="wx-btn" data-period="twoWeeks" onclick="setPricePeriod('twoWeeks')">2 weeks ago</button>
-      <button class="wx-btn on" data-period="month" onclick="setPricePeriod('month')">Last month</button>
+      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide" data-i18n="prices.compare">Compare with</span>
+      <button class="wx-btn" data-period="week" onclick="setPricePeriod('week')" data-i18n="prices.period.week">Last week</button>
+      <button class="wx-btn" data-period="twoWeeks" onclick="setPricePeriod('twoWeeks')" data-i18n="prices.period.twoWeeks">2 weeks ago</button>
+      <button class="wx-btn on" data-period="month" onclick="setPricePeriod('month')" data-i18n="prices.period.month">Last month</button>
     </div>
 
     <!-- Usually cheap this month (PSA monthly prices since 2018, pricecal.js) -->
@@ -817,36 +817,36 @@
     <!-- Dishes whose cost moved since the chosen period -->
     <div class="mb-8">
       <div class="flex items-baseline justify-between mb-3 flex-wrap gap-2">
-        <h2 class="text-xl font-bold">Ulam whose cost changed · <span data-period-label>1 month</span></h2>
+        <h2 class="text-xl font-bold"><span data-i18n="prices.movers">Ulam whose cost changed</span> · <span data-period-label>1 month</span></h2>
         <span id="movers-summary" class="text-xs text-gray-500">Loading…</span>
       </div>
       <div class="grid md:grid-cols-2 gap-4">
         <div class="bg-white rounded-2xl shadow p-4 min-w-0">
-          <h3 class="font-semibold price-up mb-2">▲ Mas mahal na <span class="text-gray-400 font-normal text-sm">(pricier)</span></h3>
+          <h3 class="font-semibold price-up mb-2">▲ Mas mahal na <span class="text-gray-500 font-normal text-sm" data-i18n="prices.pricier">(pricier)</span></h3>
           <div id="movers-rose" class="space-y-1 text-sm"></div>
         </div>
         <div class="bg-white rounded-2xl shadow p-4 min-w-0">
-          <h3 class="font-semibold price-down mb-2">▼ Mas mura na <span class="text-gray-400 font-normal text-sm">(cheaper)</span></h3>
+          <h3 class="font-semibold price-down mb-2">▼ Mas mura na <span class="text-gray-500 font-normal text-sm" data-i18n="prices.cheaper">(cheaper)</span></h3>
           <div id="movers-fell" class="space-y-1 text-sm"></div>
         </div>
       </div>
-      <p class="text-xs text-gray-400 mt-2">Cost per serving from ingredients priced on both dates. Only DA prices change day to day; SM and DTI reference prices are fixed.</p>
+      <p class="text-xs text-gray-500 mt-2" data-i18n="prices.moversNote">Cost per serving from ingredients priced on both dates. Only DA prices change day to day; SM and DTI reference prices are fixed.</p>
     </div>
 
-    <h2 class="text-xl font-bold mb-3">Commodity prices</h2>
+    <h2 class="text-xl font-bold mb-3" data-i18n="prices.table">Commodity prices</h2>
 
     <div class="flex gap-2 mb-5 flex-wrap">
-      <button onclick="filterPrices('all')" id="cat-all" class="price-cat-btn bg-green-700 text-white text-xs px-4 py-1.5 rounded-full font-medium">All</button>
-      <button onclick="filterPrices('vegetables')" id="cat-vegetables" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50">Vegetables</button>
-      <button onclick="filterPrices('fish')" id="cat-fish" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50">Fish & Seafood</button>
-      <button onclick="filterPrices('meat')" id="cat-meat" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50">Meat & Poultry</button>
-      <button onclick="filterPrices('staple')" id="cat-staple" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50">Rice & Staples</button>
-      <button onclick="filterPrices('fruits')" id="cat-fruits" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50">Fruits</button>
-      <button onclick="filterPrices('condiments')" id="cat-condiments" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50">Sugar, Salt &amp; Oil</button>
+      <button onclick="filterPrices('all')" id="cat-all" class="price-cat-btn bg-green-700 text-white text-xs px-4 py-1.5 rounded-full font-medium" data-i18n="prices.cat.all">All</button>
+      <button onclick="filterPrices('vegetables')" id="cat-vegetables" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50" data-i18n="prices.cat.vegetables">Vegetables</button>
+      <button onclick="filterPrices('fish')" id="cat-fish" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50" data-i18n="prices.cat.fish">Fish & Seafood</button>
+      <button onclick="filterPrices('meat')" id="cat-meat" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50" data-i18n="prices.cat.meat">Meat & Poultry</button>
+      <button onclick="filterPrices('staple')" id="cat-staple" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50" data-i18n="prices.cat.staple">Rice & Staples</button>
+      <button onclick="filterPrices('fruits')" id="cat-fruits" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50" data-i18n="prices.cat.fruits">Fruits</button>
+      <button onclick="filterPrices('condiments')" id="cat-condiments" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50" data-i18n="prices.cat.condiments">Sugar, Salt &amp; Oil</button>
       <select id="price-sort" onchange="renderPrices(currentPriceCat)" class="ml-auto border border-gray-200 rounded-full px-3 py-1.5 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500">
-        <option value="name">Sort: A–Z</option>
-        <option value="up">Biggest increase (chosen period)</option>
-        <option value="down">Biggest drop (chosen period)</option>
+        <option value="name" data-i18n="prices.sort.name">Sort: A–Z</option>
+        <option value="up" data-i18n="prices.sort.up">Biggest increase (chosen period)</option>
+        <option value="down" data-i18n="prices.sort.down">Biggest drop (chosen period)</option>
       </select>
     </div>
 
@@ -857,16 +857,16 @@
         <table class="w-full text-sm">
           <thead class="bg-green-700 text-white">
             <tr>
-              <th class="text-left px-5 py-3 font-semibold">Commodity</th>
-              <th class="text-left px-3 py-3 font-semibold hidden sm:table-cell">Local Name</th>
-              <th class="text-left px-3 py-3 font-semibold">Unit</th>
-              <th class="text-right px-3 py-3 font-semibold hidden lg:table-cell">30-day Low (₱)</th>
-              <th class="text-right px-3 py-3 font-semibold hidden lg:table-cell">30-day High (₱)</th>
-              <th class="text-right px-5 py-3 font-semibold">Latest (₱)</th>
+              <th class="text-left px-5 py-3 font-semibold" data-i18n="th.commodity">Commodity</th>
+              <th class="text-left px-3 py-3 font-semibold hidden sm:table-cell" data-i18n="th.local">Local Name</th>
+              <th class="text-left px-3 py-3 font-semibold" data-i18n="th.unit">Unit</th>
+              <th class="text-right px-3 py-3 font-semibold hidden lg:table-cell" data-i18n="th.low">30-day Low (₱)</th>
+              <th class="text-right px-3 py-3 font-semibold hidden lg:table-cell" data-i18n="th.high">30-day High (₱)</th>
+              <th class="text-right px-5 py-3 font-semibold" data-i18n="th.latest">Latest (₱)</th>
               <th class="text-right px-3 py-3 font-semibold whitespace-nowrap">vs 1 wk</th>
               <th class="text-right px-3 py-3 font-semibold whitespace-nowrap">vs 2 wks</th>
               <th class="text-right px-3 py-3 font-semibold whitespace-nowrap">vs 1 mo</th>
-              <th class="text-center px-3 py-3 font-semibold hidden md:table-cell">Trend</th>
+              <th class="text-center px-3 py-3 font-semibold hidden md:table-cell" data-i18n="th.trend">Trend</th>
               <th class="px-2 py-3"><span class="sr-only">Alert</span></th>
             </tr>
           </thead>
@@ -874,15 +874,15 @@
         </table>
       </div>
     </div>
-    <p class="text-xs text-gray-400 mt-3">* Prevailing retail prices in Metro Manila markets, from the DA Daily Price Index. Low and high are the range over the last 30 days. The change column compares the latest price with the price about a month earlier (the date in its heading).</p>
+    <p class="text-xs text-gray-500 mt-3" data-i18n="prices.footnote">* Prevailing retail prices in Metro Manila markets, from the DA Daily Price Index. Low and high are the range over the last 30 days. The change column compares the latest price with the price about a month earlier (the date in its heading).</p>
   </div>
 </section>
 
 <!-- ═══════════════════════════════════ MY DISH ═══════════════════════════════════ -->
 <section id="section-mydish" class="hidden flex-col flex-1">
   <div class="max-w-6xl mx-auto px-4 py-10 w-full">
-    <h1 class="text-3xl font-bold mb-1">My Dish</h1>
-    <p class="text-gray-500 mb-6 text-sm">Build your own dish, or tap “Customize this dish” on any recipe to change its ingredients. See its cost per serving, nutrition and how its price moved. Dishes are saved on this device only.</p>
+    <h1 class="text-3xl font-bold mb-1" data-i18n="mydish.title">My Dish</h1>
+    <p class="text-gray-500 mb-6 text-sm" data-i18n="mydish.sub">Build your own dish, or tap “Customize this dish” on any recipe to change its ingredients. See its cost per serving, nutrition and how its price moved. Dishes are saved on this device only.</p>
     <div id="mydish-list" class="mb-8"></div>
     <div id="mydish-editor"></div>
   </div>
@@ -894,7 +894,7 @@
 <section id="section-planner" class="hidden flex-col flex-1">
   <div class="max-w-7xl mx-auto px-4 py-10 w-full">
     <h1 class="text-3xl font-bold mb-1" data-i18n="planner.title">Weekly Planner</h1>
-    <p class="text-gray-500 mb-6 text-sm">Plan a week of almusal, tanghalian, meryenda and hapunan, and see what it costs: per dish, or as a shopping list per ingredient. Saved on this device only.</p>
+    <p class="text-gray-500 mb-6 text-sm" data-i18n="planner.sub">Plan a week of almusal, tanghalian, meryenda and hapunan, and see what it costs: per dish, or as a shopping list per ingredient. Saved on this device only.</p>
     <div class="plan-start" aria-labelledby="plan-start-title">
       <b id="plan-start-title" data-i18n="plan.start">Where to start?</b>
       <ol>
@@ -1050,7 +1050,7 @@
 <section id="section-finder" class="hidden flex-col flex-1">
   <div class="max-w-7xl mx-auto px-4 py-10 w-full">
     <h1 class="text-3xl font-bold mb-1">Anong lulutuin?</h1>
-    <p class="text-gray-500 mb-6 text-sm">Pick what you have from each group. Every ingredient becomes a node, linked to the dishes you can cook with it. Hover a node to see its links; tap a dish to open the recipe. Saved on this device only.</p>
+    <p class="text-gray-500 mb-6 text-sm" data-i18n="finder.sub">Pick what you have from each group. Every ingredient becomes a node, linked to the dishes you can cook with it. Hover a node to see its links; tap a dish to open the recipe. Saved on this device only.</p>
     <div class="grid gap-5 lg:grid-cols-[19rem_minmax(0,1fr)] items-start">
       <div class="flex flex-col gap-4 min-w-0">
         <div class="bg-white rounded-2xl shadow p-3">
@@ -1060,18 +1060,18 @@
         <div class="bg-white rounded-2xl shadow p-4">
           <div class="flex items-center justify-between gap-2 mb-2">
             <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Meron ako</p>
-            <button onclick="finderClear()" class="text-xs text-gray-500 hover:text-red-600 underline">Clear</button>
+            <button onclick="finderClear()" class="text-xs text-gray-500 hover:text-red-600 underline" data-i18n="browse.clear">Clear</button>
           </div>
           <ul id="finder-have" class="flex flex-col gap-1"></ul>
           <label class="text-xs text-gray-600 flex items-start gap-2 mt-3"><input id="finder-staples" type="checkbox" checked onchange="setFinderStaples(this.checked)" class="accent-green-600 mt-0.5">
-            I have the basics: salt, pepper, oil, garlic, onion, soy sauce, patis, vinegar, sugar, bay leaf</label>
+            <span data-i18n="finder.basics">I have the basics: salt, pepper, oil, garlic, onion, soy sauce, patis, vinegar, sugar, bay leaf</span></label>
         </div>
       </div>
       <div class="flex flex-col gap-4 min-w-0">
         <div class="fx-graph-card">
           <svg id="finder-graph" class="fx-graph"></svg>
-          <p id="finder-graph-empty" class="fx-graph-empty">Pick an ingredient on the left: it appears here as a node, and the dishes you can cook grow out of it.</p>
-          <div class="fx-legend"><span><i style="background:#4ade80"></i>ingredient you have</span><span><i class="ring ok"></i>kumpleto</span><span><i class="ring part"></i>may kulang (−n)</span><span><i class="ghost"></i>kulang na sangkap</span></div>
+          <p id="finder-graph-empty" class="fx-graph-empty" data-i18n="finder.empty">Pick an ingredient on the left: it appears here as a node, and the dishes you can cook grow out of it.</p>
+          <div class="fx-legend"><span><i style="background:#4ade80"></i><b data-i18n="finder.have" class="font-normal">ingredient you have</b></span><span><i class="ring ok"></i>kumpleto</span><span><i class="ring part"></i>may kulang (−n)</span><span><i class="ghost"></i>kulang na sangkap</span></div>
         </div>
         <p id="finder-count" class="text-xs font-semibold text-gray-500 uppercase tracking-wide"></p>
         <div id="finder-results" class="grid gap-3 md:grid-cols-2"></div>
@@ -1103,12 +1103,12 @@
   <div class="tour-card">
     <div class="flex items-center justify-between gap-2 mb-1">
       <span id="tour-count" class="text-xs font-semibold text-gray-500"></span>
-      <button onclick="endTour()" class="text-xs text-gray-500 hover:text-gray-800 underline">Skip</button>
+      <button onclick="endTour()" class="text-xs text-gray-500 hover:text-gray-800 underline" data-i18n="tour.skip">Skip</button>
     </div>
     <p id="tour-title" class="font-display text-xl font-semibold mb-1"></p>
     <p id="tour-text" class="text-sm text-gray-600 leading-relaxed"></p>
     <div class="flex items-center justify-between gap-2 mt-4">
-      <button id="tour-back" onclick="tourNext(-1)" class="text-sm text-gray-500 hover:text-gray-800">← Back</button>
+      <button id="tour-back" onclick="tourNext(-1)" class="text-sm text-gray-500 hover:text-gray-800" data-i18n="tour.back">← Back</button>
       <div id="tour-dots" class="tour-dots"></div>
       <button id="tour-next" onclick="tourNext(1)" class="px-4 py-2 rounded-full text-sm font-semibold bg-green-800 text-amber-50 hover:bg-green-700">Next →</button>
     </div>
@@ -1117,16 +1117,16 @@
 
 <dialog id="alert-dialog" aria-labelledby="alert-what" class="alert-dialog" onclick="if (event.target === this) this.close()">
   <form method="dialog" onsubmit="event.preventDefault(); saveAlertFromDialog()" class="p-5 flex flex-col gap-3">
-    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">🔔 Price alert</p>
+    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide" data-i18n="alert.title">🔔 Price alert</p>
     <p id="alert-what" class="font-display text-xl font-semibold"></p>
     <p id="alert-now" class="text-sm text-gray-500"></p>
-    <label class="text-sm text-gray-600">Tell me when it's below
+    <label class="text-sm text-gray-600"><span data-i18n="alert.below">Tell me when it's below</span>
       <span class="flex items-center gap-2 mt-1">₱ <input id="alert-below" type="number" step="0.01" min="0.01" class="w-32 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"></span>
     </label>
     <p id="alert-error" class="text-xs text-red-600"></p>
     <div class="flex justify-end gap-2">
-      <button type="button" onclick="document.getElementById('alert-dialog').close()" class="px-4 py-2 rounded-full text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
-      <button class="px-4 py-2 rounded-full text-sm font-semibold bg-green-800 text-amber-50 hover:bg-green-700">Save alert</button>
+      <button type="button" onclick="document.getElementById('alert-dialog').close()" class="px-4 py-2 rounded-full text-sm text-gray-600 hover:bg-gray-50" data-i18n="alert.cancel">Cancel</button>
+      <button class="px-4 py-2 rounded-full text-sm font-semibold bg-green-800 text-amber-50 hover:bg-green-700" data-i18n="alert.save">Save alert</button>
     </div>
   </form>
 </dialog>
@@ -1134,15 +1134,15 @@
 <dialog id="share-dialog" aria-labelledby="share-title" class="alert-dialog share-dialog" onclick="if (event.target === this) this.close()">
   <div class="p-5 flex flex-col gap-3">
     <div class="flex items-center justify-between">
-      <p id="share-title" class="font-display text-xl font-semibold">Share this recipe</p>
+      <p id="share-title" class="font-display text-xl font-semibold" data-i18n="share.title">Share this recipe</p>
       <button type="button" onclick="document.getElementById('share-dialog').close()" class="dlg-x" aria-label="Isara">✕</button>
     </div>
-    <p class="text-sm text-gray-500">Save the picture, then send it in Messenger with the link. On a phone, the Share button sends it to Messenger directly.</p>
+    <p class="text-sm text-gray-500" data-i18n="share.help">Save the picture, then send it in Messenger with the link. On a phone, the Share button sends it to Messenger directly.</p>
     <img id="share-preview" alt="Recipe picture to share" class="w-full max-h-[50vh] object-contain rounded-xl border border-gray-200 bg-amber-50">
     <div class="flex flex-wrap gap-2">
-      <a id="share-download" class="px-4 py-2 rounded-full text-sm font-semibold bg-green-800 text-amber-50 hover:bg-green-700">⬇ Save picture</a>
-      <button id="share-copy" class="px-4 py-2 rounded-full text-sm font-semibold border border-gray-200 hover:bg-gray-50">Copy link</button>
-      <a href="https://www.messenger.com/" target="_blank" rel="noopener" class="px-4 py-2 rounded-full text-sm font-semibold border border-gray-200 hover:bg-gray-50">Open Messenger ↗</a>
+      <a id="share-download" class="px-4 py-2 rounded-full text-sm font-semibold bg-green-800 text-amber-50 hover:bg-green-700" data-i18n="share.save">⬇ Save picture</a>
+      <button id="share-copy" class="px-4 py-2 rounded-full text-sm font-semibold border border-gray-200 hover:bg-gray-50" data-i18n="share.copy">Copy link</button>
+      <a href="https://www.messenger.com/" target="_blank" rel="noopener" class="px-4 py-2 rounded-full text-sm font-semibold border border-gray-200 hover:bg-gray-50" data-i18n="share.messenger">Open Messenger ↗</a>
     </div>
   </div>
 </dialog>
