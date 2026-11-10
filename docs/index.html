@@ -444,6 +444,10 @@
     /* Okasyon (holiday picks) in Browse */
     .occ-box { background: linear-gradient(135deg, #163F2E, #1F5A3D); color: #F8F4EA; border-radius: 1.25rem; padding: 1.1rem 1.1rem 1rem; box-shadow: 0 10px 30px rgba(22, 63, 46, .25); }
     .occ-box:empty { display: none; }
+    .age-skip { min-height: 2.75rem; padding: 0 1rem; border-radius: 9999px; border: 1px solid #E7DFCB; font-size: .875rem; font-weight: 600; color: #1D5239; white-space: nowrap; }
+    .age-skip:hover { background: #EFF5F0; }
+    html.dark .age-skip { border-color: var(--line); color: var(--mint); }
+    html.dark .age-skip:hover { background: var(--s2); }
     .occ-box.occ-folded { padding: .7rem .9rem; box-shadow: none; }
     .occ-folded .occ-icon { font-size: 1.4rem; }
     .occ-folded .occ-title { font-size: 1.05rem; }
@@ -949,7 +953,7 @@
       <!-- Week grid -->
       <div class="bg-white rounded-2xl shadow p-4 min-w-0">
         <div class="flex flex-wrap items-center gap-2 mb-3">
-          <button onclick="randomizeWeek()" class="bg-amber-400 hover:bg-amber-300 text-gray-900 font-bold text-sm px-4 py-2 rounded-full shadow transition-colors" data-i18n="plan.random">🎲 Random week</button>
+          <button onclick="randomizeWeek()" class="bg-green-800 hover:bg-green-700 text-amber-50 font-bold text-sm px-4 py-2 rounded-full transition-colors" data-i18n="plan.random">🎲 Random week</button>
           <button class="wx-btn on" data-random="ulam" onclick="setRandomMeals('ulam')" data-i18n="plan.ulamOnly">Ulam lang</button>
           <button class="wx-btn" data-random="all" onclick="setRandomMeals('all')" data-i18n="plan.allMeals">Lahat ng kain</button>
           <span class="text-xs text-gray-500 ml-1" data-i18n="plan.perMeal">Ulam per meal</span>
@@ -990,7 +994,7 @@
           <button onclick="downloadGroceryHtml()" class="border border-green-800 text-green-800 hover:bg-green-50 font-semibold text-sm px-3 py-2 rounded-full" data-i18n="plan.html">📄 Grocery list (HTML)</button>
           <button onclick="sendGroceryList()" class="border border-green-800 text-green-800 hover:bg-green-50 font-semibold text-sm px-3 py-2 rounded-full" data-i18n="plan.messenger">💬 Sa Messenger</button>
         </div>
-        <button onclick="saveNamedPlan()" class="bg-amber-400 hover:bg-amber-300 text-gray-900 font-bold text-sm px-3 py-2 rounded-full" data-i18n="plan.save">💾 I-save ang plano sa device</button>
+        <button onclick="saveNamedPlan()" class="bg-green-800 hover:bg-green-700 text-amber-50 font-bold text-sm px-3 py-2 rounded-full" data-i18n="plan.save">💾 I-save ang plano sa device</button>
         <p id="plan-save-note" class="text-xs text-gray-400">Auto-saved din habang nag-e-edit. I-save para may kopya ka ng bawat linggo.</p>
         <div id="plan-saved" class="flex flex-col gap-1.5"></div>
         <button onclick="clearPlan()" class="self-start text-sm text-gray-500 hover:text-red-600 underline" data-i18n="plan.clear">Clear week</button>
@@ -1124,6 +1128,10 @@
       <button class="age-btn age-senior" onclick="chooseAge('senior')"><span class="text-2xl">👵</span><span data-i18n="age.senior">60 and over</span></button>
     </div>
     <p class="text-xs text-gray-500 mt-3" data-i18n="age.seniorNote">60 and over: the text gets bigger and the menu simpler.</p>
+    <div class="flex items-center justify-between gap-3 mt-4 pt-3 border-t border-gray-100">
+      <span class="text-xs text-gray-500" data-i18n="age.skipNote">You can set it later in ⚙️ Settings.</span>
+      <button type="button" class="age-skip" onclick="chooseAge(null)" data-i18n="age.skip">Skip for now</button>
+    </div>
   </div>
 </div>
 
@@ -1138,7 +1146,7 @@
     <div class="flex items-center justify-between gap-2 mt-4">
       <button id="tour-back" onclick="tourNext(-1)" class="text-sm text-gray-500 hover:text-gray-800" data-i18n="tour.back">← Back</button>
       <div id="tour-dots" class="tour-dots"></div>
-      <button id="tour-next" onclick="tourNext(1)" class="px-4 py-2 rounded-full text-sm font-semibold bg-green-800 text-amber-50 hover:bg-green-700">Next →</button>
+      <button id="tour-next" onclick="tourNext(1)" class="px-4 py-2 rounded-full text-sm font-semibold bg-green-800 text-amber-50 hover:bg-green-700" data-i18n="tour.next">Next →</button>
     </div>
   </div>
 </div>
@@ -1250,7 +1258,7 @@
       <p class="font-semibold text-green-100 uppercase tracking-wide" data-i18n="contact.title">Contact us</p>
       <p>✉️ <a data-contact-email class="underline decoration-green-500 hover:text-white" href="mailto:jamaigue1@up.edu.ph">jamaigue1@up.edu.ph</a></p>
       <p>📘 Facebook: <a data-contact-fb class="underline decoration-green-500 hover:text-white" target="_blank" rel="noopener" href="https://www.facebook.com/john.maigue.37">John Maigue</a></p>
-      <button onclick="openFeedback()" class="mt-1 px-3 py-1.5 rounded-full bg-amber-400 text-green-950 font-semibold hover:bg-amber-300" data-i18n="contact.feedback">💬 Review or suggestion</button>
+      <button onclick="openFeedback()" class="mt-1 px-3 py-1.5 rounded-full bg-amber-50 text-green-900 font-semibold hover:bg-white" data-i18n="contact.feedback">💬 Review or suggestion</button>
     </div>
     <div class="text-green-300 text-xs">
       <p>Data: DA Price Monitoring (<span data-da-date>latest</span>) · PSA OpenSTAT · Panlasang Pinoy, Kawaling Pinoy and other recipe sites · FNRI Food Composition Table</p>
