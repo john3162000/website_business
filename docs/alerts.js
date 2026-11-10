@@ -111,6 +111,8 @@ function renderAlerts() {
   const perm = "Notification" in window ? Notification.permission : "unsupported";
   document.getElementById("alerts-perm").textContent =
     perm === "granted" ? "Notifications on" : perm === "denied" ? "Notifications blocked: alerts show on the page only" : perm === "unsupported" ? "This browser can't notify: alerts show on the page" : "";
+  // The alerts card shows only when there are alerts; the 🔔 buttons on prices and dishes add them.
+  box.closest(".alerts-card")?.classList.toggle("hidden", !list.length);
   box.innerHTML = list.map((a, i) => {
     const now = a.kind === "commodity" ? prices.get(a.ref) : dishes.get(Number(a.ref));
     const hit = now != null && now < a.below;
@@ -124,7 +126,7 @@ function renderAlerts() {
         <button onclick="removeAlert(${i})" class="text-gray-400 hover:text-red-600 text-sm" aria-label="Remove alert">✕</button>
       </div>
     </div>`;
-  }).join("") || `<p class="text-sm text-gray-400 py-2">No alerts yet. Tap 🔔 on a price below, or “Alert me” on any recipe.</p>`;
+  }).join("") || `<p class="text-sm text-gray-500 py-2">${typeof t === "function" ? t("alerts.none") : "No alerts yet."}</p>`;
 }
 
 function toast(text) {

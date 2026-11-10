@@ -75,8 +75,8 @@
     .plan-dish.picked { border-color: #1D5239; background: #D9E8DD; }
     .plan-dish img, .plan-noimg { width: 2.75rem; height: 2.75rem; border-radius: .5rem; object-fit: cover; flex-shrink: 0; background: #fef3c7; display: flex; align-items: center; justify-content: center; }
     .plan-dish-title { font-size: .8rem; font-weight: 600; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .plan-dish-sub { font-size: .7rem; color: #9ca3af; margin-top: .1rem; }
-    .plan-badge { display: inline-block; margin-left: .25rem; padding: 0 .4rem; border-radius: 9999px; background: #fef3c7; color: #92400e; font-weight: 600; font-size: .65rem; }
+    .plan-dish-sub { font-size: .75rem; color: #5A6170; margin-top: .1rem; }
+    .plan-badge { display: inline-block; margin-left: .25rem; padding: 0 .4rem; border-radius: 9999px; background: #fef3c7; color: #92400e; font-weight: 600; font-size: .75rem; }
     .plan-grid { display: grid; grid-template-columns: 5.5rem repeat(7, minmax(7.5rem, 1fr)); gap: .4rem; min-width: 60rem; }
     .plan-day { font-size: .75rem; font-weight: 700; text-align: center; color: #374151; padding: .25rem 0; }
     .plan-meal { font-size: .7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: .03em; display: flex; align-items: center; }
@@ -98,7 +98,14 @@
     .feed-stat b { font-size: 1.15rem; font-variant-numeric: tabular-nums; }
     html.dark .feed-field { color: var(--tx2); }
     html.dark .feed-field input { background: var(--s1); border-color: var(--line); color: var(--tx); }
-    html.dark .feed-stat { background: var(--s1); }
+    html.dark .feed-stat { background: var(--s2); }
+    .feed-verdict { font-weight: 600; font-size: .95rem; padding: .6rem .9rem; border-radius: .75rem; margin-bottom: .9rem; }
+    .feed-verdict.ok { background: #EFF5F0; color: #1D5239; }
+    .feed-verdict.no { background: #FBEDE8; color: #8A3B22; }
+    html.dark .feed-verdict.ok { background: var(--s2); color: var(--mint); }
+    html.dark .feed-verdict.no { background: var(--s2); color: #F5B8A6; }
+    .plan-start-feed { display: inline-block; margin-top: .5rem; font-size: .85rem; font-weight: 600; color: #1D5239; text-decoration: underline; text-underline-offset: 3px; }
+    html.dark .plan-start-feed { color: var(--mint); }
     html.dark .feed-stat span { color: var(--tx2); }
     /* Printing the feeding plan prints only that card. */
     @media print {
@@ -136,7 +143,7 @@
     .fx-caret { color: #9ca3af; transition: transform .2s; }
     .fx-cat.open .fx-caret { transform: rotate(180deg); }
     .fx-dot { width: .6rem; height: .6rem; border-radius: 9999px; flex-shrink: 0; display: inline-block; }
-    .fx-count { background: #1D5239; color: #fff; border-radius: 9999px; font-size: .65rem; padding: 0 .45rem; line-height: 1.2rem; }
+    .fx-count { background: #1D5239; color: #fff; border-radius: 9999px; font-size: .75rem; padding: 0 .45rem; line-height: 1.2rem; }
     .fx-menu { padding: .4rem .5rem .5rem; border-top: 1px solid #f3f4f6; background: #fcfcfd; animation: fx-drop .18s ease-out; }
     @keyframes fx-drop { from { opacity: 0; transform: translateY(-4px); } }
     .fx-menu input { width: 100%; border: 1px solid #e5e7eb; border-radius: .5rem; padding: .35rem .6rem; font-size: .8rem; margin-bottom: .35rem; }
@@ -146,7 +153,7 @@
     .fx-opt:hover { background: #EFF5F0; }
     .fx-opt.on { background: #D9E8DD; font-weight: 600; color: #163F2E; }
     .fx-check { width: .9rem; color: #1D5239; font-weight: 800; }
-    .fx-uses { font-size: .65rem; color: #9ca3af; white-space: nowrap; }
+    .fx-uses { font-size: .75rem; color: #5A6170; white-space: nowrap; }
     .fx-have { display: flex; align-items: center; gap: .5rem; font-size: .85rem; padding: .3rem .4rem; border-radius: .5rem; animation: fx-drop .2s ease-out; }
     .fx-have:hover { background: #f9fafb; }
     .fx-have button { color: #9ca3af; font-size: .75rem; }
@@ -155,7 +162,7 @@
     .fx-graph { width: 100%; height: 34rem; display: block; cursor: grab; }
     @media (max-width: 640px) { .fx-graph { height: 24rem; } }
     .fx-graph-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 2rem; color: #94a3b8; font-size: .9rem; pointer-events: none; }
-    .fx-legend { padding: .5rem .9rem .7rem; border-top: 1px solid #262b3a; display: flex; flex-wrap: wrap; gap: .3rem .8rem; font-size: .65rem; color: #94a3b8; pointer-events: none; }
+    .fx-legend { padding: .5rem .9rem .7rem; border-top: 1px solid #262b3a; display: flex; flex-wrap: wrap; gap: .3rem .8rem; font-size: .75rem; color: #cbd5e1; pointer-events: none; }
     .fx-legend i { display: inline-block; width: .6rem; height: .6rem; border-radius: 9999px; margin-right: .3rem; vertical-align: -1px; }
     .fx-legend i.ring { background: transparent; border: 2px solid; }
     .fx-legend i.ring.ok { border-color: #4ade80; } .fx-legend i.ring.part { border-color: #fbbf24; }
@@ -224,7 +231,7 @@
     .kitchen-check { position: absolute; top: .3rem; right: .3rem; width: 1.6rem; height: 1.6rem; border-radius: 9999px; display: grid; place-items: center; font-weight: 800; font-size: .85rem; background: #1F6B47; color: #fff; box-shadow: 0 0 0 2px #fff; }
     .kitchen-item:not(.on) .kitchen-check { background: #fff; color: #6B7F70; }
     .kitchen-label { font-weight: 700; font-size: .85rem; margin-top: .35rem; color: #163F2E; }
-    .kitchen-uses { font-size: .65rem; color: #8A6A12; font-weight: 600; }
+    .kitchen-uses { font-size: .75rem; color: #8A6A12; font-weight: 600; }
     .kitchen-fact { margin-top: .9rem; background: #FBF3DC; border: 1px solid #EBD9A6; border-radius: .9rem; padding: .7rem .9rem; font-size: .82rem; display: flex; flex-direction: column; gap: .4rem; color: #3D3420; }
     .kitchen-foot { background: #F8F4EA; border-top: 1px solid #E7DFCB; position: sticky; bottom: 0; }
     .kitchen-credits { font-size: .6rem; color: #8B8577; line-height: 1.35; }
@@ -247,8 +254,8 @@
     .taste-pick { display: flex; flex-direction: column; text-align: left; gap: .15rem; }
     .taste-pick img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: .75rem; margin-bottom: .2rem; }
     .taste-pick-name { font-size: .8rem; font-weight: 600; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .taste-pick-why { font-size: .68rem; color: #1F6B47; font-weight: 600; }
-    .taste-pick-price { font-size: .68rem; color: #8A6A12; font-weight: 600; }
+    .taste-pick-why { font-size: .75rem; color: #1F6B47; font-weight: 600; }
+    .taste-pick-price { font-size: .75rem; color: #8A6A12; font-weight: 600; }
     html.dark .taste-track { background: var(--s2); }
     html.dark .taste-bar.pos, html.dark .taste-pick-why { color: var(--mint); }
     html.dark .taste-bar.pos { background: var(--mint); }
@@ -339,6 +346,7 @@
     html.dark .plan-dish { background: var(--s1); }
     html.dark .plan-dish-sub { color: var(--tx3); }
     html.dark .plan-badge { background: #3A2E10; color: var(--mango); }
+    html.dark .occ-cost, html.dark .taste-pick-price, html.dark .kitchen-uses { color: var(--mango); }
     html.dark .rc-name { color: var(--tx2); } html.dark .rc-day, html.dark .rc-total { border-color: var(--line); }
     html.dark .bar { background: var(--line); } html.dark .bar-fill { background: var(--mint); }
     html.dark .modal-bg { background: rgba(0, 0, 0, .7); }
@@ -410,7 +418,7 @@
     html.dark .app-toast { background: #7CE0A3; color: #0B1712; }
 
     .share-dialog { width: min(32rem, calc(100vw - 2rem)); }
-    .meal-tag { font-size: .62rem; font-weight: 700; padding: 0 .45rem; border-radius: 9999px; line-height: 1.1rem; }
+    .meal-tag { font-size: .75rem; font-weight: 700; padding: 0 .45rem; border-radius: 9999px; line-height: 1.1rem; }
     .meal-almusal { background: #F6EBCD; color: #855F0E; }
     .meal-ulam { background: #D9E8DD; color: #163F2E; }
     .meal-meryenda { background: #F5DCD3; color: #8A3B22; }
@@ -436,6 +444,29 @@
     /* Okasyon (holiday picks) in Browse */
     .occ-box { background: linear-gradient(135deg, #163F2E, #1F5A3D); color: #F8F4EA; border-radius: 1.25rem; padding: 1.1rem 1.1rem 1rem; box-shadow: 0 10px 30px rgba(22, 63, 46, .25); }
     .occ-box:empty { display: none; }
+    .age-skip { min-height: 2.75rem; padding: 0 1rem; border-radius: 9999px; border: 1px solid #E7DFCB; font-size: .875rem; font-weight: 600; color: #1D5239; white-space: nowrap; }
+    .age-skip:hover { background: #EFF5F0; }
+    html.dark .age-skip { border-color: var(--line); color: var(--mint); }
+    html.dark .age-skip:hover { background: var(--s2); }
+    .occ-box.occ-folded { padding: .7rem .9rem; box-shadow: none; }
+    .occ-folded .occ-icon { font-size: 1.4rem; }
+    .occ-folded .occ-title { font-size: 1.05rem; }
+    .occ-toggle { margin-left: auto; flex-shrink: 0; min-height: 2.5rem; padding: 0 .9rem; border-radius: 9999px; border: 1px solid rgba(255, 255, 255, .3); color: #F8F4EA; font-size: .8125rem; font-weight: 600; white-space: nowrap; }
+    .occ-toggle:hover { background: rgba(255, 255, 255, .1); }
+    .occ-chips .occ-more { font-weight: 700; }
+    /* A photo that failed to load (imgFallback in app.js) */
+    .img-fallback { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; min-height: 4rem; background: #F6EBCD; font-size: 2.5rem; }
+    html.dark .img-fallback { background: #1C3326; }
+    html.dark .modal-photo { background: #1C3326; }
+    /* Phones: Browse cards as compact rows (photo left), so the list isn't 18,000 px tall */
+    @media (max-width: 639px) {
+      #browse-grid { gap: .75rem; }
+      #browse-grid .recipe-card { flex-direction: row; }
+      #browse-grid .recipe-card > .relative { width: 7.5rem; height: auto; min-height: 8.5rem; flex-shrink: 0; }
+      #browse-grid .recipe-card > .p-4 { padding: .75rem .85rem; gap: .35rem; }
+      #browse-grid .recipe-card .absolute.top-2 { top: .35rem; left: .35rem; right: .35rem; white-space: normal; text-align: center; }
+      #browse-grid .img-fallback { font-size: 2rem; }
+    }
     .occ-head { display: flex; align-items: center; gap: .75rem; }
     .occ-icon { font-size: 2.1rem; line-height: 1; }
     .occ-kicker { font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #E6C265; }
@@ -449,7 +480,7 @@
     .occ-card:hover { transform: translateY(-2px); }
     .occ-card img { width: 100%; height: 6.5rem; object-fit: cover; }
     .occ-name { font-size: .8rem; font-weight: 600; line-height: 1.2; padding: .45rem .55rem 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .occ-cost { font-size: .72rem; color: #8A6A12; font-weight: 700; padding: .25rem .55rem .55rem; margin-top: auto; }
+    .occ-cost { font-size: .8125rem; color: #855F0E; font-weight: 700; padding: .25rem .55rem .55rem; margin-top: auto; }
     html.dark .occ-box { background: linear-gradient(135deg, #16291F, #1E3A2B); } html.dark .occ-card { background: #16291F; color: #E6F4EC; }
     /* Settings dialog */
     .settings-card { background: #FBF8F0; box-shadow: 0 20px 50px rgba(0, 0, 0, .3); }
@@ -611,25 +642,25 @@
   <!-- Hero -->
   <div class="hero-band text-white px-4 pt-14 pb-10">
     <div class="max-w-3xl mx-auto text-center">
-      <p class="text-xs text-green-200 tracking-wide mb-4">DA market prices · updated <span data-da-date>…</span></p>
+      <p class="text-xs text-green-200 tracking-wide mb-4"><span data-i18n="home.updated">DA market prices · updated</span> <span data-da-date>…</span></p>
       <h1 class="text-4xl sm:text-6xl font-semibold leading-[1.05] mb-4 text-amber-50">
         Masarap, masustansya, <span class="text-amber-300 italic">sulit.</span>
       </h1>
       <p class="text-base sm:text-lg text-green-100/90 mb-7 max-w-xl mx-auto">
-        Filipino dishes ranked by nutrition per peso, from today's palengke prices. Plan the week, use what you have, spend less.
+        <span data-i18n="home.lead">Filipino dishes ranked by nutrition per peso, from today's palengke prices. Plan the week, use what you have, spend less.</span>
       </p>
       <form class="hero-search max-w-lg mx-auto" onsubmit="event.preventDefault(); heroSearch(this.q.value)">
         <input name="q" type="search" placeholder="Anong ulam ngayon?" aria-label="Search dishes">
-        <button class="bg-green-800 hover:bg-green-700 text-amber-50 font-semibold text-sm px-5 py-2.5 rounded-full transition-colors">Search</button>
+        <button class="bg-green-800 hover:bg-green-700 text-amber-50 font-semibold text-sm px-5 py-2.5 rounded-full transition-colors" data-i18n="home.search">Search</button>
       </form>
       <div class="flex flex-wrap justify-center gap-2 mt-4 text-sm">
         <button onclick="showSection('finder')" class="px-4 py-1.5 rounded-full border border-white/25 hover:bg-white/10 transition-colors">Anong lulutuin? →</button>
-        <button onclick="showSection('planner')" class="px-4 py-1.5 rounded-full border border-white/25 hover:bg-white/10 transition-colors">Plan my week →</button>
+        <button onclick="showSection('planner')" class="px-4 py-1.5 rounded-full border border-white/25 hover:bg-white/10 transition-colors" data-i18n="home.plan">Plan my week →</button>
       </div>
       <div class="grid grid-cols-3 gap-4 max-w-md mx-auto mt-10 text-xs text-green-200">
-        <div class="hero-stat"><b id="stat-recipes">—</b>recipes</div>
-        <div class="hero-stat"><b id="stat-foods">—</b>FNRI foods</div>
-        <div class="hero-stat"><b id="stat-commodities">—</b>market prices</div>
+        <div class="hero-stat"><b id="stat-recipes">—</b><span data-i18n="home.statRecipes">recipes</span></div>
+        <div class="hero-stat"><b id="stat-foods">—</b><span data-i18n="home.statFoods">FNRI foods</span></div>
+        <div class="hero-stat"><b id="stat-commodities">—</b><span data-i18n="home.statPrices">market prices</span></div>
       </div>
     </div>
   </div>
@@ -641,32 +672,32 @@
       <p class="text-sm text-gray-500 mt-1" id="weather-sub">Checking the weather…</p>
       <p class="text-sm text-gray-500" id="weather-desc"></p>
       <div class="flex flex-wrap items-center gap-2 mt-4">
-        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-16">Weather</span>
-        <button class="wx-btn" data-mode="auto" onclick="setWeatherMode('auto')">📍 Auto</button>
-        <button class="wx-btn" data-mode="sunny" onclick="setWeatherMode('sunny')">☀️ Sunny</button>
-        <button class="wx-btn" data-mode="rainy" onclick="setWeatherMode('rainy')">🌧️ Rainy</button>
-        <button class="wx-btn" data-mode="cool" onclick="setWeatherMode('cool')">🌥️ Cool</button>
+        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-16" data-i18n="wx.label">Weather</span>
+        <button class="wx-btn" data-mode="auto" onclick="setWeatherMode('auto')" data-i18n="wx.auto">📍 Auto</button>
+        <button class="wx-btn" data-mode="sunny" onclick="setWeatherMode('sunny')" data-i18n="wx.sunny">☀️ Sunny</button>
+        <button class="wx-btn" data-mode="rainy" onclick="setWeatherMode('rainy')" data-i18n="wx.rainy">🌧️ Rainy</button>
+        <button class="wx-btn" data-mode="cool" onclick="setWeatherMode('cool')" data-i18n="wx.cool">🌥️ Cool</button>
       </div>
       <div class="flex flex-wrap items-center gap-2 mt-2">
-        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-16">Sort</span>
-        <button class="wx-btn" data-sort="value" onclick="setPickSort('value')">Best value</button>
-        <button class="wx-btn" data-sort="cheap" onclick="setPickSort('cheap')">Cheapest</button>
-        <button class="wx-btn" data-sort="protein" onclick="setPickSort('protein')">Most protein</button>
-        <button class="wx-btn" data-sort="kcal" onclick="setPickSort('kcal')">Fewest calories</button>
+        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide w-16" data-i18n="wx.sort">Sort</span>
+        <button class="wx-btn" data-sort="value" onclick="setPickSort('value')" data-i18n="wx.sort.value">Best value</button>
+        <button class="wx-btn" data-sort="cheap" onclick="setPickSort('cheap')" data-i18n="wx.sort.cheap">Cheapest</button>
+        <button class="wx-btn" data-sort="protein" onclick="setPickSort('protein')" data-i18n="wx.sort.protein">Most protein</button>
+        <button class="wx-btn" data-sort="kcal" onclick="setPickSort('kcal')" data-i18n="wx.sort.kcal">Fewest calories</button>
       </div>
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5" id="weather-grid"><div class="skel"><i style="height:11rem;border-radius:0"></i><div style="padding:1rem"><i style="height:.9rem;width:80%"></i><i style="height:.7rem;width:45%;margin-top:.6rem"></i><i style="height:1.3rem;width:60%;margin-top:1rem;border-radius:9999px"></i></div></div><div class="skel"><i style="height:11rem;border-radius:0"></i><div style="padding:1rem"><i style="height:.9rem;width:80%"></i><i style="height:.7rem;width:45%;margin-top:.6rem"></i><i style="height:1.3rem;width:60%;margin-top:1rem;border-radius:9999px"></i></div></div><div class="skel"><i style="height:11rem;border-radius:0"></i><div style="padding:1rem"><i style="height:.9rem;width:80%"></i><i style="height:.7rem;width:45%;margin-top:.6rem"></i><i style="height:1.3rem;width:60%;margin-top:1rem;border-radius:9999px"></i></div></div><div class="skel"><i style="height:11rem;border-radius:0"></i><div style="padding:1rem"><i style="height:.9rem;width:80%"></i><i style="height:.7rem;width:45%;margin-top:.6rem"></i><i style="height:1.3rem;width:60%;margin-top:1rem;border-radius:9999px"></i></div></div></div>
-    <p class="text-xs text-gray-400 mt-3">Weather by <a href="https://open-meteo.com/" target="_blank" rel="noopener" class="underline">Open-Meteo</a>. Your location is rounded to about 1 km and only used to look up the weather.</p>
+    <p class="text-xs text-gray-500 mt-3"><span data-i18n="wx.by">Weather by</span> <a href="https://open-meteo.com/" target="_blank" rel="noopener" class="underline">Open-Meteo</a>. <span data-i18n="wx.privacy">Your location is rounded to about 1 km and only used to look up the weather.</span></p>
   </div>
 
   <!-- Top Recipes -->
   <div class="max-w-6xl mx-auto px-4 py-12">
     <div class="flex items-center justify-between mb-6">
       <div>
-        <h2 class="text-2xl font-bold">Top Value Dishes Today</h2>
-        <p class="text-sm text-gray-500 mt-1">Ranked by Sulit Score (nutrition ÷ cost per serving) · <span data-da-date>latest</span> DA prices</p>
+        <h2 class="text-2xl font-bold" data-i18n="home.topTitle">Top Value Dishes Today</h2>
+        <p class="text-sm text-gray-500 mt-1"><span data-i18n="home.topSub">Ranked by Sulit Score (nutrition ÷ cost per serving) ·</span> <span data-da-date>latest</span> <span data-i18n="home.daPrices">DA prices</span></p>
       </div>
-      <button onclick="showSection('browse')" class="text-green-700 hover:underline text-sm font-medium">View all →</button>
+      <button onclick="showSection('browse')" class="text-green-700 hover:underline text-sm font-medium" data-i18n="home.viewAll">View all →</button>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5" id="top-recipes-grid"><div class="skel"><i style="height:11rem;border-radius:0"></i><div style="padding:1rem"><i style="height:.9rem;width:80%"></i><i style="height:.7rem;width:45%;margin-top:.6rem"></i><i style="height:1.3rem;width:60%;margin-top:1rem;border-radius:9999px"></i></div></div><div class="skel"><i style="height:11rem;border-radius:0"></i><div style="padding:1rem"><i style="height:.9rem;width:80%"></i><i style="height:.7rem;width:45%;margin-top:.6rem"></i><i style="height:1.3rem;width:60%;margin-top:1rem;border-radius:9999px"></i></div></div><div class="skel"><i style="height:11rem;border-radius:0"></i><div style="padding:1rem"><i style="height:.9rem;width:80%"></i><i style="height:.7rem;width:45%;margin-top:.6rem"></i><i style="height:1.3rem;width:60%;margin-top:1rem;border-radius:9999px"></i></div></div><div class="skel"><i style="height:11rem;border-radius:0"></i><div style="padding:1rem"><i style="height:.9rem;width:80%"></i><i style="height:.7rem;width:45%;margin-top:.6rem"></i><i style="height:1.3rem;width:60%;margin-top:1rem;border-radius:9999px"></i></div></div></div>
@@ -675,22 +706,22 @@
   <!-- How it works -->
   <div class="bg-white border-t border-amber-100 py-12">
     <div class="max-w-5xl mx-auto px-4">
-      <h2 class="text-2xl font-bold text-center mb-10">How It Works</h2>
+      <h2 class="text-2xl font-bold text-center mb-10" data-i18n="how.title">How It Works</h2>
       <div class="grid sm:grid-cols-3 gap-8 text-center">
         <div class="flex flex-col items-center gap-3 p-6 rounded-2xl bg-green-50">
           <span class="text-5xl">📄</span>
-          <h3 class="font-bold text-lg">DA Price Index</h3>
-          <p class="text-gray-500 text-sm leading-relaxed">Daily prevailing prices from the Department of Agriculture for Metro Manila markets — vegetables, meat, fish, rice, and more. Updated automatically every day.</p>
+          <h3 class="font-bold text-lg" data-i18n="how.da">DA Price Index</h3>
+          <p class="text-gray-500 text-sm leading-relaxed" data-i18n="how.daText">Daily prevailing prices from the Department of Agriculture for Metro Manila markets — vegetables, meat, fish, rice, and more. Updated automatically every day.</p>
         </div>
         <div class="flex flex-col items-center gap-3 p-6 rounded-2xl bg-amber-50">
           <span class="text-5xl">🥘</span>
-          <h3 class="font-bold text-lg">Filipino Recipe Sites</h3>
-          <p class="text-gray-500 text-sm leading-relaxed">Dishes from Panlasang Pinoy, Kawaling Pinoy and other Filipino recipe sites: ingredients, servings and cook time, with a link to each recipe for the steps. Ingredients are matched to DA commodity prices.</p>
+          <h3 class="font-bold text-lg" data-i18n="how.recipes">Filipino Recipe Sites</h3>
+          <p class="text-gray-500 text-sm leading-relaxed" data-i18n="how.recipesText">Dishes from Panlasang Pinoy, Kawaling Pinoy and other Filipino recipe sites: ingredients, servings and cook time, with a link to each recipe for the steps. Ingredients are matched to DA commodity prices.</p>
         </div>
         <div class="flex flex-col items-center gap-3 p-6 rounded-2xl bg-blue-50">
           <span class="text-5xl">📊</span>
-          <h3 class="font-bold text-lg">FNRI Nutrition Data</h3>
-          <p class="text-gray-500 text-sm leading-relaxed">Nutritional values from the FNRI Food Composition Table — the Philippine standard. Calories, protein, vitamins, minerals per 100g for each ingredient.</p>
+          <h3 class="font-bold text-lg" data-i18n="how.fnri">FNRI Nutrition Data</h3>
+          <p class="text-gray-500 text-sm leading-relaxed" data-i18n="how.fnriText">Nutritional values from the FNRI Food Composition Table — the Philippine standard. Calories, protein, vitamins, minerals per 100g for each ingredient.</p>
         </div>
       </div>
     </div>
@@ -703,7 +734,7 @@
   <div class="max-w-6xl mx-auto px-4 py-10 w-full">
     <h1 class="text-3xl font-bold mb-1" data-i18n="browse.title">Browse Filipino Recipes</h1>
     <div class="mb-6">
-      <p class="text-gray-500 text-sm">Filter and sort by nutrition, price, or specific produce. Prices based on <span data-da-date>the latest</span> DA data.</p>
+      <p class="text-gray-500 text-sm"><span data-i18n="browse.sub">Filter and sort by nutrition, price, or specific produce. Prices based on</span> <span data-da-date>the latest</span><span data-i18n="browse.subEnd"> DA data.</span></p>
       <p id="hidden-note" class="hidden text-gray-400 text-xs mt-1"></p>
     </div>
 
@@ -727,27 +758,27 @@
         <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1" data-i18n="browse.sort">Sort by</label>
         <select id="sort-select" onchange="filterRecipes()" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
           <option value="forYou" hidden disabled>🧠 Para sa'yo (panlasa mo)</option>
-          <option value="valueScore">Best Value (Sulit Score)</option>
-          <option value="nutritionScore">Most Nutritious</option>
-          <option value="costPerServing">Cheapest per Serving</option>
-          <option value="protein">Highest Protein</option>
-          <option value="calories">Highest Calories</option>
-          <option value="caloriesAsc">Lowest Calories</option>
-          <option value="proteinPerPeso">Most Protein per ₱</option>
-          <option value="proteinPer100kcal">Most Protein per Calorie</option>
+          <option value="valueScore" data-i18n="sort.valueScore">Best Value (Sulit Score)</option>
+          <option value="nutritionScore" data-i18n="sort.nutritionScore">Most Nutritious</option>
+          <option value="costPerServing" data-i18n="sort.costPerServing">Cheapest per Serving</option>
+          <option value="protein" data-i18n="sort.protein">Highest Protein</option>
+          <option value="calories" data-i18n="sort.calories">Highest Calories</option>
+          <option value="caloriesAsc" data-i18n="sort.caloriesAsc">Lowest Calories</option>
+          <option value="proteinPerPeso" data-i18n="sort.proteinPerPeso">Most Protein per ₱</option>
+          <option value="proteinPer100kcal" data-i18n="sort.proteinPer100kcal">Most Protein per Calorie</option>
         </select>
       </div>
       <div>
         <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1" data-i18n="browse.minProtein">Min Protein (g/serving)</label>
-        <input type="number" id="min-protein" placeholder="e.g. 15" oninput="filterRecipes()" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"/>
+        <input type="number" id="min-protein" placeholder="e.g. 15" data-i18n-ph="ph.eg15" oninput="filterRecipes()" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"/>
       </div>
       <div>
         <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1" data-i18n="browse.maxCost">Max Cost per Serving (₱)</label>
-        <input type="number" id="max-cost" placeholder="e.g. 60" oninput="filterRecipes()" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"/>
+        <input type="number" id="max-cost" placeholder="e.g. 60" data-i18n-ph="ph.eg60" oninput="filterRecipes()" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"/>
       </div>
       <div>
         <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-1" data-i18n="browse.produce">Contains Produce</label>
-        <input type="text" id="produce-filter" placeholder="e.g. kangkong, pork" oninput="filterRecipes()" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"/>
+        <input type="text" id="produce-filter" placeholder="e.g. kangkong, pork" data-i18n-ph="ph.produce" oninput="filterRecipes()" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"/>
       </div>
       <div class="sm:col-span-2 lg:col-span-4 flex flex-wrap items-end gap-4 border-t border-gray-100 pt-4">
         <div>
@@ -759,11 +790,11 @@
           </div>
         </div>
         <div class="flex flex-wrap gap-2">
-          <button onclick="setPreset('light')" class="bg-white border border-gray-200 text-gray-600 text-xs px-3 py-1.5 rounded-full font-medium hover:bg-green-50">Light (≤ 400 kcal)</button>
-          <button onclick="setPreset('regular')" class="bg-white border border-gray-200 text-gray-600 text-xs px-3 py-1.5 rounded-full font-medium hover:bg-green-50">Regular (400–700)</button>
-          <button onclick="setPreset('hearty')" class="bg-white border border-gray-200 text-gray-600 text-xs px-3 py-1.5 rounded-full font-medium hover:bg-green-50">Hearty (700+)</button>
-          <button onclick="rankByProteinPerKcal()" class="bg-green-700 hover:bg-green-600 text-white text-xs px-3 py-1.5 rounded-full font-medium">💪 Rank by protein per calorie</button>
-          <button onclick="setPreset('protein')" class="bg-white border border-gray-200 text-gray-600 text-xs px-3 py-1.5 rounded-full font-medium hover:bg-green-50">High protein (25 g+)</button>
+          <button onclick="setPreset('light')" class="bg-white border border-gray-200 text-gray-600 text-xs px-3 py-1.5 rounded-full font-medium hover:bg-green-50" data-i18n="preset.light">Light (≤ 400 kcal)</button>
+          <button onclick="setPreset('regular')" class="bg-white border border-gray-200 text-gray-600 text-xs px-3 py-1.5 rounded-full font-medium hover:bg-green-50" data-i18n="preset.regular">Regular (400–700)</button>
+          <button onclick="setPreset('hearty')" class="bg-white border border-gray-200 text-gray-600 text-xs px-3 py-1.5 rounded-full font-medium hover:bg-green-50" data-i18n="preset.hearty">Hearty (700+)</button>
+          <button onclick="rankByProteinPerKcal()" class="bg-green-700 hover:bg-green-600 text-white text-xs px-3 py-1.5 rounded-full font-medium" data-i18n="preset.ppk">💪 Rank by protein per calorie</button>
+          <button onclick="setPreset('protein')" class="bg-white border border-gray-200 text-gray-600 text-xs px-3 py-1.5 rounded-full font-medium hover:bg-green-50" data-i18n="preset.protein">High protein (25 g+)</button>
           <button onclick="setPreset('clear')" class="text-xs text-gray-400 hover:text-gray-600 px-2 py-1.5" data-i18n="browse.clear">Clear</button>
         </div>
       </div>
@@ -787,25 +818,25 @@
 <section id="section-prices" class="hidden flex-col flex-1">
   <div class="max-w-6xl mx-auto px-4 py-10 w-full">
     <div class="flex items-center justify-between mb-2">
-      <h1 class="text-3xl font-bold">DA Daily Price Monitoring</h1>
+      <h1 class="text-3xl font-bold" data-i18n="prices.title">DA Daily Price Monitoring</h1>
       <span class="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full"><span data-da-date>…</span></span>
     </div>
-    <p class="text-sm text-gray-500 mb-6">Source: Department of Agriculture Daily Price Index, NCR prevailing retail prices · updated automatically every day</p>
+    <p class="text-sm text-gray-500 mb-6" data-i18n="prices.source">Source: Department of Agriculture Daily Price Index, NCR prevailing retail prices · updated automatically every day</p>
 
-    <div class="bg-white rounded-2xl shadow p-4 mb-6">
+    <div class="alerts-card hidden bg-white rounded-2xl shadow p-4 mb-6">
       <div class="flex items-baseline justify-between gap-2 flex-wrap">
-        <h2 class="text-lg font-bold">🔔 Your price alerts</h2>
+        <h2 class="text-lg font-bold" data-i18n="prices.alerts">🔔 Your price alerts</h2>
         <span id="alerts-perm" class="text-xs text-gray-500"></span>
       </div>
       <div id="alerts-list" class="divide-y divide-gray-100"></div>
-      <p class="text-xs text-gray-400 mt-1">Saved on this device. Checked whenever you open the site and every hour while it's open.</p>
+      <p class="text-xs text-gray-500 mt-1" data-i18n="prices.alertsNote">Saved on this device. Checked whenever you open the site and every hour while it's open.</p>
     </div>
 
     <div class="flex flex-wrap items-center gap-2 mb-5">
-      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Compare with</span>
-      <button class="wx-btn" data-period="week" onclick="setPricePeriod('week')">Last week</button>
-      <button class="wx-btn" data-period="twoWeeks" onclick="setPricePeriod('twoWeeks')">2 weeks ago</button>
-      <button class="wx-btn on" data-period="month" onclick="setPricePeriod('month')">Last month</button>
+      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide" data-i18n="prices.compare">Compare with</span>
+      <button class="wx-btn" data-period="week" onclick="setPricePeriod('week')" data-i18n="prices.period.week">Last week</button>
+      <button class="wx-btn" data-period="twoWeeks" onclick="setPricePeriod('twoWeeks')" data-i18n="prices.period.twoWeeks">2 weeks ago</button>
+      <button class="wx-btn on" data-period="month" onclick="setPricePeriod('month')" data-i18n="prices.period.month">Last month</button>
     </div>
 
     <!-- Usually cheap this month (PSA monthly prices since 2018, pricecal.js) -->
@@ -817,36 +848,36 @@
     <!-- Dishes whose cost moved since the chosen period -->
     <div class="mb-8">
       <div class="flex items-baseline justify-between mb-3 flex-wrap gap-2">
-        <h2 class="text-xl font-bold">Ulam whose cost changed · <span data-period-label>1 month</span></h2>
+        <h2 class="text-xl font-bold"><span data-i18n="prices.movers">Ulam whose cost changed</span> · <span data-period-label>1 month</span></h2>
         <span id="movers-summary" class="text-xs text-gray-500">Loading…</span>
       </div>
       <div class="grid md:grid-cols-2 gap-4">
         <div class="bg-white rounded-2xl shadow p-4 min-w-0">
-          <h3 class="font-semibold price-up mb-2">▲ Mas mahal na <span class="text-gray-400 font-normal text-sm">(pricier)</span></h3>
+          <h3 class="font-semibold price-up mb-2">▲ Mas mahal na <span class="text-gray-500 font-normal text-sm" data-i18n="prices.pricier">(pricier)</span></h3>
           <div id="movers-rose" class="space-y-1 text-sm"></div>
         </div>
         <div class="bg-white rounded-2xl shadow p-4 min-w-0">
-          <h3 class="font-semibold price-down mb-2">▼ Mas mura na <span class="text-gray-400 font-normal text-sm">(cheaper)</span></h3>
+          <h3 class="font-semibold price-down mb-2">▼ Mas mura na <span class="text-gray-500 font-normal text-sm" data-i18n="prices.cheaper">(cheaper)</span></h3>
           <div id="movers-fell" class="space-y-1 text-sm"></div>
         </div>
       </div>
-      <p class="text-xs text-gray-400 mt-2">Cost per serving from ingredients priced on both dates. Only DA prices change day to day; SM and DTI reference prices are fixed.</p>
+      <p class="text-xs text-gray-500 mt-2" data-i18n="prices.moversNote">Cost per serving from ingredients priced on both dates. Only DA prices change day to day; SM and DTI reference prices are fixed.</p>
     </div>
 
-    <h2 class="text-xl font-bold mb-3">Commodity prices</h2>
+    <h2 class="text-xl font-bold mb-3" data-i18n="prices.table">Commodity prices</h2>
 
     <div class="flex gap-2 mb-5 flex-wrap">
-      <button onclick="filterPrices('all')" id="cat-all" class="price-cat-btn bg-green-700 text-white text-xs px-4 py-1.5 rounded-full font-medium">All</button>
-      <button onclick="filterPrices('vegetables')" id="cat-vegetables" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50">Vegetables</button>
-      <button onclick="filterPrices('fish')" id="cat-fish" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50">Fish & Seafood</button>
-      <button onclick="filterPrices('meat')" id="cat-meat" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50">Meat & Poultry</button>
-      <button onclick="filterPrices('staple')" id="cat-staple" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50">Rice & Staples</button>
-      <button onclick="filterPrices('fruits')" id="cat-fruits" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50">Fruits</button>
-      <button onclick="filterPrices('condiments')" id="cat-condiments" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50">Sugar, Salt &amp; Oil</button>
+      <button onclick="filterPrices('all')" id="cat-all" class="price-cat-btn bg-green-700 text-white text-xs px-4 py-1.5 rounded-full font-medium" data-i18n="prices.cat.all">All</button>
+      <button onclick="filterPrices('vegetables')" id="cat-vegetables" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50" data-i18n="prices.cat.vegetables">Vegetables</button>
+      <button onclick="filterPrices('fish')" id="cat-fish" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50" data-i18n="prices.cat.fish">Fish & Seafood</button>
+      <button onclick="filterPrices('meat')" id="cat-meat" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50" data-i18n="prices.cat.meat">Meat & Poultry</button>
+      <button onclick="filterPrices('staple')" id="cat-staple" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50" data-i18n="prices.cat.staple">Rice & Staples</button>
+      <button onclick="filterPrices('fruits')" id="cat-fruits" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50" data-i18n="prices.cat.fruits">Fruits</button>
+      <button onclick="filterPrices('condiments')" id="cat-condiments" class="price-cat-btn bg-white border text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium hover:bg-green-50" data-i18n="prices.cat.condiments">Sugar, Salt &amp; Oil</button>
       <select id="price-sort" onchange="renderPrices(currentPriceCat)" class="ml-auto border border-gray-200 rounded-full px-3 py-1.5 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500">
-        <option value="name">Sort: A–Z</option>
-        <option value="up">Biggest increase (chosen period)</option>
-        <option value="down">Biggest drop (chosen period)</option>
+        <option value="name" data-i18n="prices.sort.name">Sort: A–Z</option>
+        <option value="up" data-i18n="prices.sort.up">Biggest increase (chosen period)</option>
+        <option value="down" data-i18n="prices.sort.down">Biggest drop (chosen period)</option>
       </select>
     </div>
 
@@ -857,16 +888,16 @@
         <table class="w-full text-sm">
           <thead class="bg-green-700 text-white">
             <tr>
-              <th class="text-left px-5 py-3 font-semibold">Commodity</th>
-              <th class="text-left px-3 py-3 font-semibold hidden sm:table-cell">Local Name</th>
-              <th class="text-left px-3 py-3 font-semibold">Unit</th>
-              <th class="text-right px-3 py-3 font-semibold hidden lg:table-cell">30-day Low (₱)</th>
-              <th class="text-right px-3 py-3 font-semibold hidden lg:table-cell">30-day High (₱)</th>
-              <th class="text-right px-5 py-3 font-semibold">Latest (₱)</th>
+              <th class="text-left px-5 py-3 font-semibold" data-i18n="th.commodity">Commodity</th>
+              <th class="text-left px-3 py-3 font-semibold hidden sm:table-cell" data-i18n="th.local">Local Name</th>
+              <th class="text-left px-3 py-3 font-semibold" data-i18n="th.unit">Unit</th>
+              <th class="text-right px-3 py-3 font-semibold hidden lg:table-cell" data-i18n="th.low">30-day Low (₱)</th>
+              <th class="text-right px-3 py-3 font-semibold hidden lg:table-cell" data-i18n="th.high">30-day High (₱)</th>
+              <th class="text-right px-5 py-3 font-semibold" data-i18n="th.latest">Latest (₱)</th>
               <th class="text-right px-3 py-3 font-semibold whitespace-nowrap">vs 1 wk</th>
               <th class="text-right px-3 py-3 font-semibold whitespace-nowrap">vs 2 wks</th>
               <th class="text-right px-3 py-3 font-semibold whitespace-nowrap">vs 1 mo</th>
-              <th class="text-center px-3 py-3 font-semibold hidden md:table-cell">Trend</th>
+              <th class="text-center px-3 py-3 font-semibold hidden md:table-cell" data-i18n="th.trend">Trend</th>
               <th class="px-2 py-3"><span class="sr-only">Alert</span></th>
             </tr>
           </thead>
@@ -874,15 +905,15 @@
         </table>
       </div>
     </div>
-    <p class="text-xs text-gray-400 mt-3">* Prevailing retail prices in Metro Manila markets, from the DA Daily Price Index. Low and high are the range over the last 30 days. The change column compares the latest price with the price about a month earlier (the date in its heading).</p>
+    <p class="text-xs text-gray-500 mt-3" data-i18n="prices.footnote">* Prevailing retail prices in Metro Manila markets, from the DA Daily Price Index. Low and high are the range over the last 30 days. The change column compares the latest price with the price about a month earlier (the date in its heading).</p>
   </div>
 </section>
 
 <!-- ═══════════════════════════════════ MY DISH ═══════════════════════════════════ -->
 <section id="section-mydish" class="hidden flex-col flex-1">
   <div class="max-w-6xl mx-auto px-4 py-10 w-full">
-    <h1 class="text-3xl font-bold mb-1">My Dish</h1>
-    <p class="text-gray-500 mb-6 text-sm">Build your own dish, or tap “Customize this dish” on any recipe to change its ingredients. See its cost per serving, nutrition and how its price moved. Dishes are saved on this device only.</p>
+    <h1 class="text-3xl font-bold mb-1" data-i18n="mydish.title">My Dish</h1>
+    <p class="text-gray-500 mb-6 text-sm" data-i18n="mydish.sub">Build your own dish, or tap “Customize this dish” on any recipe to change its ingredients. See its cost per serving, nutrition and how its price moved. Dishes are saved on this device only.</p>
     <div id="mydish-list" class="mb-8"></div>
     <div id="mydish-editor"></div>
   </div>
@@ -894,7 +925,7 @@
 <section id="section-planner" class="hidden flex-col flex-1">
   <div class="max-w-7xl mx-auto px-4 py-10 w-full">
     <h1 class="text-3xl font-bold mb-1" data-i18n="planner.title">Weekly Planner</h1>
-    <p class="text-gray-500 mb-6 text-sm">Plan a week of almusal, tanghalian, meryenda and hapunan, and see what it costs: per dish, or as a shopping list per ingredient. Saved on this device only.</p>
+    <p class="text-gray-500 mb-6 text-sm" data-i18n="planner.sub">Plan a week of almusal, tanghalian, meryenda and hapunan, and see what it costs: per dish, or as a shopping list per ingredient. Saved on this device only.</p>
     <div class="plan-start" aria-labelledby="plan-start-title">
       <b id="plan-start-title" data-i18n="plan.start">Where to start?</b>
       <ol>
@@ -902,6 +933,7 @@
         <li><span class="ps-n" aria-hidden="true">2</span><button type="button" onclick="randomizeWeek(); planStartGrid()" data-i18n="plan.start2">or tap 🎲 Random week</button></li>
         <li><span class="ps-n" aria-hidden="true">3</span><span data-i18n="plan.start3">Swap what you don't like, then check the receipt</span></li>
       </ol>
+      <a href="#feeding" class="plan-start-feed" onclick="event.preventDefault(); document.getElementById('feeding').scrollIntoView({ behavior: 'smooth', block: 'start' }); document.getElementById('feed-heads').focus({ preventScroll: true })" data-i18n="feed.link">🍲 Cooking for many? Feeding program planner below</a>
     </div>
     <div class="grid gap-5 lg:grid-cols-[17rem_minmax(0,1fr)_19rem] items-start">
       <!-- Dish picker -->
@@ -921,7 +953,7 @@
       <!-- Week grid -->
       <div class="bg-white rounded-2xl shadow p-4 min-w-0">
         <div class="flex flex-wrap items-center gap-2 mb-3">
-          <button onclick="randomizeWeek()" class="bg-amber-400 hover:bg-amber-300 text-gray-900 font-bold text-sm px-4 py-2 rounded-full shadow transition-colors" data-i18n="plan.random">🎲 Random week</button>
+          <button onclick="randomizeWeek()" class="bg-green-800 hover:bg-green-700 text-amber-50 font-bold text-sm px-4 py-2 rounded-full transition-colors" data-i18n="plan.random">🎲 Random week</button>
           <button class="wx-btn on" data-random="ulam" onclick="setRandomMeals('ulam')" data-i18n="plan.ulamOnly">Ulam lang</button>
           <button class="wx-btn" data-random="all" onclick="setRandomMeals('all')" data-i18n="plan.allMeals">Lahat ng kain</button>
           <span class="text-xs text-gray-500 ml-1" data-i18n="plan.perMeal">Ulam per meal</span>
@@ -962,7 +994,7 @@
           <button onclick="downloadGroceryHtml()" class="border border-green-800 text-green-800 hover:bg-green-50 font-semibold text-sm px-3 py-2 rounded-full" data-i18n="plan.html">📄 Grocery list (HTML)</button>
           <button onclick="sendGroceryList()" class="border border-green-800 text-green-800 hover:bg-green-50 font-semibold text-sm px-3 py-2 rounded-full" data-i18n="plan.messenger">💬 Sa Messenger</button>
         </div>
-        <button onclick="saveNamedPlan()" class="bg-amber-400 hover:bg-amber-300 text-gray-900 font-bold text-sm px-3 py-2 rounded-full" data-i18n="plan.save">💾 I-save ang plano sa device</button>
+        <button onclick="saveNamedPlan()" class="bg-green-800 hover:bg-green-700 text-amber-50 font-bold text-sm px-3 py-2 rounded-full" data-i18n="plan.save">💾 I-save ang plano sa device</button>
         <p id="plan-save-note" class="text-xs text-gray-400">Auto-saved din habang nag-e-edit. I-save para may kopya ka ng bawat linggo.</p>
         <div id="plan-saved" class="flex flex-col gap-1.5"></div>
         <button onclick="clearPlan()" class="self-start text-sm text-gray-500 hover:text-red-600 underline" data-i18n="plan.clear">Clear week</button>
@@ -1050,7 +1082,7 @@
 <section id="section-finder" class="hidden flex-col flex-1">
   <div class="max-w-7xl mx-auto px-4 py-10 w-full">
     <h1 class="text-3xl font-bold mb-1">Anong lulutuin?</h1>
-    <p class="text-gray-500 mb-6 text-sm">Pick what you have from each group. Every ingredient becomes a node, linked to the dishes you can cook with it. Hover a node to see its links; tap a dish to open the recipe. Saved on this device only.</p>
+    <p class="text-gray-500 mb-6 text-sm" data-i18n="finder.sub">Pick what you have from each group. Every ingredient becomes a node, linked to the dishes you can cook with it. Hover a node to see its links; tap a dish to open the recipe. Saved on this device only.</p>
     <div class="grid gap-5 lg:grid-cols-[19rem_minmax(0,1fr)] items-start">
       <div class="flex flex-col gap-4 min-w-0">
         <div class="bg-white rounded-2xl shadow p-3">
@@ -1060,18 +1092,18 @@
         <div class="bg-white rounded-2xl shadow p-4">
           <div class="flex items-center justify-between gap-2 mb-2">
             <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Meron ako</p>
-            <button onclick="finderClear()" class="text-xs text-gray-500 hover:text-red-600 underline">Clear</button>
+            <button onclick="finderClear()" class="text-xs text-gray-500 hover:text-red-600 underline" data-i18n="browse.clear">Clear</button>
           </div>
           <ul id="finder-have" class="flex flex-col gap-1"></ul>
           <label class="text-xs text-gray-600 flex items-start gap-2 mt-3"><input id="finder-staples" type="checkbox" checked onchange="setFinderStaples(this.checked)" class="accent-green-600 mt-0.5">
-            I have the basics: salt, pepper, oil, garlic, onion, soy sauce, patis, vinegar, sugar, bay leaf</label>
+            <span data-i18n="finder.basics">I have the basics: salt, pepper, oil, garlic, onion, soy sauce, patis, vinegar, sugar, bay leaf</span></label>
         </div>
       </div>
       <div class="flex flex-col gap-4 min-w-0">
         <div class="fx-graph-card">
           <svg id="finder-graph" class="fx-graph"></svg>
-          <p id="finder-graph-empty" class="fx-graph-empty">Pick an ingredient on the left: it appears here as a node, and the dishes you can cook grow out of it.</p>
-          <div class="fx-legend"><span><i style="background:#4ade80"></i>ingredient you have</span><span><i class="ring ok"></i>kumpleto</span><span><i class="ring part"></i>may kulang (−n)</span><span><i class="ghost"></i>kulang na sangkap</span></div>
+          <p id="finder-graph-empty" class="fx-graph-empty" data-i18n="finder.empty">Pick an ingredient on the left: it appears here as a node, and the dishes you can cook grow out of it.</p>
+          <div class="fx-legend"><span><i style="background:#4ade80"></i><b data-i18n="finder.have" class="font-normal">ingredient you have</b></span><span><i class="ring ok"></i>kumpleto</span><span><i class="ring part"></i>may kulang (−n)</span><span><i class="ghost"></i>kulang na sangkap</span></div>
         </div>
         <p id="finder-count" class="text-xs font-semibold text-gray-500 uppercase tracking-wide"></p>
         <div id="finder-results" class="grid gap-3 md:grid-cols-2"></div>
@@ -1096,6 +1128,10 @@
       <button class="age-btn age-senior" onclick="chooseAge('senior')"><span class="text-2xl">👵</span><span data-i18n="age.senior">60 and over</span></button>
     </div>
     <p class="text-xs text-gray-500 mt-3" data-i18n="age.seniorNote">60 and over: the text gets bigger and the menu simpler.</p>
+    <div class="flex items-center justify-between gap-3 mt-4 pt-3 border-t border-gray-100">
+      <span class="text-xs text-gray-500" data-i18n="age.skipNote">You can set it later in ⚙️ Settings.</span>
+      <button type="button" class="age-skip" onclick="chooseAge(null)" data-i18n="age.skip">Skip for now</button>
+    </div>
   </div>
 </div>
 
@@ -1103,30 +1139,30 @@
   <div class="tour-card">
     <div class="flex items-center justify-between gap-2 mb-1">
       <span id="tour-count" class="text-xs font-semibold text-gray-500"></span>
-      <button onclick="endTour()" class="text-xs text-gray-500 hover:text-gray-800 underline">Skip</button>
+      <button onclick="endTour()" class="text-xs text-gray-500 hover:text-gray-800 underline" data-i18n="tour.skip">Skip</button>
     </div>
     <p id="tour-title" class="font-display text-xl font-semibold mb-1"></p>
     <p id="tour-text" class="text-sm text-gray-600 leading-relaxed"></p>
     <div class="flex items-center justify-between gap-2 mt-4">
-      <button id="tour-back" onclick="tourNext(-1)" class="text-sm text-gray-500 hover:text-gray-800">← Back</button>
+      <button id="tour-back" onclick="tourNext(-1)" class="text-sm text-gray-500 hover:text-gray-800" data-i18n="tour.back">← Back</button>
       <div id="tour-dots" class="tour-dots"></div>
-      <button id="tour-next" onclick="tourNext(1)" class="px-4 py-2 rounded-full text-sm font-semibold bg-green-800 text-amber-50 hover:bg-green-700">Next →</button>
+      <button id="tour-next" onclick="tourNext(1)" class="px-4 py-2 rounded-full text-sm font-semibold bg-green-800 text-amber-50 hover:bg-green-700" data-i18n="tour.next">Next →</button>
     </div>
   </div>
 </div>
 
 <dialog id="alert-dialog" aria-labelledby="alert-what" class="alert-dialog" onclick="if (event.target === this) this.close()">
   <form method="dialog" onsubmit="event.preventDefault(); saveAlertFromDialog()" class="p-5 flex flex-col gap-3">
-    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">🔔 Price alert</p>
+    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide" data-i18n="alert.title">🔔 Price alert</p>
     <p id="alert-what" class="font-display text-xl font-semibold"></p>
     <p id="alert-now" class="text-sm text-gray-500"></p>
-    <label class="text-sm text-gray-600">Tell me when it's below
+    <label class="text-sm text-gray-600"><span data-i18n="alert.below">Tell me when it's below</span>
       <span class="flex items-center gap-2 mt-1">₱ <input id="alert-below" type="number" step="0.01" min="0.01" class="w-32 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"></span>
     </label>
     <p id="alert-error" class="text-xs text-red-600"></p>
     <div class="flex justify-end gap-2">
-      <button type="button" onclick="document.getElementById('alert-dialog').close()" class="px-4 py-2 rounded-full text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
-      <button class="px-4 py-2 rounded-full text-sm font-semibold bg-green-800 text-amber-50 hover:bg-green-700">Save alert</button>
+      <button type="button" onclick="document.getElementById('alert-dialog').close()" class="px-4 py-2 rounded-full text-sm text-gray-600 hover:bg-gray-50" data-i18n="alert.cancel">Cancel</button>
+      <button class="px-4 py-2 rounded-full text-sm font-semibold bg-green-800 text-amber-50 hover:bg-green-700" data-i18n="alert.save">Save alert</button>
     </div>
   </form>
 </dialog>
@@ -1134,15 +1170,15 @@
 <dialog id="share-dialog" aria-labelledby="share-title" class="alert-dialog share-dialog" onclick="if (event.target === this) this.close()">
   <div class="p-5 flex flex-col gap-3">
     <div class="flex items-center justify-between">
-      <p id="share-title" class="font-display text-xl font-semibold">Share this recipe</p>
+      <p id="share-title" class="font-display text-xl font-semibold" data-i18n="share.title">Share this recipe</p>
       <button type="button" onclick="document.getElementById('share-dialog').close()" class="dlg-x" aria-label="Isara">✕</button>
     </div>
-    <p class="text-sm text-gray-500">Save the picture, then send it in Messenger with the link. On a phone, the Share button sends it to Messenger directly.</p>
+    <p class="text-sm text-gray-500" data-i18n="share.help">Save the picture, then send it in Messenger with the link. On a phone, the Share button sends it to Messenger directly.</p>
     <img id="share-preview" alt="Recipe picture to share" class="w-full max-h-[50vh] object-contain rounded-xl border border-gray-200 bg-amber-50">
     <div class="flex flex-wrap gap-2">
-      <a id="share-download" class="px-4 py-2 rounded-full text-sm font-semibold bg-green-800 text-amber-50 hover:bg-green-700">⬇ Save picture</a>
-      <button id="share-copy" class="px-4 py-2 rounded-full text-sm font-semibold border border-gray-200 hover:bg-gray-50">Copy link</button>
-      <a href="https://www.messenger.com/" target="_blank" rel="noopener" class="px-4 py-2 rounded-full text-sm font-semibold border border-gray-200 hover:bg-gray-50">Open Messenger ↗</a>
+      <a id="share-download" class="px-4 py-2 rounded-full text-sm font-semibold bg-green-800 text-amber-50 hover:bg-green-700" data-i18n="share.save">⬇ Save picture</a>
+      <button id="share-copy" class="px-4 py-2 rounded-full text-sm font-semibold border border-gray-200 hover:bg-gray-50" data-i18n="share.copy">Copy link</button>
+      <a href="https://www.messenger.com/" target="_blank" rel="noopener" class="px-4 py-2 rounded-full text-sm font-semibold border border-gray-200 hover:bg-gray-50" data-i18n="share.messenger">Open Messenger ↗</a>
     </div>
   </div>
 </dialog>
@@ -1222,12 +1258,12 @@
       <p class="font-semibold text-green-100 uppercase tracking-wide" data-i18n="contact.title">Contact us</p>
       <p>✉️ <a data-contact-email class="underline decoration-green-500 hover:text-white" href="mailto:jamaigue1@up.edu.ph">jamaigue1@up.edu.ph</a></p>
       <p>📘 Facebook: <a data-contact-fb class="underline decoration-green-500 hover:text-white" target="_blank" rel="noopener" href="https://www.facebook.com/john.maigue.37">John Maigue</a></p>
-      <button onclick="openFeedback()" class="mt-1 px-3 py-1.5 rounded-full bg-amber-400 text-green-950 font-semibold hover:bg-amber-300" data-i18n="contact.feedback">💬 Review or suggestion</button>
+      <button onclick="openFeedback()" class="mt-1 px-3 py-1.5 rounded-full bg-amber-50 text-green-900 font-semibold hover:bg-white" data-i18n="contact.feedback">💬 Review or suggestion</button>
     </div>
     <div class="text-green-300 text-xs">
       <p>Data: DA Price Monitoring (<span data-da-date>latest</span>) · PSA OpenSTAT · Panlasang Pinoy, Kawaling Pinoy and other recipe sites · FNRI Food Composition Table</p>
-      <p class="mt-1 text-green-400">© 2026 FARM2FIGURE. All rights reserved. Recipes and photos belong to their sites, credited on each dish.</p>
-      <p class="mt-1 text-green-400/80" data-i18n="privacy.visits">We count visitors by IP address, stored only as a scrambled code (never the address itself), plus the city it comes from and the age bracket you chose. Browsers set to “Do Not Track” aren't counted.</p>
+      <p class="mt-1 text-green-300">© 2026 FARM2FIGURE. All rights reserved. Recipes and photos belong to their sites, credited on each dish.</p>
+      <p class="mt-1 text-green-300" data-i18n="privacy.visits">We count visitors by IP address, stored only as a scrambled code (never the address itself), plus the city it comes from and the age bracket you chose. Browsers set to “Do Not Track” aren't counted.</p>
     </div>
   </div>
 </footer>

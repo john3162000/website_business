@@ -214,6 +214,8 @@ test("ulam kind: gulay, isda or karne", () => {
   assert.equal(proteinKind({ title: "Tortang Talong", category: "Main Dish", ingredientNames: ["eggplant", "egg"] }), "gulay");
   assert.equal(proteinKind({ title: "Sotanghon and Egg Noodle Soup", category: "Soup", ingredientNames: ["sotanghon", "egg", "fish sauce"] }), "other", "patis isn't fish; noodle soup isn't gulay");
   assert.equal(proteinKind({ title: "Mamon", category: "Main Dish" }), "other");
+  assert.equal(proteinKind({ title: "Tinolang Tahong with Malunggay", category: "Soup" }), "isda", "the seafood comes first; malunggay is the add-in");
+  assert.equal(proteinKind({ title: "Ginataang Sitaw at Kalabasa with Shrimp", category: "Main Dish" }), "gulay", "the vegetables come first");
   assert.equal(mealTypes({ title: "Mamon", category: "Main Dish" }).has("ulam"), false);
   assert.equal(mealTypes({ title: "Yellow Arroz Caldo", category: "Soup" }).has("ulam"), false);
   assert.equal(proteinKind({ title: "Ginisang Upo", category: "Main Dish" }), "gulay");

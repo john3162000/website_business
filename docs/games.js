@@ -184,7 +184,7 @@ function renderRate() {
       <img src="${escapeHtml(r.img)}" alt="" class="game-photo" loading="lazy">
       <div class="p-4">
         <p class="font-display text-xl font-bold leading-tight">${escapeHtml(r.title)}</p>
-        <p class="text-xs text-gray-500 mt-1">${r.costPerServing > 0 ? `₱${r.costPerServing}/serving · ` : ""}${escapeHtml(r.category)}</p>
+        <p class="text-xs text-gray-500 mt-1">${r.costPerServing > 0 ? `₱${r.costPerServing}/serving · ` : ""}${escapeHtml(catLabel(r.category))}</p>
         <p class="text-sm font-semibold mt-4">Gaano mo kagusto 'to?</p>
         <div class="rate-stage" id="rate-stage">
           ${GAME_COOK_SVG}

@@ -64,8 +64,12 @@ function feedPool(recipes, ok = () => true) {
 function feedingMenu(pool, { days, cap, rng = Math.random }) {
   const used = new Set();
   const menu = [];
+  const recent = []; // main proteins of the last FEED_SPREAD days
   const pick = (list) => {
-    const top = [...list].sort((a, b) => b.nutritionScore - a.nutritionScore || a.costPerServing - b.costPerServing).slice(0, 5);
+    // Prefer a main protein not served in the last few days (no mussels three days running).
+    const varied = list.filter((r) => !recent.includes(feedMain(r)));
+    const from = varied.length ? varied : list;
+    const top = [...from].sort((a, b) => b.nutritionScore - a.nutritionScore || a.costPerServing - b.costPerServing).slice(0, 5);
     return top[Math.min(top.length - 1, Math.floor(rng() * top.length))];
   };
   for (let d = 0; d < days; d++) {
@@ -77,9 +81,34 @@ function feedingMenu(pool, { days, cap, rng = Math.random }) {
       || [...fresh].sort((a, b) => a.costPerServing - b.costPerServing)[0];
     if (!r) break;
     used.add(r.id);
-    menu.push({ day: d + 1, id: r.id, kind: proteinKind(r), fits: r.costPerServing <= cap });
+    recent.push(feedMain(r));
+    if (recent.length > FEED_SPREAD) recent.shift();
+    menu.push({ day: d + 1, id: r.id, kind: proteinKind(r), fits: r.costPerServing <= cap, shellfish: feedMain(r) === "shellfish" });
   }
   return menu;
+}
+
+// The same main protein is kept at least this many days apart when another dish fits.
+const FEED_SPREAD = 3;
+const FEED_MAINS = [
+  ["shellfish", /\b(shrimps?|hipon|sugpo|prawns?|crabs?|alimasag|alimango|tahong|mussels?|halaan|clams?|talaba|oysters?|scallops?|squid|pusit|calamares)\b/i],
+  ["chicken", /\b(chicken|manok|tinola)\b/i],
+  ["pork", /\b(pork|baboy|liempo|lechon|sisig|menudo)\b/i],
+  ["beef", /\b(beef|baka|bulalo|kare[- ]?kare)\b/i],
+  ["egg", /\b(eggs?|itlog|torta|tortang)\b/i],
+  ["tofu", /\b(tofu|tokwa)\b/i],
+  ["beans", /\b(monggo|munggo|mung ?beans?|beans?|sitaw)\b/i],
+];
+
+/** A dish's main protein, for spacing the menu: "shellfish", "chicken", …, else its gulay/isda/karne kind. */
+function feedMain(r) {
+  const hit = FEED_MAINS.find(([, re]) => re.test(r.title || ""));
+  return hit ? hit[0] : proteinKind(r);
+}
+
+/** Whether the plan fits the budget per head: { ok, avg } (average ₱ per head per meal). */
+function feedVerdict(totals, budget) {
+  return { ok: totals.perHeadAvg <= budget + 0.005 && !totals.overBudget, avg: totals.perHeadAvg };
 }
 
 /** Cost and nutrition for the whole program: per day, per head, and the total. */
@@ -199,13 +228,15 @@ async function renderFeeding() {
       ? t("feed.riceNote").replace("{g}", FEED.riceGrams).replace("{name}", rice.name).replace("{price}", feedPeso(rice.perKg)).replace("{cost}", `₱${riceCost.toFixed(2)}`)
       : t("feed.riceUnpriced");
   out.innerHTML = `
-    <div class="grid sm:grid-cols-4 gap-3 mb-4">
+    ${feedVerdictHtml(totals)}
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
       <div class="feed-stat"><span>${escapeHtml(t("feed.total"))}</span><b>${feedPeso(totals.total)}</b></div>
       <div class="feed-stat"><span>${escapeHtml(t("feed.perHead"))}</span><b>${feedPeso(totals.perHeadAvg)}</b></div>
       <div class="feed-stat"><span>${escapeHtml(t("feed.kcal"))}</span><b>${Math.round(totals.kcalAvg)} kcal</b></div>
       <div class="feed-stat"><span>${escapeHtml(t("feed.protein"))}</span><b>${Math.round(totals.proteinAvg)} g</b></div>
     </div>
     ${totals.overBudget ? `<p class="text-sm text-amber-800 mb-3">⚠ ${escapeHtml(t("feed.over").replace("{n}", totals.overBudget))}</p>` : ""}
+    ${FEED_MENU.some((m) => m.shellfish) ? `<p class="text-sm text-gray-600 mb-3">🦐 ${escapeHtml(t("feed.shellfish"))}</p>` : ""}
     <div class="overflow-x-auto"><table class="w-full text-sm">
       <thead><tr class="text-left text-xs text-gray-500 uppercase tracking-wide">
         <th class="py-2 pr-2">${escapeHtml(t("feed.day"))}</th><th class="py-2 pr-2">${escapeHtml(t("feed.dish"))}</th>
@@ -230,6 +261,13 @@ async function renderFeeding() {
     <p class="text-xs text-gray-400 mt-3">${escapeHtml(t("feed.note"))}</p>`;
   await feedLoadDetails();
   renderFeedGrocery(rice);
+}
+
+/** The answer a coordinator needs first: does the plan fit the budget per head? */
+function feedVerdictHtml(totals) {
+  const v = feedVerdict(totals, FEED.budget);
+  const text = t(v.ok ? "feed.fits" : "feed.notFit").replace("{budget}", feedPeso(FEED.budget)).replace("{avg}", feedPeso(v.avg));
+  return `<p class="feed-verdict ${v.ok ? "ok" : "no"}">${v.ok ? "✓" : "⚠"} ${escapeHtml(text)}</p>`;
 }
 
 /** Fetches the ingredient lines of menu dishes not seen yet (shared cache with the planner). */

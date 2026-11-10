@@ -87,6 +87,11 @@ function categoryFor(title, course) {
   return "Main Dish";
 }
 
+/** The category as shown: Tagalog or English per the language setting (data keeps the English name). */
+function catLabel(category) {
+  return typeof t === "function" && I18N[`cat.${category}`] ? t(`cat.${category}`) : category;
+}
+
 // ═══════════════ DATA ═══════════════
 
 function buildRecipe(raw, c) {
@@ -204,7 +209,7 @@ async function loadData() {
   SULIT_SCORES = RECIPES.filter((r) => r.ranked).map((r) => r.valueScore).sort((a, b) => a - b);
   const note = document.getElementById("hidden-note");
   if (note && hidden.length) {
-    note.textContent = `${hidden.length.toLocaleString()} recipe${hidden.length !== 1 ? "s" : ""} hidden: ingredients not in our catalog yet.`;
+    note.textContent = t("browse.hidden").replace("{n}", hidden.length.toLocaleString());
     note.classList.remove("hidden");
   }
 
@@ -277,7 +282,7 @@ function sulitTile(r) {
   return `<div class="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-center"${lv ? ` title="Sulit Score ${r.valueScore}"` : ""}>
             <p class="text-lg font-bold ${tone} leading-8">${lv ? lv.label : "—"}</p>
             <p class="text-xs text-green-700 font-medium">${t("modal.sulit")}</p>
-            <p class="text-[11px] text-green-700 mt-0.5">${sub}</p>
+            <p class="text-xs text-green-700 mt-0.5">${sub}</p>
           </div>`;
 }
 
@@ -291,13 +296,23 @@ function costText(r) {
   return r.costCoverage < 1 ? `₱${r.costPerServing}+` : `₱${r.costPerServing}`;
 }
 
+/** A photo that fails to load (slow data, a site blocking hotlinks) becomes a 🍽️ tile. */
+function imgFallback(img) {
+  img.onerror = null;
+  const tile = document.createElement("span");
+  tile.className = "img-fallback " + (img.className || "");
+  tile.setAttribute("aria-hidden", "true");
+  tile.textContent = "🍽️";
+  img.replaceWith(tile);
+}
+
 let RC_SEQ = 0; // unique ids for the cards' screen-reader price notes (a dish can be on two rows)
 
 function buildRecipeCard(r) {
   const did = `rc-d${++RC_SEQ}`;
   const img = r.img
     ? `<img src="${escapeHtml(r.img)}" alt="" loading="lazy" class="recipe-img w-full h-full object-cover transition-transform duration-300"
-         onerror="this.parentElement.innerHTML='<div class=\\'flex items-center justify-center h-full text-5xl\\'>🍽️</div>'"/>`
+         onerror="imgFallback(this)"/>`
     : `<div class="flex items-center justify-center h-full text-5xl">🍽️</div>`;
   return `
     <div class="recipe-card bg-white rounded-2xl overflow-hidden shadow hover:shadow-lg transition-shadow cursor-pointer flex flex-col group"
@@ -305,17 +320,17 @@ function buildRecipeCard(r) {
       <div class="relative h-44 bg-amber-100 overflow-hidden">
         ${img}
         ${forYouBadge(r)}
-        ${r.costIncomplete ? `<div class="absolute top-2 left-2 bg-amber-800 text-amber-50 text-xs font-bold px-2 py-1 rounded-full shadow" title="No price yet for ${escapeHtml(r.costGaps.join(", "))}">⚠ Incomplete price</div>` : ""}
+        ${r.costIncomplete ? `<div class="absolute top-2 left-2 bg-amber-800 text-amber-50 text-xs font-bold px-2 py-1 rounded-full shadow" title="No price yet for ${escapeHtml(r.costGaps.join(", "))}">${t("card.incomplete")}</div>` : ""}
       </div>
       <div class="p-4 flex flex-col gap-2 flex-1">
         <h3 class="font-semibold text-gray-900 leading-snug group-hover:text-green-700 transition-colors"><button type="button" class="rc-open" aria-haspopup="dialog" aria-describedby="${did}">${escapeHtml(r.title)}</button></h3>
         <span id="${did}" class="sr-only">${r.costPerServing > 0 ? `${costText(r)} per serving` : "no price yet"}${r.costIncomplete ? ", incomplete price" : ""}</span>
-        <span class="text-xs text-gray-500 uppercase tracking-wide">${escapeHtml(r.category)}</span>
+        <span class="text-xs text-gray-500 uppercase tracking-wide">${escapeHtml(catLabel(r.category))}</span>
         ${sulitMeter(r)}
         <div class="flex flex-wrap gap-1 mt-auto pt-2">
           <span class="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-medium"${r.costCoverage < 1 ? ` title="${t("card.plusLegend")}"` : ""}>${costText(r)}/serving</span>
           <span class="text-xs bg-gray-50 border border-gray-200 text-gray-700 px-2 py-0.5 rounded-full font-semibold" title="Nutrition score">${t("card.nutrition")}: ${r.nutritionScore}</span>
-          <span class="text-xs text-gray-500">${r.protein}g protein</span>
+          <span class="text-xs text-gray-500">${r.protein}${t("card.protein")}</span>
         </div>
       </div>
     </div>`;
@@ -347,7 +362,7 @@ function ingredientRows(lines) {
         <p class="font-medium text-sm">${escapeHtml(l.text)}</p>
         <p class="text-xs text-gray-400">${escapeHtml(grams + kcal)}${note ? ` · ${escapeHtml(note)}` : ""}</p>
       </div>
-      <p class="text-sm font-semibold text-amber-700 whitespace-nowrap text-right"${why ? ` title="${escapeHtml(why.replace(/^price-[a-z-]+: /, "Assumed: "))}"` : ""}>${l.cost != null ? (derived ? "≈₱" : "₱") + l.cost.toFixed(2) : ""}${source ? `<span class="block text-[11px] font-normal ${derived ? "text-amber-700" : "text-gray-500"}">${escapeHtml(source)}</span>` : ""}</p>
+      <p class="text-sm font-semibold text-amber-700 whitespace-nowrap text-right"${why ? ` title="${escapeHtml(why.replace(/^price-[a-z-]+: /, "Assumed: "))}"` : ""}>${l.cost != null ? (derived ? "≈₱" : "₱") + l.cost.toFixed(2) : ""}${source ? `<span class="block text-xs font-normal ${derived ? "text-amber-700" : "text-gray-500"}">${escapeHtml(source)}</span>` : ""}</p>
     </div>`;
   }).join("");
 }
@@ -378,8 +393,8 @@ function sodiumHtml(r, lines) {
         <span class="font-medium">≈ ${mg.toLocaleString()}mg <span class="text-gray-400">(${p}% ${t("modal.sodiumLimit")})</span></span>
       </div>
       <div class="bar"><div class="bar-fill" style="width:${Math.min(p, 100)}%;background:${color}"></div></div>
-      ${salty ? `<p class="text-[11px] font-semibold text-red-600 mt-1">${t("modal.salty").replace("{pct}", p)}${top.length ? ` · ${t("modal.saltyFrom")} ${escapeHtml(top.join(", "))}` : ""}</p>` : ""}
-      ${toTaste ? `<p class="text-[11px] text-gray-400 mt-0.5">${t("modal.sodiumToTaste")}</p>` : ""}
+      ${salty ? `<p class="text-xs font-semibold text-red-600 mt-1">${t("modal.salty").replace("{pct}", p)}${top.length ? ` · ${t("modal.saltyFrom")} ${escapeHtml(top.join(", "))}` : ""}</p>` : ""}
+      ${toTaste ? `<p class="text-xs text-gray-400 mt-0.5">${t("modal.sodiumToTaste")}</p>` : ""}
     </div>`;
 }
 
@@ -415,7 +430,7 @@ function buildModal(r, lines) {
           <span class="font-medium">${after ? "≈ " : ""}${shown}${n.unit} <span class="text-gray-400">(${p}% DRV)</span></span>
         </div>
         <div class="bar"><div class="bar-fill" style="width:${p}%"></div></div>
-        ${changed ? `<p class="text-[11px] text-gray-400 text-right mt-0.5">${after[1]}–${after[2]}${n.unit} · ${t("modal.cookedRaw")}: ${n.val}${n.unit}</p>` : ""}
+        ${changed ? `<p class="text-xs text-gray-400 text-right mt-0.5">${after[1]}–${after[2]}${n.unit} · ${t("modal.cookedRaw")}: ${n.val}${n.unit}</p>` : ""}
       </div>`;
   }).join("");
   const cookedNote = r.cooked
@@ -438,8 +453,8 @@ function buildModal(r, lines) {
     <div class="mb-5">
       <h2 id="modal-title" tabindex="-1" data-dlg-focus class="modal-title text-2xl font-bold pr-12">${escapeHtml(r.title)}</h2>
       ${r.costPerServing > 0 ? `<p class="modal-cost"><span class="modal-cost-main">${modalCostText(r)}</span></p>` : ""}
-      <span class="text-sm text-gray-500">${r.category} · ${r.servings} servings${r.servingsAssumed ? " (assumed: the recipe doesn’t say)" : ""}${(r.prepTime || 0) + (r.cookTime || 0) > 0 ? ` · ${(r.prepTime || 0) + (r.cookTime || 0)} min` : ""}</span>
-      ${src ? `<p class="text-xs text-gray-500 mt-1">Recipe &amp; photo: ${srcLink("text-green-700 font-semibold hover:underline", `${escapeHtml(src.name)} ↗`)}</p>` : ""}
+      <span class="text-sm text-gray-500">${escapeHtml(catLabel(r.category))} · ${r.servings} ${t("modal.servings")}${r.servingsAssumed ? t("modal.servingsAssumed") : ""}${(r.prepTime || 0) + (r.cookTime || 0) > 0 ? ` · ${(r.prepTime || 0) + (r.cookTime || 0)} min` : ""}</span>
+      ${src ? `<p class="text-xs text-gray-500 mt-1">${escapeHtml(t("modal.recipePhoto"))} ${srcLink("text-green-700 font-semibold hover:underline", `${escapeHtml(src.name)} ↗`)}</p>` : ""}
       ${r.id ? `<div class="modal-acts" role="group" aria-label="Actions">
         ${favButton(r.id, "act")}
         <button type="button" id="share-btn" onclick="shareRecipe(${r.id})" class="modal-act modal-act-main"><span class="modal-act-ico" aria-hidden="true">💬</span><span>${t("modal.share")}</span></button>
@@ -450,7 +465,7 @@ function buildModal(r, lines) {
 
     <div class="grid md:grid-cols-3 gap-6">
       <div class="md:col-span-2 space-y-6">
-        ${r.img ? `<figure class="modal-photo"><img src="${escapeHtml(r.img)}" alt="${escapeHtml(r.title)}">${src ? srcLink("photo-credit", `📷 ${escapeHtml(src.name)}`) : ""}</figure>` : ""}
+        ${r.img ? `<figure class="modal-photo"><img src="${escapeHtml(r.img)}" alt="" onerror="imgFallback(this)">${src ? srcLink("photo-credit", `📷 ${escapeHtml(src.name)}`) : ""}</figure>` : ""}
         <div class="flex flex-wrap gap-3">
           ${sulitTile(r)}
           <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-center">
@@ -463,7 +478,7 @@ function buildModal(r, lines) {
           </div>
           <div class="bg-gray-50 border rounded-xl px-4 py-3 text-center">
             <p class="text-2xl font-bold text-gray-700">${kcalText(r)}</p>
-            <p class="text-xs text-gray-500 font-medium">kcal/serving${r.frying ? " · fried: oil absorption estimated" : ""}</p>
+            <p class="text-xs text-gray-500 font-medium">${t("modal.kcalServing")}${r.frying ? t("modal.fried") : ""}</p>
           </div>
         </div>
 
@@ -471,24 +486,24 @@ function buildModal(r, lines) {
         ${typeof factBoxHtml === "function" ? factBoxHtml(r) : ""}
 
         <div>
-          <h3 class="font-bold text-lg mb-3">Ingredients</h3>
+          <h3 class="font-bold text-lg mb-3">${t("modal.ingredients")}</h3>
           <div class="space-y-2">${ingRows}</div>
           <div class="mt-3 flex justify-between text-sm bg-amber-50 rounded-xl px-4 py-3">
-            <span class="text-gray-600">Estimated total cost</span>
+            <span class="text-gray-600">${t("modal.totalCost")}</span>
             <div class="text-right">
               <p class="font-bold text-amber-700">₱${r.cost.total.toFixed(0)}${r.costCoverage < 1 ? "+" : ""}</p>
-              <p class="text-xs text-gray-400">${costText(r)}/serving × ${r.servings} servings${r.costCoverage < 1 ? ` · ${Math.round(r.costCoverage * 100)}% of ingredients (by weight) priced` : ""}</p>
+              <p class="text-xs text-gray-500">${costText(r)}/serving × ${r.servings} ${t("modal.servings")}${r.costCoverage < 1 ? ` · ${Math.round(r.costCoverage * 100)}${t("modal.priced")}` : ""}</p>
               ${r.costCoverage < 1 ? `<p class="text-xs text-amber-700">${t("card.plusLegend")}</p>` : ""}
             </div>
           </div>
-          ${r.costPerServing > 0 ? `<button onclick="openAlertDialog('dish', ${r.id})" class="mt-2 text-xs font-semibold text-green-700 hover:underline">🔔 Alert me when this gets cheaper</button>` : ""}
-          ${r.costIncomplete ? `<p class="mt-2 text-xs bg-amber-100 text-amber-900 rounded-xl px-4 py-2">⚠ <strong>Incomplete price data:</strong> no price yet for ${escapeHtml(r.costGaps.join(", "))}. The real cost is higher than shown, so this dish is listed last.</p>` : ""}
+          ${r.costPerServing > 0 ? `<button onclick="openAlertDialog('dish', ${r.id})" class="mt-2 text-xs font-semibold text-green-700 hover:underline">${t("modal.alertMe")}</button>` : ""}
+          ${r.costIncomplete ? `<p class="mt-2 text-xs bg-amber-100 text-amber-900 rounded-xl px-4 py-2">⚠ <strong>${t("modal.incomplete")}</strong> ${escapeHtml(t("modal.incompleteText").replace("{list}", r.costGaps.join(", ")))}</p>` : ""}
         </div>
 
         <div class="cook-card">
           <h3 class="font-display font-bold text-xl">Paano lutuin? 👩‍🍳</h3>
-          <p class="text-sm text-gray-600 mt-1 mb-3">${src ? `Nasa ${escapeHtml(src.name)} ang buong recipe: ang mga hakbang, tips at video ng gumawa nito.` : "Full instructions are on the original recipe page."}</p>
-          ${src ? srcLink("cook-btn", `📖 See the recipe on ${escapeHtml(src.name)} ↗`) : ""}
+          <p class="text-sm text-gray-600 mt-1 mb-3">${src ? escapeHtml(t("modal.fullRecipe").replace("{src}", src.name)) : "Full instructions are on the original recipe page."}</p>
+          ${src ? srcLink("cook-btn", escapeHtml(t("modal.seeRecipe").replace("{src}", src.name))) : ""}
           <div id="video-links" class="flex flex-wrap gap-2 mt-3" data-recipe="${r.id}"></div>
         </div>
         ${similarHtml(r)}
@@ -652,7 +667,7 @@ function moverRow(m) {
     .map((d) => `${escapeHtml(d.label)} ${pctText(d.change)}`).join(", ");
   return `
     <div class="flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 ${known ? "cursor-pointer hover:bg-gray-50" : ""}" ${known ? `role="button" tabindex="0" onclick="openModal(${m.id})"` : ""}>
-      ${rec && rec.img ? `<img src="${escapeHtml(rec.img)}" alt="" loading="lazy" class="mover-img">` : `<span class="mover-img mover-img-empty">🍽️</span>`}
+      ${rec && rec.img ? `<img src="${escapeHtml(rec.img)}" alt="" loading="lazy" class="mover-img" onerror="imgFallback(this)">` : `<span class="mover-img mover-img-empty">🍽️</span>`}
       <div class="min-w-0 flex-1">
         <p class="font-medium truncate">${known ? favButton(m.id) : ""} ${escapeHtml(m.title)}</p>
         ${mealTags(m.id)}
@@ -716,7 +731,7 @@ function renderPriceForYou(fellById = new Map()) {
     <p class="text-xs text-gray-500 mb-3">Mula sa mga sagot mo sa Laro, pinakamura muna (presyo ngayon).</p>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">${picks.map(({ r, fell }) => `
       <button class="taste-pick bg-white rounded-2xl shadow p-2" onclick="openModal(${r.id})">
-        <img src="${escapeHtml(r.img)}" alt="" loading="lazy">
+        <img src="${escapeHtml(r.img)}" alt="" loading="lazy" onerror="imgFallback(this)">
         <span class="taste-pick-name">${escapeHtml(r.title)}</span>
         <span class="taste-pick-why">${escapeHtml(tasteReasons(model, tasteVec(r)).join(" · ") || "bagay sa'yo")}</span>
         <span class="taste-pick-price">₱${r.costPerServing}/serving${fell ? ` · <span class="price-down">▼ ${Math.round(-fell * 100)}%</span>` : ""}</span>
@@ -837,7 +852,7 @@ function filterRecipes() {
   }
 
   if (typeof kitchenSummary === "function") document.querySelectorAll("[data-kitchen-summary]").forEach((el) => { el.textContent = kitchenSummary(); });
-  document.getElementById("result-count").textContent = `${filtered.length.toLocaleString()} recipe${filtered.length !== 1 ? "s" : ""} found${forYou ? " · sorted by your panlasa 🧠" : ""}${saucesOut ? ` · ${t("browse.saucesOut")}` : ""} · ${t("card.plusLegend")}`;
+  document.getElementById("result-count").textContent = `${t("browse.found").replace("{n}", filtered.length.toLocaleString())}${forYou ? t("browse.byTaste") : ""}${saucesOut ? ` · ${t("browse.saucesOut")}` : ""} · ${t("card.plusLegend")}`;
   updateBrowseFilterCount();
   const doneN = document.getElementById("bf-done-n");
   if (doneN) doneN.textContent = `(${filtered.length.toLocaleString()})`;
@@ -1193,7 +1208,7 @@ function similarHtml(r) {
     <h3 class="font-bold text-lg mb-3">Kahawig na ulam</h3>
     <div class="grid grid-cols-2 gap-3">${sims.map((s) => `
       <button class="taste-pick" onclick="openModal(${s.id})">
-        <img src="${escapeHtml(s.img)}" alt="" loading="lazy">
+        <img src="${escapeHtml(s.img)}" alt="" loading="lazy" onerror="imgFallback(this)">
         <span class="taste-pick-name">${escapeHtml(s.title)}</span>
         <span class="taste-pick-price">${s.costPerServing > 0 ? `₱${s.costPerServing}/serving` : ""}</span>
       </button>`).join("")}

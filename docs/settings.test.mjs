@@ -16,7 +16,7 @@ const store = (init = {}) => {
 
 test("settings round-trip on the device", () => {
   const s = store();
-  const want = { lang: "tl", diets: ["lowcal", "gout"], meats: ["pork"], suggest: false, age: "senior", large: true, ageAsked: true };
+  const want = { lang: "en", langChosen: true, diets: ["lowcal", "gout"], meats: ["pork"], suggest: false, age: "senior", large: true, ageAsked: true };
   assert.equal(writeSettings(s, want), true);
   assert.deepEqual(plain(readSettings(s)), want);
 });
@@ -25,7 +25,10 @@ test("broken or unknown settings fall back to the defaults", () => {
   assert.deepEqual(plain(readSettings(store())), plain(defaultSettings()));
   assert.deepEqual(plain(readSettings(store({ [SETTINGS_KEY]: "{not json" }))), plain(defaultSettings()));
   const odd = readSettings(store({ [SETTINGS_KEY]: JSON.stringify({ lang: "fr", diets: ["gout", "keto", "gout"], meats: "pork", suggest: "yes", age: "elder", large: "yes" }) }));
-  assert.deepEqual(plain(odd), { lang: "en", diets: ["gout"], meats: [], suggest: true, age: null, large: false, ageAsked: false });
+  assert.deepEqual(plain(odd), { lang: "tl", langChosen: false, diets: ["gout"], meats: [], suggest: true, age: null, large: false, ageAsked: false });
+  // English stays only when it was picked; an old save with the former "en" default gets Tagalog.
+  assert.equal(readSettings(store({ [SETTINGS_KEY]: JSON.stringify({ lang: "en" }) })).lang, "tl");
+  assert.equal(readSettings(store({ [SETTINGS_KEY]: JSON.stringify({ lang: "en", langChosen: true }) })).lang, "en");
   const blocked = { getItem: () => { throw new Error("blocked"); }, setItem: () => { throw new Error("blocked"); } };
   assert.deepEqual(plain(readSettings(blocked)), plain(defaultSettings()));
   assert.equal(writeSettings(blocked, defaultSettings()), false);

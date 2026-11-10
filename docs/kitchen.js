@@ -108,9 +108,10 @@ function kitchenOk(r) {
 }
 
 function kitchenSummary() {
-  if (!KITCHEN_HAVE) return "Lahat ng ulam ang ipinapakita";
+  const tr = (key, fallback) => (typeof t === "function" ? t(key) : fallback);
+  if (!KITCHEN_HAVE) return tr("kitchen.all", "Lahat ng ulam ang ipinapakita");
   const n = typeof RECIPES !== "undefined" ? RECIPES.filter(kitchenOk).length : 0;
-  return `${KITCHEN_HAVE.size - 1} appliance${KITCHEN_HAVE.size - 1 === 1 ? "" : "s"} · ${n.toLocaleString()} ulam na kaya mong lutuin`;
+  return `${KITCHEN_HAVE.size - 1} appliance${KITCHEN_HAVE.size - 1 === 1 ? "" : "s"} · ${tr("kitchen.can", "{n} ulam na kaya mong lutuin").replace("{n}", n.toLocaleString())}`;
 }
 
 // ── The kitchen dialog ──

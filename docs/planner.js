@@ -370,8 +370,11 @@ const CONDIMENT_WORDS = /\b(fish|oyster|shrimp|anchovy|crab) (sauce|paste|cubes?
  */
 function proteinKind(r) {
   const title = r.title || "";
-  const veg = GULAY_WORDS.test(title);
-  // Fish or meat named in the title wins (Ginisang Sardinas), unless a vegetable is named too.
+  const at = (re) => { const i = title.search(re); return i < 0 ? Infinity : i; };
+  // A vegetable counts only when it comes first: "Tinolang Tahong with Malunggay" is isda,
+  // "Ginataang Sitaw at Hipon" is gulay.
+  const veg = at(GULAY_WORDS) < Math.min(at(FISH_WORDS), at(MEAT_WORDS));
+  // Fish or meat named in the title wins (Ginisang Sardinas), unless a vegetable is named first.
   if (!veg && (r.category === "Fish & Seafood" || FISH_WORDS.test(title))) return "isda";
   if (!veg && MEAT_WORDS.test(title)) return "karne";
   if (r.category === "Vegetable Dish" || veg) return "gulay";
@@ -575,7 +578,7 @@ function renderPicker() {
          onclick="pickDish(${r.id})" title="Drag to a day, or tap then tap a slot">
       ${r.img ? `<img src="${escapeHtml(r.img)}" alt="" loading="lazy">` : `<div class="plan-noimg">🍽️</div>`}
       <div class="min-w-0"><p class="plan-dish-title">${escapeHtml(r.title)}</p>
-      <p class="plan-dish-sub">${favs.has(r.id) ? "⭐ " : ""}₱${r.costPerServing}${r.costCoverage < 1 ? "+" : ""}/serving · ${r.category}
+      <p class="plan-dish-sub">${favs.has(r.id) ? "⭐ " : ""}₱${r.costPerServing}${r.costCoverage < 1 ? "+" : ""}/serving · ${escapeHtml(catLabel(r.category))}
         ${series !== "meryenda" && types.get(r.id).has("meryenda") ? `<span class="plan-badge">Meryenda</span>` : ""}</p></div>
     </div>`).join("") || `<p class="text-sm text-gray-400 p-2">${series === "fav"
       ? "Wala pang favorites. I-tap ang ☆ sa recipe, sa DA Prices o sa “Anong lulutuin?”."

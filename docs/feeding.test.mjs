@@ -115,3 +115,26 @@ test("the text plan lists the menu, rice and groceries", () => {
   assert.match(text, /☐ Bigas: 8\.0 kg · ≈₱360/);
   assert.match(text, /☐ Monggo: 5\.0 kg · ≈₱500/);
 });
+
+test("the menu spaces out the same main protein, and flags shellfish", () => {
+  const extra = [
+    dish("Tinolang Tahong", "Fish & Seafood", 20, 40),
+    dish("Ginataang Tahong", "Fish & Seafood", 21, 39),
+    dish("Adobong Pusit", "Fish & Seafood", 22, 38),
+    dish("Daing na Bangus", "Fish & Seafood", 23, 10),
+  ];
+  const pool = feedPool([...POOL_RECIPES, ...extra]);
+  const byId = new Map(pool.map((r) => [r.id, r]));
+  const menu = feedingMenu(pool, { days: 6, cap: 40, rng: () => 0 });
+  const isda = menu.filter((m) => m.kind === "isda").map((m) => byId.get(m.id).title);
+  // Two isda days (2 and 5) are 3 days apart, so both may be shellfish, but never back to back.
+  for (let i = 1; i < menu.length; i++) assert.ok(!(menu[i].shellfish && menu[i - 1].shellfish), `shellfish on days ${i} and ${i + 1}`);
+  assert.equal(isda[0], "Tinolang Tahong");
+  assert.ok(menu.some((m) => m.shellfish));
+});
+
+test("the verdict says whether the plan fits the budget per head", () => {
+  const ctxApi = vm.runInContext("({ feedVerdict })", ctx);
+  assert.deepEqual(plain(ctxApi.feedVerdict({ perHeadAvg: 35, overBudget: 0 }, 40)), { ok: true, avg: 35 });
+  assert.equal(ctxApi.feedVerdict({ perHeadAvg: 42, overBudget: 1 }, 40).ok, false);
+});

@@ -130,9 +130,9 @@ function factBoxHtml(r) {
   if (!facts.length) return "";
   FACT_INDEX = r.id % facts.length;
   return `<div id="fact-box" class="fact-box" data-id="${r.id}">
-    <p class="text-xs font-bold uppercase tracking-wide text-amber-800">💡 Alam mo ba?</p>
+    <p class="text-xs font-bold uppercase tracking-wide text-amber-800">${typeof t === "function" ? t("fact.title") : "💡 Alam mo ba?"}</p>
     <p id="fact-text" class="text-sm mt-1">${escapeHtml(facts[FACT_INDEX])}</p>
-    ${facts.length > 1 ? `<button onclick="nextFact()" class="text-xs font-semibold text-green-800 mt-2 hover:underline">Isa pa ↻ (${facts.length} facts)</button>` : ""}
+    ${facts.length > 1 ? `<button onclick="nextFact()" class="text-xs font-semibold text-green-800 mt-2 hover:underline">${typeof t === "function" ? t("fact.more").replace("{n}", facts.length) : `Isa pa ↻ (${facts.length})`}</button>` : ""}
   </div>`;
 }
 
