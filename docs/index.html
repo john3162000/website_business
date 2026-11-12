@@ -454,6 +454,54 @@
     .occ-toggle { margin-left: auto; flex-shrink: 0; min-height: 2.5rem; padding: 0 .9rem; border-radius: 9999px; border: 1px solid rgba(255, 255, 255, .3); color: #F8F4EA; font-size: .8125rem; font-weight: 600; white-space: nowrap; }
     .occ-toggle:hover { background: rgba(255, 255, 255, .1); }
     .occ-chips .occ-more { font-weight: 700; }
+    /* Napanood mo, lutuin mo (screen.js): its own page, reached from one button in Browse */
+    .scr-open { margin-left: auto; flex-shrink: 0; min-height: 2.75rem; padding: 0 1rem; border-radius: 9999px; border: 1px solid #E7DFCB; background: #FFFFFF; color: #1D5239; font-size: .8125rem; font-weight: 600; text-align: center; line-height: 1.2; }
+    .scr-open:hover { background: #EFF5F0; }
+    .scr-back { min-height: 2.5rem; padding: 0 .9rem; margin-bottom: .9rem; border-radius: 9999px; border: 1px solid #E7DFCB; background: #FFFFFF; color: #1D5239; font-size: .8125rem; font-weight: 600; }
+    .scr-back:hover { background: #EFF5F0; }
+    .scr-h1 { font-family: Fraunces, Georgia, serif; font-size: 1.875rem; font-weight: 700; line-height: 1.2; }
+    .scr-sub { font-size: .875rem; color: #6B7280; margin-top: .15rem; }
+    .scr-title-block { margin-top: 2rem; }
+    .scr-title-head { display: flex; align-items: center; gap: 1rem; margin-bottom: .9rem; }
+    .scr-clip { position: relative; flex: 0 0 13rem; aspect-ratio: 16 / 9; border-radius: 1rem; overflow: hidden; background: #163F2E; display: block; }
+    .scr-clip img { width: 100%; height: 100%; object-fit: cover; }
+    .scr-play { position: absolute; right: .5rem; bottom: .5rem; width: 2.25rem; height: 2.25rem; border-radius: 9999px; background: rgba(22, 63, 46, .88); color: #F8F4EA; display: flex; align-items: center; justify-content: center; font-size: .85rem; padding-left: .15rem; }
+    .scr-kind { font-size: .75rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #855F0E; }
+    .scr-name { font-family: Fraunces, Georgia, serif; font-size: 1.5rem; font-weight: 700; line-height: 1.2; color: #163F2E; }
+    .scr-ref { font-size: .8125rem; color: #4B5563; margin-top: .2rem; }
+    .scr-ref a, .scr-credit a, .scr-link { color: #1D5239; text-decoration: underline; text-underline-offset: 2px; }
+    .scr-credit { font-size: .75rem; color: #6B7280; margin-top: .35rem; }
+    .scr-dishes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .9rem; align-items: start; }
+    .scr-dish { background: #FFFFFF; border: 1px solid #E7DFCB; border-radius: 1rem; overflow: hidden; }
+    .scr-photo { width: 100%; height: 10rem; object-fit: cover; display: block; background: #F6EBCD; }
+    .scr-dish-body { padding: .8rem .95rem .9rem; }
+    .scr-dish-name { font-family: Fraunces, Georgia, serif; font-size: 1rem; font-weight: 600; line-height: 1.3; color: #111827; }
+    .scr-scene { font-size: .8125rem; color: #6B7280; margin-top: .1rem; }
+    .scr-stat { display: flex; flex-wrap: wrap; gap: .2rem .8rem; font-size: .8125rem; color: #4B5563; margin: .5rem 0 .6rem; min-height: 1.25rem; }
+    .scr-cost { color: #855F0E; font-weight: 700; }
+    .scr-wait { color: #6B7280; }
+    .scr-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .9rem; }
+    .scr-btn { min-height: 2.5rem; padding: 0 .9rem; border-radius: 9999px; border: 1px solid #E7DFCB; background: #FFFFFF; color: #1D5239; font-size: .8125rem; font-weight: 600; white-space: nowrap; }
+    .scr-btn:hover { background: #EFF5F0; }
+    .scr-link { font-size: .8125rem; font-weight: 600; }
+    .scr-lines { margin-top: .7rem; }
+    .scr-plain { font-size: .8125rem; color: #4B5563; list-style: disc; padding-left: 1.2rem; }
+    .scr-fine { font-size: .75rem; color: #6B7280; margin-top: 2rem; max-width: 48rem; }
+    @media (max-width: 899px) { .scr-dishes { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 639px) {
+      .scr-dishes { grid-template-columns: minmax(0, 1fr); }
+      .scr-title-head { flex-direction: column; align-items: stretch; }
+      .scr-clip { flex: none; width: 100%; }
+      .scr-open { margin-left: 0; }
+    }
+    html.dark .scr-open, html.dark .scr-back, html.dark .scr-btn { background: var(--s1); border-color: var(--line); color: var(--mint); }
+    html.dark .scr-open:hover, html.dark .scr-back:hover, html.dark .scr-btn:hover { background: var(--s2); }
+    html.dark .scr-name, html.dark .scr-dish-name { color: var(--tx); }
+    html.dark .scr-sub, html.dark .scr-scene, html.dark .scr-stat, html.dark .scr-wait, html.dark .scr-fine, html.dark .scr-plain, html.dark .scr-ref, html.dark .scr-credit { color: var(--tx2); }
+    html.dark .scr-kind, html.dark .scr-cost { color: var(--mango); }
+    html.dark .scr-ref a, html.dark .scr-credit a, html.dark .scr-link { color: var(--mint); }
+    html.dark .scr-dish { background: var(--s1); border-color: var(--line); }
+    html.dark .scr-photo { background: var(--s2); }
     /* A photo that failed to load (imgFallback in app.js) */
     .img-fallback { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; min-height: 4rem; background: #F6EBCD; font-size: 2.5rem; }
     html.dark .img-fallback { background: #1C3326; }
@@ -738,10 +786,11 @@
       <p id="hidden-note" class="hidden text-gray-400 text-xs mt-1"></p>
     </div>
 
-    <div class="mb-5 flex items-center gap-2">
+    <div class="mb-5 flex flex-wrap items-center gap-2">
       <input type="search" id="search-input" placeholder="Search by dish name..." data-i18n-ph="browse.search" oninput="filterRecipes()" aria-label="Search dishes"
         class="flex-1 min-w-0 sm:flex-none sm:w-80 border border-gray-300 rounded-full px-5 py-2.5 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-green-500"/>
       <button type="button" id="bf-toggle" class="bf-toggle" onclick="openBrowseFilters()" aria-controls="browse-filters" aria-expanded="false"><span data-i18n="browse.filters">Filters</span> <span class="bf-n" id="bf-count"></span></button>
+      <button type="button" class="scr-open" onclick="showSection('screen')" data-i18n="browse.screen">Mula sa anime at pelikula</button>
     </div>
 
     <!-- Okasyon: holiday and special-event picks (seasons.js) -->
@@ -812,6 +861,11 @@
     <p id="result-count" class="text-sm text-gray-500 mb-4"></p>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5" id="browse-grid"></div>
   </div>
+</section>
+
+<!-- ═══════════════════════ NAPANOOD MO, LUTUIN MO (screen.js; opened from Browse, not a tab) ═══════════════════════ -->
+<section id="section-screen" class="hidden flex-col flex-1">
+  <div class="max-w-6xl mx-auto px-4 py-10 w-full" id="screen-picks"></div>
 </section>
 
 <!-- ═══════════════════════════════════ DA PRICES ═══════════════════════════════════ -->
@@ -1284,6 +1338,7 @@
 <script src="visits.js"></script>
 <script src="feedback.js"></script>
 <script src="seasons.js"></script>
+<script src="screen.js"></script>
 <script src="pricecal.js"></script>
 <script src="tour.js"></script>
 <script src="app.js"></script>

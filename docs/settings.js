@@ -260,6 +260,7 @@ const I18N = {
   "card.plusLegend": ["“+” sa presyo: may sangkap na wala pang presyo", "“+” on a price: some ingredients have no price yet"],
   "browse.saucesOut": ["walang sawsawan at sauce dito (i-search para makita)", "sauces left out (search to find them)"],
   "browse.filters": ["Filter", "Filters"],
+  "browse.screen": ["Mula sa anime at pelikula", "From anime and films"],
   "browse.filtersDone": ["Ipakita ang resulta", "Show results"],
   "modal.close": ["Isara", "Close"],
   "modal.total": ["buong ulam", "whole dish"],
@@ -434,6 +435,7 @@ function settingsChanged() {
   if (typeof RECIPES !== "undefined" && RECIPES.length) {
     if (typeof filterRecipes === "function") filterRecipes();
     if (typeof renderOccasion === "function") renderOccasion();
+    if (typeof renderScreen === "function" && !document.getElementById("section-screen").classList.contains("hidden")) renderScreen();
     if (typeof renderPicker === "function" && document.getElementById("plan-picker")) renderPicker();
     if (typeof renderReceipt === "function" && document.getElementById("plan-receipt")) renderReceipt();
     if (typeof renderPriceForYou === "function") renderPriceForYou(typeof moversFell !== "undefined" ? moversFell : new Map());

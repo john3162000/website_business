@@ -23,12 +23,14 @@ test("Easter and the movable Sundays", () => {
 
 test("what's on today, nearest first", () => {
   assert.deepEqual(on(2026, 10, 28), ["undas+3"]);
+  assert.deepEqual(on(2026, 11, 13), []); // nothing near: the Okasyon box stays away
   assert.deepEqual(on(2026, 11, 1), ["undas"]);
   assert.deepEqual(on(2026, 11, 3), []);
-  assert.deepEqual(on(2026, 12, 1), ["pasko+15", "bagongtaon+25"]);
+  assert.deepEqual(on(2026, 12, 1), ["pasko+15"]);
   assert.deepEqual(on(2026, 12, 24), ["pasko", "bagongtaon+2"]);
   assert.deepEqual(on(2026, 12, 31), ["bagongtaon"]);
-  assert.deepEqual(on(2027, 1, 1), ["bagongtaon", "sinulog+14"]); // the window crosses into the new year
+  assert.deepEqual(on(2027, 1, 1), ["bagongtaon"]); // the window crosses into the new year
+  assert.deepEqual(on(2027, 1, 3), ["sinulog+12"]); // Sinulog Sunday is Jan 17, 2027
   assert.deepEqual(on(2026, 4, 3), ["semanasanta"]); // Good Friday 2026
   assert.deepEqual(on(2026, 3, 6), ["kuwaresma", "eidfitr+14"]); // a Lenten Friday
   assert.ok(on(2026, 2, 14).includes("valentines"));
@@ -36,25 +38,28 @@ test("what's on today, nearest first", () => {
   assert.deepEqual(on(2026, 3, 20).filter((k) => k.startsWith("eid")), ["eidfitr"]);
 });
 
-test("occasions are suggested two weeks ahead; New Year six weeks and Christmas 1.5 months before the day", () => {
+test("occasions show two weeks before the event; Christmas a month before", () => {
   // Valentine's (Feb 14): from Jan 31.
   assert.ok(!on(2027, 1, 30).some((k) => k.startsWith("valentines")));
   assert.ok(on(2027, 1, 31).includes("valentines+14"));
-  // Undas (Oct 31): from Oct 17.
-  assert.deepEqual(on(2026, 10, 16), []);
-  assert.deepEqual(on(2026, 10, 17), ["undas+14"]);
-  // Christmas (Dec 25): from Nov 10, a month and a half (45 days) before.
-  assert.deepEqual(on(2026, 11, 9), []);
-  assert.deepEqual(on(2026, 11, 10), ["pasko+36"]);
-  // New Year (Jan 1): from Nov 20, six weeks before.
-  assert.ok(!on(2026, 11, 19).some((k) => k.startsWith("bagongtaon")));
-  assert.ok(on(2026, 11, 20).includes("bagongtaon+36"));
+  // Undas (Nov 1): from Oct 18.
+  assert.deepEqual(on(2026, 10, 17), []);
+  assert.deepEqual(on(2026, 10, 18), ["undas+13"]);
+  // Christmas (Dec 25): from Nov 25, a month before.
+  assert.deepEqual(on(2026, 11, 24), []);
+  assert.deepEqual(on(2026, 11, 25), ["pasko+21"]);
+  // New Year (Jan 1): from Dec 18, two weeks before.
+  assert.ok(!on(2026, 12, 17).some((k) => k.startsWith("bagongtaon")));
+  assert.ok(on(2026, 12, 18).includes("bagongtaon+8"));
+  // Sinulog (third Sunday of January, Jan 17 in 2027): from Jan 3.
+  assert.ok(!on(2027, 1, 2).some((k) => k.startsWith("sinulog")));
+  // Every occasion has dates: none is shown all year.
+  for (const o of OCCASIONS) assert.ok(o.when(2027), o.key);
 });
 
-test("the next date of each occasion; undated ones have none", () => {
+test("the next date of each occasion", () => {
   assert.equal(ymd(nextStart(occ("pasko"), new Date(2026, 9, 28))), "2026-12-16");
   assert.equal(ymd(nextStart(occ("semanasanta"), new Date(2026, 9, 28))), "2027-03-21");
-  assert.equal(nextStart(occ("handaan"), new Date(2026, 9, 28)), null);
 });
 
 test("picks: title fits the occasion, avoided and meat dishes left out, best value first", () => {

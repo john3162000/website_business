@@ -1,5 +1,5 @@
-// Okasyon: holiday and special-event dishes at the top of Browse. The occasion that is on now
-// (or coming soon) is picked from today's date; chips let people look ahead to the others.
+// Okasyon: holiday and special-event dishes at the top of Browse. The box shows only when an occasion
+// is on or close (two weeks before the event; a month before Christmas); otherwise it stays away.
 // Holy Week follows Easter (computed); Chinese New Year and the two Eids follow the moon, so
 // their dates come from a table (the Eids can shift a day with the moon sighting).
 // Uses globals from app.js (RECIPES, escapeHtml, openModal, costText) and planner.js (proteinKind).
@@ -63,12 +63,11 @@ function typicalRank(o, title) {
   return i < 0 ? Infinity : i;
 }
 
-// How many days ahead an occasion is suggested: two weeks, so there's time to plan and shop; six
-// weeks for New Year and a month and a half for Christmas, which families plan (and save for)
-// much earlier (owner's choice).
+// How many days before the event an occasion starts to show: two weeks, so there's time to plan and
+// shop; a month for Christmas (Noche Buena), which families plan and save for earlier (owner's choice).
+// Outside these windows the Okasyon box is not shown at all.
 const SEASON_LEAD = 14;
-const SEASON_LEAD_BIG = 42;
-const SEASON_LEAD_XMAS = 45;
+const SEASON_LEAD_XMAS = 30;
 
 /**
  * Each occasion: when it is (start and end for a year, or null), how many days ahead it starts
@@ -77,13 +76,13 @@ const SEASON_LEAD_XMAS = 45;
  */
 const OCCASIONS = [
   { key: "bagongtaon", icon: "🎆", tl: "Bagong Taon · Media Noche", en: "New Year · Media Noche",
-    when: (y) => [SEASON_ymd(y, 12, 26), SEASON_ymd(y + 1, 1, 1)], lead: SEASON_LEAD_BIG - 6, // 6 weeks before Jan 1
+    when: (y) => [SEASON_ymd(y, 12, 26), SEASON_ymd(y + 1, 1, 1)], lead: SEASON_LEAD - 6, // 2 weeks before Jan 1: from Dec 18
     match: /\b(new year|media noche|pancit|bihon|canton|sotanghon|miki|spaghetti|biko|sapin[- ]?sapin|kalamay|tikoy|suman|maja|ube halaya|fruit salad|buko salad|lechon|hamon|ham|embutido|lumpia|leche flan|graham|grapes?|kare[- ]?kare|menudo|kaldereta|caldereta|mechado|afritada)\b/i,
     avoid: /\b(chicken|manok|fish|isda|tinola)\b/i,
     note: { tl: "Pansit para humaba ang buhay, malagkit na kakanin para magkadikit ang pamilya, at 12 bilog na prutas para swertehin. Iniiwasan ng iba ang manok at isda (“isang kahig, isang tuka”).",
       en: "Noodles for long life, sticky kakanin to keep the family together, and 12 round fruits for luck. Some skip chicken and fish (“scratch for scratch”)." } },
   { key: "sinulog", icon: "🥁", tl: "Sinulog · Santo Niño", en: "Sinulog · Santo Niño",
-    when: (y) => { const d = nthWeekday(y, 1, 0, 3); return [addDays(d, -2), d]; }, lead: SEASON_LEAD,
+    when: (y) => { const d = nthWeekday(y, 1, 0, 3); return [addDays(d, -2), d]; }, lead: SEASON_LEAD - 2, // 2 weeks before the Sunday
     match: /\b(lechon|cebu|puso|hanging rice|ngohiong|dinuguan|humba|bam-i|bam i|siomai|sutukil|kinilaw|ginabot|chorizo)\b/i,
     note: { tl: "Pista ng Santo Niño sa Cebu (ikatlong Linggo ng Enero): lechon Cebu, puso at sutukil.",
       en: "Feast of the Santo Niño in Cebu (third Sunday of January): Cebu lechon, puso rice and sutukil." } },
@@ -135,23 +134,15 @@ const OCCASIONS = [
     match: /\b(inihaw|ihaw|grilled|barbecue|bbq|liempo|sisig|crispy pata|lechon kawali|bulalo|kare[- ]?kare|kaldereta|caldereta|beef steak|bistek|tapa|chicharr?on|kilawin|kinilaw|pulutan)\b/i,
     note: { tl: "Para kay Tatay: inihaw, sisig, bulalo at iba pang paborito sa handaan.", en: "For Dad: grilled liempo, sisig, bulalo and other handaan favourites." } },
   { key: "undas", icon: "🕯️", tl: "Undas", en: "All Saints' Day (Undas)",
-    when: (y) => [SEASON_ymd(y, 10, 31), SEASON_ymd(y, 11, 2)], lead: SEASON_LEAD,
+    when: (y) => [SEASON_ymd(y, 10, 31), SEASON_ymd(y, 11, 2)], lead: SEASON_LEAD - 1, // 2 weeks before Nov 1
     match: /\b(suman|biko|kakanin|palitaw|ginataan|ginataang|bilo[- ]?bilo|puto|kutsinta|sapin[- ]?sapin|maja|espasol|kalamay|cassava cake|turon|pancit|bibingka|binignit|nilupak)\b/i,
     note: { tl: "Baon sa sementeryo: suman, biko, ginataan at pansit, para sa buong pamilyang nagbabantay.",
       en: "Food to bring to the cemetery: suman, biko, ginataan and pancit for the whole family's vigil." } },
   { key: "pasko", icon: "🎄", tl: "Pasko · Noche Buena", en: "Christmas · Noche Buena",
-    when: (y) => [SEASON_ymd(y, 12, 16), SEASON_ymd(y, 12, 25)], lead: SEASON_LEAD_XMAS - 9, // 1.5 months (45 days) before Dec 25: from Nov 10
+    when: (y) => [SEASON_ymd(y, 12, 16), SEASON_ymd(y, 12, 25)], lead: SEASON_LEAD_XMAS - 9, // a month before Dec 25: from Nov 25
     match: /\b(christmas|noche buena|hamon|ham|queso de bola|lechon|embutido|morcon|relleno|bibingka|puto bumbong|leche flan|fruit salad|buko salad|macaroni salad|spaghetti|kare[- ]?kare|menudo|caldereta|kaldereta|mechado|afritada|lengua|pancit|lumpia|shanghai|graham|buko pandan|ensaymada|tsokolate|hot chocolate|roast(ed)? chicken|cheese ?cake|mango float)\b/i,
     note: { tl: "Simbang Gabi (Dis 16–24) na may bibingka at puto bumbong, tapos Noche Buena: hamon, queso de bola, spaghetti at fruit salad.",
       en: "Simbang Gabi (Dec 16–24) with bibingka and puto bumbong, then Noche Buena: ham, queso de bola, spaghetti and fruit salad." } },
-  // No fixed date: always in the chips.
-  { key: "handaan", icon: "🎂", tl: "Handaan · Birthday", en: "Party · Birthday", when: () => null, lead: 0,
-    match: /\b(pancit|bihon|canton|palabok|spaghetti|lumpia|shanghai|embutido|menudo|kaldereta|caldereta|afritada|mechado|fried chicken|barbecue|bbq|leche flan|fruit salad|buko pandan|graham|maja|puto|kutsinta|cake|macaroni)\b/i,
-    note: { tl: "Pang-handaan: pansit para humaba ang buhay, spaghetti para sa mga bata, at lumpiang shanghai na laging ubos.",
-      en: "Party food: pancit for long life, sweet spaghetti for the kids, and lumpiang shanghai that always runs out." } },
-  { key: "fiesta", icon: "🎉", tl: "Pista sa baryo", en: "Town fiesta", when: () => null, lead: 0,
-    match: /\b(lechon|kare[- ]?kare|kaldereta|caldereta|menudo|afritada|mechado|embutido|relleno|morcon|dinuguan|pancit|lumpia|leche flan|maja|biko|suman|puto|kutsinta|buko pandan|fruit salad|halo[- ]?halo)\b/i,
-    note: { tl: "Bukas ang bahay sa pista: lechon, kaldereta, dinuguan at kakanin para sa lahat ng bisita.", en: "Open house for the fiesta: lechon, kaldereta, dinuguan and kakanin for every guest." } },
 ];
 
 /**
@@ -235,59 +226,36 @@ function setOccasion(key) {
   if (typeof trackEvent === "function") trackEvent(`occasion/${key}`);
 }
 
-// Okasyon box state: null = automatic (open only when a holiday is near), true/false = the visitor's choice.
+// Folded or open: null = open (the box only shows near an occasion), true/false = the visitor's choice.
 let SEASON_OPEN = null;
-let SEASON_ALL_CHIPS = false;
-const SEASON_CHIPS = 5;
 
 function toggleOccasion() { SEASON_OPEN = !occasionIsOpen(); renderOccasion(); }
-function showAllOccasions() { SEASON_ALL_CHIPS = true; renderOccasion(); }
-function occasionIsOpen() { return SEASON_OPEN ?? (!!SEASON_PICK || activeOccasions(new Date()).length > 0); }
+function occasionIsOpen() { return SEASON_OPEN ?? true; }
 
 function renderOccasion() {
   const box = document.getElementById("occasion-picks");
   if (!box || typeof RECIPES === "undefined" || !RECIPES.length) return;
   const en = typeof siteLang === "function" && siteLang() === "en";
-  const today = new Date();
-  const active = activeOccasions(today);
-  const key = SEASON_PICK || (active[0] ? active[0].o.key : "handaan");
-  const o = OCCASIONS.find((x) => x.key === key) || OCCASIONS[0];
-  const act = active.find((a) => a.o.key === o.key);
-  const next = nextStart(o, today);
-  const when = act
-    ? (act.now ? (en ? "Now" : "Ngayon") : (en ? `In ${act.daysLeft} day${act.daysLeft > 1 ? "s" : ""}` : `Sa loob ng ${act.daysLeft} araw`)) + ` · ${occasionDates(act.start, act.end)}`
-    : next ? `${en ? "Next" : "Susunod"}: ${occasionDates(next, next)}` : (en ? "Any time" : "Kahit kailan");
-  // Chips: what's on or coming first, then the rest by their next date, the undated ones last.
-  const order = [...OCCASIONS].sort((a, b) => {
-    const aa = active.findIndex((x) => x.o.key === a.key), bb = active.findIndex((x) => x.o.key === b.key);
-    if (aa !== bb && (aa < 0 || bb < 0)) return aa < 0 ? 1 : -1;
-    if (aa >= 0 && bb >= 0) return aa - bb;
-    const na = nextStart(a, today), nb = nextStart(b, today);
-    return (na ? +na : Infinity) - (nb ? +nb : Infinity);
-  });
+  // Only what is on now or coming within its lead time; otherwise the box stays away.
+  const active = activeOccasions(new Date());
+  if (!active.length) { box.innerHTML = ""; box.classList.remove("occ-folded"); return; }
+  const act = active.find((x) => x.o.key === SEASON_PICK) || active[0];
+  const o = act.o;
+  const when = (act.now ? (en ? "Now" : "Ngayon") : (en ? `In ${act.daysLeft} day${act.daysLeft > 1 ? "s" : ""}` : `Sa loob ng ${act.daysLeft} araw`)) + ` · ${occasionDates(act.start, act.end)}`;
   const ok = (r) => (typeof kitchenOk !== "function" || kitchenOk(r)) && (typeof dietsOk !== "function" || dietsOk(r, activeDiets()));
   const picks = occasionPicks(o, RECIPES, 8, ok, typeof proteinKind === "function" ? proteinKind : undefined);
   const open = occasionIsOpen();
   const toggle = `<button type="button" class="occ-toggle" onclick="toggleOccasion()" aria-expanded="${open}">${escapeHtml(typeof t === "function" ? t(open ? "occ.hide" : "occ.show") : (open ? "▴" : "▾"))}</button>`;
-  box.classList.toggle("occ-folded", !open);
-  if (!open) {
-    box.innerHTML = `<div class="occ-head"><span class="occ-icon" aria-hidden="true">${o.icon}</span>
+  const head = `<div class="occ-head"><span class="occ-icon" aria-hidden="true">${o.icon}</span>
       <div class="min-w-0 flex-1"><h2 class="occ-title">${escapeHtml(en ? o.en : o.tl)}</h2><p class="occ-kicker">${escapeHtml(when)}</p></div>${toggle}</div>`;
-    return;
-  }
-  const chips = SEASON_ALL_CHIPS ? order : order.slice(0, SEASON_CHIPS);
-  const more = order.length - chips.length;
+  box.classList.toggle("occ-folded", !open);
+  if (!open) { box.innerHTML = head; return; }
+  // Chips only when two occasions overlap (Christmas and New Year).
+  const chips = active.length < 2 ? "" : `<div class="occ-chips">${active.map((x) => `<button class="wx-btn ${x.o.key === o.key ? "on" : ""}" onclick="setOccasion('${x.o.key}')">${escapeHtml(en ? x.o.en : x.o.tl)}</button>`).join("")}</div>`;
   box.innerHTML = `
-    <div class="occ-head">
-      <span class="occ-icon" aria-hidden="true">${o.icon}</span>
-      <div class="min-w-0">
-        <h2 class="occ-title">${escapeHtml(en ? o.en : o.tl)}</h2>
-        <p class="occ-kicker">${escapeHtml(when)}</p>
-      </div>
-      ${toggle}
-    </div>
+    ${head}
     <p class="occ-note">${escapeHtml(en ? o.note.en : o.note.tl)}</p>
-    <div class="occ-chips">${chips.map((x) => `<button class="wx-btn ${x.key === o.key ? "on" : ""}" onclick="setOccasion('${x.key}')">${x.icon} ${escapeHtml(en ? x.en : x.tl)}${active.some((a) => a.o.key === x.key) ? " •" : ""}</button>`).join("")}${more > 0 ? `<button class="wx-btn occ-more" onclick="showAllOccasions()">${escapeHtml(typeof t === "function" ? t("occ.more").replace("{n}", more) : `+${more}`)}</button>` : ""}</div>
+    ${chips}
     <div class="occ-row">${picks.map((r) => `
       <button class="occ-card" onclick="openModal(${r.id})">
         <img src="${escapeHtml(r.img)}" alt="" loading="lazy" onerror="imgFallback(this)">
