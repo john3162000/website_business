@@ -1265,7 +1265,7 @@ function closeModalBtn() { closeModal(); }
 // ═══════════════ NAVIGATION ═══════════════
 
 function showSection(name) {
-  ["home", "browse", "prices", "mydish", "planner", "finder", "game"].forEach((s) => {
+  ["home", "browse", "prices", "mydish", "planner", "finder", "game", "screen"].forEach((s) => {
     document.getElementById(`section-${s}`).classList.toggle("hidden", s !== name);
     document.getElementById(`section-${s}`).classList.toggle("flex", s === name);
     const btn = document.getElementById(`nav-${s}`);
@@ -1277,6 +1277,7 @@ function showSection(name) {
   window.scrollTo(0, 0);
   trackEvent(`section/${name}`);
   if (name === "browse") { filterRecipes(); if (typeof renderOccasion === "function") renderOccasion(); }
+  if (name === "screen" && typeof renderScreen === "function") renderScreen();
   if (name === "prices") { loadMovers(); renderAlerts(); renderPriceForYou(moversFell); loadPriceCalendar(); }
   if (name === "mydish") initMyDish();
   if (name === "planner") initPlanner();
