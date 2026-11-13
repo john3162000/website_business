@@ -181,6 +181,21 @@ const SCREEN_TITLES = [
         lines: [[4, "cups", "cooked rice"], [200, "g", "ground pork"], [3, "pieces", "egg"], [4, "cloves", "garlic"], [1, "piece", "onion"],
           [2, "stalks", "green onions"], [2, "tbsp", "soy sauce"], [2, "tbsp", "cooking oil"]] },
     ] },
+  { key: "adventuretime", name: "Adventure Time", kind: { tl: "Cartoon", en: "Cartoon" },
+    clip: { id: "TfCDr6MuR7o", by: "Cartoon Network UK", name: "Bacon Pancakes" },
+    ref: { tl: "Tungkol sa ulam: pancake (Wikipedia)", en: "About the dish: pancake (Wikipedia)", url: "https://en.wikipedia.org/wiki/Pancake" },
+    dishes: [
+      { key: "pancakes", name: "Jake's bacon pancakes", servings: 4, find: "Jake bacon pancakes song",
+        scene: { tl: "Ang almusal na kinakanta ni Jake habang nagluluto.", en: "The breakfast Jake sings about while he cooks." },
+        img: { file: "Bacon Pancakes - Moksha Caffè 2026-05-03.jpg", by: "Andy Li", license: "CC0" },
+        lines: [[1.5, "cups", "all purpose flour"], [1, "piece", "egg"], [1.25, "cups", "milk"], [2, "tbsp", "sugar"], [1, "tbsp", "baking powder"],
+          [2, "tbsp", "butter"], [200, "g", "bacon"], [0.25, "cup", "pancake syrup"]] },
+      { key: "applepie", name: "Tree Trunks' apple pie", servings: 8, find: "Tree Trunks apple pie scene",
+        scene: { tl: "Ang apple pie ni Tree Trunks na paborito nina Finn at Jake.", en: "Tree Trunks' apple pie, a favourite of Finn and Jake." },
+        img: { file: "Lattice apple pie.png", by: "The-Wuje", license: "CC BY-SA 4.0" },
+        lines: [[2.5, "cups", "all purpose flour"], [1, "cup", "butter"], [6, "pieces", "apples"], [0.5, "cup", "sugar"], [1, "tsp", "cinnamon"],
+          [1, "tbsp", "lemon juice"], [1, "piece", "egg"], [0.5, "cup", "water"]] },
+    ] },
 ];
 
 /** A dish's lines in the shape POST /api/dish takes. */
