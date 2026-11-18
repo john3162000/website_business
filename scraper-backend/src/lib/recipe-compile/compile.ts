@@ -26,6 +26,23 @@ const ZERO: Nutrients = { kcal: 0, protein: 0, fat: 0, carbs: 0, sodium: 0, fibe
 export interface DaPrice {
   price: number | null;
   unit: { per: "kg" | "piece" | "bottle"; pieceGrams: number | null; bottleMl: number | null };
+  /** When DA last reported it (ms); lets daLookup prefer a current name over a renamed one. */
+  date?: number;
+}
+
+/** DA renames items now and then (Nov 2026: "Pork Belly (Liempo), Local" → "Belly (Liempo), Local Fresh or Chilled"). */
+const DA_RENAME_GRACE_MS = 10 * 86400000;
+
+/**
+ * The DA price for a catalog row whose `daName` may list several names, "new | old": the first name
+ * with a price no more than 10 days older than the freshest of them. Pure, tested.
+ */
+export function daLookup(da: Map<string, DaPrice>, daName: string | null | undefined): DaPrice | undefined {
+  if (!daName) return undefined;
+  const found = daName.split(" | ").map((n) => da.get(n.trim())).filter((p): p is DaPrice => !!p);
+  if (found.length <= 1) return found[0];
+  const newest = Math.max(...found.map((p) => p.date ?? 0));
+  return found.find((p) => (p.date ?? 0) >= newest - DA_RENAME_GRACE_MS) ?? found[0];
 }
 export interface CompileContext {
   aliases: Record<string, Alias>;
@@ -318,7 +335,7 @@ function lineCost(c: Canonical, gUsed: number, da: DaPrice | undefined, isOil: b
 
 /** A slug's cost for `used` grams (`gAP` for packs): DA, then PSA, then the SM / DTI reference prices. */
 function priceOf(slug: string, c: Canonical, used: number, gAP: number, ctx: CompileContext): { cost: number; source: string } | null {
-  const da = c.daName ? lineCost(c, used, ctx.da.get(c.daName), c.role === "frying_oil_candidate") : null;
+  const da = c.daName ? lineCost(c, used, daLookup(ctx.da, c.daName), c.role === "frying_oil_candidate") : null;
   if (da !== null) return { cost: da, source: "DA" };
   const p = c.psaName ? ctx.psa?.get(c.psaName) : undefined;
   const g = c.cookedPerRaw ? used / c.cookedPerRaw : used;

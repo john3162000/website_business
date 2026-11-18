@@ -124,7 +124,7 @@ export async function GET(request: Request) {
 
   // Filipino name: the FNRI alternate name of the catalog ingredient priced by this DA item.
   const codeByDa = new Map<string, string>();
-  for (const c of Object.values(CANONICALS)) if (c.daName && c.fnriCode && !codeByDa.has(c.daName)) codeByDa.set(c.daName, c.fnriCode);
+  for (const c of Object.values(CANONICALS)) if (c.daName && c.fnriCode) for (const n of c.daName.split(" | ")) if (!codeByDa.has(n.trim())) codeByDa.set(n.trim(), c.fnriCode);
   await ensureNutritionColumns().catch(() => {});
   const alt = await prisma.nutritionFact.findMany({
     where: { foodCode: { in: [...new Set(codeByDa.values())] } },

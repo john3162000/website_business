@@ -761,10 +761,31 @@
     .dish-line > div > span { flex: none; }
     .dish-unit-sel { width: 7.5rem; }
     @media (max-width: 420px) { .dish-unit-sel { width: 6.25rem; } .dish-hint { margin-left: 0; } }
+    .dish-chart { position: relative; margin-top: .5rem; padding-left: 3.4rem; padding-bottom: 1.1rem; }
+    .dish-chart-y { position: absolute; left: 0; font-size: .65rem; color: #6b7280; font-variant-numeric: tabular-nums; }
+    .dish-chart-y.top { top: 0; } .dish-chart-y.bottom { bottom: 1.1rem; }
+    .dish-chart-grid { stroke: #E7DFCB; stroke-width: 1; }
+    .dish-chart-x { position: absolute; left: 3.4rem; right: 0; bottom: 0; height: 1rem; }
+    .dish-chart-x span { position: absolute; transform: translateX(-50%); font-size: .65rem; color: #6b7280; }
+    html.dark .dish-chart-grid { stroke: var(--line); }
+    html.dark .dish-chart-y, html.dark .dish-chart-x span { color: var(--tx3); }
+    .dish-group + .dish-group { margin-top: .9rem; padding-top: .75rem; border-top: 1px dashed #E7DFCB; }
+    .dish-group-h { display: flex; align-items: center; gap: .4rem; margin-bottom: .5rem; font-weight: 700; }
+    .dish-group-h input { font-weight: 700; color: #163F2E; }
+    .dish-group-main { font-size: .75rem; font-weight: 700; color: #6b7280; margin-bottom: .4rem; }
+    .dish-add-group { margin-top: .9rem; width: 100%; border: 1px dashed #2F7A55; color: #1D5239; border-radius: .75rem; padding: .55rem; font-size: .85rem; font-weight: 600; background: transparent; }
+    .cook-chip-group { font-size: .72rem; font-weight: 700; color: #855F0E; margin: .35rem 0 .2rem; }
+    html.dark .dish-group + .dish-group { border-color: var(--line); }
+    html.dark .dish-group-h input { color: var(--tx); }
+    html.dark .dish-add-group { border-color: var(--mint); color: var(--mint); }
+    html.dark .cook-chip-group { color: var(--mango); }
     .dish-hint { margin: .25rem 0 0 4.5rem; font-size: .75rem; color: #9a3412; }
     .dish-bad { border-color: #ea580c !important; background: #fff7ed; }
     html.dark .dish-hint { color: #fdba74; }
     html.dark .dish-bad { background: #3a2412; }
+    .cook-no3d { min-height: 10rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .6rem; padding: 1rem; text-align: center; color: #F8F4EA; background: #1D5239; }
+    .cook-no3d p { font-size: .9rem; font-weight: 600; max-width: 28rem; }
+    .cook-no3d small { font-size: .65rem; opacity: .6; }
     .cook-controls { display: flex; align-items: center; gap: .5rem; margin: .65rem 0; }
     .cook-controls .wx-btn { min-width: 2.75rem; min-height: 2.75rem; font-size: 1rem; }
     .cook-count { margin-left: auto; font-size: .8rem; color: #6b7280; font-variant-numeric: tabular-nums; }

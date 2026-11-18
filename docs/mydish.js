@@ -114,15 +114,31 @@ function newDishId() {
 
 /** A site recipe's ingredient lines as an editable dish (group headings left out). */
 function dishFromRecipe(recipe, servings) {
+  // A heading line ("For the sauce:", "Marinade ingredients:") starts a group of the lines after it.
+  let group = "";
+  const lines = [];
+  for (const i of recipe.ingredients || []) {
+    const name = (i.name || "").trim();
+    if (!name) continue;
+    if (/:\s*$/.test(name)) { group = name.replace(/:\s*$/, "").trim(); continue; }
+    const line = { amount: i.amount || "", unit: i.unit || "", name: i.name, slug: null };
+    if (group) line.group = group;
+    lines.push(line);
+  }
   return {
     id: newDishId(),
     title: `My ${recipe.title}`,
     servings: servings || recipe.servings || 4,
     fromRecipeId: recipe.id,
-    lines: (recipe.ingredients || [])
-      .filter((i) => i.name && !/:\s*$/.test(i.name.trim()))
-      .map((i) => ({ amount: i.amount || "", unit: i.unit || "", name: i.name, slug: null })),
+    lines,
   };
+}
+
+/** The dish's groups in order of first use; the main (unnamed) group always first. Pure, tested. */
+function dishGroups(lines) {
+  const gs = [""];
+  for (const l of lines || []) { const g = l.group || ""; if (!gs.includes(g)) gs.push(g); }
+  return gs;
 }
 
 /**
@@ -142,6 +158,31 @@ function sparkPath(points, w = 300, h = 64, pad = 4) {
   const sx = (x) => pad + (x1 === x0 ? 0 : (x - x0) / (x1 - x0)) * (w - 2 * pad);
   const sy = (y) => h - pad - (y1 === y0 ? 0.5 : (y - y0) / (y1 - y0)) * (h - 2 * pad);
   return points.map((p, i) => `${i ? "L" : "M"}${sx(xs[i]).toFixed(1)},${sy(ys[i]).toFixed(1)}`).join(" ");
+}
+
+/**
+ * The price chart over a fixed six-month window: the DA days as a line, the weekly PSA points
+ * (before DA's history starts) as dots, month labels along the bottom. Pure, tested.
+ * Returns null with fewer than two points.
+ */
+const DISH_CHART_DAYS = 183;
+const DISH_MONTHS = { tl: ["Ene", "Peb", "Mar", "Abr", "May", "Hun", "Hul", "Ago", "Set", "Okt", "Nob", "Dis"], en: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] };
+function dishChartGeom(points, nowMs, lang = "tl", w = 300, h = 80, pad = 4) {
+  const end = nowMs, start = end - DISH_CHART_DAYS * 86400000;
+  const pts = (points || []).filter((p) => p.cost != null && Date.parse(p.date) >= start && Date.parse(p.date) <= end + 86400000)
+    .sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
+  if (pts.length < 2) return null;
+  const ys = pts.map((p) => p.cost);
+  const [y0, y1] = [Math.min(...ys), Math.max(...ys)];
+  const sx = (t) => pad + ((t - start) / (end - start)) * (w - 2 * pad);
+  const sy = (y) => h - pad - (y1 === y0 ? 0.5 : (y - y0) / (y1 - y0)) * (h - 2 * pad);
+  const da = pts.filter((p) => p.source !== "PSA");
+  const path = da.length >= 2 ? da.map((p, i) => `${i ? "L" : "M"}${sx(Date.parse(p.date)).toFixed(1)},${sy(p.cost).toFixed(1)}`).join(" ") : null;
+  const dots = pts.filter((p) => p.source === "PSA" || da.length < 2).map((p) => ({ x: +sx(Date.parse(p.date)).toFixed(1), y: +sy(p.cost).toFixed(1) }));
+  const ticks = [];
+  const d = new Date(start); d.setUTCDate(1); d.setUTCMonth(d.getUTCMonth() + 1);
+  for (; d.getTime() <= end; d.setUTCMonth(d.getUTCMonth() + 1)) ticks.push({ x: +(((d.getTime() - start) / (end - start)) * 100).toFixed(1), label: DISH_MONTHS[lang === "en" ? "en" : "tl"][d.getUTCMonth()] });
+  return { path, dots, ticks, y0, y1, first: pts[0], last: pts[pts.length - 1], daFrom: da.length ? da[0].date : null };
 }
 
 // ── State ──
@@ -281,6 +322,57 @@ function dishHintText(l) {
   return dishLineIssue(l, ing ? dishUnitsFor(ing.units) : null, l.engineStatus, ing ? ing.label.toLowerCase() : null, en);
 }
 
+/** Ingredient lines under their group headings, each group with its own "+ Add ingredient". */
+function dishLinesHtml(d) {
+  const en = typeof siteLang === "function" && siteLang() === "en";
+  const gs = dishGroups(d.lines);
+  const many = gs.length > 1;
+  return gs.map((g, gi) => {
+    const rows = d.lines.map((l, i) => ((l.group || "") === g ? lineRow(l, i) : "")).join("");
+    const head = !many ? "" : g
+      ? `<div class="dish-group-h"><span aria-hidden="true">📋</span><input value="${escapeHtml(g)}" onchange="dishRenameGroup(${gi}, this.value)" class="flex-1 min-w-0 ${DISH_INPUT}" aria-label="${en ? "Group name" : "Pangalan ng grupo"}"/>
+          <button onclick="dishRemoveGroup(${gi})" class="text-gray-400 hover:text-red-600 text-xs px-1" title="${en ? "Remove the group (keeps its ingredients)" : "Alisin ang grupo (maiiwan ang mga sangkap)"}">${en ? "Ungroup" : "Alisin ang grupo"}</button></div>`
+      : `<p class="dish-group-main">${en ? "Main" : "Pangunahin"}</p>`;
+    return `<div class="dish-group">${head}<div class="space-y-2">${rows}</div>
+      <button onclick="dishAdd(${gi})" class="mt-2 text-sm text-green-700 hover:underline font-medium">+ ${en ? "Add ingredient" : "Magdagdag ng sangkap"}</button></div>`;
+  }).join("") + `<button onclick="dishAddGroup()" class="dish-add-group">＋ ${en ? "Add a group (e.g. For the sauce)" : "Magdagdag ng grupo (hal. Para sa sauce)"}</button>`;
+}
+
+function dishRenderLines(focusIndex) {
+  const box = document.getElementById("mydish-lines");
+  if (!box || !currentDish) return;
+  box.innerHTML = dishLinesHtml(currentDish);
+  if (focusIndex != null) box.querySelector(`[data-line="${focusIndex}"] [aria-label=Amount]`)?.focus();
+}
+
+function dishAddGroup() {
+  if (!currentDish) return;
+  const en = typeof siteLang === "function" && siteLang() === "en";
+  const taken = dishGroups(currentDish.lines);
+  let name = en ? "For the sauce" : "Para sa sauce", k = 2;
+  while (taken.includes(name)) name = `${en ? "Group" : "Grupo"} ${k++}`;
+  currentDish.lines.push({ amount: "", unit: "", name: "", slug: null, group: name });
+  dishRenderLines();
+  const inputs = document.querySelectorAll("#mydish-lines .dish-group-h input");
+  const last = inputs[inputs.length - 1]; if (last) { last.focus(); last.select(); }
+}
+
+function dishRenameGroup(gi, value) {
+  const old = dishGroups(currentDish.lines)[gi], name = String(value || "").trim();
+  if (!old) return;
+  for (const l of currentDish.lines) if ((l.group || "") === old) { if (name) l.group = name; else delete l.group; }
+  dishRenderLines();
+  if (typeof cookKitchenSync === "function") cookKitchenSync();
+}
+
+function dishRemoveGroup(gi) {
+  const old = dishGroups(currentDish.lines)[gi];
+  if (!old) return;
+  for (const l of currentDish.lines) if (l.group === old) delete l.group;
+  dishRenderLines();
+  if (typeof cookKitchenSync === "function") cookKitchenSync();
+}
+
 function lineRow(l, i) {
   const hint = dishHintText(l);
   return `
@@ -326,8 +418,7 @@ function renderEditor() {
         ${from ? `<p class="text-xs text-gray-400">Based on <button onclick="openModal(${from.id})" class="text-green-700 hover:underline">${escapeHtml(from.title)}</button></p>` : ""}
         <div>
           <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Ingredients</p>
-          <div class="space-y-2" id="mydish-lines">${d.lines.map(lineRow).join("")}</div>
-          <button onclick="dishAdd()" class="mt-3 text-sm text-green-700 hover:underline font-medium">+ Add ingredient</button>
+          <div id="mydish-lines">${dishLinesHtml(d)}</div>
         </div>
         <div class="flex items-center gap-3 flex-wrap pt-2 border-t border-gray-100">
           <button onclick="saveCurrentDish()" class="bg-green-700 hover:bg-green-600 text-white text-sm font-medium px-5 py-2 rounded-full">Save on this device</button>
@@ -361,14 +452,17 @@ function dishEdit(i, field, value) {
   scheduleDish();
 }
 
-function dishAdd() {
-  currentDish.lines.push({ amount: "", unit: "", name: "", slug: null });
-  document.getElementById("mydish-lines").insertAdjacentHTML("beforeend", lineRow(currentDish.lines.at(-1), currentDish.lines.length - 1));
+function dishAdd(gi = 0) {
+  const group = dishGroups(currentDish.lines)[gi] || "";
+  const line = { amount: "", unit: "", name: "", slug: null };
+  if (group) line.group = group;
+  currentDish.lines.push(line);
+  dishRenderLines(currentDish.lines.length - 1);
 }
 
 function dishRemove(i) {
   currentDish.lines.splice(i, 1);
-  document.getElementById("mydish-lines").innerHTML = currentDish.lines.map(lineRow).join("");
+  dishRenderLines();
   scheduleDish();
 }
 
@@ -437,21 +531,29 @@ function dishResultHtml(data) {
 }
 
 function priceChartHtml(data, r) {
+  const en = typeof siteLang === "function" && siteLang() === "en";
   const pts = comparableHistory(data.history, r.costCoverage);
-  const path = sparkPath(pts);
-  if (!path) return `<div class="bg-white rounded-2xl shadow p-5 text-sm text-gray-400">Not enough price history for this dish yet.</div>`;
-  const first = pts[0], last = pts[pts.length - 1];
+  const g = dishChartGeom(pts, Date.now(), en ? "en" : "tl");
+  if (!g) return `<div class="bg-white rounded-2xl shadow p-5 text-sm text-gray-400">${en ? "Not enough price history for this dish yet." : "Kulang pa ang kasaysayan ng presyo ng ulam na ito."}</div>`;
+  const { first, last } = g;
   const change = first.cost > 0 ? (last.cost - first.cost) / first.cost : null;
-  const ys = pts.map((p) => p.cost);
+  const day = (iso) => new Date(iso).toLocaleDateString(en ? "en-PH" : "fil-PH", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
   return `
     <div class="bg-white rounded-2xl shadow p-5">
       <div class="flex items-baseline justify-between flex-wrap gap-2">
-        <h3 class="font-bold">Price over time</h3>
-        <span class="text-sm font-bold ${change > 0 ? "price-up" : change < 0 ? "price-down" : "text-gray-500"}">${pctText(change)} since ${shortDate(new Date(first.date))}</span>
+        <h3 class="font-bold">${en ? "Price over the last 6 months" : "Presyo sa nakaraang 6 na buwan"}</h3>
+        <span class="text-sm font-bold ${change > 0 ? "price-up" : change < 0 ? "price-down" : "text-gray-500"}">${pctText(change)} ${en ? "since" : "mula"} ${day(first.date)}</span>
       </div>
-      <svg viewBox="0 0 300 64" class="w-full h-20 mt-2" preserveAspectRatio="none" role="img" aria-label="Cost per serving over time">
-        <path d="${path}" fill="none" stroke="#1D5239" stroke-width="2" vector-effect="non-scaling-stroke"/>
-      </svg>
-      <p class="text-xs text-gray-400">₱${first.cost.toFixed(2)} → ₱${last.cost.toFixed(2)} per serving · low ₱${Math.min(...ys).toFixed(2)}, high ₱${Math.max(...ys).toFixed(2)} · DA prices change daily; SM and DTI reference prices are fixed</p>
+      <div class="dish-chart">
+        <span class="dish-chart-y top">₱${g.y1.toFixed(2)}</span><span class="dish-chart-y bottom">₱${g.y0.toFixed(2)}</span>
+        <svg viewBox="0 0 300 80" class="w-full h-24" preserveAspectRatio="none" role="img" aria-label="${en ? "Cost per serving over the last 6 months" : "Gastos bawat serving sa nakaraang 6 na buwan"}">
+          ${g.ticks.map((t) => `<line x1="${(t.x * 3).toFixed(1)}" x2="${(t.x * 3).toFixed(1)}" y1="0" y2="80" class="dish-chart-grid" vector-effect="non-scaling-stroke"/>`).join("")}
+          ${g.path ? `<path d="${g.path}" fill="none" stroke="#1D5239" stroke-width="2" vector-effect="non-scaling-stroke"/>` : ""}
+          ${g.dots.map((d) => `<circle cx="${d.x}" cy="${d.y}" r="1.6" fill="#DDAE2B"/>`).join("")}
+        </svg>
+        <div class="dish-chart-x" aria-hidden="true">${g.ticks.map((t) => `<span style="left:${t.x}%">${t.label}</span>`).join("")}</div>
+      </div>
+      <p class="text-xs text-gray-500 mt-1">${day(first.date)} → ${day(last.date)} · ₱${first.cost.toFixed(2)} → ₱${last.cost.toFixed(2)} ${en ? "per serving" : "bawat serving"} · ${en ? "low" : "pinakamura"} ₱${g.y0.toFixed(2)}, ${en ? "high" : "pinakamahal"} ₱${g.y1.toFixed(2)}</p>
+      <p class="text-xs text-gray-400 mt-1">${g.dots.length && g.path ? (en ? "Line: DA daily prices. Gold dots: PSA monthly averages, before DA's daily record starts." : "Linya: arawang presyo ng DA. Gintong tuldok: buwanang average ng PSA, bago magsimula ang arawang tala ng DA.") : ""} ${g.daFrom ? `${en ? "DA daily prices from" : "Arawang presyo ng DA mula"} ${day(g.daFrom)}.` : ""} ${en ? "SM and DTI reference prices are fixed." : "Nakapirmi ang presyong reference ng SM at DTI."}</p>
     </div>`;
 }
