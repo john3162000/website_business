@@ -9,6 +9,81 @@ const UNITS = ["g", "kg", "cup", "tbsp", "tsp", "piece", "clove", "head", "bunch
 
 // ── Pure helpers ──
 
+// Units the person can type, and what they mean ("lbs", "kutsara" → one key).
+const DISH_UNIT_ALIASES = {
+  g: "g", gram: "g", grams: "g", gramo: "g", gr: "g", kg: "kg", kilo: "kg", kilos: "kg", kilogram: "kg", kilograms: "kg",
+  lb: "lb", lbs: "lb", pound: "lb", pounds: "lb", libra: "lb", oz: "oz", ounce: "oz", ounces: "oz",
+  ml: "ml", l: "l", liter: "l", liters: "l", litre: "l", litro: "l", cup: "cup", cups: "cup", tasa: "cup",
+  tbsp: "tbsp", tbs: "tbsp", tablespoon: "tbsp", tablespoons: "tbsp", kutsara: "tbsp", tsp: "tsp", teaspoon: "tsp", teaspoons: "tsp", kutsarita: "tsp",
+  piece: "piece", pieces: "piece", pc: "piece", pcs: "piece", piraso: "piece", clove: "clove", cloves: "clove", butil: "clove",
+  head: "head", heads: "head", bunch: "bunch", bunches: "bunch", tali: "bunch", stalk: "stalk", stalks: "stalk", tangkay: "stalk",
+  slice: "slice", slices: "slice", hiwa: "slice", thumb: "thumb", thumbs: "thumb", can: "can", cans: "can", lata: "can", pack: "pack", packs: "pack", packet: "pack",
+};
+const DISH_UNIT_ORDER = ["g", "kg", "lb", "oz", "cup", "tbsp", "tsp", "ml", "l", "piece", "clove", "head", "bunch", "stalk", "slice", "thumb"];
+const DISH_UNIT_TEXT = {
+  g: ["gramo (g)", "grams (g)"], kg: ["kilo (kg)", "kilos (kg)"], lb: ["libra (lb)", "pounds (lb)"], oz: ["onsa (oz)", "ounces (oz)"],
+  cup: ["tasa (cup)", "cups"], tbsp: ["kutsara (tbsp)", "tablespoons"], tsp: ["kutsarita (tsp)", "teaspoons"], ml: ["ml", "ml"], l: ["litro (L)", "liters (L)"],
+  piece: ["piraso", "pieces"], clove: ["butil (clove)", "cloves"], head: ["buo/ulo (head)", "heads"], bunch: ["tali (bunch)", "bunches"],
+  stalk: ["tangkay (stalk)", "stalks"], slice: ["hiwa (slice)", "slices"], thumb: ["hinlalaki (thumb)", "thumbs"],
+};
+
+// Short names for the unit list on a narrow phone.
+const DISH_UNIT_SHORT = {
+  g: ["gramo", "g"], kg: ["kilo", "kg"], lb: ["libra", "lb"], oz: ["onsa", "oz"], cup: ["tasa", "cup"], tbsp: ["kutsara", "tbsp"], tsp: ["kutsarita", "tsp"],
+  ml: ["ml", "ml"], l: ["litro", "L"], piece: ["piraso", "piece"], clove: ["butil", "clove"], head: ["buo/ulo", "head"], bunch: ["tali", "bunch"],
+  stalk: ["tangkay", "stalk"], slice: ["hiwa", "slice"], thumb: ["hinlalaki", "thumb"],
+};
+
+/** "lbs", "Kutsara", "tablespoons." → "lb", "tbsp", "tbsp"; empty stays empty. */
+function dishUnitKey(u) {
+  const s = String(u || "").trim().toLowerCase().replace(/\.$/, "");
+  return s ? DISH_UNIT_ALIASES[s] || s : "";
+}
+
+/**
+ * Units that give this ingredient a weight: every ingredient takes g, kg, lb and oz; cups, spoons, ml
+ * and litres only when the catalog knows its weight per cup; pieces, cloves, heads… only when it knows
+ * their weight (the API's `units`). Null when the ingredient isn't known.
+ */
+function dishUnitsFor(apiUnits) {
+  if (!Array.isArray(apiUnits)) return null;
+  const set = new Set([...apiUnits.map(dishUnitKey), "g", "kg", "lb", "oz"]);
+  if (set.has("cup")) { set.add("ml"); set.add("l"); }
+  return DISH_UNIT_ORDER.filter((u) => set.has(u));
+}
+
+/** "1 1/2" → 1.5, "½" → 0.5, "2-3" → 2.5, "0.25" → 0.25; null when there's no number. */
+function dishAmountValue(text) {
+  const s = String(text || "").trim().replace(/[¼½¾⅓⅔⅛]/g, (c) => ({ "¼": " 1/4", "½": " 1/2", "¾": " 3/4", "⅓": " 1/3", "⅔": " 2/3", "⅛": " 1/8" })[c]).trim();
+  if (!s) return null;
+  const one = (t) => { const m = t.trim().match(/^(\d+(?:\.\d+)?)?(?:\s*(\d+)\/(\d+))?$/); if (!m || (!m[1] && !m[2])) return null; return (m[1] ? parseFloat(m[1]) : 0) + (m[2] ? +m[2] / +m[3] : 0); };
+  const range = s.split(/\s*(?:-|–|to)\s*/);
+  const vals = range.map(one);
+  if (vals.some((v) => v == null)) return null;
+  return vals.reduce((a, v) => a + v, 0) / vals.length;
+}
+
+/**
+ * What's wrong with a line, in the person's language, or null. `allowed` is dishUnitsFor() for its
+ * ingredient (null if unknown); `engineStatus` is the calculator's verdict once it has run.
+ */
+function dishLineIssue(line, allowed, engineStatus, label, en = false) {
+  const name = String(line.name || "").trim();
+  if (!name) return null;
+  if (/\bto taste\b|\bayon sa panlasa\b|\boptional\b/i.test(`${name} ${line.unit || ""}`) && !String(line.amount || "").trim()) return null;
+  const amt = dishAmountValue(line.amount);
+  if (!String(line.amount || "").trim()) return en ? "Add an amount (e.g. 1)." : "Lagyan ng dami (hal. 1).";
+  if (amt == null) return en ? "The amount should be a number like 1, 1/2 or 0.25." : "Numero ang dami, hal. 1, 1/2 o 0.25.";
+  if (amt <= 0) return en ? "The amount must be more than 0." : "Dapat higit sa 0 ang dami.";
+  const unit = dishUnitKey(line.unit), what = label || name;
+  const list = (allowed || []).map((u) => DISH_UNIT_TEXT[u] ? DISH_UNIT_TEXT[u][en ? 1 : 0] : u).join(", ");
+  if (allowed && unit && !allowed.includes(unit)) return en ? `"${line.unit}" doesn't work for ${what}. Use: ${list}.` : `Hindi mabilang ang "${line.unit}" para sa ${what}. Gamitin ang: ${list}.`;
+  if (allowed && !unit && !allowed.includes("piece")) return en ? `Pick a unit for ${what} (e.g. grams).` : `Pumili ng unit para sa ${what} (hal. gramo).`;
+  if (engineStatus === "unmatched") return en ? "We don't know this ingredient yet: pick one from the list." : "Hindi pa namin kilala ang sangkap na ito: pumili sa listahan.";
+  if (engineStatus === "no-weight") return en ? "Can't weigh this: change the unit to grams or kilos." : "Hindi matimbang: palitan ang unit ng gramo o kilo.";
+  return null;
+}
+
 function loadDishes(storage) {
   try {
     const v = JSON.parse(storage.getItem(DISH_KEY) || "[]");
@@ -174,15 +249,61 @@ async function customizeRecipe(id) {
 
 // ── Editor ──
 
+const DISH_INPUT = "border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500";
+
+/** The catalog ingredient a line stands for: picked from the list, or what the calculator matched. */
+function dishLineIngredient(l) {
+  if (!INGREDIENTS) return null;
+  const slug = l.slug || l.engineSlug;
+  if (slug) return INGREDIENTS.find((x) => x.slug === slug) || null;
+  const name = String(l.name || "").trim().toLowerCase();
+  return name ? INGREDIENTS.find((x) => x.label.toLowerCase() === name) || null : null;
+}
+
+/** The unit box: a list of only the units that work for this ingredient, or free text when it's unknown. */
+function dishUnitControl(l, i) {
+  const ing = dishLineIngredient(l);
+  const allowed = ing ? dishUnitsFor(ing.units) : null;
+  const en = typeof siteLang === "function" && siteLang() === "en";
+  if (!allowed) return `<input value="${escapeHtml(l.unit)}" placeholder="unit" list="unit-options" oninput="dishEdit(${i}, 'unit', this.value)" class="dish-unit-sel ${DISH_INPUT}" aria-label="Unit"/>`;
+  // No unit with a count ("2 eggs") means pieces: show it as "piraso".
+  const cur = dishUnitKey(l.unit) || (allowed.includes("piece") ? "piece" : "");
+  const opts = [];
+  if (!cur) opts.push(`<option value="" selected disabled>unit…</option>`);
+  if (cur && !allowed.includes(cur)) opts.push(`<option value="${escapeHtml(l.unit)}" selected>⚠ ${escapeHtml(l.unit)}</option>`);
+  for (const u of allowed) opts.push(`<option value="${u}"${u === cur ? " selected" : ""} title="${escapeHtml(DISH_UNIT_TEXT[u][en ? 1 : 0])}">${escapeHtml(DISH_UNIT_SHORT[u][en ? 1 : 0])}</option>`);
+  return `<select onchange="dishEdit(${i}, 'unit', this.value)" class="dish-unit-sel ${DISH_INPUT}${cur && !allowed.includes(cur) ? " dish-bad" : ""}" aria-label="Unit">${opts.join("")}</select>`;
+}
+
+function dishHintText(l) {
+  const ing = dishLineIngredient(l);
+  const en = typeof siteLang === "function" && siteLang() === "en";
+  return dishLineIssue(l, ing ? dishUnitsFor(ing.units) : null, l.engineStatus, ing ? ing.label.toLowerCase() : null, en);
+}
+
 function lineRow(l, i) {
-  const input = "border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500";
+  const hint = dishHintText(l);
   return `
-    <div class="flex gap-2 items-center">
-      <input value="${escapeHtml(l.amount)}" placeholder="1 1/2" oninput="dishEdit(${i}, 'amount', this.value)" class="w-16 ${input}" aria-label="Amount"/>
-      <input value="${escapeHtml(l.unit)}" placeholder="unit" list="unit-options" oninput="dishEdit(${i}, 'unit', this.value)" class="w-20 ${input}" aria-label="Unit"/>
-      <input value="${escapeHtml(l.name)}" placeholder="ingredient, e.g. pork belly" list="ingredient-options" oninput="dishEdit(${i}, 'name', this.value)" class="flex-1 min-w-0 ${input}" aria-label="Ingredient"/>
-      <button onclick="dishRemove(${i})" class="text-gray-300 hover:text-red-600 text-lg leading-none px-1" title="Remove">✕</button>
+    <div class="dish-line" data-line="${i}">
+      <div class="flex gap-2 items-center">
+        <input value="${escapeHtml(l.amount)}" placeholder="1 1/2" inputmode="decimal" oninput="dishEdit(${i}, 'amount', this.value)" class="w-16 ${DISH_INPUT}" aria-label="Amount"/>
+        <span id="dish-unit-${i}">${dishUnitControl(l, i)}</span>
+        <input value="${escapeHtml(l.name)}" placeholder="ingredient, e.g. pork belly" list="ingredient-options" oninput="dishEdit(${i}, 'name', this.value)" class="flex-1 min-w-0 ${DISH_INPUT}" aria-label="Ingredient"/>
+        <button onclick="dishRemove(${i})" class="text-gray-300 hover:text-red-600 text-lg leading-none px-1" title="Remove">✕</button>
+      </div>
+      <p id="dish-hint-${i}" class="dish-hint" role="status"${hint ? "" : " hidden"}>⚠ ${escapeHtml(hint || "")}</p>
     </div>`;
+}
+
+/** Updates only the unit boxes and hints (never the box being typed in), after an edit or a recalculation. */
+function dishRefreshAids(only) {
+  if (!currentDish) return;
+  currentDish.lines.forEach((l, i) => {
+    if (only != null && i !== only) return;
+    const box = document.getElementById(`dish-unit-${i}`), hint = document.getElementById(`dish-hint-${i}`);
+    if (box && !box.contains(document.activeElement)) { const html = dishUnitControl(l, i); if (box.dataset.html !== html) { box.innerHTML = html; box.dataset.html = html; } }
+    if (hint) { const h = dishHintText(l); hint.hidden = !h; const txt = h ? `⚠ ${h}` : ""; if (hint.textContent !== txt) hint.textContent = txt; }
+  });
 }
 
 function renderEditor() {
@@ -227,11 +348,14 @@ function dishEdit(i, field, value) {
   } else {
     const line = currentDish.lines[i];
     line[field] = value;
+    line.engineStatus = null;
     if (field === "name") {
       // Picked from the list: send its slug, so the engine doesn't have to guess.
       const hit = (INGREDIENTS || []).find((x) => x.label.toLowerCase() === value.trim().toLowerCase());
       line.slug = hit ? hit.slug : null;
+      line.engineSlug = null;
     }
+    dishRefreshAids(i);
   }
   document.getElementById("mydish-saved").textContent = "";
   scheduleDish();
@@ -268,13 +392,17 @@ async function computeDish() {
     const res = await fetch(`${API_BASE}/api/dish`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: currentDish.title, servings: currentDish.servings, ingredients: lines }),
+      body: JSON.stringify({ title: currentDish.title, servings: currentDish.servings, ingredients: lines.map(({ amount, unit, name, slug }) => ({ amount, unit, name, slug })) }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
     if (req !== dishRequest) return; // a newer edit is on its way
     lastResult = data;
     out.innerHTML = dishResultHtml(data);
+    // What the calculator made of each line (in order), for the unit lists and the hints.
+    const named = currentDish.lines.filter((l) => l.name.trim());
+    if (Array.isArray(data.lines) && data.lines.length === named.length) named.forEach((l, k) => { l.engineSlug = data.lines[k].slug || null; l.engineStatus = data.lines[k].status || null; });
+    dishRefreshAids();
     if (typeof cookKitchenSync === "function") cookKitchenSync(); // the kitchen below follows the ingredients
   } catch (e) {
     if (req === dishRequest) out.innerHTML = `<p class="text-sm text-red-600">Couldn’t calculate the dish (${escapeHtml(e.message)}).</p>`;
