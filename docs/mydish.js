@@ -210,6 +210,7 @@ function renderEditor() {
         </div>
         <div class="flex items-center gap-3 flex-wrap pt-2 border-t border-gray-100">
           <button onclick="saveCurrentDish()" class="bg-green-700 hover:bg-green-600 text-white text-sm font-medium px-5 py-2 rounded-full">Save on this device</button>
+          <button type="button" onclick="openCookShowDish()" class="cook-open-btn">${typeof t === "function" ? t("cook.watch") : "🎬 Panoorin kung paano"}</button>
           <span id="mydish-saved" class="text-xs text-gray-500"></span>
         </div>
       </div>

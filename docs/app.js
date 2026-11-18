@@ -460,6 +460,7 @@ function buildModal(r, lines) {
         <button type="button" id="share-btn" onclick="shareRecipe(${r.id})" class="modal-act modal-act-main"><span class="modal-act-ico" aria-hidden="true">💬</span><span>${t("modal.share")}</span></button>
         <button type="button" onclick="modalToVideo()" class="modal-act"><span class="modal-act-ico" aria-hidden="true">▶</span><span>${t("modal.video")}</span></button>
         <button type="button" onclick="customizeRecipe(${r.id})" class="modal-act"><span class="modal-act-ico" aria-hidden="true">✏️</span><span>${t("modal.customize")}</span></button>
+        <button type="button" onclick="openCookShow(${r.id})" class="modal-act"><span class="modal-act-ico" aria-hidden="true">🎬</span><span>${t("modal.cook")}</span></button>
       </div>` : ""}
     </div>
 

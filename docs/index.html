@@ -653,6 +653,90 @@
       #weather-grid > *, #top-recipes-grid > * { flex: 0 0 76%; scroll-snap-align: start; }
       #weather-grid .recipe-card .h-44, #top-recipes-grid .recipe-card .h-44 { height: 9rem; }
     }
+    /* "Panoorin kung paano" (cookshow.js) */
+    .cook-dialog { position: fixed; inset: 0; z-index: 120; display: none; align-items: center; justify-content: center; background: rgba(15,31,24,.55); padding: 1rem; }
+    .cook-dialog.open { display: flex; }
+    .cook-panel { width: 100%; max-width: 46rem; max-height: calc(100vh - 2rem); overflow-y: auto; background: #F8F4EA; border-radius: 1rem; padding: 1rem; box-shadow: 0 20px 50px rgba(0,0,0,.25); }
+    .cook-head { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; margin-bottom: .6rem; }
+    .cook-kicker { font-size: .75rem; font-weight: 600; color: #855F0E; }
+    .cook-name { font-family: Fraunces, Georgia, serif; font-size: 1.25rem; font-weight: 700; color: #163F2E; line-height: 1.2; }
+    .cook-stage { position: relative; border-radius: .9rem; overflow: hidden; border: 1px solid #E7DFCB; background: #F3ECDB; min-height: 10rem; }
+    .cook-stage canvas { display: block; width: 100%; }
+    .cook-caption { position: absolute; left: .5rem; right: .5rem; bottom: .5rem; margin: 0; padding: .45rem .75rem; border-radius: 9999px; background: rgba(22,63,46,.88); color: #F8F4EA; font-size: .875rem; font-weight: 600; text-align: center; }
+    .cook-hud { position: absolute; left: .75rem; top: .75rem; margin: 0; padding: .3rem .7rem; border-radius: .5rem; background: rgba(248,244,234,.92); color: #163F2E; font-size: .8rem; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,.18); }
+    .cook-timer { position: absolute; right: .75rem; top: .75rem; margin: 0; padding: .3rem .7rem; border-radius: 9999px; background: rgba(15,31,24,.82); color: #F8F4EA; font-size: .8rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .cook-stage { background: #2b2119; }
+    .cook-list-wrap { margin: .25rem 0 .75rem; }
+    .cook-list-h { font-family: Fraunces, Georgia, serif; font-weight: 700; color: #163F2E; font-size: 1rem; margin-bottom: .4rem; }
+    .cook-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); gap: .4rem; }
+    .cook-item { display: flex; align-items: center; gap: .55rem; padding: .35rem .5rem; border: 1px solid #E7DFCB; border-radius: .8rem; background: #fff; }
+    .cook-thumb { flex: none; width: 3rem; height: 3rem; border-radius: .6rem; background: #EFE6D2; display: inline-flex; align-items: center; justify-content: center; font-size: 1.4rem; overflow: hidden; }
+    .cook-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .cook-item-name { display: block; font-size: .82rem; font-weight: 600; color: #1f2937; line-height: 1.2; }
+    .cook-item-amt { display: block; font-size: .72rem; color: #6b7280; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .cook-item-cost { margin-left: auto; flex: none; font-family: ui-monospace, monospace; font-size: .78rem; color: #855F0E; font-weight: 700; }
+    .cook-list-total { margin-top: .45rem; font-size: .8rem; color: #374151; }
+    .cook-list-gap { color: #6b7280; }
+    .cook-credits { margin-top: .4rem; font-size: .72rem; color: #6b7280; }
+    .cook-credits summary { cursor: pointer; min-height: 2.75rem; display: flex; align-items: center; }
+    .cook-credits ul { list-style: none; margin: .2rem 0 0; padding: 0; display: grid; gap: .15rem; }
+    .cook-credits a { color: #1D5239; text-decoration: underline; }
+    html.dark .cook-credits { color: var(--tx3); }
+    html.dark .cook-credits a { color: var(--mint); }
+    html.dark .cook-list-h { color: var(--tx); }
+    html.dark .cook-item { background: var(--s2); border-color: var(--line); }
+    html.dark .cook-item-name, html.dark .cook-list-total { color: var(--tx); }
+    html.dark .cook-item-amt, html.dark .cook-list-gap { color: var(--tx3); }
+    html.dark .cook-item-cost { color: var(--mango); }
+    .cook-edit-btn { margin-left: .25rem; }
+    .cook-steps.editing { max-height: none; overflow: visible; }
+    .cook-edit-top > .min-w-0 { flex: 1 1 6rem; }
+    .cook-edit-foot > .cook-in-l { flex: 1 1 14rem; flex-wrap: wrap; }
+    .cook-edit-foot > .cook-in-l .cook-in { flex: 1 1 10rem; max-width: 100%; }
+    .cook-edit-actions { flex-wrap: wrap; }
+    @media (max-width: 639px) { .cook-tool { width: 2.25rem; height: 2.25rem; } .cook-tools { gap: .15rem; } .cook-edit-in { margin-left: 0; } }
+    .cook-edit-row { border: 1px solid #E7DFCB; border-radius: .7rem; padding: .35rem .5rem; background: #fff; }
+    .cook-edit-row.on { border-color: #2F7A55; }
+    .cook-edit-top { display: flex; align-items: center; gap: .5rem; font-size: .85rem; }
+    .cook-tools { margin-left: auto; display: inline-flex; gap: .25rem; flex: none; }
+    .cook-tool { width: 2.5rem; height: 2.5rem; border-radius: .6rem; border: 1px solid #E7DFCB; background: #FBF8F0; color: #1D5239; font-size: .95rem; }
+    .cook-tool:disabled { opacity: .35; }
+    .cook-edit-in { display: flex; flex-wrap: wrap; gap: .5rem; margin: .35rem 0 0 2rem; }
+    .cook-in { border: 1px solid #d6cdb8; border-radius: .5rem; padding: .3rem .45rem; font-size: .8rem; background: #fff; color: #1f2937; min-height: 2.25rem; }
+    .cook-num { width: 4.5rem; }
+    .cook-in-l { display: inline-flex; align-items: center; gap: .3rem; font-size: .8rem; color: #374151; }
+    .cook-edit-foot { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; padding: .5rem 0; }
+    .cook-edit-actions { display: inline-flex; gap: .4rem; margin-left: auto; }
+    .cook-edit-msg { width: 100%; font-size: .78rem; color: #1D5239; }
+    html.dark .cook-edit-row { background: var(--s2); border-color: var(--line); }
+    html.dark .cook-tool, html.dark .cook-in { background: var(--s1); border-color: var(--line); color: var(--tx); }
+    html.dark .cook-in-l { color: var(--tx2); }
+    html.dark .cook-edit-msg { color: var(--mint); }
+    .cook-controls { display: flex; align-items: center; gap: .5rem; margin: .65rem 0; }
+    .cook-controls .wx-btn { min-width: 2.75rem; min-height: 2.75rem; font-size: 1rem; }
+    .cook-count { margin-left: auto; font-size: .8rem; color: #6b7280; font-variant-numeric: tabular-nums; }
+    .cook-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: .3rem; max-height: 14rem; overflow-y: auto; }
+    .cook-step { width: 100%; display: flex; align-items: center; gap: .55rem; text-align: left; padding: .45rem .6rem; border-radius: .7rem; border: 1px solid transparent; background: transparent; color: #1f2937; font-size: .85rem; min-height: 2.75rem; }
+    .cook-step:hover { background: #EFF5F0; }
+    .cook-step.on { background: #fff; border-color: #2F7A55; font-weight: 600; }
+    .cook-step-n { flex: none; width: 1.5rem; height: 1.5rem; border-radius: 9999px; display: inline-flex; align-items: center; justify-content: center; background: #E7DFCB; color: #163F2E; font-size: .7rem; font-weight: 700; }
+    .cook-step.on .cook-step-n { background: #1D5239; color: #fff; }
+    .cook-step-ico { flex: none; }
+    .cook-note { margin-top: .6rem; font-size: .72rem; color: #6b7280; }
+    .cook-open-btn { border: 1px solid #1D5239; color: #1D5239; background: #fff; font-size: .875rem; font-weight: 600; padding: .5rem 1.1rem; border-radius: 9999px; }
+    .cook-open-btn:hover { background: #EFF5F0; }
+    html.dark .cook-panel { background: var(--s1); }
+    html.dark .cook-name { color: var(--tx); }
+    html.dark .cook-kicker { color: var(--mango); }
+    html.dark .cook-stage { border-color: var(--line); background: var(--s2); }
+    html.dark .cook-step { color: var(--tx); }
+    html.dark .cook-step:hover { background: var(--s2); }
+    html.dark .cook-step.on { background: var(--s2); border-color: var(--mint); }
+    html.dark .cook-step-n { background: var(--line); color: var(--tx); }
+    html.dark .cook-step.on .cook-step-n { background: var(--mint); color: #0B1712; }
+    html.dark .cook-note, html.dark .cook-count { color: var(--tx3); }
+    html.dark .cook-open-btn { background: var(--s2); border-color: var(--mint); color: var(--mint); }
+    @media (max-width: 639px) { .cook-dialog { padding: 0; align-items: flex-end; } .cook-panel { max-height: 100vh; border-radius: 1rem 1rem 0 0; } }
   </style>
   <!-- Built from site-css/ (Tailwind v3 CLI): cd site-css && npm run build. After the inline
        styles, where the Play CDN used to put its styles, so the cascade is unchanged. -->
@@ -1334,6 +1418,7 @@
 <script src="taste.js"></script>
 <script src="games.js"></script>
 <script src="kitchen.js"></script>
+<script src="cookshow.js"></script>
 <script src="settings.js"></script>
 <script src="visits.js"></script>
 <script src="feedback.js"></script>
