@@ -653,6 +653,41 @@
       #weather-grid > *, #top-recipes-grid > * { flex: 0 0 76%; scroll-snap-align: start; }
       #weather-grid .recipe-card .h-44, #top-recipes-grid .recipe-card .h-44 { height: 9rem; }
     }
+    /* "Panoorin kung paano" (cookshow.js) */
+    .cook-dialog { position: fixed; inset: 0; z-index: 120; display: none; align-items: center; justify-content: center; background: rgba(15,31,24,.55); padding: 1rem; }
+    .cook-dialog.open { display: flex; }
+    .cook-panel { width: 100%; max-width: 46rem; max-height: calc(100vh - 2rem); overflow-y: auto; background: #F8F4EA; border-radius: 1rem; padding: 1rem; box-shadow: 0 20px 50px rgba(0,0,0,.25); }
+    .cook-head { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; margin-bottom: .6rem; }
+    .cook-kicker { font-size: .75rem; font-weight: 600; color: #855F0E; }
+    .cook-name { font-family: Fraunces, Georgia, serif; font-size: 1.25rem; font-weight: 700; color: #163F2E; line-height: 1.2; }
+    .cook-stage { position: relative; border-radius: .9rem; overflow: hidden; border: 1px solid #E7DFCB; background: #F3ECDB; min-height: 10rem; }
+    .cook-stage canvas { display: block; width: 100%; }
+    .cook-caption { position: absolute; left: .5rem; right: .5rem; bottom: .5rem; margin: 0; padding: .45rem .75rem; border-radius: 9999px; background: rgba(22,63,46,.88); color: #F8F4EA; font-size: .875rem; font-weight: 600; text-align: center; }
+    .cook-controls { display: flex; align-items: center; gap: .5rem; margin: .65rem 0; }
+    .cook-controls .wx-btn { min-width: 2.75rem; min-height: 2.75rem; font-size: 1rem; }
+    .cook-count { margin-left: auto; font-size: .8rem; color: #6b7280; font-variant-numeric: tabular-nums; }
+    .cook-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: .3rem; max-height: 14rem; overflow-y: auto; }
+    .cook-step { width: 100%; display: flex; align-items: center; gap: .55rem; text-align: left; padding: .45rem .6rem; border-radius: .7rem; border: 1px solid transparent; background: transparent; color: #1f2937; font-size: .85rem; min-height: 2.75rem; }
+    .cook-step:hover { background: #EFF5F0; }
+    .cook-step.on { background: #fff; border-color: #2F7A55; font-weight: 600; }
+    .cook-step-n { flex: none; width: 1.5rem; height: 1.5rem; border-radius: 9999px; display: inline-flex; align-items: center; justify-content: center; background: #E7DFCB; color: #163F2E; font-size: .7rem; font-weight: 700; }
+    .cook-step.on .cook-step-n { background: #1D5239; color: #fff; }
+    .cook-step-ico { flex: none; }
+    .cook-note { margin-top: .6rem; font-size: .72rem; color: #6b7280; }
+    .cook-open-btn { border: 1px solid #1D5239; color: #1D5239; background: #fff; font-size: .875rem; font-weight: 600; padding: .5rem 1.1rem; border-radius: 9999px; }
+    .cook-open-btn:hover { background: #EFF5F0; }
+    html.dark .cook-panel { background: var(--s1); }
+    html.dark .cook-name { color: var(--tx); }
+    html.dark .cook-kicker { color: var(--mango); }
+    html.dark .cook-stage { border-color: var(--line); background: var(--s2); }
+    html.dark .cook-step { color: var(--tx); }
+    html.dark .cook-step:hover { background: var(--s2); }
+    html.dark .cook-step.on { background: var(--s2); border-color: var(--mint); }
+    html.dark .cook-step-n { background: var(--line); color: var(--tx); }
+    html.dark .cook-step.on .cook-step-n { background: var(--mint); color: #0B1712; }
+    html.dark .cook-note, html.dark .cook-count { color: var(--tx3); }
+    html.dark .cook-open-btn { background: var(--s2); border-color: var(--mint); color: var(--mint); }
+    @media (max-width: 639px) { .cook-dialog { padding: 0; align-items: flex-end; } .cook-panel { max-height: 100vh; border-radius: 1rem 1rem 0 0; } }
   </style>
   <!-- Built from site-css/ (Tailwind v3 CLI): cd site-css && npm run build. After the inline
        styles, where the Play CDN used to put its styles, so the cascade is unchanged. -->
@@ -1334,6 +1369,7 @@
 <script src="taste.js"></script>
 <script src="games.js"></script>
 <script src="kitchen.js"></script>
+<script src="cookshow.js"></script>
 <script src="settings.js"></script>
 <script src="visits.js"></script>
 <script src="feedback.js"></script>
