@@ -7,8 +7,8 @@ import vm from "node:vm";
 
 const ctx = vm.createContext({});
 vm.runInContext(`${readFileSync(new URL("./cookshow.js", import.meta.url), "utf8")}
-;globalThis.api = { cookCutStyle, cookMinutes, cookTimeText, cookItemsFromLines, cookMentions, buildCookScript, cookCaption, cookFoodKind, cookState, cookMixColor, cookBottleWord, cookSerializeSteps, cookRestoreSteps, cookMoveStep, COOK_THREE_SRI };`, ctx);
-const { cookCutStyle, cookMinutes, cookTimeText, cookItemsFromLines, cookMentions, buildCookScript, cookCaption, cookFoodKind, cookState, cookMixColor, cookBottleWord, cookSerializeSteps, cookRestoreSteps, cookMoveStep, COOK_THREE_SRI } = ctx.api;
+;globalThis.api = { cookCutStyle, cookMinutes, cookTimeText, cookItemsFromLines, cookMentions, buildCookScript, cookCaption, cookFoodKind, cookState, cookMixColor, cookBottleWord, cookSerializeSteps, cookRestoreSteps, cookMoveStep, cookCompact, COOK_THREE_SRI };`, ctx);
+const { cookCutStyle, cookMinutes, cookTimeText, cookItemsFromLines, cookMentions, buildCookScript, cookCaption, cookFoodKind, cookState, cookMixColor, cookBottleWord, cookSerializeSteps, cookRestoreSteps, cookMoveStep, cookCompact, COOK_THREE_SRI } = ctx.api;
 const plain = (x) => JSON.parse(JSON.stringify(x));
 
 const line = (slug, label, text, status = "ok") => ({ slug, label, text, status });
@@ -75,7 +75,7 @@ test("a word in a step goes to the item it fits best", () => {
 
 test("adobo: marinate, boil, simmer, vinegar, season, serve", () => {
   const s = steps(ADOBO);
-  assert.equal(kinds(ADOBO), "shop cut marinate heat add boil simmer pour simmer season serve");
+  assert.equal(kinds(ADOBO), "shop cut marinate heat add simmer pour simmer season serve");
   assert.equal(s.find((x) => x.kind === "marinate").minutes, 60);
   assert.deepEqual(plain(s.filter((x) => x.kind === "simmer").map((x) => x.minutes)), [40, 15]);
   assert.equal(s.find((x) => x.kind === "pour").items[0].key, "vinegar_cane_white");
@@ -98,7 +98,7 @@ test("lechon kawali: boil in a pot, then deep-fry in a wok, then slice", () => {
 
 test("no steps at all: the dish-type template fills in", () => {
   const r = { title: "Sinigang na Baboy", lines: [line("pork_ribs", "Pork spare ribs", "1 kg pork ribs"), line(null, null, "8 cups water", "water"), line("radish", "Radish", "1 radish, sliced"), line("fish_sauce", "Fish sauce", "2 tbsp fish sauce")] };
-  assert.equal(kinds(r), "shop cut add pour boil add simmer season serve");
+  assert.equal(kinds(r), "shop cut add boil add simmer season serve");
   assert.equal(steps(r).find((x) => x.kind === "boil").minutes, 45);
 });
 
@@ -179,4 +179,37 @@ test("moving steps keeps shopping first and serving last", () => {
   assert.equal(cookMoveStep(s, s.length - 2, 1), s);
   const m = cookMoveStep(s, 3, 1);
   assert.equal(m[3], s[4]); assert.equal(m[4], s[3]);
+});
+
+test("shorter scripts: same cuts merge, boil-then-simmer is one step", () => {
+  const it = (key) => ({ key, label: key, liquid: false });
+  const [a, b, c] = [it("garlic"), it("onion"), it("ginger")];
+  const out = cookCompact([
+    { kind: "cut", items: [a], style: "minced" }, { kind: "cut", items: [b], style: "minced" }, { kind: "cut", items: [c], style: "strips" },
+    { kind: "boil", items: [], vessel: "kaldero" }, { kind: "simmer", items: [], minutes: 40, vessel: "kaldero" },
+  ]);
+  assert.equal(out.length, 3);
+  assert.equal(cookCaption(out[0], "tl"), "Hiwain ang garlic at onion: pinong-pino");
+  assert.equal(cookCaption(out[2], "tl"), "Pakuluan, saka hinaan ang apoy nang 40 minuto");
+  // Past 18 steps, neighbouring cuts of different kinds merge and keep their own cut.
+  const many = [...Array(9)].map((_, i) => ({ kind: "cut", items: [it(`v${i}`)], style: i % 2 ? "diced" : "sliced" }))
+    .concat([...Array(10)].map((_, i) => ({ kind: "stir", items: [it(`s${i}`)] })));
+  const short = cookCompact(many);
+  assert.equal(short[0].style, "mixed");
+  assert.equal(short[0].cuts.v1, "diced");
+  assert.ok(short.length <= 11);
+});
+
+test("ingredient photos: Wikimedia Commons only, each with its licence and author", () => {
+  const photos = JSON.parse(readFileSync(new URL("./cookphotos.json", import.meta.url), "utf8"));
+  const entries = Object.entries(photos);
+  assert.ok(entries.length >= 50);
+  for (const [slug, p] of entries) {
+    assert.match(slug, /^[a-z0-9_]+$/);
+    assert.match(p.thumb, /^https:\/\/(thumb|upload)\.wikimedia\.org\/wikipedia\/commons\/thumb\//, slug);
+    assert.match(p.page, /^https:\/\/commons\.wikimedia\.org\/wiki\/File:/, slug);
+    assert.match(p.license, /^(CC0|Public domain|CC BY(-SA)? [0-9.]+)$/, slug);
+    assert.ok(p.artist && p.artist.length > 1, slug);
+    if (/^CC BY/.test(p.license)) assert.match(p.licenseUrl, /^https?:\/\/creativecommons\.org\//, slug);
+  }
 });

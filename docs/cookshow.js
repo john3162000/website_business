@@ -345,7 +345,10 @@ function buildCookScript(recipe) {
     if ((kind === "stir" && !its.length) || (kind === "cook" && !a.minutes && !its.length)) continue;
     if (kind === "add" && its.every((x) => x.liquid && !COOK_SOLID_LIQUID.test(x.key))) kind = "pour";
     if (kind === "pour" && its.some((x) => !x.liquid)) kind = "add";
-    if (["fry", "deepfry", "grill"].includes(kind) && !its.length) { if (lastMain && kind !== "deepfry") its = [lastMain]; else if (!a.minutes && kind !== "deepfry") continue; }
+    if (["fry", "deepfry", "grill"].includes(kind) && !its.length) {
+      const already = lastMain && steps.some((x) => x.kind === kind && x.items.includes(lastMain));
+      if (lastMain && kind !== "deepfry" && !already) its = [lastMain]; else if (kind !== "deepfry") continue;
+    }
     if (kind === "drain" && !steps.some((x) => COOK_TIMED.has(x.kind) && x.kind !== "marinate" && x.kind !== "chill")) continue;
     const prev = steps[steps.length - 1];
     const here = vessel || "kawali";
@@ -366,8 +369,56 @@ function buildCookScript(recipe) {
   const seasonStep = steps.find((x) => x.kind === "season");
   if (seasonings.length && !seasonStep) steps.push({ kind: "season", items: seasonings, vessel: vessel || "kawali" });
   else if (seasonStep) for (const it of seasonings) if (!seasonStep.items.includes(it)) seasonStep.items.push(it);
+  steps.splice(0, steps.length, ...cookCompact(steps));
   steps.push({ kind: "serve", items: [], vessel: vessel || "kawali", cold: steps.some((x) => x.kind === "chill") || !steps.some((x) => COOK_TIMED.has(x.kind) && !["marinate", "chill"].includes(x.kind) || x.kind === "heat") });
   return steps.slice(0, 24);
+}
+
+/**
+ * Shorter scripts: cuts of the same kind become one step, "bring to a boil" + "simmer 40 min" becomes one,
+ * a bare "cook" before a timed step goes, small "add"s merge. Past 18 steps, all neighbouring cuts merge too.
+ * Pure, tested.
+ */
+function cookCompact(input) {
+  const same = (a, b) => (a.vessel || "") === (b.vessel || "");
+  let out = [];
+  for (const s of input) {
+    const prev = out[out.length - 1];
+    if (prev && s.kind === "cut" && prev.kind === "cut" && prev.style === s.style && (prev.size || null) === (s.size || null) && !prev.vessel && !s.vessel && prev.items.length < 4) {
+      out[out.length - 1] = { ...prev, items: [...prev.items, ...s.items] }; continue;
+    }
+    if (prev && prev.kind === "boil" && !prev.minutes && !prev.items.length && s.kind === "simmer" && same(prev, s)) {
+      out[out.length - 1] = { ...s, boilFirst: true }; continue;
+    }
+    if (prev && ["cook", "simmer"].includes(prev.kind) && !prev.minutes && !prev.items.length && COOK_TIMED.has(s.kind) && s.minutes && same(prev, s)) {
+      out[out.length - 1] = s; continue;
+    }
+    if (prev && ["add", "pour"].includes(prev.kind) && ["add", "pour"].includes(s.kind) && same(prev, s) && prev.items.length + s.items.length <= 6) {
+      const items = [...prev.items, ...s.items.filter((it) => !prev.items.includes(it))];
+      out[out.length - 1] = { ...prev, kind: items.every((it) => it.liquid) ? "pour" : "add", items }; continue;
+    }
+    out.push(s);
+  }
+  if (out.length > 17) {
+    // Still long: a bare simmer or "cook" with no time and nothing added says little.
+    out = out.filter((s, i) => !(["simmer", "cook"].includes(s.kind) && !s.minutes && !s.items.length && i > 0));
+  }
+  if (out.length > 17) {
+    // Still long: neighbouring cuts become one step that keeps each item's own cut.
+    const merged = [];
+    for (const s of out) {
+      const prev = merged[merged.length - 1];
+      if (prev && s.kind === "cut" && prev.kind === "cut" && !prev.vessel && !s.vessel) {
+        const cuts = { ...(prev.cuts || Object.fromEntries(prev.items.map((it) => [it.key, prev.style]))) };
+        for (const it of s.items) cuts[it.key] = s.style;
+        merged[merged.length - 1] = { ...prev, items: [...prev.items, ...s.items], cuts, style: prev.style === s.style ? prev.style : "mixed" };
+        continue;
+      }
+      merged.push(s);
+    }
+    out = merged;
+  }
+  return out;
 }
 
 const COOK_STYLE_TEXT = {
@@ -394,6 +445,7 @@ function cookCaption(step, lang = "tl") {
     case "shop": return en ? `Shop for the ingredients (${step.items.length})` : `Mamalengke ng mga sangkap (${step.items.length})`;
     case "peel": return en ? `Clean and peel: ${list}` : `Linisin at balatan: ${list}`;
     case "cut": {
+      if (step.style === "mixed") return en ? `Cut the ${list} as the recipe says` : `Hiwain ang ${list} ayon sa recipe`;
       if (step.style === "crushed" && step.items.every((it) => /cube|cracker|chicharon/.test(it.key))) return en ? `Crush the ${list}` : `Durugin ang ${list}`;
       const style = L(COOK_STYLE_TEXT[step.style] || ["hiwain", "cut"]);
       const size = step.size ? ` (${en ? "about" : "mga"} ${step.size} cm)` : "";
@@ -405,7 +457,9 @@ function cookCaption(step, lang = "tl") {
     case "add": return en ? `Add the ${list}` : `Ilagay ang ${list}`;
     case "pour": return en ? `Pour in the ${list}` : `Ibuhos ang ${list}`;
     case "boil": return en ? `Bring to a boil${time}` : `Pakuluan${time}`;
-    case "simmer": return en ? `Simmer on low heat${time}` : `Hinaan ang apoy at pakuluan nang dahan-dahan${time}`;
+    case "simmer":
+      if (step.boilFirst) return en ? `Bring to a boil, then simmer${time}` : `Pakuluan, saka hinaan ang apoy${time}`;
+      return en ? `Simmer on low heat${time}` : `Hinaan ang apoy at pakuluan nang dahan-dahan${time}`;
     case "fry": return en ? `Pan-fry${list ? ` the ${list}` : ""}${time}` : `Iprito${list ? ` ang ${list}` : ""}${time}`;
     case "deepfry": return en ? `Deep-fry${list ? ` the ${list}` : ""}${time}` : `Iprito nang lubog sa mantika${list ? ` ang ${list}` : ""}${time}`;
     case "grill": return en ? `Grill${list ? ` the ${list}` : ""}${time}` : `Ihawin${list ? ` ang ${list}` : ""}${time}`;
@@ -549,7 +603,7 @@ const COOK_ADDABLE = ["stir", "boil", "simmer", "cook", "fry", "season", "drain"
 function cookSerializeSteps(steps) {
   return steps.map((s) => {
     const o = { kind: s.kind, keys: (s.items || []).map((it) => it.key) };
-    for (const f of ["style", "size", "minutes", "vessel", "cold"]) if (s[f] != null && s[f] !== false) o[f] = s[f];
+    for (const f of ["style", "size", "minutes", "vessel", "cold", "cuts", "boilFirst"]) if (s[f] != null && s[f] !== false) o[f] = s[f];
     return o;
   });
 }
@@ -564,7 +618,7 @@ function cookRestoreSteps(saved, built) {
     const items = (o.keys || []).map((k) => byKey.get(k)).filter(Boolean);
     if (["cut", "peel", "add", "pour", "saute", "mix", "wrap"].includes(o.kind) && !items.length) continue; // that ingredient is gone
     const s = { kind: o.kind, items };
-    for (const f of ["style", "size", "minutes", "vessel", "cold"]) if (o[f] != null) s[f] = o[f];
+    for (const f of ["style", "size", "minutes", "vessel", "cold", "cuts", "boilFirst"]) if (o[f] != null) s[f] = o[f];
     if (o.kind === "shop") s.items = (built[0] && built[0].kind === "shop" ? built[0].items : items); // the list follows the ingredients
     out.push(s);
   }
@@ -670,11 +724,43 @@ function cookRenderList(steps) {
     </ul>
     <p class="cook-list-total">${priced.length ? `${escapeHtml(cookT("cook.listTotal", en ? "Total for the whole dish" : "Kabuuan para sa buong ulam"))}: <b>₱${Math.round(total)}</b>` : ""}${priced.length < shop.filter((it) => !it.toTaste).length ? ` <span class="cook-list-gap">· ${escapeHtml(cookT("cook.listGap", en ? "— = no price yet" : "— = wala pang presyo"))}</span>` : ""}</p>`;
   box.hidden = false;
+  cookLoadPhotos().then((p) => cookFillPhotos(p, shop));
+}
+
+// Credited Wikimedia Commons photos for the most-used ingredients (docs/cookphotos.json), loaded when the player opens.
+let cookPhotos = null, cookPhotosLoading = null;
+function cookLoadPhotos() {
+  if (cookPhotos) return Promise.resolve(cookPhotos);
+  return (cookPhotosLoading ||= fetch("cookphotos.json").then((r) => (r.ok ? r.json() : {})).catch(() => ({})).then((d) => (cookPhotos = d)));
+}
+
+/** Photo, then credits list, for the ingredients that have one. */
+function cookFillPhotos(photos, shop) {
+  const box = document.getElementById("cook-list");
+  if (!box || !photos) return;
+  const used = [];
+  box.querySelectorAll(".cook-thumb").forEach((el) => {
+    const ph = photos[el.dataset.key];
+    if (!ph || !ph.thumb) return;
+    el.dataset.photo = "1";
+    el.innerHTML = `<img src="${escapeHtml(ph.thumb)}" alt="" width="48" height="48" loading="lazy" referrerpolicy="no-referrer">`;
+    const it = shop.find((x) => x.key === el.dataset.key);
+    used.push([it ? it.label : el.dataset.key, ph]);
+  });
+  const old = box.querySelector(".cook-credits"); if (old) old.remove();
+  if (!used.length) return;
+  const en = cookLang() === "en";
+  const d = document.createElement("details");
+  d.className = "cook-credits";
+  d.innerHTML = `<summary>📷 ${escapeHtml(cookT("cook.photos", en ? "Photos: Wikimedia Commons" : "Mga larawan: Wikimedia Commons"))}</summary><ul>${used.map(([label, ph]) =>
+    `<li><a href="${escapeHtml(ph.page)}" target="_blank" rel="noopener">${escapeHtml(label)}</a> · ${escapeHtml(ph.artist || "Wikimedia Commons")} · ${ph.licenseUrl ? `<a href="${escapeHtml(ph.licenseUrl)}" target="_blank" rel="noopener">${escapeHtml(ph.license)}</a>` : escapeHtml(ph.license)}</li>`).join("")}</ul>`;
+  box.appendChild(d);
 }
 
 function cookFillThumbs(map) {
   if (!map) return;
   document.querySelectorAll("#cook-list .cook-thumb").forEach((el) => {
+    if (el.dataset.photo) return; // a real photo wins
     const url = map.get(el.dataset.key);
     if (url) el.innerHTML = `<img src="${url}" alt="" width="48" height="48">`;
   });
@@ -1007,7 +1093,7 @@ function cookApply(st, s) {
   const inPot = () => st.items.filter((it) => st.loc.get(it) === "pot");
   const brown = (list, by) => { for (const it of list) st.brown.set(it, Math.min(1, (st.brown.get(it) || 0) + by)); };
   switch (s.kind) {
-    case "cut": for (const it of s.items) { st.cut.set(it, s.style); if (st.loc.get(it) !== "prep") st.loc.set(it, "board"); } break;
+    case "cut": for (const it of s.items) { st.cut.set(it, (s.cuts && s.cuts[it.key]) || s.style); if (st.loc.get(it) !== "prep") st.loc.set(it, "board"); } break;
     case "mix": case "marinate":
       for (const it of s.items) { if (it.liquid) st.bowlLiquid = cookLiquidLook(it)[0]; else st.loc.set(it, "bowl"); }
       break;
@@ -1657,11 +1743,13 @@ function cookBuildScene(THREE, canvas) {
     if (step.kind === "heat") { const oil = st.items.find((it) => it.fryOil); if (oil) pourers.push(oil); }
     if (step.kind === "deepfry") { const oil = st.items.find((it) => it.fryOil); if (oil && st.oil < 0.5) pourers.push(oil); }
     const pourer = pourers[0];
+    if (step.kind === "cut") for (const it of step.items.slice(1)) st.cut.set(it, (step.cuts && step.cuts[it.key]) || step.style);
     const moving = new Set();
     const movesNow = (it) => st.loc.get(it) !== after.loc.get(it) && after.loc.get(it) !== "used" && after.loc.get(it) !== "wrapped";
     if (step.kind === "shop") step.items.forEach((it) => moving.add(it));
     for (const it of after.items) if (movesNow(it)) moving.add(it);
-    if (["cut", "peel"].includes(step.kind)) step.items.forEach((it) => moving.add(it));
+    if (step.kind === "peel") step.items.forEach((it) => moving.add(it));
+    if (step.kind === "cut" && step.items[0]) moving.add(step.items[0]);
 
     // Everything that stays put this step.
     for (const it of st.items) {
@@ -1702,7 +1790,7 @@ function cookBuildScene(THREE, canvas) {
     }
     if (step.kind === "cut") {
       const it = step.items[0], m = movers.find((x) => x.it === it);
-      const pile = piecesModel(it, step.style, 0.06, st.brown.get(it) || 0, 1); pile.position.set(CK_AT.board[0] + 0.07, BOARD_Y, CK_AT.board[1]); pile.userData.inst.count = 0; dyn.add(pile);
+      const pile = piecesModel(it, (step.cuts && step.cuts[it.key]) || (step.style === "mixed" ? "diced" : step.style), 0.06, st.brown.get(it) || 0, 1); pile.position.set(CK_AT.board[0] + 0.07, BOARD_Y, CK_AT.board[1]); pile.userData.inst.count = 0; dyn.add(pile);
       cutInfo = { whole: m && m.obj, pile, n: pile.userData.n };
       if (m) { m.t0 = 0.1; m.t1 = 0.7; }
     }

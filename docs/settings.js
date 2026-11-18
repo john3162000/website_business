@@ -290,6 +290,7 @@ const I18N = {
   "cook.up": ["Itaas", "Move up"],
   "cook.down": ["Ibaba", "Move down"],
   "cook.remove": ["Alisin", "Remove"],
+  "cook.photos": ["Mga larawan: Wikimedia Commons", "Photos: Wikimedia Commons"],
   "cook.watch": ["🎬 Panoorin kung paano", "🎬 Watch how it's made"],
   "plan.overBudget": ["₱{total} vs ₱{budget} mo", "₱{total} vs your ₱{budget}"],
   "plan.overTip": ["Pinakamurang linggo na ito. Subukan ang “Ulam lang”, 1 ulam bawat kain, o dagdagan ang budget.", "This is the cheapest week. Try “Ulam lang”, 1 ulam per meal, or a bigger budget."],
