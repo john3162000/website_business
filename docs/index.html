@@ -755,6 +755,16 @@
     html.dark .cook-note-warn { color: #fdba74; } html.dark .cook-note-ok { color: var(--mint); } html.dark .cook-note-info { color: var(--tx2); }
     .meat-sep { display: inline-block; width: 1px; height: 1.25rem; background: #d6cdb8; margin: 0 .25rem; }
     html.dark .meat-sep { background: var(--line); }
+    /* Ulam ko on a phone: nothing wider than the screen. */
+    #mydish-editor .grid > * { min-width: 0; }
+    .dish-line input, .dish-line select { min-width: 0; }
+    .dish-line > div > span { flex: none; }
+    .dish-unit-sel { width: 7.5rem; }
+    @media (max-width: 420px) { .dish-unit-sel { width: 6.25rem; } .dish-hint { margin-left: 0; } }
+    .dish-hint { margin: .25rem 0 0 4.5rem; font-size: .75rem; color: #9a3412; }
+    .dish-bad { border-color: #ea580c !important; background: #fff7ed; }
+    html.dark .dish-hint { color: #fdba74; }
+    html.dark .dish-bad { background: #3a2412; }
     .cook-controls { display: flex; align-items: center; gap: .5rem; margin: .65rem 0; }
     .cook-controls .wx-btn { min-width: 2.75rem; min-height: 2.75rem; font-size: 1rem; }
     .cook-count { margin-left: auto; font-size: .8rem; color: #6b7280; font-variant-numeric: tabular-nums; }

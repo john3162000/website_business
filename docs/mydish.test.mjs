@@ -6,8 +6,8 @@ import vm from "node:vm";
 
 const ctx = vm.createContext({});
 vm.runInContext(`${readFileSync(new URL("./mydish.js", import.meta.url), "utf8")}
-;globalThis.api = { loadDishes, saveDishes, upsertDish, dishFromRecipe, comparableHistory, sparkPath };`, ctx);
-const { loadDishes, saveDishes, upsertDish, dishFromRecipe, comparableHistory, sparkPath } = ctx.api;
+;globalThis.api = { loadDishes, saveDishes, upsertDish, dishFromRecipe, comparableHistory, sparkPath, dishUnitKey, dishUnitsFor, dishAmountValue, dishLineIssue };`, ctx);
+const { loadDishes, saveDishes, upsertDish, dishFromRecipe, comparableHistory, sparkPath, dishUnitKey, dishUnitsFor, dishAmountValue, dishLineIssue } = ctx.api;
 
 const memoryStorage = () => {
   const m = new Map();
@@ -58,4 +58,39 @@ test("sparkPath scales points into the box", () => {
   assert.equal(sparkPath([{ date: "2026-09-14", cost: 1 }]), null);
   const p = sparkPath([{ date: "2026-09-14", cost: 10 }, { date: "2026-10-14", cost: 20 }], 100, 50, 0);
   assert.equal(p, "M0.0,50.0 L100.0,0.0");
+});
+
+test("units: only the ones that give an ingredient a weight", () => {
+  assert.equal(dishUnitKey("lbs"), "lb");
+  assert.equal(dishUnitKey("Tablespoons."), "tbsp");
+  assert.equal(dishUnitKey("kutsara"), "tbsp");
+  assert.equal(dishUnitKey(""), "");
+  // Hotdog: weight, cups/spoons and pieces all work; pork belly only by weight.
+  assert.deepEqual([...dishUnitsFor(["g", "kg", "cup", "tbsp", "tsp", "piece"])], ["g", "kg", "lb", "oz", "cup", "tbsp", "tsp", "ml", "l", "piece"]);
+  assert.deepEqual([...dishUnitsFor(["g", "kg"])], ["g", "kg", "lb", "oz"]);
+  assert.equal(dishUnitsFor(undefined), null);
+});
+
+test("amounts: fractions, ranges and a minimum above zero", () => {
+  assert.equal(dishAmountValue("1 1/2"), 1.5);
+  assert.equal(dishAmountValue("½"), 0.5);
+  assert.equal(dishAmountValue("2-3"), 2.5);
+  assert.equal(dishAmountValue("0.25"), 0.25);
+  assert.equal(dishAmountValue("abc"), null);
+  assert.equal(dishAmountValue(""), null);
+});
+
+test("line hints: wrong unit, missing or zero amount, can't weigh", () => {
+  const belly = dishUnitsFor(["g", "kg"]), hotdog = dishUnitsFor(["g", "kg", "cup", "tbsp", "tsp", "piece"]);
+  assert.match(dishLineIssue({ amount: "2", unit: "piece", name: "pork belly" }, belly, null, "pork belly"), /Hindi mabilang ang "piece" para sa pork belly\. Gamitin ang: gramo \(g\), kilo \(kg\), libra \(lb\), onsa \(oz\)\./);
+  assert.equal(dishLineIssue({ amount: "2", unit: "pcs", name: "hotdog" }, hotdog, "ok", "hotdog"), null);
+  assert.equal(dishLineIssue({ amount: "100", unit: "g", name: "hotdog" }, hotdog, "ok", "hotdog"), null);
+  assert.equal(dishLineIssue({ amount: "3", unit: "oz", name: "hotdog" }, hotdog, "ok", "hotdog"), null);
+  assert.match(dishLineIssue({ amount: "2", unit: "", name: "pork belly" }, belly, null, "pork belly"), /Pumili ng unit/);
+  assert.match(dishLineIssue({ amount: "0", unit: "g", name: "garlic" }, null, null), /higit sa 0/);
+  assert.match(dishLineIssue({ amount: "", unit: "g", name: "garlic" }, null, null), /Lagyan ng dami/);
+  assert.equal(dishLineIssue({ amount: "", unit: "", name: "Salt to taste" }, null, null), null, "to taste needs no amount");
+  assert.match(dishLineIssue({ amount: "2", unit: "bundle", name: "kangkong" }, null, "no-weight"), /Hindi matimbang/);
+  assert.match(dishLineIssue({ amount: "1", unit: "piece", name: "dragon scale" }, null, "unmatched"), /Hindi pa namin kilala/);
+  assert.match(dishLineIssue({ amount: "2", unit: "piece", name: "pork belly" }, belly, null, "pork belly", true), /doesn't work for pork belly/);
 });
