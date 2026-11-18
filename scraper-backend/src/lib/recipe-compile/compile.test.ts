@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { compileRecipe, costGaps, isHidden, sectionOf, unknownLineCount, vegClass } from "./compile.ts";
+import { compileRecipe, costGaps, daLookup, isHidden, sectionOf, unknownLineCount, vegClass } from "./compile.ts";
 import { testContext } from "./test-context.ts";
 
 const ctx = testContext();
@@ -418,4 +418,24 @@ test("vegetarian / vegan from the ingredients' diet classes", () => {
   assert.equal(veg("Adobo", [ing("1", "lb", "pork belly"), ing("1/2", "cup", "soy sauce")]), null);
   assert.equal(veg("Honey toast", [ing("2", "slices", "white bread"), ing("1", "tbsp", "honey")]), "vegetarian", "honey is not vegan");
   assert.equal(veg("Mallows", [ing("1", "cup", "marshmallows")]), null, "gelatin is not vegetarian");
+});
+
+test("DA renamed an item: the current name wins, the old one covers older days", () => {
+  const D = 86400000, kg = { per: "kg" as const, pieceGrams: null, bottleMl: null };
+  const da = new Map([
+    ["Belly (Liempo), Local Fresh or Chilled", { price: 366, unit: kg, date: 20 * D }],
+    ["Pork Belly (Liempo), Local", { price: 350, unit: kg, date: 5 * D }],
+  ]);
+  const both = "Belly (Liempo), Local Fresh or Chilled | Pork Belly (Liempo), Local";
+  assert.equal(daLookup(da, both)?.price, 366);
+  // Before the rename only the old name has a price.
+  assert.equal(daLookup(new Map([["Pork Belly (Liempo), Local", { price: 350, unit: kg, date: 5 * D }]]), both)?.price, 350);
+  // A first choice that DA stopped reporting long ago gives way to a current one.
+  const onion = new Map([
+    ["White Onion, Local Medium (13-15 pcs/kg)", { price: 150, unit: kg, date: 1 * D }],
+    ["White Onion, Imported Medium (13-15 pcs/kg)", { price: 140, unit: kg, date: 20 * D }],
+  ]);
+  assert.equal(daLookup(onion, "White Onion, Local Medium (13-15 pcs/kg) | White Onion, Imported Medium (13-15 pcs/kg)")?.price, 140);
+  assert.equal(daLookup(da, null), undefined);
+  assert.equal(daLookup(da, "Nothing like this"), undefined);
 });

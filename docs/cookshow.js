@@ -130,7 +130,7 @@ function cookItemsFromLines(lines) {
     out.push({
       key, label: name, text, icon: cookIcon(`${name} ${l.slug || ""}`),
       liquid: water || (COOK_LIQUID.test(l.slug || name.toLowerCase().replace(/\s+/g, "_")) && !COOK_SOLID_LIQUID.test(l.slug || name.toLowerCase())),
-      water, toTaste: l.status === "to-taste", cost: typeof l.cost === "number" ? l.cost : null, fryOil: !!(l.slug && COOK_FRY_OIL.test(l.slug)),
+      water, toTaste: l.status === "to-taste", group: l.group || "", cost: typeof l.cost === "number" ? l.cost : null, fryOil: !!(l.slug && COOK_FRY_OIL.test(l.slug)),
       cut: (l.slug && COOK_NO_CUT.test(l.slug)) || water ? null : cookCutStyle(text),
       peel: /\b(peeled|deveined|shelled|cleaned|gutted|scaled)\b/i.test(text),
       words: cookWords(`${name} ${l.name || ""} ${(l.slug || "").replace(/_/g, " ")} ${text}`),
@@ -189,8 +189,10 @@ const COOK_VERBS = [
   ["stir", /\bstir\b/],
   ["season", /\b(season|rub|to taste|sprinkle)\b/],
   ["chill", /\b(refrigerat\w*|chill|freez\w*|fridge|ref)\b/],
+  ["strain", /\b(strain\w*|sieve|colander|salain|salaan)\b/],
+  ["top", /\b(top (it |them )?with|on top|garnish(ed)? with|sprinkle\b[^.]*\bover|ilagay sa ibabaw)\b/],
   ["drain", /\b(drain|set aside|remove (it|them|from|the)|let (it )?cool|wire rack|paper towel)/],
-  ["serve", /\b(serve|transfer to a serving|garnish)/],
+  ["serve", /\b(serve|transfer to a serving)/],
 ];
 
 const COOK_TIMED = new Set(["marinate", "boil", "simmer", "cook", "fry", "deepfry", "grill", "bake", "steam", "chill"]);
@@ -340,7 +342,7 @@ function buildCookScript(recipe) {
     }
     // Seasoning lists only what goes on: "rub the Magic Sarap over the pork belly".
     if (kind === "season") its = its.filter((it) => !mains.has(it));
-    if (["add", "pour", "mix", "saute", "wrap"].includes(kind) && !its.length) continue;
+    if (["add", "pour", "mix", "saute", "wrap", "top"].includes(kind) && !its.length) continue;
     // Filler with nothing to show: a bare "stir" or "cook for a while".
     if ((kind === "stir" && !its.length) || (kind === "cook" && !a.minutes && !its.length)) continue;
     if (kind === "add" && its.every((x) => x.liquid && !COOK_SOLID_LIQUID.test(x.key))) kind = "pour";
@@ -470,6 +472,8 @@ function cookCaption(step, lang = "tl") {
     case "wrap": return en ? `Wrap in ${list} and roll` : `Ibalot sa ${list} at irolyo`;
     case "cook": return en ? `Cook${time}` : `Lutuin${time}`;
     case "season": return en ? `Season${list ? ` with ${list}` : ""} to taste` : `Timplahan${list ? ` ng ${list}` : ""} ayon sa panlasa`;
+    case "strain": return en ? `Strain${list ? ` the ${list}` : ""} and drain the water` : `Salain${list ? ` ang ${list}` : ""} at itapon ang tubig`;
+    case "top": return en ? `Put the ${list} on top` : `Ilagay sa ibabaw ang ${list}`;
     case "chill": return en ? `Chill in the fridge${time}` : `Palamigin sa ref${time}`;
     case "drain": return en ? "Take out and let it drain" : "Hanguin at patuluin";
     case "serve": return step.cold ? (en ? "Serve cold" : "Ihain nang malamig") : en ? "Serve while hot" : "Ihain habang mainit";
@@ -550,7 +554,7 @@ function cookPlayerMarkup(message, inline) {
   return `
       <div class="cook-head">
         <div class="min-w-0"><p class="cook-kicker">${inline ? `🍳 ${escapeHtml(cookT("cook.kitchen", "Lutuin mo ang ulam mo"))}` : `🎬 ${escapeHtml(cookT("cook.title", "Panoorin kung paano"))}`}</p><h2 id="cook-title" tabindex="-1" data-dlg-focus class="cook-name">${escapeHtml(message)}</h2></div>
-        ${inline ? `<button type="button" onclick="cookKitchenClose()" class="wx-btn">${escapeHtml(cookT("cook.kitchenClose", "Isara ang kusina"))}</button>` : `<button type="button" onclick="closeCookShow()" class="dlg-x" aria-label="Isara">✕</button>`}
+        ${inline ? `<span class="cook-head-btns"><button type="button" onclick="cookKitchenRestart()" class="wx-btn">↺ ${escapeHtml(cookT("cook.kitchenReset", "Ibalik sa recipe"))}</button><button type="button" onclick="cookKitchenClose()" class="wx-btn">${escapeHtml(cookT("cook.kitchenClose", "Isara ang kusina"))}</button></span>` : `<button type="button" onclick="closeCookShow()" class="dlg-x" aria-label="Isara">✕</button>`}
       </div>
       ${inline ? `<div class="cook-left">` : ""}<div class="cook-stage"><canvas id="cook-canvas" aria-hidden="true"></canvas><p id="cook-hud" class="cook-hud" hidden></p><p id="cook-timer" class="cook-timer" hidden></p><p id="cook-caption" class="cook-caption" aria-live="polite"></p></div>
       <div class="cook-controls">
@@ -578,7 +582,7 @@ function cookStart(title, built, costPerServing, key, opts = {}) {
   const saved = key && !opts.fresh ? cookSavedSteps(key) : null;
   const steps = saved ? cookRestoreSteps(saved, built) : built;
   cookShow = { title, steps, built, key, edited: !!saved, editing: !!opts.builder, builder: !!opts.builder, inline: !!opts.inline, extra: opts.extra || [],
-    i: 0, t: 0, playing: false, cost: costPerServing, last: 0, three: null, stopAt: null, draft: null };
+    i: 0, t: 0, playing: false, cost: costPerServing, last: 0, three: null, stopAt: null, draft: null, editAt: null, insertAt: null };
   if (cookShow.builder) cookWriteSteps(key, steps);
   document.getElementById("cook-title").textContent = title;
   cookRenderSteps();
@@ -588,18 +592,42 @@ function cookStart(title, built, costPerServing, key, opts = {}) {
   const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   loadThree().then(() => {
     if (!cookShow) return;
-    cookShow.three = cookBuildScene(window.THREE, document.getElementById("cook-canvas"));
+    try { cookShow.three = cookBuildScene(window.THREE, document.getElementById("cook-canvas")); }
+    catch (e) { cookNo3d("device", e); return; }
     // Pictures for the shopping list, drawn from the same 3D models.
     const shop = steps[0] && steps[0].kind === "shop" ? steps[0].items : [];
-    setTimeout(() => { if (cookShow && cookShow.three) cookFillThumbs(cookShow.three.thumbs(shop)); }, 50);
+    setTimeout(() => { try { if (cookShow && cookShow.three) cookFillThumbs(cookShow.three.thumbs(shop)); } catch { /* pictures are optional */ } }, 50);
     cookEnterStep();
     cookShow.playing = !reduce && !opts.paused;
     document.getElementById("cook-play").textContent = cookShow.playing ? "⏸" : "▶";
     cookShow.last = performance.now();
     cookShow.raf = requestAnimationFrame(cookFrame);
-  }).catch(() => {
-    document.querySelector(".cook-stage").innerHTML = `<p class="cook-caption">${escapeHtml(cookT("cook.textOnly", "Hindi ma-load ang 3D. Heto ang mga hakbang."))}</p>`;
-  });
+  }).catch((e) => cookNo3d("load", e));
+}
+
+/**
+ * No 3D: the steps still work. Says why (the library didn't download, or this device can't draw 3D),
+ * with a retry, and the error text in small print so a screenshot tells us what happened.
+ */
+function cookNo3d(why, e) {
+  const stage = document.querySelector(".cook-stage");
+  if (!stage) return;
+  const en = cookLang() === "en";
+  const msg = why === "load"
+    ? (en ? "The 3D didn't download (slow or blocked connection). The steps below still work." : "Hindi na-download ang 3D (mabagal o naka-block na koneksyon). Gumagana pa rin ang mga hakbang sa ibaba.")
+    : (en ? "This device can't draw the 3D (WebGL is off or not supported). The steps below still work." : "Hindi kaya ng device na ito ang 3D (naka-off o walang WebGL). Gumagana pa rin ang mga hakbang sa ibaba.");
+  stage.innerHTML = `<div class="cook-no3d"><p>${escapeHtml(msg)}</p>
+    <button type="button" class="wx-btn on" onclick="cookRetry3d()">↻ ${escapeHtml(en ? "Try again" : "Subukan ulit")}</button>
+    <small>${escapeHtml(String((e && e.message) || e || "").slice(0, 140))}</small></div>`;
+}
+
+/** Retry: reopen the same player (pop-up or kitchen) from the steps it already has. */
+function cookRetry3d() {
+  if (!cookShow) return;
+  const { title, steps, cost, key, inline, builder } = cookShow;
+  const root = inline ? document.querySelector(".cook-inline") : document.querySelector("#cook-dialog .cook-panel");
+  if (root) root.innerHTML = cookPlayerMarkup(title, inline);
+  cookStart(title, steps, cost, key, { inline, builder, extra: cookShow.extra, fresh: true });
 }
 
 // ── "Lutuin mo": the kitchen in Ulam ko, where people build their own dish's method ──
@@ -609,11 +637,12 @@ const COOK_ACTIONS = [
   ["wrap", "🌯", "Ibalot", "Wrap"], ["heat", "🔥", "Painitin", "Heat"], ["saute", "🍳", "Igisa", "Sauté"], ["add", "➕", "Ilagay", "Add"],
   ["pour", "🫗", "Ibuhos", "Pour"], ["boil", "♨️", "Pakuluan", "Boil"], ["simmer", "♨️", "Hinaan ang apoy", "Simmer"], ["fry", "🍳", "Iprito", "Fry"],
   ["deepfry", "🛢️", "Iprito nang lubog", "Deep-fry"], ["grill", "🔥", "Ihawin", "Grill"], ["steam", "♨️", "I-steam", "Steam"], ["bake", "🔥", "I-bake", "Bake"],
-  ["stir", "🥄", "Haluin", "Stir"], ["season", "🧂", "Timplahan", "Season"], ["chill", "🧊", "Palamigin", "Chill"], ["drain", "🧻", "Hanguin", "Take out"],
+  ["stir", "🥄", "Haluin", "Stir"], ["season", "🧂", "Timplahan", "Season"], ["strain", "🫙", "Salain", "Strain"], ["top", "🧀", "Ilagay sa ibabaw", "Put on top"],
+  ["chill", "🧊", "Palamigin", "Chill"], ["drain", "🧻", "Hanguin", "Take out"],
 ];
 const COOK_DEFAULT_MIN = { marinate: 30, boil: 10, simmer: 20, cook: 5, fry: 5, deepfry: 10, grill: 10, steam: 15, bake: 25, chill: 60 };
-const COOK_NEEDS_ITEMS = new Set(["cut", "peel", "marinate", "mix", "wrap", "saute", "add", "pour", "fry", "deepfry", "grill"]);
-const COOK_ON_STOVE = new Set(["heat", "saute", "add", "pour", "fry", "deepfry", "boil", "simmer", "cook", "stir", "season", "drain"]);
+const COOK_NEEDS_ITEMS = new Set(["cut", "peel", "marinate", "mix", "wrap", "saute", "add", "pour", "fry", "deepfry", "grill", "top"]);
+const COOK_ON_STOVE = new Set(["heat", "saute", "add", "pour", "fry", "deepfry", "boil", "simmer", "cook", "stir", "season", "drain", "strain", "top"]);
 
 /**
  * The kitchen's comments on a method, like a simulation: raw meat, frying in a cold pan, boiling a dry pot,
@@ -637,7 +666,7 @@ function cookCheck(steps) {
       notes.push({ type: "warn", tl: `Painitin muna ang ${v} bago ${s.kind === "saute" ? "mag-gisa" : "magprito"}.`, en: `Heat the ${v === "kaldero" ? "pot" : "pan"} before you ${s.kind === "saute" ? "sauté" : "fry"}.` });
       warnedHeat = true;
     }
-    if (["saute", "add", "pour", "fry", "deepfry", "grill", "steam", "bake", "boil", "simmer", "cook", "season"].includes(s.kind)) {
+    if (["saute", "add", "pour", "fry", "deepfry", "grill", "steam", "bake", "boil", "simmer", "cook", "season", "top"].includes(s.kind)) {
       for (const it of s.items || []) { if (it.liquid && !it.fryOil) liquid = true; else if (!it.fryOil) inPot.add(it); }
     }
     if (s.kind === "boil" && !liquid && !warnedDry) {
@@ -649,7 +678,7 @@ function cookCheck(steps) {
       warnedOil = true;
     }
     if (heatKinds.has(s.kind)) { for (const it of inPot) cooked.add(it); for (const it of s.items || []) cooked.add(it); }
-    if (s.kind === "drain") inPot = new Set();
+    if (s.kind === "drain" || s.kind === "strain") { inPot = new Set(); if (s.kind === "strain") liquid = false; }
     if (s.minutes) total += s.minutes;
   }
   const hilaw = shop.filter((it) => raw(it) && !cooked.has(it));
@@ -674,15 +703,28 @@ function cookKitchenIdle() {
         <p class="cook-kitchen-p">${escapeHtml(cookT("cook.kitchenIntro", "Ikaw ang kusinero: piliin ang gagawin, ang sangkap, paano hiwain at gaano katagal, at panoorin itong maluto."))}</p></div>
       <div class="cook-kitchen-btns">
         ${has ? `<button type="button" class="cook-open-btn on" onclick="cookKitchenStart('continue')">▶ ${escapeHtml(cookT("cook.kitchenContinue", "Ituloy ang luto ko"))}</button>` : ""}
-        <button type="button" class="cook-open-btn" onclick="cookKitchenStart('suggest')">✨ ${escapeHtml(cookT("cook.kitchenSuggest", "Simulan sa mungkahing paraan"))}</button>
-        <button type="button" class="cook-open-btn" onclick="cookKitchenStart('blank')">🧑‍🍳 ${escapeHtml(cookT("cook.kitchenBlank", "Ako ang bahala (simula sa wala)"))}</button>
+        <button type="button" class="cook-open-btn${has ? "" : " on"}" onclick="cookKitchenStart('suggest')">✏️ ${escapeHtml(currentDish.fromRecipeId ? cookT("cook.kitchenEdit", "Baguhin ang paraan ng recipe na ito") : cookT("cook.kitchenSuggest", "Simulan sa mungkahing paraan"))}</button>
+        <button type="button" class="cook-open-btn sm" onclick="cookKitchenStart('blank')">🧑‍🍳 ${escapeHtml(cookT("cook.kitchenBlank", "Simula sa wala"))}</button>
       </div>
+      <p class="cook-kitchen-tip">${escapeHtml(cookT("cook.kitchenTip", "Tip: simulan sa paraan ng recipe, tapos pindutin ang ✏️ sa hakbang na gusto mong baguhin, o ＋ para magdagdag pagkatapos nito."))}</p>
     </div>`;
 }
 
 /** Ingredients of the dish being edited, as engine lines when the dish has been priced. */
 function cookDishLines() {
-  return typeof lastResult !== "undefined" && lastResult && lastResult.lines ? lastResult.lines : currentDish.lines;
+  // The calculator's lines (with catalog slugs), carrying each line's group ("Para sa sauce") from Ulam ko.
+  const named = currentDish.lines.filter((l) => String(l.name || "").trim());
+  const eng = typeof lastResult !== "undefined" && lastResult && lastResult.lines;
+  if (eng && eng.length === named.length) return eng.map((l, k) => ({ ...l, group: named[k].group || "" }));
+  return currentDish.lines;
+}
+
+/** Items in their groups, the main group first: [[group, items], …]. One group means no headings. */
+function cookByGroup(items) {
+  const order = [];
+  for (const it of items) if (!order.includes(it.group || "")) order.push(it.group || "");
+  order.sort((a, b) => (a ? 1 : 0) - (b ? 1 : 0));
+  return order.map((g) => [g, items.filter((it) => (it.group || "") === g)]);
 }
 
 function cookKitchenStart(mode) {
@@ -749,8 +791,9 @@ function cookDraftStep() {
   const d = cookShow.draft;
   if (!d) return null;
   const items = cookBuilderItems().filter((it) => d.keys.includes(it.key));
-  const s = { kind: d.kind, items, vessel: COOK_ON_STOVE.has(d.kind) || ["grill", "bake", "steam"].includes(d.kind) ? d.vessel : undefined };
-  if (d.kind === "cut") { s.style = d.style; s.size = d.size || null; }
+  const s = { kind: d.kind, items, vessel: { bake: "oven", grill: "ihawan", steam: "steamer" }[d.kind] || (COOK_ON_STOVE.has(d.kind) ? d.vessel : undefined) };
+  if (d.kind === "cut") { s.style = d.style; s.size = d.size || null; if (d.cuts && d.style === "mixed") s.cuts = d.cuts; }
+  if (d.boilFirst && d.kind === "simmer") s.boilFirst = true;
   if (COOK_TIMED.has(d.kind)) s.minutes = d.minutes || null;
   if (d.kind === "pour" && items.some((it) => !it.liquid)) s.kind = "add";
   return s;
@@ -767,7 +810,7 @@ function cookRenderBuilder() {
     const needs = COOK_NEEDS_ITEMS.has(d.kind) || ["season", "boil", "simmer", "steam", "bake"].includes(d.kind);
     const list = d.kind === "pour" ? [...items.filter((it) => it.liquid), ...items.filter((it) => !it.liquid)] : d.kind === "wrap" ? items.filter((it) => /wrapper|leaf/.test(it.key)).concat(items.filter((it) => !/wrapper|leaf/.test(it.key))) : items;
     const chips = needs ? `<div class="cook-form-row"><span class="cook-form-l">${escapeHtml(cookT("cook.which", en ? "Which ingredients?" : "Aling sangkap?"))}${d.kind === "cut" ? ` <small>(${escapeHtml(en ? "one at a time" : "isa-isa")})</small>` : ""}</span>
-        <div class="cook-chips">${list.map((it) => `<button type="button" class="cook-chip${d.keys.includes(it.key) ? " on" : ""}" aria-pressed="${d.keys.includes(it.key)}" onclick="cookPickItem('${escapeHtml(it.key)}')">${cookChipThumb(it)}<span>${escapeHtml(it.label)}</span></button>`).join("")}</div></div>` : "";
+        ${cookByGroup(list).map(([g, its], _, all) => `${all.length > 1 ? `<p class="cook-chip-group">${escapeHtml(g || (en ? "Main" : "Pangunahin"))}</p>` : ""}<div class="cook-chips">${its.map((it) => `<button type="button" class="cook-chip${d.keys.includes(it.key) ? " on" : ""}" aria-pressed="${d.keys.includes(it.key)}" onclick="cookPickItem('${escapeHtml(it.key)}')">${cookChipThumb(it)}<span>${escapeHtml(it.label)}</span></button>`).join("")}</div>`).join("")}</div>` : "";
     const cut = d.kind === "cut" ? `<div class="cook-form-row"><span class="cook-form-l">${escapeHtml(en ? "How to cut" : "Paano hiwain")}</span>
         <div class="cook-chips">${Object.keys(COOK_STYLE_TEXT).map((k) => `<button type="button" class="cook-chip sm${d.style === k ? " on" : ""}" aria-pressed="${d.style === k}" onclick="cookDraftSet('style','${k}')">${escapeHtml(COOK_STYLE_TEXT[k][en ? 1 : 0])}</button>`).join("")}</div>
         <label class="cook-in-l">${escapeHtml(en ? "Size" : "Laki")} <input class="cook-in cook-num" type="number" min="0" max="20" step="0.5" value="${d.size || ""}" placeholder="cm" oninput="cookDraftSet('size', this.value)"> cm</label></div>` : "";
@@ -780,18 +823,25 @@ function cookRenderBuilder() {
     const ready = step && (!COOK_NEEDS_ITEMS.has(d.kind) || step.items.length);
     form = `<div class="cook-form">${chips}${cut}${time}${ves}
       <div class="cook-form-go"><span class="cook-preview">${ready ? `${escapeHtml(cookStepIcon(step))} ${escapeHtml(cookCaption(step, en ? "en" : "tl"))}` : escapeHtml(en ? "Pick the ingredients first." : "Pumili muna ng sangkap.")}</span>
-      <button type="button" class="wx-btn on cook-go" onclick="cookAddDraft()"${ready ? "" : " disabled"}>➕ ${escapeHtml(cookT("cook.addCook", en ? "Add and cook" : "Idagdag at lutuin"))}</button></div></div>`;
+      <button type="button" class="wx-btn on cook-go" onclick="cookAddDraft()"${ready ? "" : " disabled"}>${cookShow.editAt != null ? `💾 ${escapeHtml(en ? "Save and cook" : "I-save at lutuin")}` : `➕ ${escapeHtml(cookT("cook.addCook", en ? "Add and cook" : "Idagdag at lutuin"))}`}</button></div></div>`;
   }
   const notes = cookCheck(cookShow.steps);
-  box.innerHTML = `<h3 class="cook-list-h">${escapeHtml(cookT("cook.next.q", en ? "What's next?" : "Ano ang susunod na gagawin?"))}</h3>
+  const mode = cookShow.editAt != null
+    ? `<div class="cook-mode">✏️ ${escapeHtml(en ? `Editing step ${cookShow.editAt + 1}` : `Binabago ang hakbang ${cookShow.editAt + 1}`)} <button type="button" class="wx-btn" onclick="cookCancelEdit()">${escapeHtml(en ? "Cancel" : "Kanselahin")}</button></div>`
+    : cookShow.insertAt != null
+      ? `<div class="cook-mode">＋ ${escapeHtml(en ? `Adding after step ${cookShow.insertAt + 1}` : `Idadagdag pagkatapos ng hakbang ${cookShow.insertAt + 1}`)} <button type="button" class="wx-btn" onclick="cookCancelEdit()">${escapeHtml(en ? "Cancel" : "Kanselahin")}</button></div>`
+      : "";
+  box.innerHTML = `${mode}<h3 class="cook-list-h">${escapeHtml(cookShow.editAt != null ? (en ? "Change what this step does" : "Baguhin ang gagawin sa hakbang na ito") : cookT("cook.next.q", en ? "What's next?" : "Ano ang susunod na gagawin?"))}</h3>
     <div class="cook-acts">${acts}</div>${form}
     <div class="cook-check" aria-live="polite"><p class="cook-check-h">🧑‍🍳 ${escapeHtml(cookT("cook.feedback", en ? "Kitchen notes" : "Puna ng kusina"))}</p>
       <ul>${notes.map((n) => `<li class="cook-note-${n.type}">${n.type === "warn" ? "⚠️" : n.type === "ok" ? "✅" : "ℹ️"} ${escapeHtml(en ? n.en : n.tl)}</li>`).join("")}</ul></div>`;
 }
 
 function cookPick(kind) {
-  const prev = [...cookShow.steps].reverse().find((s) => s.vessel);
-  cookShow.draft = { kind, keys: [], style: "diced", size: null, minutes: COOK_DEFAULT_MIN[kind] || null, vessel: (prev && prev.vessel) || (["boil", "simmer"].includes(kind) ? "kaldero" : "kawali") };
+  const upto = cookShow.editAt != null ? cookShow.editAt : cookShow.insertAt != null ? cookShow.insertAt + 1 : cookShow.steps.length;
+  const prev = cookShow.steps.slice(0, upto).reverse().find((s) => s.vessel && !["shop", "serve"].includes(s.kind));
+  const keep = cookShow.draft && cookShow.editAt != null ? cookShow.draft.keys : [];
+  cookShow.draft = { kind, keys: keep, style: "diced", size: null, minutes: COOK_DEFAULT_MIN[kind] || null, vessel: (prev && prev.vessel) || (["boil", "simmer"].includes(kind) ? "kaldero" : "kawali") };
   cookRenderBuilder();
 }
 function cookPickItem(key) {
@@ -813,14 +863,56 @@ function cookDraftSet(field, value) {
 function cookAddDraft() {
   const step = cookDraftStep();
   if (!step || (COOK_NEEDS_ITEMS.has(step.kind) && !step.items.length)) return;
-  const at = cookShow.steps[cookShow.steps.length - 1].kind === "serve" ? cookShow.steps.length - 1 : cookShow.steps.length;
-  cookShow.steps = [...cookShow.steps.slice(0, at), step, ...cookShow.steps.slice(at)];
-  cookShow.draft = null;
+  let at;
+  if (cookShow.editAt != null) {
+    at = cookShow.editAt;
+    cookShow.steps = cookShow.steps.map((x, k) => (k === at ? step : x));
+  } else {
+    const end = cookShow.steps[cookShow.steps.length - 1].kind === "serve" ? cookShow.steps.length - 1 : cookShow.steps.length;
+    at = cookShow.insertAt != null ? Math.min(cookShow.insertAt + 1, end) : end;
+    cookShow.steps = [...cookShow.steps.slice(0, at), step, ...cookShow.steps.slice(at)];
+  }
+  cookShow.draft = null; cookShow.editAt = null; cookShow.insertAt = null;
   cookStepsChanged();
   // Play the new step once, like a simulation, then wait for the next one.
   cookShow.i = at; cookShow.t = 0; cookShow.stopAt = at; cookShow.playing = true;
   document.getElementById("cook-play").textContent = "⏸";
   cookShowStep(); cookEnterStep();
+}
+
+/** ✏️ on a step: load it into the builder to change its action, ingredients, cut or time. */
+function cookEditStep(i) {
+  const s = cookShow.steps[i];
+  if (!s || ["shop", "serve"].includes(s.kind)) return;
+  cookShow.editAt = i; cookShow.insertAt = null;
+  cookShow.draft = { kind: s.kind, keys: (s.items || []).map((it) => it.key), style: s.style || "diced", size: s.size || null, minutes: s.minutes || COOK_DEFAULT_MIN[s.kind] || null, vessel: s.vessel || "kawali", boilFirst: !!s.boilFirst, cuts: s.cuts || null };
+  cookRenderSteps(); cookRenderBuilder();
+  document.getElementById("cook-builder")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/** ＋ on a step: the next step added goes right after it. */
+function cookInsertAfter(i) {
+  cookShow.insertAt = i; cookShow.editAt = null; cookShow.draft = null;
+  cookRenderSteps(); cookRenderBuilder();
+  document.getElementById("cook-builder")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function cookCancelEdit() { cookShow.editAt = null; cookShow.insertAt = null; cookShow.draft = null; cookRenderSteps(); cookRenderBuilder(); }
+
+/** Tap a step in the kitchen: play just that step. */
+function cookPlayOne(i) {
+  cookShow.i = i; cookShow.t = 0; cookShow.stopAt = i; cookShow.playing = true;
+  const pb = document.getElementById("cook-play"); if (pb) pb.textContent = "⏸";
+  cookShowStep(); cookEnterStep();
+}
+
+/** "↺ Ibalik sa recipe": back to the method built from the recipe. */
+function cookKitchenRestart() {
+  if (!cookShow || !cookShow.builder) return;
+  const en = cookLang() === "en";
+  if (typeof confirm === "function" && !confirm(en ? "Go back to the recipe's method? Your changes to the steps will be lost." : "Ibalik sa paraan ng recipe? Mawawala ang mga binago mo sa mga hakbang.")) return;
+  cookWriteSteps(cookShow.key, null);
+  cookKitchenStart("suggest");
 }
 
 // ── Editing the steps (saved on this device) ──
@@ -885,11 +977,16 @@ function cookRenderSteps() {
     const style = s.kind === "cut" ? `<select class="cook-in" aria-label="${escapeHtml(cookT("cook.cutStyle", "Paraan ng paghiwa"))}" onchange="cookEditSet(${i}, 'style', this.value)">${Object.keys(COOK_STYLE_TEXT).map((k) => opt(k, s.style, COOK_STYLE_TEXT[k][lang === "en" ? 1 : 0])).join("")}</select>
       <label class="cook-in-l"><input class="cook-in cook-num" type="number" min="0" max="20" step="0.5" value="${s.size ?? ""}" placeholder="cm" onchange="cookEditSet(${i}, 'size', this.value)"> cm</label>` : "";
     const time = COOK_TIMED.has(s.kind) ? `<label class="cook-in-l"><input class="cook-in cook-num" type="number" min="0" max="2880" step="1" value="${s.minutes ?? ""}" onchange="cookEditSet(${i}, 'minutes', this.value)"> ${escapeHtml(cookT("cook.min", "min"))}</label>` : "";
-    const tools = fixed ? "" : `<span class="cook-tools">
+    const b = cookShow.builder;
+    const addAfter = b && s.kind !== "serve" ? `<button type="button" class="cook-tool" onclick="cookInsertAfter(${i})" aria-label="${escapeHtml(cookT("cook.addAfter", "Magdagdag pagkatapos nito"))}" title="${escapeHtml(cookT("cook.addAfter", "Magdagdag pagkatapos nito"))}">＋</button>` : "";
+    const editBtn = b && !fixed ? `<button type="button" class="cook-tool" onclick="cookEditStep(${i})" aria-label="${escapeHtml(cookT("cook.editStep", "Baguhin ang hakbang"))}" title="${escapeHtml(cookT("cook.editStep", "Baguhin ang hakbang"))}">✏️</button>` : "";
+    const tools = fixed ? (addAfter ? `<span class="cook-tools">${addAfter}</span>` : "") : `<span class="cook-tools">${editBtn}${addAfter}
       <button type="button" class="cook-tool" onclick="cookEditMove(${i}, -1)" aria-label="${escapeHtml(cookT("cook.up", "Itaas"))}"${i <= 1 ? " disabled" : ""}>↑</button>
       <button type="button" class="cook-tool" onclick="cookEditMove(${i}, 1)" aria-label="${escapeHtml(cookT("cook.down", "Ibaba"))}"${i >= n - 2 ? " disabled" : ""}>↓</button>
       <button type="button" class="cook-tool" onclick="cookEditRemove(${i})" aria-label="${escapeHtml(cookT("cook.remove", "Alisin"))}">🗑</button></span>`;
-    return `<li class="cook-edit-row${i === cookShow.i ? " on" : ""}"><div class="cook-edit-top">${head}${tools}</div>${style || time ? `<div class="cook-edit-in">${style}${time}</div>` : ""}</li>`;
+    const headBtn = b ? `<button type="button" class="cook-step-play" onclick="cookPlayOne(${i})" aria-label="${escapeHtml(cookT("cook.playStep", "Panoorin ang hakbang na ito"))}">${head}</button>` : head;
+    const mark = b && cookShow.editAt === i ? " editing" : b && cookShow.insertAt === i ? " insert-after" : "";
+    return `<li class="cook-edit-row${i === cookShow.i ? " on" : ""}${mark}"><div class="cook-edit-top">${headBtn}${tools}</div>${style || time ? `<div class="cook-edit-in">${style}${time}</div>` : ""}</li>`;
   }).join("") + (ed && !cookShow.builder ? `<li class="cook-edit-foot">
       <label class="cook-in-l">${escapeHtml(cookT("cook.addStep", "Magdagdag ng hakbang"))}: <select class="cook-in" id="cook-add-kind">${COOK_ADDABLE.map((k) => opt(k, "", cookCaption({ kind: k, items: [] }, lang))).join("")}</select></label>
       <button type="button" class="wx-btn" onclick="cookEditAdd()">＋</button>
@@ -947,11 +1044,11 @@ function cookRenderList(steps) {
   const total = priced.reduce((a, it) => a + it.cost, 0);
   box.innerHTML = `
     <h3 class="cook-list-h">🧺 ${escapeHtml(cookT("cook.list", en ? "Shopping list" : "Listahan ng bibilhin"))}</h3>
-    <ul class="cook-list">${shop.map((it) => `
+    ${cookByGroup(shop).map(([g, its], _, all) => `${all.length > 1 ? `<p class="cook-chip-group">${escapeHtml(g || (en ? "Main" : "Pangunahin"))}</p>` : ""}<ul class="cook-list">${its.map((it) => `
       <li class="cook-item"><span class="cook-thumb" data-key="${escapeHtml(it.key)}" aria-hidden="true">${escapeHtml(it.icon)}</span>
         <span class="min-w-0"><span class="cook-item-name">${escapeHtml(it.label)}</span><span class="cook-item-amt">${escapeHtml(cookAmountText(it))}</span></span>
         <span class="cook-item-cost">${it.cost != null ? `₱${it.cost < 10 ? it.cost.toFixed(2) : Math.round(it.cost)}` : it.toTaste ? "" : "—"}</span></li>`).join("")}
-    </ul>
+    </ul>`).join("")}
     <p class="cook-list-total">${priced.length ? `${escapeHtml(cookT("cook.listTotal", en ? "Total for the whole dish" : "Kabuuan para sa buong ulam"))}: <b>₱${Math.round(total)}</b>` : ""}${priced.length < shop.filter((it) => !it.toTaste).length ? ` <span class="cook-list-gap">· ${escapeHtml(cookT("cook.listGap", en ? "— = no price yet" : "— = wala pang presyo"))}</span>` : ""}</p>`;
   box.hidden = false;
   cookLoadPhotos().then((p) => { cookFillPhotos(p, shop); if (cookShow && cookShow.builder) cookRenderBuilder(); });
@@ -998,7 +1095,7 @@ function cookFillThumbs(map) {
 
 function cookStepIcon(s) {
   return { shop: "🧺", peel: "🧽", cut: "🔪", marinate: "🥣", heat: "🔥", saute: "🍳", add: "➕", pour: "🫗", boil: "♨️", simmer: "♨️",
-    fry: "🍳", deepfry: "🛢️", grill: "🔥", bake: "🔥", steam: "♨️", stir: "🥄", mix: "🥣", wrap: "🌯", cook: "♨️", chill: "🧊", season: "🧂", drain: "🧻", serve: "🍽️" }[s.kind] || "•";
+    fry: "🍳", deepfry: "🛢️", grill: "🔥", bake: "🔥", steam: "♨️", stir: "🥄", mix: "🥣", wrap: "🌯", cook: "♨️", chill: "🧊", strain: "🫙", top: "🧀", season: "🧂", drain: "🧻", serve: "🍽️" }[s.kind] || "•";
 }
 
 function cookShowStep() {
@@ -1085,12 +1182,17 @@ function cookFrame(now) {
     }
   }
   const cv = document.getElementById("cook-canvas");
-  if (cookShow.three && cv && cv.offsetParent !== null) cookShow.three.update(cookShow.steps[cookShow.i], cookShow.t, cookStepLength(cookShow.steps[cookShow.i]), dt);
+  if (cookShow.three && cv && cv.offsetParent !== null) {
+    try { cookShow.three.update(cookShow.steps[cookShow.i], cookShow.t, cookStepLength(cookShow.steps[cookShow.i]), dt); }
+    catch (e) { if (!cookShow.three.updateFailed) { cookShow.three.updateFailed = true; cookShow.three.errors.push(`update ${cookShow.i}: ${e && e.message}`); if (typeof console !== "undefined") console.warn("cookshow update", e); } }
+  }
   cookShow.raf = requestAnimationFrame(cookFrame);
 }
 
 function cookEnterStep() {
-  if (cookShow && cookShow.three) cookShow.three.enter(cookShow.steps[cookShow.i], cookShow.i, cookShow.steps, cookShow.cost);
+  if (!cookShow || !cookShow.three) return;
+  try { cookShow.three.enter(cookShow.steps[cookShow.i], cookShow.i, cookShow.steps, cookShow.cost); }
+  catch (e) { cookShow.three.errors.push(`enter ${cookShow.i}: ${e && e.message}`); if (typeof console !== "undefined") console.warn("cookshow enter", e); }
 }
 
 
@@ -1315,14 +1417,14 @@ function ckPrepSpot(i) { return [-1.5 + (i % 8) * 0.42, i < 8 ? -0.62 : -0.34]; 
 function cookState(steps, upto) {
   const items = (steps[0] && steps[0].kind === "shop" ? steps[0].items : []).slice();
   for (const s of steps) for (const it of s.items || []) if (it.water && !items.includes(it)) items.push(it);
-  const st = { items: items.slice(), loc: new Map(), cut: new Map(), brown: new Map(), parts: [], level: 0, oil: 0, vessel: null, heat: false, bowlLiquid: null, served: null };
+  const st = { items: items.slice(), loc: new Map(), cut: new Map(), brown: new Map(), top: new Set(), parts: [], level: 0, oil: 0, vessel: null, heat: false, bowlLiquid: null, served: null };
   for (const it of items) st.loc.set(it, "prep");
   for (let i = 0; i < Math.min(upto, steps.length); i++) cookApply(st, steps[i]);
   return st;
 }
 
 function cookApply(st, s) {
-  const potKinds = ["heat", "saute", "add", "pour", "fry", "deepfry", "boil", "simmer", "cook", "stir", "season", "grill", "bake", "steam"];
+  const potKinds = ["heat", "saute", "add", "pour", "fry", "deepfry", "boil", "simmer", "cook", "stir", "season", "grill", "bake", "steam", "strain", "top"];
   for (const it of s.items || []) if (!st.loc.has(it)) { st.items.push(it); st.loc.set(it, "board"); }
   if (potKinds.includes(s.kind) && s.vessel) {
     if (st.vessel && st.vessel !== s.vessel) { st.parts = []; st.level = 0; st.oil = 0; }
@@ -1354,6 +1456,13 @@ function cookApply(st, s) {
       s.items.forEach(toPot); if (s.kind === "saute") brown(s.items.filter((it) => !it.liquid), 0.35); break;
     case "fry": s.items.forEach(toPot); brown(inPot(), 0.7); break;
     case "deepfry": st.oil = 0.8; s.items.forEach(toPot); brown(s.items.length ? s.items : inPot(), 1); break;
+    case "bake": case "grill": case "steam":
+      st.heat = true;
+      if (!s.items.length) for (const it of st.items) if (["bowl", "wrapped", "board", "pot"].includes(st.loc.get(it)) && !it.liquid) st.loc.set(it, "pot");
+      if (!s.items.length && st.rolled) st.loc.set(st.items.find((it) => it.key === "rolled") || {}, "pot");
+      s.items.forEach(toPot);
+      if (s.kind !== "steam") brown(inPot().filter((it) => !it.liquid), s.kind === "bake" ? 0.7 : 0.85);
+      break;
     case "boil": case "simmer": case "cook":
       s.items.forEach(toPot);
       if (s.minutes >= 30 && st.level > 0.2) st.level = Math.max(0.2, st.level * 0.8);
@@ -1362,6 +1471,15 @@ function cookApply(st, s) {
       if (st.level > 0 && cookMixLum(st.parts) < 0.5) brown(inPot().filter((it) => ["pork", "beef", "chicken"].includes(cookFoodKind(it))), Math.min(0.85, (s.minutes || 20) / 35));
       break;
     case "season": for (const it of s.items) { if (it.liquid) toPot(it); else st.loc.set(it, "used"); } break;
+    // Strain: the food (or just what's named) goes to the strainer, the water is poured off.
+    case "strain": {
+      const out = s.items && s.items.length ? s.items.filter((it) => st.loc.get(it) === "pot") : inPot();
+      for (const it of out) st.loc.set(it, ["peppercorn", "bayleaf", "powder", "cube", "misc", "citrus"].includes(cookFoodKind(it)) ? "used" : "rack");
+      st.level = 0; st.parts = [];
+      break;
+    }
+    // Put on top: into the pot (or onto what's there), sitting on top, and it stays on top on the plate.
+    case "top": for (const it of s.items) { st.loc.set(it, st.items.some((x) => st.loc.get(x) === "pot") ? "pot" : "plate"); st.top.add(it); } break;
     // Only the food comes out; spices and leaves go with the water.
     case "drain": for (const it of inPot()) st.loc.set(it, ["peppercorn", "bayleaf", "powder", "cube", "misc", "citrus"].includes(cookFoodKind(it)) ? "used" : "rack"); if (st.vessel === "kaldero") { st.level = 0; st.parts = []; } break;
     case "serve":
@@ -1557,6 +1675,61 @@ function cookBuildScene(THREE, canvas) {
   [-1, 1].forEach((sx) => { const h = shadowed(new THREE.Mesh(keep(new THREE.TorusGeometry(0.03, 0.007, 8, 20, Math.PI)), castIron)); h.position.set(sx * 0.235, 0.095, 0); h.rotation.set(0, sx > 0 ? -Math.PI / 2 : Math.PI / 2, 0); kawali.add(h); });
   const WOK_R = (y) => 0.3 * Math.sin(Math.acos(Math.max(-1, Math.min(1, 1 - y / 0.3))));
 
+  // ── Appliances: oven toaster, charcoal grill (ihawan), steamer ──
+  const dummy0 = new THREE.Object3D();
+  const SX = CK_AT.stove[0], SZ = CK_AT.stove[1];
+  const darkMetal = keep(std({ color: 0x1c1d20, metalness: 0.55, roughness: 0.35 }));
+  const brushed = keep(std({ color: 0xc9ced4, metalness: 0.9, roughness: 0.3 }));
+  const part = (geo, mat, x, y, z, parent) => { const m = shadowed(new THREE.Mesh(keep(geo), mat)); m.position.set(x, y, z); parent.add(m); return m; };
+  // Oven toaster: a box open at the front with a smoked-glass door, glowing elements and a tray.
+  const ovenG = new THREE.Group(); ovenG.position.set(SX, 0, SZ); scene.add(ovenG);
+  const OW = 0.46, OH = 0.28, OD = 0.32;
+  part(new THREE.BoxGeometry(OW + 0.12, 0.02, OD), darkMetal, 0.06, OH, 0, ovenG);            // top
+  part(new THREE.BoxGeometry(OW + 0.12, 0.02, OD), darkMetal, 0.06, 0.01, 0, ovenG);          // bottom
+  part(new THREE.BoxGeometry(0.02, OH, OD), darkMetal, -OW / 2, OH / 2, 0, ovenG);            // left
+  part(new THREE.BoxGeometry(0.02, OH, OD), darkMetal, OW / 2, OH / 2, 0, ovenG);             // right wall of the cavity
+  part(new THREE.BoxGeometry(OW, OH, 0.02), keep(std({ color: 0x2a2a2a, metalness: 0.3, roughness: 0.6 })), 0, OH / 2, -OD / 2, ovenG); // back
+  const panel = part(new THREE.BoxGeometry(0.1, OH, OD), brushed, OW / 2 + 0.06, OH / 2, 0, ovenG); // controls
+  [0.07, 0.15, 0.22].forEach((y) => { const k = part(new THREE.CylinderGeometry(0.018, 0.018, 0.015, 20), darkMetal, OW / 2 + 0.06, y, OD / 2 + 0.008, ovenG); k.rotation.x = Math.PI / 2; });
+  const glassDoor = new THREE.Mesh(keep(new THREE.PlaneGeometry(OW - 0.02, OH - 0.03)), keep(std({ color: 0x3a2a1a, roughness: 0.05, metalness: 0.2, transparent: true, opacity: 0.32, envMapIntensity: 2 })));
+  glassDoor.position.set(0, OH / 2, OD / 2); ovenG.add(glassDoor);
+  part(new THREE.CylinderGeometry(0.008, 0.008, OW * 0.7, 10), brushed, 0, OH - 0.03, OD / 2 + 0.03, ovenG).rotation.z = Math.PI / 2;
+  const rodMat = keep(new THREE.MeshStandardMaterial({ color: 0x401010, emissive: new THREE.Color(1, 0.25, 0.05), emissiveIntensity: 0.1, roughness: 0.5 }));
+  [[0.255, -0.06], [0.255, 0.06], [0.03, -0.06], [0.03, 0.06]].forEach(([y, z]) => { const r = part(new THREE.CylinderGeometry(0.005, 0.005, OW - 0.04, 8), rodMat, 0, y, z, ovenG); r.rotation.z = Math.PI / 2; });
+  part(new THREE.BoxGeometry(OW - 0.06, 0.006, OD - 0.06), brushed, 0, 0.075, 0, ovenG);      // tray
+  // A glass baking dish (llanera-style) on the tray.
+  const dishGlass = keep(std({ color: 0xffffff, roughness: 0.04, transparent: true, opacity: 0.35, envMapIntensity: 2 }));
+  part(new THREE.BoxGeometry(0.26, 0.006, 0.18), dishGlass, 0, 0.081, 0, ovenG);
+  [[-0.13, 0, 0.006, 0.18], [0.13, 0, 0.006, 0.18], [0, -0.09, 0.26, 0.006], [0, 0.09, 0.26, 0.006]].forEach(([x, z, w, d]) => part(new THREE.BoxGeometry(w, 0.04, d), dishGlass, x, 0.1, z, ovenG));
+  const ovenLight = new THREE.PointLight(0xff8a3a, 0, 0.6, 2); ovenLight.position.set(0, 0.18, 0); ovenG.add(ovenLight);
+  ovenG.visible = false;
+  // Charcoal grill: an open box of glowing coals with a grate on top.
+  const grillG = new THREE.Group(); grillG.position.set(SX, 0, SZ); scene.add(grillG);
+  part(new THREE.BoxGeometry(0.5, 0.02, 0.32), darkMetal, 0, 0.01, 0, grillG);
+  [[-0.25, 0, 0.02, 0.32], [0.25, 0, 0.02, 0.32], [0, -0.16, 0.5, 0.02], [0, 0.16, 0.5, 0.02]].forEach(([x, z, w, d]) => part(new THREE.BoxGeometry(w, 0.12, d), darkMetal, x, 0.06, z, grillG));
+  const coalMat = keep(new THREE.MeshStandardMaterial({ color: 0x1a1412, emissive: new THREE.Color(0.9, 0.18, 0.02), emissiveIntensity: 0.3, roughness: 0.95 }));
+  const coals = new THREE.InstancedMesh(keep(organic(new THREE.DodecahedronGeometry(0.022, 0), 0, 0.2, 5)), coalMat, 40);
+  { const rc = ckRand(77); for (let i = 0; i < 40; i++) { dummy0.position.set((rc() - 0.5) * 0.44, 0.04 + rc() * 0.03, (rc() - 0.5) * 0.27); dummy0.rotation.set(rc() * 3, rc() * 3, rc() * 3); dummy0.scale.setScalar(0.7 + rc() * 0.6); dummy0.updateMatrix(); coals.setMatrixAt(i, dummy0.matrix); } }
+  grillG.add(coals);
+  for (let k = 0; k < 11; k++) { const b = part(new THREE.CylinderGeometry(0.003, 0.003, 0.3, 6), darkMetal, -0.22 + k * 0.044, 0.125, 0, grillG); b.rotation.x = Math.PI / 2; }
+  const grillLight = new THREE.PointLight(0xff6a20, 0, 0.6, 2); grillLight.position.set(0, 0.1, 0); grillG.add(grillLight);
+  grillG.visible = false;
+  // Steamed dumplings (siomai, puto) for a filling that was mixed or wrapped before steaming.
+  const dumplings = new THREE.Group();
+  { const dm = keep(std({ color: 0xf1e3c4, roughness: 0.55 })), top = keep(std({ color: 0xe8956a, roughness: 0.6 }));
+    const body = keep(new THREE.CylinderGeometry(0.022, 0.026, 0.03, 18)), cap = keep(new THREE.SphereGeometry(0.012, 12, 8));
+    for (let k = 0; k < 7; k++) { const a = (k / 6) * Math.PI * 2, r = k ? 0.07 : 0; const d = shadowed(new THREE.Mesh(body, dm)); d.position.set(Math.cos(a) * r, 0.015, Math.sin(a) * r); dumplings.add(d); const c = new THREE.Mesh(cap, top); c.position.set(d.position.x, 0.032, d.position.z); dumplings.add(c); } }
+  dumplings.visible = false;
+  // Steamer: a steel pot with a perforated tier and a lid held up.
+  const steamerG = new THREE.Group(); steamerG.position.set(SX, VESSEL_Y, SZ); scene.add(steamerG);
+  steamerG.add(shadowed(new THREE.Mesh(potGeo, steel)));
+  const holes = tex("steamer-holes", 256, (g, n) => { g.fillStyle = "#d9dde2"; g.fillRect(0, 0, n, n); g.fillStyle = "#3a3d42"; for (let y = 10; y < n; y += 20) for (let x = 10; x < n; x += 20) { g.beginPath(); g.arc(x, y, 3.5, 0, 7); g.fill(); } });
+  const tier = new THREE.Mesh(keep(new THREE.CircleGeometry(0.148, 48)), keep(std({ map: holes, metalness: 0.8, roughness: 0.35 }))); tier.rotation.x = -Math.PI / 2; tier.position.y = 0.15; steamerG.add(tier);
+  const lid = new THREE.Mesh(keep(new THREE.SphereGeometry(0.17, 32, 12, 0, Math.PI * 2, 0, Math.PI / 4)), steel); lid.position.set(0.12, 0.2, -0.08); lid.rotation.z = -0.5; lid.castShadow = true; steamerG.add(lid);
+  steamerG.visible = false;
+  dumplings.position.y = 0.152; steamerG.add(dumplings);
+  const APPLIANCE = { oven: { y: 0.086, r: 0.085 }, ihawan: { y: 0.132, r: 0.13 }, steamer: { y: VESSEL_Y + 0.152, r: 0.11 } };
+
   // Liquid surfaces (broth, oil) that rise and change colour.
   const liquidMat = keep(std({ color: 0xcfe0e6, roughness: 0.04, metalness: 0, transparent: true, opacity: 0.85, envMapIntensity: 1.4 }));
   const liquid = new THREE.Mesh(keep(new THREE.CircleGeometry(1, 64)), liquidMat); liquid.rotation.x = -Math.PI / 2; liquid.receiveShadow = true; scene.add(liquid);
@@ -1694,7 +1867,19 @@ function cookBuildScene(THREE, canvas) {
   };
   const ramekin = (r = 0.055, h = 0.035) => mesh(new THREE.LatheGeometry([[0, 0], [r * 0.82, 0], [r * 0.9, 0.003], [r, h], [r * 0.93, h], [r * 0.82, 0.006], [0, 0.006]].map(([x, y]) => new THREE.Vector2(x, y)), 36), glaze);
 
-  function wholeModel(it, brownAmt) {
+  // A model that fails to build becomes a plain bowl instead of breaking the whole scene.
+  const sceneErrors = [];
+  function safely(what, it, build) {
+    try { return build(); } catch (e) {
+      sceneErrors.push(`${what} ${it && it.key}: ${e && e.message}`);
+      if (typeof console !== "undefined") console.warn("cookshow:", what, it && it.key, e);
+      const g = new THREE.Group(); g.add(ramekin()); g.userData.inst = { count: 0 }; g.userData.n = 0; return g;
+    }
+  }
+  function wholeModel(it, brownAmt) { return safely("whole", it, () => wholeModelRaw(it, brownAmt)); }
+  function piecesModel(it, style, radius, brownAmt, seedExtra = 0) { return safely("pieces", it, () => piecesModelRaw(it, style, radius, brownAmt, seedExtra)); }
+
+  function wholeModelRaw(it, brownAmt) {
     const kind = cookFoodKind(it), g = new THREE.Group(), r = ckRand(ckHash(it.key));
     const skin = () => foodMat(kind, "skin", brownAmt, { map: skinTex(kind) || null, roughness: kind === "tomato" || kind === "eggplant" || kind === "chili" ? 0.28 : 0.6 });
     switch (kind) {
@@ -1789,7 +1974,7 @@ function cookBuildScene(THREE, canvas) {
         if (kind === "ham") for (let k = 1; k < 3; k++) { const c = b.clone(); c.position.set(k * 0.01, dims[1] / 2 + k * 0.012, k * 0.008); g.add(c); }
         break;
       }
-      case "sausage": { const m = foodMat(kind, "skin", brownAmt, { roughness: 0.35 }); for (let k = 0; k < 4; k++) { const c = mesh(new THREE.CapsuleGeometry ? new THREE.CapsuleGeometry(0.012, 0.07, 6, 12) : new THREE.CylinderGeometry(0.012, 0.012, 0.09, 14), m); c.rotation.z = Math.PI / 2; c.position.set(0, 0.012, k * 0.026 - 0.04); g.add(c); } break; }
+      case "sausage": { const m = foodMat(kind, "skin", brownAmt, { roughness: 0.35 }); for (let k = 0; k < 4; k++) { const c = mesh(organic(new THREE.CylinderGeometry(0.012, 0.012, 0.09, 14, 4), 0, 0.03, 17 + k), m); c.rotation.z = Math.PI / 2; c.position.set(0, 0.012, k * 0.026 - 0.04); g.add(c); } break; }
       case "jar": {
         const [c, rough, clear] = cookJarLook(it);
         const glassJ = std({ color: 0xffffff, roughness: 0.03, transparent: true, opacity: 0.2, envMapIntensity: 2.2 });
@@ -1853,7 +2038,7 @@ function cookBuildScene(THREE, canvas) {
   }
 
   // Cut pieces: an instanced pile of the right shape and size, flesh side showing.
-  function piecesModel(it, style, radius, brownAmt, seedExtra = 0) {
+  function piecesModelRaw(it, style, radius, brownAmt, seedExtra = 0) {
     const kind = cookFoodKind(it), r = ckRand(ckHash(it.key) + seedExtra);
     const flesh = foodMat(kind, ["beef", "mince", "chicken", "fish", "shrimp", "leafy", "bayleaf", "rolled", "wrapper"].includes(kind) ? "skin" : "flesh", brownAmt,
       { map: kind === "pork" ? tex("pork-cut", 256, marble(look("pork")[1], "#f2dfd4")) : ["beef", "mince", "chicken", "leafy", "fish"].includes(kind) ? skinTex(kind) : null, roughness: 0.5, side: kind === "leafy" ? THREE.DoubleSide : THREE.FrontSide });
@@ -1928,7 +2113,7 @@ function cookBuildScene(THREE, canvas) {
 
   // ── Per-step objects ──
   let dyn = new THREE.Group(); scene.add(dyn);
-  let brownMax = 1, heatOn = false, movers = [], cur = null, curIndex = 0, potItems = [], spoonMode = null, pourInfo = null, cutInfo = null, wrapInfo = null, brownList = [], camGoal = null;
+  let applianceNow = "kawali", brownMax = 1, heatOn = false, movers = [], cur = null, curIndex = 0, potItems = [], spoonMode = null, pourInfo = null, cutInfo = null, wrapInfo = null, brownList = [], camGoal = null;
   const camPos = V(0, 2.4, 1.5), camLook = V(0, 0, -0.2);
   let firstFrame = true;
 
@@ -1938,19 +2123,21 @@ function cookBuildScene(THREE, canvas) {
   };
   const vesselGroup = (v) => (v === "kaldero" ? kaldero : kawali);
   const contentY = (st) => {
+    if (APPLIANCE[st.vessel]) return APPLIANCE[st.vessel].y;
     if (st.vessel === "kaldero") return VESSEL_Y + 0.008 + Math.max(st.level * 0.15, 0.004);
     return WOK_Y + 0.012 + Math.max(st.oil, st.level) * 0.06;
   };
-  const vesselR = (st) => (st.vessel === "kaldero" ? 0.13 : 0.15);
+  const vesselR = (st) => (APPLIANCE[st.vessel] ? APPLIANCE[st.vessel].r * 2 : st.vessel === "kaldero" ? 0.13 : 0.15);
   const spotOf = (st, it, which) => {
     const where = which || st.loc.get(it);
     const i = st.items.indexOf(it);
     if (where === "prep") { const [x, z] = ckPrepSpot(i < 0 ? 0 : i); return V(x, 0, z); }
     if (where === "board") return V(CK_AT.board[0] - 0.05 + ((i % 3) - 1) * 0.12, BOARD_Y, CK_AT.board[1] - 0.04 + ((i % 2) * 0.08));
     if (where === "bowl") return V(CK_AT.bowl[0], 0.012, CK_AT.bowl[1]);
-    if (where === "pot") { const r = ckRand(i + 3); const a = r() * 6.3, d = r() * vesselR(st) * 0.45; return V(CK_AT.stove[0] + Math.cos(a) * d, contentY(st) - 0.006, CK_AT.stove[1] + Math.sin(a) * d); }
+    const onTop = st.top && st.top.has(it) ? 0.022 : 0; // toppings sit above the rest
+    if (where === "pot") { const r = ckRand(i + 3); const a = r() * 6.3, d = r() * vesselR(st) * (onTop ? 0.2 : 0.45); return V(CK_AT.stove[0] + Math.cos(a) * d, contentY(st) - 0.006 + onTop, CK_AT.stove[1] + Math.sin(a) * d); }
     if (where === "rack") return V(CK_AT.rack[0] + ((i % 3) - 1) * 0.04, 0.014, CK_AT.rack[1]);
-    if (where === "plate") { const r = ckRand(i + 9); const a = r() * 6.3, d = r() * 0.05; return V(CK_AT.plate[0] + Math.cos(a) * d, st.served === "bowl" ? 0.042 : 0.01, CK_AT.plate[1] + Math.sin(a) * d); }
+    if (where === "plate") { const r = ckRand(i + 9); const a = r() * 6.3, d = r() * (onTop ? 0.02 : 0.05); return V(CK_AT.plate[0] + Math.cos(a) * d, (st.served === "bowl" ? 0.042 : 0.01) + onTop, CK_AT.plate[1] + Math.sin(a) * d); }
     return V(0, -5, 0);
   };
   const radiusAt = (where) => ({ prep: 0.05, board: 0.07, bowl: 0.085, pot: 0.075, rack: 0.06, plate: 0.075 })[where] || 0.05;
@@ -1975,8 +2162,17 @@ function cookBuildScene(THREE, canvas) {
     cur = step; curIndex = index;
     const st = cookState(steps, index), after = cookApply(cookState(steps, index), step);
     // The vessel on the stove: the one this step uses, else the last one used.
-    const v = (["heat", "saute", "add", "pour", "fry", "deepfry", "boil", "simmer", "cook", "stir", "season", "drain"].includes(step.kind) && step.vessel) || st.vessel || "kawali";
-    kaldero.visible = v === "kaldero"; kawali.visible = v !== "kaldero";
+    const v = (["heat", "saute", "add", "pour", "fry", "deepfry", "boil", "simmer", "cook", "stir", "season", "drain", "strain", "top", "bake", "grill", "steam"].includes(step.kind) && step.vessel) || st.vessel || "kawali";
+    const appl = !!APPLIANCE[v];
+    kaldero.visible = v === "kaldero"; kawali.visible = !appl && v !== "kaldero";
+    ovenG.visible = v === "oven"; grillG.visible = v === "ihawan"; steamerG.visible = v === "steamer";
+    // The oven and the grill stand where the stove is; the steamer sits on the burner.
+    const onStove = v !== "oven" && v !== "ihawan";
+    stoveTop.visible = burner.visible = grate.visible = onStove;
+    applianceNow = v;
+    // Mixed or wrapped filling that goes into the steamer is shown as steamed dumplings.
+    const steamedFilling = v === "steamer" && steps.slice(0, index).some((x) => ["mix", "wrap"].includes(x.kind)) && ["steam", "serve", "drain"].includes(step.kind);
+    dumplings.visible = steamedFilling;
     if (!st.vessel || st.vessel !== v) { st.vessel = v; }
     if (!after.vessel) after.vessel = v;
     soupBowl.visible = step.kind === "serve" && after.served === "bowl"; plate.visible = !soupBowl.visible;
@@ -2002,6 +2198,7 @@ function cookBuildScene(THREE, canvas) {
       const where = st.loc.get(it);
       if (moving.has(it) || it === pourer || where === "used" || where === "wrapped") continue;
       if (st.loc.get(it) !== "prep" && it.liquid) continue;
+      if (dumplings.visible && where === "pot") continue; // shown as the dumplings
       const o = place(st, it, where);
       if (where === "pot") potItems.push(o);
       // Liquids stay on the prep row as bottles even after pouring.
@@ -2016,6 +2213,7 @@ function cookBuildScene(THREE, canvas) {
     let k = 0;
     const len = cookStepLength(step);
     for (const it of moving) {
+      if (dumplings.visible && after.loc.get(it) === "pot") continue;
       const from = step.kind === "shop" ? "prep" : st.loc.get(it) || "board";
       let to = after.loc.get(it) || from;
       if (step.kind === "cut" || step.kind === "peel") to = "board";
@@ -2046,12 +2244,12 @@ function cookBuildScene(THREE, canvas) {
       const rolls = wholeModel({ key: "rolled", label: "lumpia" }, 0); rolls.position.set(CK_AT.board[0] + 0.17, BOARD_Y, CK_AT.board[1] - 0.02); rolls.scale.setScalar(0.001); dyn.add(rolls);
       wrapInfo = { sheet, log, rolls };
     }
-    if (["fry", "deepfry", "saute"].includes(step.kind)) {
+    if (["fry", "deepfry", "saute", "bake", "grill"].includes(step.kind)) {
       for (const it of after.items) if (after.loc.get(it) === "pot" || after.loc.get(it) === "rack") brownList.push([it, st.brown.get(it) || 0, after.brown.get(it) || 0]);
     }
     const toBowl = movers.length > 0 && movers.every((m) => after.loc.get(m.it) === "bowl");
     spoonMode = toBowl || ["mix", "marinate"].includes(step.kind) ? "bowl" : ["saute", "stir", "add", "simmer", "cook"].includes(step.kind) ? "pot" : null;
-    brownMax = step.kind === "saute" ? 0.35 : step.kind === "fry" ? 0.8 : 1;
+    brownMax = step.kind === "saute" ? 0.35 : step.kind === "fry" ? 0.8 : step.kind === "bake" ? 0.7 : step.kind === "grill" ? 0.85 : 1;
     heatOn = after.heat;
 
     // Liquid level and colour, before and after.
@@ -2064,9 +2262,10 @@ function cookBuildScene(THREE, canvas) {
     camGoal = step.kind === "shop" ? at([0, -0.42], 2.5)
       : ["cut", "peel", "wrap"].includes(step.kind) ? at(CK_AT.board, 0.95)
       : ["mix", "marinate", "chill"].includes(step.kind) || toBowl ? at([CK_AT.bowl[0] + 0.2, CK_AT.bowl[1] - 0.05], 1.05)
-      : step.kind === "serve" ? at(CK_AT.plate, 0.85)
+      : step.kind === "serve" || (step.kind === "top" && movers.length && movers.every((m) => after.loc.get(m.it) === "plate")) ? at(CK_AT.plate, 0.85)
       : step.kind === "drain" ? at([(CK_AT.stove[0] + CK_AT.rack[0]) / 2, CK_AT.stove[1]], 1.15)
       : ["add", "pour", "saute", "season", "heat", "deepfry"].includes(step.kind) && movers.length + (pourInfo ? 1 : 0) > 0 ? at([CK_AT.stove[0] - 0.15, CK_AT.stove[1] - 0.12], 1.35)
+      : applianceNow === "oven" ? { x: SX, z: SZ, d: 1.0, front: true }
       : at(CK_AT.stove, 0.9);
     if (firstFrame) { const p = camFor(camGoal); camPos.copy(p.pos); camLook.copy(p.look); firstFrame = false; }
 
@@ -2078,6 +2277,7 @@ function cookBuildScene(THREE, canvas) {
   let aspect = 16 / 9;
   function camFor(g) {
     const d = g.d * (aspect < 1.25 ? 1.45 : aspect < 1.6 ? 1.15 : 1);
+    if (g.front) return { pos: V(g.x + 0.05, 0.16 + d * 0.32, g.z + d * 0.92), look: V(g.x + 0.03, 0.13, g.z) };
     return { pos: V(g.x, d * 0.9, g.z + d * 0.48), look: V(g.x, 0, g.z) };
   }
 
@@ -2162,7 +2362,7 @@ function cookBuildScene(THREE, canvas) {
     const L = liquid.userData, u = ease((t - 0.8) / Math.max(0.5, len - 1.6));
     const lvl = L.from + (L.to - L.from) * (pourInfo || movers.some((m) => m.liquid) || step.kind === "deepfry" || step.kind === "drain" ? u : 1);
     const st = L.after;
-    if (lvl > 0.005 && !(step.kind === "serve" && t > len * 0.5 && st.served === "bowl")) {
+    if (lvl > 0.005 && !APPLIANCE[st.vessel] && !(step.kind === "serve" && t > len * 0.5 && st.served === "bowl")) {
       liquid.visible = true;
       const y = st.vessel === "kaldero" ? VESSEL_Y + 0.008 + lvl * 0.15 : WOK_Y + 0.004 + lvl * 0.06;
       const rr = st.vessel === "kaldero" ? 0.152 : WOK_R(0.004 + lvl * 0.06);
@@ -2185,7 +2385,13 @@ function cookBuildScene(THREE, canvas) {
     liquidMat.bumpScale = ["boil", "deepfry", "fry"].includes(step.kind) ? 0.004 : 0.0015;
     // Fire, bubbles, steam.
     const heated = heatOn && !["shop", "peel", "cut", "mix", "marinate", "wrap", "serve"].includes(step.kind) && (step.kind !== "drain" || t < len * 0.4);
-    flames.forEach((f, i) => { f.visible = heated; f.scale.set(1, 0.8 + Math.sin(time * 30 + i) * 0.25, 1); });
+    const onStove = applianceNow !== "oven" && applianceNow !== "ihawan";
+    flames.forEach((f, i) => { f.visible = heated && onStove; f.scale.set(1, 0.8 + Math.sin(time * 30 + i) * 0.25, 1); });
+    const baking = applianceNow === "oven" && heated, grilling = applianceNow === "ihawan" && heated;
+    rodMat.emissiveIntensity = baking ? 1.6 + Math.sin(time * 3) * 0.2 : 0.1;
+    ovenLight.intensity = baking ? 1.4 : 0;
+    coalMat.emissiveIntensity = grilling ? 0.55 + Math.sin(time * 5) * 0.15 : 0.12;
+    grillLight.intensity = grilling ? 1.2 + Math.sin(time * 7) * 0.2 : 0;
     const boiling = ["boil"].includes(step.kind) ? 1 : ["simmer", "cook"].includes(step.kind) ? 0.4 : ["fry", "deepfry"].includes(step.kind) ? 0.8 : ["saute"].includes(step.kind) ? 0.5 : ["add", "pour", "stir", "season"].includes(step.kind) && liquid.visible ? 0.25 : 0;
     const frying = ["fry", "deepfry", "saute"].includes(step.kind) || L.oil;
     const nb = liquid.visible ? Math.round(80 * boiling) : 0;
@@ -2202,7 +2408,7 @@ function cookBuildScene(THREE, canvas) {
       }
       bubbles.instanceMatrix.needsUpdate = true;
     }
-    const steamy = (["boil", "simmer", "cook", "steam"].includes(step.kind) ? 1 : 0) || (step.kind === "serve" && !step.cold ? 0.7 : 0) || (liquid.visible && heated && !L.oil ? 0.35 : 0) || (frying && heated ? 0.3 : 0);
+    const steamy = (["boil", "simmer", "cook", "steam"].includes(step.kind) ? 1 : 0) || (grilling ? 0.5 : 0) || (step.kind === "serve" && !step.cold ? 0.7 : 0) || (liquid.visible && heated && !L.oil ? 0.35 : 0) || (frying && heated ? 0.3 : 0);
     puffs.forEach((p, i) => {
       const s = p.userData.seed, cycle = (time * 0.32 + s) % 1;
       const base = step.kind === "serve" ? V(CK_AT.plate[0], 0.04, CK_AT.plate[1]) : V(CK_AT.stove[0], liquid.visible ? liquid.position.y : VESSEL_Y, CK_AT.stove[1]);
@@ -2218,6 +2424,7 @@ function cookBuildScene(THREE, canvas) {
   }
 
   function resize() {
+    if (!canvas.parentElement) return;
     const box = canvas.parentElement.getBoundingClientRect();
     const w = Math.max(200, box.width), h = Math.max(160, Math.round(w * (w < 560 ? 0.8 : 0.5625)));
     renderer.setSize(w, h, false); canvas.style.width = `${w}px`; canvas.style.height = `${h}px`;
@@ -2257,7 +2464,7 @@ function cookBuildScene(THREE, canvas) {
   }
 
   return {
-    enter, update, thumbs,
+    enter, update, thumbs, errors: sceneErrors,
     dispose() {
       if (ro) ro.disconnect();
       clearDyn();

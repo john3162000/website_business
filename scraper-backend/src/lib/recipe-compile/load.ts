@@ -6,11 +6,13 @@ import { memo } from "@/lib/memo";
 import { yieldCount, type RefNutrition } from "@/lib/scrapers/recipe-structured";
 import { ALIASES, CANONICALS, COOK_GROUPS, DERIVED_PRICES, EXTRA_NUTRIENTS, MANUAL_PRICES, RETENTION } from "./catalog.generated.ts";
 import { psaSnapshot, type PsaRow } from "./psa-snapshot.ts";
-import { compileRecipe, unknownLineCount, vegClass, type CompileContext, type CompiledRecipe, type DaPrice, type FnriFood, type PsaPrice } from "./compile.ts";
+import { compileRecipe, daLookup, unknownLineCount, vegClass, type CompileContext, type CompiledRecipe, type DaPrice, type FnriFood, type PsaPrice } from "./compile.ts";
 
 const DAY = 86400000;
 /** A DA price older than this (before the snapshot day) is too stale to use. */
 const PRICE_WINDOW_DAYS = 14;
+/** How far back a personal dish's price history goes (Ulam ko's "Price over time"). */
+const DISH_HISTORY_DAYS = 183;
 
 export interface CompiledFromDb extends CompiledRecipe {
   title: string;
@@ -79,7 +81,7 @@ function daSnapshot(rows: PriceRow[], asOf?: string): { da: Map<string, DaPrice>
   for (const p of rows) {
     const t = p.sourceDate.getTime();
     if (t > until || t < from || p.price == null || p.price <= 0 || isMalformedName(p.name)) continue;
-    da.set(p.name, { price: p.price, unit: parsePriceBasis(p.name) });
+    da.set(p.name, { price: p.price, unit: parsePriceBasis(p.name), date: t });
     const iso = p.sourceDate.toISOString();
     if (!priceDate || iso > priceDate) priceDate = iso;
   }
@@ -88,12 +90,12 @@ function daSnapshot(rows: PriceRow[], asOf?: string): { da: Map<string, DaPrice>
 
 /** PSA prices are monthly and about a month behind: one older than this (before the snapshot day) isn't used. */
 
-/** PSA monthly NCR rows from ~6 months back; empty until the first PSA import. */
+/** PSA monthly NCR rows from ~10 months back (6 months of dish history, each looking up to 4 months back); empty until the first PSA import. */
 function loadPsa(): Promise<PsaRow[]> {
   return memo("psa", LOAD_TTL, async () => {
     await ensurePsaTable();
     return prisma.psaPrice.findMany({
-      where: { region: { in: ["NCR", "PH"] }, period: { gte: new Date(Date.now() - 200 * DAY) } },
+      where: { region: { in: ["NCR", "PH"] }, period: { gte: new Date(Date.now() - 320 * DAY) } }, // 6 months of history, each up to 120 days back
       orderBy: { period: "asc" },
       select: { commodity: true, unit: true, price: true, period: true, region: true },
     });
@@ -226,7 +228,7 @@ export async function ingredientList() {
         ...(c.gClove ? ["clove"] : []), ...(c.gHead ? ["head"] : []), ...(c.gBunch ? ["bunch"] : []),
         ...(c.gStalk ? ["stalk"] : []), ...(c.gSlice ? ["slice"] : []), ...(c.gThumb ? ["thumb"] : []),
       ],
-      priceSource: c.daName && da.get(c.daName) ? "DA" : c.psaName && psa.get(c.psaName) ? "PSA" : MANUAL_PRICES[slug]?.price != null ? MANUAL_PRICES[slug].source : null,
+      priceSource: c.daName && daLookup(da, c.daName) ? "DA" : c.psaName && psa.get(c.psaName) ? "PSA" : MANUAL_PRICES[slug]?.price != null ? MANUAL_PRICES[slug].source : null,
     }))
     .sort((a, b) => a.label.localeCompare(b.label));
 }
@@ -239,16 +241,21 @@ export type DishInput = { title: string; servings: number | null; ingredients: {
  */
 export async function compileDish(dish: DishInput) {
   await ensureNutritionColumns();
-  const [fnri, priceRows] = await Promise.all([loadFoods(), loadPrices(50)]);
+  const [fnri, priceRows] = await Promise.all([loadFoods(), loadPrices(DISH_HISTORY_DAYS)]);
   const psaRows = await loadPsa();
   const ctx = (da: Map<string, DaPrice>, psa: Map<string, PsaPrice>): CompileContext => ({ aliases: ALIASES, canonicals: CANONICALS, extraNutrients: EXTRA_NUTRIENTS, manualPrices: MANUAL_PRICES, derivedPrices: DERIVED_PRICES, cookGroups: COOK_GROUPS, retention: RETENTION, fnri, da, psa });
   const input = { id: 0, ...dish };
   const now = daSnapshot(priceRows);
   const compiled = compileRecipe(input, ctx(now.da, psaSnapshot(psaRows)));
+  // Six months back: every DA report day, and before DA's stored history starts, one point a
+  // week priced from PSA's monthly averages (and the fixed SM/DTI prices). `source` says which.
   const days = [...new Set(priceRows.filter((p) => p.price != null && p.price > 0).map((p) => p.sourceDate.toISOString()))];
-  const history = days.map((date) => {
+  const firstDa = days.length ? Date.parse(days[0]) : Date.now();
+  const weekly: string[] = [];
+  for (let t = Date.now() - DISH_HISTORY_DAYS * DAY; t < firstDa - 3 * DAY; t += 7 * DAY) weekly.push(new Date(Math.floor(t / DAY) * DAY).toISOString());
+  const history = [...weekly.map((d) => [d, "PSA"] as const), ...days.map((d) => [d, "DA"] as const)].map(([date, source]) => {
     const c = compileRecipe(input, ctx(daSnapshot(priceRows, date).da, psaSnapshot(psaRows, date)));
-    return { date, cost: round(c.costPerServing, 2), costCoverage: round(c.costCoverageByWeight, 2) };
+    return { date, cost: round(c.costPerServing, 2), costCoverage: round(c.costCoverageByWeight, 2), source };
   });
   return { priceDate: now.priceDate, summary: summarize(compiled), lines: compiled.lines, history };
 }

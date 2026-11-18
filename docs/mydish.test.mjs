@@ -6,8 +6,8 @@ import vm from "node:vm";
 
 const ctx = vm.createContext({});
 vm.runInContext(`${readFileSync(new URL("./mydish.js", import.meta.url), "utf8")}
-;globalThis.api = { loadDishes, saveDishes, upsertDish, dishFromRecipe, comparableHistory, sparkPath, dishUnitKey, dishUnitsFor, dishAmountValue, dishLineIssue };`, ctx);
-const { loadDishes, saveDishes, upsertDish, dishFromRecipe, comparableHistory, sparkPath, dishUnitKey, dishUnitsFor, dishAmountValue, dishLineIssue } = ctx.api;
+;globalThis.api = { loadDishes, saveDishes, upsertDish, dishFromRecipe, comparableHistory, sparkPath, dishUnitKey, dishUnitsFor, dishAmountValue, dishLineIssue, dishChartGeom, dishGroups };`, ctx);
+const { loadDishes, saveDishes, upsertDish, dishFromRecipe, comparableHistory, sparkPath, dishUnitKey, dishUnitsFor, dishAmountValue, dishLineIssue, dishChartGeom, dishGroups } = ctx.api;
 
 const memoryStorage = () => {
   const m = new Map();
@@ -32,7 +32,7 @@ test("upsertDish replaces by id, else adds first", () => {
   assert.deepEqual([...upsertDish(list, { id: "c", title: "C" }).map((d) => d.title)], ["C", "A", "B"]);
 });
 
-test("dishFromRecipe: editable lines, group headings dropped", () => {
+test("dishFromRecipe: editable lines, group headings become groups", () => {
   const d = dishFromRecipe({ id: 7, title: "Sinigang", servings: 6, ingredients: [
     { name: "Marinade ingredients:", amount: null, unit: null },
     { name: "pork belly", amount: "2", unit: "lbs" },
@@ -93,4 +93,40 @@ test("line hints: wrong unit, missing or zero amount, can't weigh", () => {
   assert.match(dishLineIssue({ amount: "2", unit: "bundle", name: "kangkong" }, null, "no-weight"), /Hindi matimbang/);
   assert.match(dishLineIssue({ amount: "1", unit: "piece", name: "dragon scale" }, null, "unmatched"), /Hindi pa namin kilala/);
   assert.match(dishLineIssue({ amount: "2", unit: "piece", name: "pork belly" }, belly, null, "pork belly", true), /doesn't work for pork belly/);
+});
+
+test("price chart: a six-month window with month labels, DA as a line and PSA as dots", () => {
+  const now = Date.parse("2026-11-18T00:00:00Z");
+  const pts = [
+    { date: "2026-04-01T00:00:00Z", cost: 99, source: "PSA" }, // older than 6 months: left out
+    { date: "2026-06-01T00:00:00Z", cost: 80, source: "PSA" },
+    { date: "2026-08-01T00:00:00Z", cost: 85, source: "PSA" },
+    { date: "2026-09-30T00:00:00Z", cost: 90, source: "DA" },
+    { date: "2026-11-16T00:00:00Z", cost: 100, source: "DA" },
+  ];
+  const g = dishChartGeom(pts, now, "tl");
+  assert.equal(g.first.date, "2026-06-01T00:00:00Z");
+  assert.equal(g.last.cost, 100);
+  assert.deepEqual([g.y0, g.y1], [80, 100]);
+  assert.equal(g.dots.length, 2);
+  assert.match(g.path, /^M[\d.]+,[\d.]+ L[\d.]+,[\d.]+$/);
+  assert.deepEqual([...g.ticks.map((t) => t.label)], ["Hun", "Hul", "Ago", "Set", "Okt", "Nob"]);
+  assert.ok(g.ticks.every((t, i, a) => t.x > 0 && t.x < 100 && (i === 0 || t.x > a[i - 1].x)));
+  assert.equal(g.daFrom, "2026-09-30T00:00:00Z");
+  assert.equal(dishChartGeom([{ date: "2026-11-16T00:00:00Z", cost: 1 }], now), null);
+  assert.equal(dishChartGeom(pts, now, "en").ticks[0].label, "Jun");
+});
+
+test("sub-recipes: a recipe's headings become groups, the main group comes first", () => {
+  const d = dishFromRecipe({ id: 9, title: "Spaghetti", servings: 4, ingredients: [
+    { name: "salt", amount: "1", unit: "tsp" },
+    { name: "For the pasta:", amount: null, unit: null },
+    { name: "spaghetti", amount: "500", unit: "g" },
+    { name: "For the sauce:", amount: null, unit: null },
+    { name: "tomato sauce", amount: "1", unit: "cup" },
+    { name: "hotdog", amount: "4", unit: "pieces" },
+  ] });
+  assert.deepEqual([...d.lines].map((l) => `${l.group || "-"}:${l.name}`), ["-:salt", "For the pasta:spaghetti", "For the sauce:tomato sauce", "For the sauce:hotdog"]);
+  assert.deepEqual([...dishGroups(d.lines)], ["", "For the pasta", "For the sauce"]);
+  assert.deepEqual([...dishGroups([])], [""]);
 });

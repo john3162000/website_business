@@ -237,3 +237,23 @@ test("kitchen notes: raw meat, cold pan, dry pot, unused ingredients, total time
   assert.ok(!good.some((n) => n.type === "warn"), JSON.stringify(good));
   assert.ok(good.some((n) => /Kabuuang oras: 1 oras 55 minuto/.test(n.tl)), JSON.stringify(good));
 });
+
+test("strain and put on top: read from recipe text, captions and scene state", () => {
+  const r = {
+    title: "Cheesy Spaghetti",
+    lines: [line("spaghetti", "Spaghetti", "500 g spaghetti"), line(null, null, "8 cups water", "water"), line("tomato_sauce", "Tomato sauce", "1 cup tomato sauce"), line("cheese_cheddar", "Cheddar cheese", "1 cup grated cheddar")],
+    instructions: ["Boil water in a pot and cook the spaghetti for 10 minutes.", "Strain the spaghetti.", "Heat a pan and pour the tomato sauce. Add the spaghetti.", "Top with grated cheddar and serve."],
+  };
+  const s = steps(r);
+  const strain = s.find((x) => x.kind === "strain"), top = s.find((x) => x.kind === "top");
+  assert.ok(strain, kinds(r));
+  assert.equal(cookCaption(strain, "tl"), "Salain ang spaghetti at itapon ang tubig");
+  assert.equal(cookCaption(top, "tl"), "Ilagay sa ibabaw ang cheddar cheese");
+  assert.equal(cookCaption(top, "en"), "Put the cheddar cheese on top");
+  const afterStrain = cookState(s, s.indexOf(strain) + 1);
+  assert.equal(afterStrain.level, 0, "the water is poured off");
+  assert.equal(afterStrain.loc.get(strain.items[0]), "rack");
+  const served = cookState(s, s.length);
+  assert.ok(served.top.has(top.items[0]));
+  assert.equal(served.loc.get(top.items[0]), "plate");
+});
