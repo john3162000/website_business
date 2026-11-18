@@ -130,7 +130,7 @@ function cookItemsFromLines(lines) {
     out.push({
       key, label: name, text, icon: cookIcon(`${name} ${l.slug || ""}`),
       liquid: water || (COOK_LIQUID.test(l.slug || name.toLowerCase().replace(/\s+/g, "_")) && !COOK_SOLID_LIQUID.test(l.slug || name.toLowerCase())),
-      water, toTaste: l.status === "to-taste", fryOil: !!(l.slug && COOK_FRY_OIL.test(l.slug)),
+      water, toTaste: l.status === "to-taste", cost: typeof l.cost === "number" ? l.cost : null, fryOil: !!(l.slug && COOK_FRY_OIL.test(l.slug)),
       cut: (l.slug && COOK_NO_CUT.test(l.slug)) || water ? null : cookCutStyle(text),
       peel: /\b(peeled|deveined|shelled|cleaned|gutted|scaled)\b/i.test(text),
       words: cookWords(`${name} ${l.name || ""} ${(l.slug || "").replace(/_/g, " ")} ${text}`),
@@ -456,7 +456,7 @@ async function openCookShow(id) {
       methodNotes: rec.methodNotes, frying: c.method && c.method.frying,
     });
     // A dish with an unpriced main ingredient shows no price (the site flags it "Incomplete price").
-    cookStart(rec.title || "", steps, c.costGaps && c.costGaps.items && c.costGaps.items.length ? null : c.costPerServing);
+    cookStart(rec.title || "", steps, c.costGaps && c.costGaps.items && c.costGaps.items.length ? null : c.costPerServing, `r${id}`);
   } catch (e) {
     cookFail(e.message);
   }
@@ -469,7 +469,7 @@ function openCookShowDish() {
   const from = currentDish.fromRecipeId;
   cookOpenDialog(cookT("cook.loading", "Inihahanda ang kusina…"));
   const go = (instructions, notes) => cookStart(currentDish.title, buildCookScript({ title: currentDish.title, lines, instructions, methodNotes: notes }),
-    lastResult && lastResult.summary ? lastResult.summary.cost : null);
+    lastResult && lastResult.summary && !lastResult.summary.costIncomplete ? lastResult.summary.cost : null, `d${currentDish.id || currentDish.fromRecipeId || "new"}`);
   if (!from) return go([], null);
   fetch(`${API_BASE}/api/recipes/${from}`).then((r) => r.json())
     .then((d) => go(((d.recipe && d.recipe.instructions) || []).map((s) => s.text), d.recipe && d.recipe.methodNotes))
@@ -497,7 +497,9 @@ function cookOpenDialog(message) {
         <button type="button" class="wx-btn on" id="cook-play" onclick="cookToggle()">▶</button>
         <button type="button" class="wx-btn" onclick="cookGo(1)" aria-label="${escapeHtml(cookT("cook.next", "Susunod"))}">⏭</button>
         <span id="cook-count" class="cook-count"></span>
+        <button type="button" class="wx-btn cook-edit-btn" id="cook-edit" onclick="cookEditToggle()">✏️ ${escapeHtml(cookT("cook.edit", "Ayusin ang mga hakbang"))}</button>
       </div>
+      <section id="cook-list" class="cook-list-wrap" hidden></section>
       <ol id="cook-steps" class="cook-steps" aria-label="${escapeHtml(cookT("cook.steps", "Mga hakbang"))}"></ol>
       <p class="cook-note">${escapeHtml(cookT("cook.note", "Gawa ng SarapSulit mula sa mga sangkap at paraan ng recipe. Para sa buong paraan, buksan ang orihinal na recipe."))}</p>
     </div>`;
@@ -511,20 +513,23 @@ function cookFail(msg) {
   if (name) name.textContent = msg;
 }
 
-function cookStart(title, steps, costPerServing) {
-  const lang = cookLang();
+function cookStart(title, built, costPerServing, key) {
   cookStop();
-  cookShow = { title, steps, i: 0, t: 0, playing: false, cost: costPerServing, last: 0, three: null };
+  // The person's own edited steps for this recipe or dish, if saved on this device.
+  const saved = key ? cookSavedSteps(key) : null;
+  const steps = saved ? cookRestoreSteps(saved, built) : built;
+  cookShow = { title, steps, built, key, edited: !!saved, editing: false, i: 0, t: 0, playing: false, cost: costPerServing, last: 0, three: null };
   document.getElementById("cook-title").textContent = title;
-  document.getElementById("cook-steps").innerHTML = steps.map((s, i) => `
-    <li><button type="button" class="cook-step" data-i="${i}" onclick="cookJump(${i})">
-      <span class="cook-step-n">${i + 1}</span><span class="cook-step-ico" aria-hidden="true">${escapeHtml(cookStepIcon(s))}</span><span>${escapeHtml(cookCaption(s, lang))}</span>
-    </button></li>`).join("");
+  cookRenderSteps();
   cookShowStep();
+  cookRenderList(steps);
   const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   loadThree().then(() => {
     if (!cookShow) return;
     cookShow.three = cookBuildScene(window.THREE, document.getElementById("cook-canvas"));
+    // Pictures for the shopping list, drawn from the same 3D models.
+    const shop = steps[0] && steps[0].kind === "shop" ? steps[0].items : [];
+    setTimeout(() => { if (cookShow && cookShow.three) cookFillThumbs(cookShow.three.thumbs(shop)); }, 50);
     cookEnterStep();
     cookShow.playing = !reduce;
     document.getElementById("cook-play").textContent = cookShow.playing ? "⏸" : "▶";
@@ -532,6 +537,146 @@ function cookStart(title, steps, costPerServing) {
     cookShow.raf = requestAnimationFrame(cookFrame);
   }).catch(() => {
     document.querySelector("#cook-dialog .cook-stage").innerHTML = `<p class="cook-caption">${escapeHtml(cookT("cook.textOnly", "Hindi ma-load ang 3D. Heto ang mga hakbang."))}</p>`;
+  });
+}
+
+// ── Editing the steps (saved on this device) ──
+
+const COOK_STEPS_KEY = "sarapsulit.cooksteps.v1";
+const COOK_ADDABLE = ["stir", "boil", "simmer", "cook", "fry", "season", "drain", "chill", "steam", "bake", "grill"];
+
+/** Steps as plain data: item keys instead of objects. Pure, tested. */
+function cookSerializeSteps(steps) {
+  return steps.map((s) => {
+    const o = { kind: s.kind, keys: (s.items || []).map((it) => it.key) };
+    for (const f of ["style", "size", "minutes", "vessel", "cold"]) if (s[f] != null && s[f] !== false) o[f] = s[f];
+    return o;
+  });
+}
+
+/** Saved steps back to full steps, matching item keys against the recipe's current ingredients. Pure, tested. */
+function cookRestoreSteps(saved, built) {
+  const byKey = new Map();
+  for (const s of built) for (const it of s.items || []) if (!byKey.has(it.key)) byKey.set(it.key, it);
+  const out = [];
+  for (const o of saved || []) {
+    if (!o || !o.kind) continue;
+    const items = (o.keys || []).map((k) => byKey.get(k)).filter(Boolean);
+    if (["cut", "peel", "add", "pour", "saute", "mix", "wrap"].includes(o.kind) && !items.length) continue; // that ingredient is gone
+    const s = { kind: o.kind, items };
+    for (const f of ["style", "size", "minutes", "vessel", "cold"]) if (o[f] != null) s[f] = o[f];
+    if (o.kind === "shop") s.items = (built[0] && built[0].kind === "shop" ? built[0].items : items); // the list follows the ingredients
+    out.push(s);
+  }
+  return out.length ? out : built;
+}
+
+/** Moves step i by d (-1 up, +1 down); the shopping and serving steps stay first and last. Pure, tested. */
+function cookMoveStep(steps, i, d) {
+  const j = i + d, fixed = (k) => steps[k] && ["shop", "serve"].includes(steps[k].kind);
+  if (j < 0 || j >= steps.length || fixed(i) || fixed(j)) return steps;
+  const out = steps.slice(); [out[i], out[j]] = [out[j], out[i]];
+  return out;
+}
+
+function cookStore() { try { return window.localStorage; } catch { return null; } }
+function cookSavedSteps(key) {
+  try { const all = JSON.parse(cookStore()?.getItem(COOK_STEPS_KEY) || "{}"); return Array.isArray(all[key]) ? all[key] : null; } catch { return null; }
+}
+function cookWriteSteps(key, steps) {
+  const st = cookStore(); if (!st) return false;
+  try {
+    const all = JSON.parse(st.getItem(COOK_STEPS_KEY) || "{}");
+    if (steps) all[key] = cookSerializeSteps(steps); else delete all[key];
+    st.setItem(COOK_STEPS_KEY, JSON.stringify(all)); return true;
+  } catch { return false; }
+}
+
+function cookRenderSteps() {
+  const lang = cookLang(), ed = cookShow.editing, n = cookShow.steps.length;
+  const opt = (v, cur, label) => `<option value="${v}"${v === cur ? " selected" : ""}>${escapeHtml(label)}</option>`;
+  document.getElementById("cook-steps").innerHTML = cookShow.steps.map((s, i) => {
+    const fixed = ["shop", "serve"].includes(s.kind);
+    const head = `<span class="cook-step-n">${i + 1}</span><span class="cook-step-ico" aria-hidden="true">${escapeHtml(cookStepIcon(s))}</span><span class="min-w-0">${escapeHtml(cookCaption(s, lang))}</span>`;
+    if (!ed) return `<li><button type="button" class="cook-step" data-i="${i}" onclick="cookJump(${i})">${head}</button></li>`;
+    const style = s.kind === "cut" ? `<select class="cook-in" aria-label="${escapeHtml(cookT("cook.cutStyle", "Paraan ng paghiwa"))}" onchange="cookEditSet(${i}, 'style', this.value)">${Object.keys(COOK_STYLE_TEXT).map((k) => opt(k, s.style, COOK_STYLE_TEXT[k][lang === "en" ? 1 : 0])).join("")}</select>
+      <label class="cook-in-l"><input class="cook-in cook-num" type="number" min="0" max="20" step="0.5" value="${s.size ?? ""}" placeholder="cm" onchange="cookEditSet(${i}, 'size', this.value)"> cm</label>` : "";
+    const time = COOK_TIMED.has(s.kind) ? `<label class="cook-in-l"><input class="cook-in cook-num" type="number" min="0" max="2880" step="1" value="${s.minutes ?? ""}" onchange="cookEditSet(${i}, 'minutes', this.value)"> ${escapeHtml(cookT("cook.min", "min"))}</label>` : "";
+    const tools = fixed ? "" : `<span class="cook-tools">
+      <button type="button" class="cook-tool" onclick="cookEditMove(${i}, -1)" aria-label="${escapeHtml(cookT("cook.up", "Itaas"))}"${i <= 1 ? " disabled" : ""}>↑</button>
+      <button type="button" class="cook-tool" onclick="cookEditMove(${i}, 1)" aria-label="${escapeHtml(cookT("cook.down", "Ibaba"))}"${i >= n - 2 ? " disabled" : ""}>↓</button>
+      <button type="button" class="cook-tool" onclick="cookEditRemove(${i})" aria-label="${escapeHtml(cookT("cook.remove", "Alisin"))}">🗑</button></span>`;
+    return `<li class="cook-edit-row${i === cookShow.i ? " on" : ""}"><div class="cook-edit-top">${head}${tools}</div>${style || time ? `<div class="cook-edit-in">${style}${time}</div>` : ""}</li>`;
+  }).join("") + (ed ? `<li class="cook-edit-foot">
+      <label class="cook-in-l">${escapeHtml(cookT("cook.addStep", "Magdagdag ng hakbang"))}: <select class="cook-in" id="cook-add-kind">${COOK_ADDABLE.map((k) => opt(k, "", cookCaption({ kind: k, items: [] }, lang))).join("")}</select></label>
+      <button type="button" class="wx-btn" onclick="cookEditAdd()">＋</button>
+      <span class="cook-edit-actions"><button type="button" class="wx-btn on" onclick="cookEditSave()">💾 ${escapeHtml(cookT("cook.save", "I-save sa device na ito"))}</button>
+      ${cookShow.edited ? `<button type="button" class="wx-btn" onclick="cookEditReset()">↺ ${escapeHtml(cookT("cook.reset", "Ibalik sa orihinal"))}</button>` : ""}</span>
+      <span id="cook-edit-msg" class="cook-edit-msg" role="status"></span></li>` : "");
+  document.getElementById("cook-steps").classList.toggle("editing", ed);
+  const eb = document.getElementById("cook-edit");
+  if (eb) { eb.textContent = ed ? `✓ ${cookT("cook.editDone", "Tapos na")}` : `✏️ ${cookT("cook.edit", "Ayusin ang mga hakbang")}`; eb.setAttribute("aria-pressed", ed ? "true" : "false"); }
+}
+
+function cookStepsChanged() {
+  cookShow.i = Math.min(cookShow.i, cookShow.steps.length - 1); cookShow.t = 0;
+  cookRenderSteps(); cookShowStep(); cookEnterStep();
+}
+function cookEditToggle() { if (!cookShow) return; cookShow.editing = !cookShow.editing; if (cookShow.editing) cookShow.playing = false; const pb = document.getElementById("cook-play"); if (pb) pb.textContent = cookShow.playing ? "⏸" : "▶"; cookRenderSteps(); }
+function cookEditMove(i, d) { cookShow.steps = cookMoveStep(cookShow.steps, i, d); if (cookShow.i === i) cookShow.i = i + d; cookStepsChanged(); }
+function cookEditRemove(i) { if (["shop", "serve"].includes(cookShow.steps[i].kind)) return; cookShow.steps = cookShow.steps.filter((_, k) => k !== i); cookStepsChanged(); }
+function cookEditSet(i, field, value) {
+  const s = { ...cookShow.steps[i] };
+  if (field === "style") s.style = value;
+  else { const n = parseFloat(value); s[field] = Number.isFinite(n) && n > 0 ? n : null; }
+  cookShow.steps = cookShow.steps.map((x, k) => (k === i ? s : x)); cookShow.i = i; cookStepsChanged();
+}
+function cookEditAdd() {
+  const kind = document.getElementById("cook-add-kind").value;
+  const at = cookShow.steps.length - 1, prev = cookShow.steps[at - 1] || {};
+  const s = { kind, items: [], minutes: COOK_TIMED.has(kind) ? 10 : null, vessel: prev.vessel || "kawali" };
+  cookShow.steps = [...cookShow.steps.slice(0, at), s, ...cookShow.steps.slice(at)]; cookShow.i = at; cookStepsChanged();
+}
+function cookEditSave() {
+  const ok = cookWriteSteps(cookShow.key, cookShow.steps);
+  if (ok) cookShow.edited = true;
+  cookRenderSteps();
+  const m = document.getElementById("cook-edit-msg"); if (m) m.textContent = ok ? cookT("cook.saved", "Na-save sa device na ito.") : cookT("cook.notSaved", "Hindi ma-save sa browser na ito.");
+}
+function cookEditReset() {
+  cookWriteSteps(cookShow.key, null); cookShow.edited = false; cookShow.steps = cookShow.built; cookStepsChanged();
+}
+
+/** "2 lbs pork belly (note 1)" → "2 lbs pork belly". */
+function cookAmountText(it) {
+  return String(it.text || "").replace(/\s*\([^)]*\)/g, "").replace(/\s+/g, " ").trim();
+}
+
+/** The shopping list: picture, name, amount and price of each ingredient. */
+function cookRenderList(steps) {
+  const box = document.getElementById("cook-list");
+  if (!box) return;
+  const shop = steps[0] && steps[0].kind === "shop" ? steps[0].items : [];
+  if (!shop.length) { box.hidden = true; return; }
+  const en = cookLang() === "en";
+  const priced = shop.filter((it) => it.cost != null);
+  const total = priced.reduce((a, it) => a + it.cost, 0);
+  box.innerHTML = `
+    <h3 class="cook-list-h">🧺 ${escapeHtml(cookT("cook.list", en ? "Shopping list" : "Listahan ng bibilhin"))}</h3>
+    <ul class="cook-list">${shop.map((it) => `
+      <li class="cook-item"><span class="cook-thumb" data-key="${escapeHtml(it.key)}" aria-hidden="true">${escapeHtml(it.icon)}</span>
+        <span class="min-w-0"><span class="cook-item-name">${escapeHtml(it.label)}</span><span class="cook-item-amt">${escapeHtml(cookAmountText(it))}</span></span>
+        <span class="cook-item-cost">${it.cost != null ? `₱${it.cost < 10 ? it.cost.toFixed(2) : Math.round(it.cost)}` : it.toTaste ? "" : "—"}</span></li>`).join("")}
+    </ul>
+    <p class="cook-list-total">${priced.length ? `${escapeHtml(cookT("cook.listTotal", en ? "Total for the whole dish" : "Kabuuan para sa buong ulam"))}: <b>₱${Math.round(total)}</b>` : ""}${priced.length < shop.filter((it) => !it.toTaste).length ? ` <span class="cook-list-gap">· ${escapeHtml(cookT("cook.listGap", en ? "— = no price yet" : "— = wala pang presyo"))}</span>` : ""}</p>`;
+  box.hidden = false;
+}
+
+function cookFillThumbs(map) {
+  if (!map) return;
+  document.querySelectorAll("#cook-list .cook-thumb").forEach((el) => {
+    const url = map.get(el.dataset.key);
+    if (url) el.innerHTML = `<img src="${url}" alt="" width="48" height="48">`;
   });
 }
 
@@ -1618,8 +1763,37 @@ function cookBuildScene(THREE, canvas) {
   const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(resize) : null;
   if (ro) ro.observe(canvas.parentElement);
 
+  /** Small pictures of each ingredient, rendered from its 3D model on a cream background. */
+  function thumbs(list) {
+    const out = new Map();
+    if (!list || !list.length) return out;
+    const size = 128, pr = renderer.getPixelRatio();
+    const c2 = document.createElement("canvas"); c2.width = c2.height = size; const g2 = c2.getContext("2d");
+    const ts = new THREE.Scene(); ts.environment = envRT.texture; ts.background = col("#efe6d2");
+    ts.add(new THREE.HemisphereLight(0xfff6ea, 0x5a4a3a, 0.55));
+    const dl = new THREE.DirectionalLight(0xffffff, 1.4); dl.position.set(-1, 3, 2); ts.add(dl);
+    const tc = new THREE.PerspectiveCamera(30, 1, 0.005, 5);
+    const vp = renderer.getViewport(new THREE.Vector4());
+    renderer.setScissorTest(true);
+    for (const it of list) {
+      const m = wholeModel(it, 0);
+      const bx = new THREE.Box3().setFromObject(m), c = bx.getCenter(V(0, 0, 0)), sz = bx.getSize(V(0, 0, 0));
+      m.position.sub(c); ts.add(m);
+      const d = Math.max(sz.x, sz.y, sz.z) * 2.3 + 0.02;
+      tc.position.set(0, d * 0.75, d * 0.66); tc.lookAt(0, 0, 0);
+      renderer.setViewport(0, 0, size / pr, size / pr); renderer.setScissor(0, 0, size / pr, size / pr);
+      renderer.render(ts, tc);
+      g2.drawImage(renderer.domElement, 0, renderer.domElement.height - size, size, size, 0, 0, size, size);
+      try { out.set(it.key, c2.toDataURL("image/webp", 0.85)); } catch { /* tainted or unsupported */ }
+      ts.remove(m);
+      m.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((mm) => mm.dispose()); });
+    }
+    renderer.setScissorTest(false); renderer.setViewport(vp);
+    return out;
+  }
+
   return {
-    enter, update,
+    enter, update, thumbs,
     dispose() {
       if (ro) ro.disconnect();
       clearDyn();

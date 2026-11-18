@@ -7,8 +7,8 @@ import vm from "node:vm";
 
 const ctx = vm.createContext({});
 vm.runInContext(`${readFileSync(new URL("./cookshow.js", import.meta.url), "utf8")}
-;globalThis.api = { cookCutStyle, cookMinutes, cookTimeText, cookItemsFromLines, cookMentions, buildCookScript, cookCaption, cookFoodKind, cookState, cookMixColor, cookBottleWord, COOK_THREE_SRI };`, ctx);
-const { cookCutStyle, cookMinutes, cookTimeText, cookItemsFromLines, cookMentions, buildCookScript, cookCaption, cookFoodKind, cookState, cookMixColor, cookBottleWord, COOK_THREE_SRI } = ctx.api;
+;globalThis.api = { cookCutStyle, cookMinutes, cookTimeText, cookItemsFromLines, cookMentions, buildCookScript, cookCaption, cookFoodKind, cookState, cookMixColor, cookBottleWord, cookSerializeSteps, cookRestoreSteps, cookMoveStep, COOK_THREE_SRI };`, ctx);
+const { cookCutStyle, cookMinutes, cookTimeText, cookItemsFromLines, cookMentions, buildCookScript, cookCaption, cookFoodKind, cookState, cookMixColor, cookBottleWord, cookSerializeSteps, cookRestoreSteps, cookMoveStep, COOK_THREE_SRI } = ctx.api;
 const plain = (x) => JSON.parse(JSON.stringify(x));
 
 const line = (slug, label, text, status = "ok") => ({ slug, label, text, status });
@@ -153,4 +153,30 @@ test("Three.js is pinned with subresource integrity", () => {
   const src = readFileSync(new URL("./cookshow.js", import.meta.url), "utf8");
   assert.match(src, /s\.integrity = COOK_THREE_SRI; s\.crossOrigin = "anonymous"/);
   assert.match(src, /three\.js\/r128\/three\.min\.js/);
+});
+
+test("edited steps save as plain data and come back matched to the ingredients", () => {
+  const built = steps(ADOBO);
+  const saved = JSON.parse(JSON.stringify(cookSerializeSteps(built)));
+  assert.deepEqual(plain(saved[2]), { kind: "marinate", keys: ["pork_belly", "garlic", "soy_sauce"], minutes: 60, vessel: "kawali" });
+  // Change the marinating time and drop the vinegar step, as a person would.
+  saved[2].minutes = 480;
+  const edited = saved.filter((o) => !(o.kind === "pour" && o.keys[0] === "vinegar_cane_white"));
+  const back = cookRestoreSteps(edited, built);
+  assert.equal(back.length, built.length - 1);
+  assert.equal(back[2].items[0], built[2].items[0], "items are the recipe's own objects again");
+  assert.equal(cookCaption(back[2], "tl"), "Ibabad ang pork belly, garlic at soy sauce nang 8 oras");
+  // An ingredient removed in Ulam ko drops the steps that only used it.
+  const noGarlic = buildCookScript({ ...ADOBO, lines: ADOBO.lines.filter((l) => l.slug !== "garlic") });
+  assert.ok(!cookRestoreSteps(saved, noGarlic).some((s) => s.kind === "cut" && s.items.length === 0));
+  assert.equal(cookRestoreSteps([], built), built, "nothing saved: the built steps");
+});
+
+test("moving steps keeps shopping first and serving last", () => {
+  const s = steps(ADOBO);
+  assert.equal(cookMoveStep(s, 0, 1), s);
+  assert.equal(cookMoveStep(s, 1, -1), s);
+  assert.equal(cookMoveStep(s, s.length - 2, 1), s);
+  const m = cookMoveStep(s, 3, 1);
+  assert.equal(m[3], s[4]); assert.equal(m[4], s[3]);
 });
