@@ -6,7 +6,8 @@
 
 const SETTINGS_KEY = "sarapsulit.settings.v1";
 const SETTINGS_LANGS = ["tl", "en"];
-const SETTINGS_DIET_KEYS = ["protein", "diabetic", "heart", "kidney", "gout", "lowcal"];
+const SETTINGS_DIET_KEYS = ["protein", "diabetic", "heart", "kidney", "gout", "lowcal", "vegetarian", "vegan"];
+const SETTINGS_VEG_KEYS = ["vegetarian", "vegan"];
 const SETTINGS_MEAT_KEYS = ["fish", "chicken", "pork", "beef"];
 // Age brackets asked on the first visit; "senior" (60+) turns on large text and a simpler menu.
 const SETTINGS_AGES = ["child", "teen", "young", "adult", "midlife", "senior"];
@@ -382,6 +383,8 @@ const I18N = {
   "settings.title": ["⚙️ Mga setting", "⚙️ Settings"],
   "settings.sub": ["Naka-save sa device na 'to lang.", "Saved on this device only."],
   "settings.lang": ["Wika", "Language"],
+  "diet.vegetarian": ["Vegetarian", "Vegetarian"],
+  "diet.vegan": ["Vegan", "Vegan"],
   "settings.diet": ["Diet (pwedeng marami)", "Diet (pick any number)"],
   "settings.dietHelp": ["Lalabas lang ang ulam na pasok sa LAHAT ng napili, sa Recipes at sa Plano.", "Only dishes that pass ALL chosen diets show, in Recipes and the Planner."],
   "settings.kitchen": ["Ang kusina ko", "My kitchen"],
@@ -513,10 +516,20 @@ function chooseAge(age) {
 }
 
 function setLang(lang) { SETTINGS = { ...SETTINGS, lang, langChosen: true }; settingsChanged(); }
-function toggleDietSetting(key) { SETTINGS = { ...SETTINGS, diets: toggleIn(SETTINGS.diets, key) }; settingsChanged(); }
+function toggleDietSetting(key) {
+  let diets = toggleIn(SETTINGS.diets, key);
+  // Vegetarian and vegan exclude each other, and both rule out the meat chips.
+  if (SETTINGS_VEG_KEYS.includes(key) && diets.includes(key)) diets = diets.filter((d) => d === key || !SETTINGS_VEG_KEYS.includes(d));
+  SETTINGS = { ...SETTINGS, diets, meats: SETTINGS_VEG_KEYS.some((k) => diets.includes(k)) ? [] : SETTINGS.meats };
+  settingsChanged();
+}
 function clearDietSetting() { SETTINGS = { ...SETTINGS, diets: [] }; settingsChanged(); }
 function setSuggest(on) { SETTINGS = { ...SETTINGS, suggest: on }; settingsChanged(); }
-function toggleMeat(key) { SETTINGS = { ...SETTINGS, meats: key ? toggleIn(SETTINGS.meats, key) : [] }; settingsChanged(); }
+function toggleMeat(key) {
+  // Picking a meat turns off vegetarian / vegan; "Lahat" turns them off too.
+  SETTINGS = { ...SETTINGS, meats: key ? toggleIn(SETTINGS.meats, key) : [], diets: SETTINGS.diets.filter((d) => !SETTINGS_VEG_KEYS.includes(d)) };
+  settingsChanged();
+}
 
 // ── The Settings dialog ──
 
@@ -590,8 +603,11 @@ function renderMeatChips() {
   const en = SETTINGS.lang === "en";
   document.querySelectorAll("[data-meat-chips]").forEach((box) => {
     box.innerHTML = `<span class="text-xs text-gray-500 mr-1">${t("meat.label")}</span>`
-      + settingsChoice(!SETTINGS.meats.length, "toggleMeat(null)", t("meat.all"))
-      + types.map((m) => settingsChoice(SETTINGS.meats.includes(m.key), `toggleMeat('${m.key}')`, en ? m.en : m.label)).join("");
+      + settingsChoice(!SETTINGS.meats.length && !SETTINGS_VEG_KEYS.some((k) => SETTINGS.diets.includes(k)), "toggleMeat(null)", t("meat.all"))
+      + types.map((m) => settingsChoice(SETTINGS.meats.includes(m.key), `toggleMeat('${m.key}')`, en ? m.en : m.label)).join("")
+      + `<span class="meat-sep" aria-hidden="true"></span>`
+      + settingsChoice(SETTINGS.diets.includes("vegetarian"), "toggleDietSetting('vegetarian')", `🥗 ${t("diet.vegetarian")}`)
+      + settingsChoice(SETTINGS.diets.includes("vegan"), "toggleDietSetting('vegan')", `🌱 ${t("diet.vegan")}`);
   });
 }
 

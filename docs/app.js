@@ -134,6 +134,8 @@ function buildRecipe(raw, c) {
     kcalLow: n.kcalLow != null ? Math.round(n.kcalLow) : null,
     kcalHigh: n.kcalHigh != null ? Math.round(n.kcalHigh) : null,
     frying: n.frying || null,
+    // "vegan" | "vegetarian" | null, from the catalog's diet class of every ingredient (backend).
+    veg: n.veg ?? null,
     // Vitamin C, A, iron and calcium after cooking: { method, vitaminC: [best, low, high], … } (null on older API data).
     cooked: n.cooked || null,
     appliances: n.appliances || [],

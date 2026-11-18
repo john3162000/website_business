@@ -6,7 +6,7 @@ import { memo } from "@/lib/memo";
 import { yieldCount, type RefNutrition } from "@/lib/scrapers/recipe-structured";
 import { ALIASES, CANONICALS, COOK_GROUPS, DERIVED_PRICES, EXTRA_NUTRIENTS, MANUAL_PRICES, RETENTION } from "./catalog.generated.ts";
 import { psaSnapshot, type PsaRow } from "./psa-snapshot.ts";
-import { compileRecipe, unknownLineCount, type CompileContext, type CompiledRecipe, type DaPrice, type FnriFood, type PsaPrice } from "./compile.ts";
+import { compileRecipe, unknownLineCount, vegClass, type CompileContext, type CompiledRecipe, type DaPrice, type FnriFood, type PsaPrice } from "./compile.ts";
 
 const DAY = 86400000;
 /** A DA price older than this (before the snapshot day) is too stale to use. */
@@ -173,6 +173,8 @@ export function summarize(c: CompiledRecipe & { course?: string | null; referenc
     course: c.course ?? null,
     frying: c.method.frying,
     appliances: c.appliances,
+    // "vegan" | "vegetarian" | null, from the catalog's diet class of every ingredient.
+    veg: vegClass(c.lines, CANONICALS),
     kcal: round(c.perServing.kcal),
     kcalLow: round(c.perServing.kcalLow),
     kcalHigh: round(c.perServing.kcalHigh),
