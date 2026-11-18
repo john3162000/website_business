@@ -32,7 +32,7 @@ function cookCutStyle(text) {
     [/\b(sliced|slices?|rings?)\b/, "sliced"],
     [/\b(quartered|quarters?)\b/, "quartered"],
     [/\b(halved|halves|cut in half)\b/, "halved"],
-    [/\b(wedges?)\b/, "wedges"],
+    [/\b(wedges?|wedged)\b/, "wedges"],
     [/\b(grated|shredded)\b/, "grated"],
     [/\b(serving pieces?|bite[- ]size|chunks?)\b/, "pieces"],
   ];
@@ -456,7 +456,7 @@ function cookOpenDialog(message) {
         <div class="min-w-0"><p class="cook-kicker">🎬 ${escapeHtml(cookT("cook.title", "Panoorin kung paano"))}</p><h2 id="cook-title" tabindex="-1" data-dlg-focus class="cook-name">${escapeHtml(message)}</h2></div>
         <button type="button" onclick="closeCookShow()" class="dlg-x" aria-label="Isara">✕</button>
       </div>
-      <div class="cook-stage"><canvas id="cook-canvas" aria-hidden="true"></canvas><p id="cook-caption" class="cook-caption" aria-live="polite"></p></div>
+      <div class="cook-stage"><canvas id="cook-canvas" aria-hidden="true"></canvas><p id="cook-hud" class="cook-hud" hidden></p><p id="cook-timer" class="cook-timer" hidden></p><p id="cook-caption" class="cook-caption" aria-live="polite"></p></div>
       <div class="cook-controls">
         <button type="button" class="wx-btn" onclick="cookGo(-1)" aria-label="${escapeHtml(cookT("cook.prev", "Nakaraan"))}">⏮</button>
         <button type="button" class="wx-btn on" id="cook-play" onclick="cookToggle()">▶</button>
@@ -544,11 +544,21 @@ function cookStop() {
   cookShow = null;
 }
 
-/** Seconds a step plays: long cooking gets a little more time for the clock. */
+/** Seconds a step plays: the shopping step grows with the list; cooking steps get time for the clock. */
 function cookStepLength(s) {
-  if (s.kind === "shop") return Math.min(7, 2.2 + 0.45 * s.items.length);
-  if (COOK_TIMED.has(s.kind)) return 4.5;
-  return 3.2;
+  if (s.kind === "shop") return Math.min(9, 1.6 + 0.55 * s.items.length);
+  if (COOK_TIMED.has(s.kind)) return 5;
+  if (["cut", "wrap", "serve"].includes(s.kind)) return 4;
+  return 3.6;
+}
+
+/** The small labels on the video: an ingredient's name, the time-lapse clock, the price. */
+function cookHud(id, text) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (!text) { if (!el.hidden) el.hidden = true; return; }
+  if (el.textContent !== text) el.textContent = text;
+  if (el.hidden) el.hidden = false;
 }
 
 function cookFrame(now) {
@@ -571,254 +581,890 @@ function cookEnterStep() {
   if (cookShow && cookShow.three) cookShow.three.enter(cookShow.steps[cookShow.i], cookShow.i, cookShow.steps, cookShow.cost);
 }
 
-// ── Scene ──
 
-const COOK_X = { shop: -2.55, board: -0.85, stove: 1.0, plate: 2.55 };
+// ── Scene: an overhead cooking video ──
+// Drawn entirely in code, so nothing else downloads: canvas textures (wood grain, onion skin,
+// pork belly layers, leaf veins, fish scales), physically based materials, an environment map
+// that makes the steel shine, and soft shadows. The camera glides between the prep row, the
+// board, the stove and the plate. No hands: the knife, ladle and bottles move on their own.
 
-function cookStation(s) {
-  if (s.kind === "shop") return COOK_X.shop;
-  if (["peel", "marinate", "mix", "wrap"].includes(s.kind) || (s.kind === "cut" && !s.vessel)) return COOK_X.board;
-  if (s.kind === "cut") return COOK_X.plate;
-  if (s.kind === "serve") return COOK_X.plate;
-  return COOK_X.stove;
+function ckRand(seed) {
+  let a = seed >>> 0;
+  return () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+function ckHash(s) { let h = 2166136261; for (const c of String(s)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; }
+
+/** Which model an ingredient gets. Pure, tested. */
+function cookFoodKind(it) {
+  const s = `${it.key || ""} ${it.label || ""}`.toLowerCase().replace(/_/g, " ");
+  if (it.key === "rolled") return "rolled";
+  if (it.water) return "water";
+  if (/wrapper/.test(s)) return "wrapper";
+  if (/cube|bouillon/.test(s)) return "cube";
+  if (it.liquid) return "bottle";
+  if (/peppercorn/.test(s)) return "peppercorn";
+  if (/salt|sugar|pepper ground|black pepper|white pepper|powder|seasoning|msg|magic sarap|flour|starch|paprika|cumin/.test(s)) return "powder";
+  if (/bay leaf|laurel/.test(s)) return "bayleaf";
+  if (/garlic|bawang/.test(s)) return "garlic";
+  if (/green onion|scallion|spring onion|leek|dahon ng sibuyas/.test(s)) return "scallion";
+  if (/onion|sibuyas|shallot/.test(s)) return /red onion|shallot|pulang sibuyas/.test(s) ? "redonion" : "onion";
+  if (/ginger|luya/.test(s)) return "ginger";
+  if (/tomato|kamatis/.test(s)) return "tomato";
+  if (/eggplant|talong/.test(s)) return "eggplant";
+  if (/\begg\b|itlog/.test(s)) return "egg";
+  if (/shrimp|prawn|hipon/.test(s)) return "shrimp";
+  if (/chicken|manok/.test(s)) return "chicken";
+  if (/fish|bangus|tilapia|galunggong|tuna|salmon|mackerel|tuyo|dilis|pompano|lapu/.test(s)) return "fish";
+  if (/ground|giniling|minced/.test(s) && /pork|beef|meat|chicken/.test(s)) return "mince";
+  if (/beef|baka|oxtail|brisket/.test(s)) return "beef";
+  if (/pork|meat|belly|ribs|liver|goat|baboy|kasim|liempo|pata/.test(s)) return "pork";
+  if (/carrot/.test(s)) return "carrot";
+  if (/radish|labanos/.test(s)) return "radish";
+  if (/papaya|sayote|chayote|upo|gourd|ampalaya|melon|squash|kalabasa/.test(s)) return "gourd";
+  if (/potato|patatas|gabi|taro|kamote|singkamas|turnip|yam/.test(s)) return "root";
+  if (/chili|sili|bell pepper|siling/.test(s)) return "chili";
+  if (/okra/.test(s)) return "okra";
+  if (/sitaw|string bean|green bean|long bean|baguio bean/.test(s)) return "beans";
+  if (/pechay|bok choy|kangkong|spinach|malunggay|cabbage|lettuce|leaves|greens|mustasa|parsley|cilantro|kinchay|herb|basil/.test(s)) return "leafy";
+  if (/tamarind|sampalok|calamansi|lemon|lime|kamias/.test(s)) return "citrus";
+  if (/rice|noodle|pasta|bihon|canton|sotanghon|misua|miki|macaroni|spaghetti/.test(s)) return "grain";
+  return "misc";
 }
 
-/** A canvas-drawn sprite: an emoji with an optional caption under it. */
-function cookSprite(THREE, emoji, label, size = 0.42) {
-  const c = document.createElement("canvas");
-  c.width = 160; c.height = label ? 200 : 160;
-  const g = c.getContext("2d");
-  g.textAlign = "center"; g.textBaseline = "middle";
-  g.font = "110px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif";
-  g.fillText(emoji, 80, 82);
-  if (label) {
-    g.font = "bold 24px Inter, sans-serif"; g.fillStyle = "#163F2E";
-    const text = label.length > 14 ? `${label.slice(0, 13)}…` : label;
-    const w = g.measureText(text).width + 16;
-    g.fillStyle = "rgba(248,244,234,.92)"; g.fillRect(80 - w / 2, 160, w, 34);
-    g.fillStyle = "#163F2E"; g.fillText(text, 80, 178);
+// Skin (outside), flesh (cut face) and done (well browned or fully cooked) colours.
+const CK_LOOK = {
+  onion: ["#b97a3b", "#f3eedb", "#c98d48"], redonion: ["#7d2a46", "#efe1e6", "#9a5a4a"], garlic: ["#efe7d9", "#f7efd4", "#cf9a4c"],
+  ginger: ["#c39a63", "#f0d78f", "#c99a40"], tomato: ["#c9271d", "#e4553c", "#a7381f"], pork: ["#efc6b4", "#d98d86", "#7c4a24"],
+  beef: ["#9a2e2a", "#a8413b", "#4e2f1f"], mince: ["#dc958e", "#dc958e", "#95653f"], chicken: ["#f0d3a6", "#f1c7b6", "#c48a45"],
+  fish: ["#a3abb1", "#f2e6de", "#bb8a46"], shrimp: ["#a9a79c", "#e9d8ca", "#f1773f"], carrot: ["#e8721d", "#f28b2d", "#d86e1d"],
+  radish: ["#f3f1ea", "#f8f6ef", "#e2d7b4"], root: ["#a77c53", "#f1e6cc", "#d7b06a"], gourd: ["#5d9a3a", "#e7f0c9", "#c2d398"],
+  eggplant: ["#4a1e4f", "#efe4c4", "#7a573a"], chili: ["#3d8f2b", "#cfe4a6", "#386e24"], beans: ["#4c8f2d", "#a9d07a", "#3b7325"],
+  okra: ["#5e9b3a", "#d9ebb0", "#45792b"], leafy: ["#3e8a35", "#d8edc1", "#2e6a29"], scallion: ["#56a23c", "#eef5dc", "#3e7b2d"],
+  egg: ["#ead3b1", "#f6c84a", "#efd27a"], bayleaf: ["#7c8b4b", "#7c8b4b", "#5f6b38"], citrus: ["#7b9b3b", "#d9c271", "#99894a"],
+  wrapper: ["#f2e7ca", "#f2e7ca", "#c98a3a"], rolled: ["#ead6a6", "#ead6a6", "#b9772e"], grain: ["#f4f1ea", "#f4f1ea", "#f4f1ea"],
+  cube: ["#d6a72c", "#c9a46a", "#c9a46a"], powder: ["#f5f2ea", "#f5f2ea", "#f5f2ea"], peppercorn: ["#2b231d", "#2b231d", "#2b231d"],
+  misc: ["#c9b48a", "#e8dcc0", "#b08a50"], water: ["#d8e6ea", "#d8e6ea", "#d8e6ea"], bottle: ["#8a5a2a", "#8a5a2a", "#8a5a2a"],
+};
+
+/** Liquid colour and how strongly it tints a pot. */
+function cookLiquidLook(it) {
+  const s = `${it.key || ""} ${it.label || ""}`.toLowerCase();
+  if (it.water) return /rice wash/.test(s) ? ["#e9e4d6", 0.6] : ["#cfe0e6", 0.25];
+  if (/soy|toyo/.test(s)) return ["#2b1408", 3];
+  if (/oyster/.test(s)) return ["#3a2112", 2.5];
+  if (/fish sauce|fish_sauce|patis/.test(s)) return ["#a6581c", 1.2];
+  if (/vinegar|suka/.test(s)) return ["#efe8d2", 0.35];
+  if (/coconut|gata/.test(s)) return ["#f3eee2", 2];
+  if (/milk|cream/.test(s)) return ["#f7f3ea", 2];
+  if (/oil/.test(s)) return ["#e7bf47", 0.6];
+  if (/tomato|ketchup|banana sauce/.test(s)) return ["#b2271b", 2.2];
+  if (/broth|stock/.test(s)) return ["#d4a456", 1];
+  return ["#8a5a2a", 1];
+}
+
+function cookPowderColor(it) {
+  const s = `${it.key || ""} ${it.label || ""}`.toLowerCase();
+  if (/black pepper|pepper_ground|paminta/.test(s)) return "#4b4038";
+  if (/magic|sarap|msg|seasoning|bouillon/.test(s)) return "#e2c56c";
+  if (/garlic/.test(s)) return "#e8d8a8";
+  if (/paprika|chili/.test(s)) return "#b8432a";
+  if (/brown sugar/.test(s)) return "#a8743c";
+  return "#f7f5ef";
+}
+
+// Where things sit on the table (metres; the table top is y = 0).
+const CK_AT = { board: [-0.72, 0.2], bowl: [-1.45, 0.28], stove: [0.32, 0.14], rack: [0.98, 0.02], plate: [1.42, 0.38] };
+function ckPrepSpot(i) { return [-1.5 + (i % 8) * 0.42, i < 8 ? -0.62 : -0.34]; }
+
+/** Replays steps 0..upto-1: where every ingredient is, what's in the pot, how browned things are. */
+function cookState(steps, upto) {
+  const items = (steps[0] && steps[0].kind === "shop" ? steps[0].items : []).slice();
+  for (const s of steps) for (const it of s.items || []) if (it.water && !items.includes(it)) items.push(it);
+  const st = { items: items.slice(), loc: new Map(), cut: new Map(), brown: new Map(), parts: [], level: 0, oil: 0, vessel: null, heat: false, bowlLiquid: null, served: null };
+  for (const it of items) st.loc.set(it, "prep");
+  for (let i = 0; i < Math.min(upto, steps.length); i++) cookApply(st, steps[i]);
+  return st;
+}
+
+function cookApply(st, s) {
+  const potKinds = ["heat", "saute", "add", "pour", "fry", "deepfry", "boil", "simmer", "cook", "stir", "season", "grill", "bake", "steam"];
+  for (const it of s.items || []) if (!st.loc.has(it)) { st.items.push(it); st.loc.set(it, "board"); }
+  if (potKinds.includes(s.kind) && s.vessel) {
+    if (st.vessel && st.vessel !== s.vessel) { st.parts = []; st.level = 0; st.oil = 0; }
+    st.vessel = s.vessel;
   }
-  const tex = new THREE.CanvasTexture(c);
-  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
-  sp.scale.set(size, size * (c.height / c.width), 1);
-  return sp;
+  const toPot = (it) => {
+    if (it.liquid && !it.fryOil) { st.parts.push(cookLiquidLook(it).concat([it.water ? 0.4 : 0.1])); st.level = Math.min(0.85, st.level + (it.water ? 0.4 : 0.1)); }
+    else if (it.fryOil) st.oil = Math.max(st.oil, 0.18);
+    else {
+      if (st.loc.get(it) === "bowl" && st.bowlLiquid) { st.parts.push([st.bowlLiquid, 3, 0.12]); st.level = Math.min(0.85, st.level + 0.12); st.bowlLiquid = null; }
+      st.loc.set(it, "pot");
+    }
+  };
+  const inPot = () => st.items.filter((it) => st.loc.get(it) === "pot");
+  const brown = (list, by) => { for (const it of list) st.brown.set(it, Math.min(1, (st.brown.get(it) || 0) + by)); };
+  switch (s.kind) {
+    case "cut": for (const it of s.items) { st.cut.set(it, s.style); if (st.loc.get(it) !== "prep") st.loc.set(it, "board"); } break;
+    case "mix": case "marinate":
+      for (const it of s.items) { if (it.liquid) st.bowlLiquid = cookLiquidLook(it)[0]; else st.loc.set(it, "bowl"); }
+      break;
+    case "wrap":
+      for (const it of st.items) if (st.loc.get(it) === "bowl" || s.items.includes(it)) st.loc.set(it, "wrapped");
+      st.rolled = true;
+      break;
+    case "heat": st.heat = true; if (st.items.some((it) => it.fryOil)) st.oil = Math.max(st.oil, 0.18); break;
+    case "saute": case "add": case "pour":
+      // Before the stove is on, "add" after a "mix" goes into the mixing bowl (lumpia filling).
+      if (!st.heat && s.kind !== "saute" && st.items.some((it) => st.loc.get(it) === "bowl")) { for (const it of s.items) if (!it.liquid) st.loc.set(it, "bowl"); break; }
+      s.items.forEach(toPot); if (s.kind === "saute") brown(s.items.filter((it) => !it.liquid), 0.35); break;
+    case "fry": s.items.forEach(toPot); brown(inPot(), 0.7); break;
+    case "deepfry": st.oil = 0.8; s.items.forEach(toPot); brown(s.items.length ? s.items : inPot(), 1); break;
+    case "boil": case "simmer": case "cook":
+      s.items.forEach(toPot);
+      if (s.minutes >= 30 && st.level > 0.2) st.level = Math.max(0.2, st.level * 0.8);
+      if (st.level > 0) st.parts.push(["#d6a35a", Math.min(1.5, (s.minutes || 15) / 40), 0]);
+      // Meat stewed in a dark sauce (adobo, humba) takes on its colour.
+      if (st.level > 0 && cookMixLum(st.parts) < 0.5) brown(inPot().filter((it) => ["pork", "beef", "chicken"].includes(cookFoodKind(it))), Math.min(0.85, (s.minutes || 20) / 35));
+      break;
+    case "season": for (const it of s.items) { if (it.liquid) toPot(it); else st.loc.set(it, "used"); } break;
+    case "drain": for (const it of inPot()) st.loc.set(it, "rack"); if (st.vessel === "kaldero") { st.level = 0; st.parts = []; } break;
+    case "serve":
+      for (const it of st.items) if (["pot", "rack"].includes(st.loc.get(it)) || (st.loc.get(it) === "board" && st.brown.get(it))) st.loc.set(it, "plate");
+      st.served = st.level > 0.25 ? "bowl" : "plate";
+      break;
+    default: break;
+  }
+  return st;
+}
+
+function cookMixLum(parts) {
+  const n = parseInt(cookMixColor(parts).slice(1), 16);
+  return (((n >> 16) & 255) * 0.3 + ((n >> 8) & 255) * 0.59 + (n & 255) * 0.11) / 255;
+}
+
+/** The pot's liquid colour: a weighted mix of what was poured in. */
+function cookMixColor(parts) {
+  let r = 0, g = 0, b = 0, w = 0;
+  for (const [hex, strength, amount] of parts) {
+    const n = parseInt(hex.slice(1), 16), k = strength * Math.max(0.05, amount || 0.1);
+    r += ((n >> 16) & 255) * k; g += ((n >> 8) & 255) * k; b += (n & 255) * k; w += k;
+  }
+  if (!w) return "#cfe0e6";
+  const h = (x) => Math.round(x / w).toString(16).padStart(2, "0");
+  return `#${h(r)}${h(g)}${h(b)}`;
 }
 
 function cookBuildScene(THREE, canvas) {
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: window.devicePixelRatio < 2, alpha: false });
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "low-power" });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.0;
   renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(document.documentElement.classList.contains("dark") ? 0x16291f : 0xf3ecdb);
-  const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 50);
-  camera.position.set(0, 2.35, 4.9);
-  camera.lookAt(0, 1.25, 0);
+  scene.background = new THREE.Color(0x2b2119).convertSRGBToLinear();
+  const camera = new THREE.PerspectiveCamera(36, 16 / 9, 0.05, 30);
+  const statics = [];
+  const keep = (x) => { statics.push(x); return x; };
+  const V = (x, y, z) => new THREE.Vector3(x, y, z);
+  // Colours are written in sRGB; the renderer works in linear light.
+  const col = (hex) => new THREE.Color(hex).convertSRGBToLinear();
 
-  scene.add(new THREE.HemisphereLight(0xfff6e5, 0x6b5a3a, 0.9));
-  const sun = new THREE.DirectionalLight(0xffffff, 0.75);
-  sun.position.set(3, 6, 4); sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024);
-  scene.add(sun);
+  // Reflections for steel and glaze: a soft room with two bright windows, prefiltered once.
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const envScene = new THREE.Scene();
+  const envMats = [];
+  const envMesh = (geo, color) => { const m = new THREE.MeshBasicMaterial({ color, side: THREE.BackSide }); envMats.push(m); const o = new THREE.Mesh(geo, m); envScene.add(o); return o; };
+  envMesh(new THREE.BoxGeometry(12, 6, 12), 0x2e261f);
+  const win = (x, z, w, d) => { const m = new THREE.MeshBasicMaterial({ color: new THREE.Color(3, 2.85, 2.6), side: THREE.DoubleSide }); envMats.push(m); const o = new THREE.Mesh(new THREE.PlaneGeometry(w, d), m); o.rotation.x = Math.PI / 2; o.position.set(x, 2.9, z); envScene.add(o); };
+  win(-2, -1, 3, 2); win(2.5, 2, 2, 2);
+  const envRT = pmrem.fromScene(envScene, 0.03);
+  scene.environment = envRT.texture;
+  envScene.traverse((o) => { if (o.geometry) o.geometry.dispose(); });
+  envMats.forEach((m) => m.dispose());
+  pmrem.dispose();
 
-  const mat = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.8, ...extra });
-  const box = (w, h, d, color, x, y, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(color)); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; scene.add(m); return m; };
-  const cyl = (rt, rb, h, color, x, y, z, seg = 24) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg), mat(color)); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; scene.add(m); return m; };
+  // Light: a big soft window light with shadows, plus warm fill.
+  scene.add(new THREE.HemisphereLight(0xfff3e2, 0x3b2b1c, 0.22));
+  const key = new THREE.DirectionalLight(0xfff1e0, 1.45);
+  key.position.set(-1.4, 3.4, 1.4);
+  key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048);
+  Object.assign(key.shadow.camera, { left: -2.4, right: 2.4, top: 1.8, bottom: -1.8, near: 0.5, far: 8 });
+  key.shadow.bias = -0.0004; key.shadow.normalBias = 0.01; key.shadow.radius = 5;
+  scene.add(key);
 
-  // Floor, wall, counter (between the cook and the camera), palengke stall, stove, plate.
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(14, 8), mat(0xe9e2cf)); floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
-  box(14, 4, 0.1, 0xf8f4ea, 0, 2, -1.6);
-  box(5.2, 0.9, 0.9, 0x2f7a55, 0.55, 0.45, 0.55);
-  box(5.3, 0.06, 1.0, 0xd8c9a3, 0.55, 0.93, 0.55);
-  box(1.1, 0.75, 0.8, 0xc9961a, COOK_X.shop, 0.38, 0.55);              // stall
-  box(1.2, 0.05, 0.9, 0xdc2626, COOK_X.shop, 1.55, 0.55);              // awning
-  [-0.55, 0.55].forEach((dx) => cyl(0.03, 0.03, 0.8, 0x855f0e, COOK_X.shop + dx, 1.15, 0.2));
-  const bayong = cyl(0.26, 0.2, 0.32, 0xb88a3e, COOK_X.shop, 0.92, 0.6, 12);
-  const board = box(0.85, 0.05, 0.5, 0xd2a46b, COOK_X.board, 0.985, 0.55);
-  const knife = new THREE.Group();
-  const blade = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.01, 0.07), mat(0xdfe5ea, { metalness: 0.6, roughness: 0.3 })); blade.position.x = 0.16; knife.add(blade);
-  const handle = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.03, 0.05), mat(0x3b2a1a)); handle.position.x = -0.07; knife.add(handle);
-  knife.position.set(COOK_X.board + 0.15, 1.05, 0.5); scene.add(knife);
-  box(0.95, 0.12, 0.65, 0x374151, COOK_X.stove, 0.99, 0.55);           // stove
-  const flame = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.22, 12), new THREE.MeshBasicMaterial({ color: 0xff8a1f, transparent: true, opacity: 0.85 }));
-  flame.position.set(COOK_X.stove, 1.12, 0.55); flame.visible = false; scene.add(flame);
-  const kawali = cyl(0.36, 0.22, 0.12, 0x2b2b2b, COOK_X.stove, 1.12, 0.55);
-  const kaldero = cyl(0.3, 0.3, 0.42, 0x9ca3af, COOK_X.stove, 1.27, 0.55); kaldero.material.metalness = 0.5;
-  const pot = { kawali, kaldero };
-  const appliance = box(0.85, 0.55, 0.6, 0x4b5563, COOK_X.stove, 1.33, 0.55); appliance.visible = false; // oven / grill / steamer
-  const plate = cyl(0.36, 0.3, 0.04, 0xffffff, COOK_X.plate, 0.98, 0.55);
-
-  // Kuya Kusinero: stick limbs, round head, forest apron, chef's hat.
-  const ink = mat(0x1f2937), skin = mat(0xf2d3b0), white = mat(0xffffff), apronMat = mat(0x1d5239);
-  const cook = new THREE.Group(); scene.add(cook);
-  const limb = (len, r = 0.045) => { const g = new THREE.Group(); const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, 8), ink); m.position.y = -len / 2; m.castShadow = true; g.add(m); const j = new THREE.Mesh(new THREE.SphereGeometry(r * 1.25, 8, 8), ink); j.position.y = -len; g.add(j); return g; };
-  const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.62, 8), ink); torso.position.y = 1.18; torso.castShadow = true; cook.add(torso);
-  const apron = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.62, 0.04), apronMat); apron.position.set(0, 1.08, 0.08); apron.castShadow = true; cook.add(apron);
-  const pocket = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.1, 0.01), mat(0xdcae2b)); pocket.position.set(0, 1.0, 0.105); cook.add(pocket);
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.2, 20, 16), skin); head.position.y = 1.7; head.castShadow = true; cook.add(head);
-  [-0.07, 0.07].forEach((x) => { const e = new THREE.Mesh(new THREE.SphereGeometry(0.022, 8, 8), ink); e.position.set(x, 1.73, 0.18); cook.add(e); });
-  const smile = new THREE.Mesh(new THREE.TorusGeometry(0.055, 0.01, 6, 12, Math.PI), ink); smile.position.set(0, 1.65, 0.185); smile.rotation.z = Math.PI; cook.add(smile);
-  const hatBand = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.19, 0.14, 16), white); hatBand.position.y = 1.9; cook.add(hatBand);
-  [[-0.1, 0], [0.1, 0], [0, 0.08], [0, -0.06]].forEach(([x, z]) => { const p = new THREE.Mesh(new THREE.SphereGeometry(0.15, 12, 10), white); p.position.set(x, 2.07, z); p.castShadow = true; cook.add(p); });
-  const shoulderL = limb(0.34), shoulderR = limb(0.34), elbowL = limb(0.3), elbowR = limb(0.3);
-  shoulderL.position.set(-0.17, 1.45, 0); shoulderR.position.set(0.17, 1.45, 0);
-  elbowL.position.y = -0.34; elbowR.position.y = -0.34; shoulderL.add(elbowL); shoulderR.add(elbowR);
-  const hipL = limb(0.86, 0.05), hipR = limb(0.86, 0.05);
-  hipL.position.set(-0.09, 0.88, 0); hipR.position.set(0.09, 0.88, 0);
-  cook.add(shoulderL, shoulderR, hipL, hipR);
-  const spoon = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.36, 6), mat(0x855f0e)); spoon.position.y = -0.36; spoon.rotation.x = 0.4; spoon.visible = false; elbowR.add(spoon);
-  cook.position.set(0, 0, -0.25);
-
-  // Particles: steam, bubbles, sizzle.
-  const puffs = [];
-  const puffTex = (() => { const c = document.createElement("canvas"); c.width = c.height = 64; const g = c.getContext("2d"); const gr = g.createRadialGradient(32, 32, 2, 32, 32, 30); gr.addColorStop(0, "rgba(255,255,255,.9)"); gr.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); })();
-  for (let i = 0; i < 26; i++) { const p = new THREE.Sprite(new THREE.SpriteMaterial({ map: puffTex, transparent: true, depthWrite: false, opacity: 0 })); p.userData.seed = Math.random(); scene.add(p); puffs.push(p); }
-  const sparks = [];
-  for (let i = 0; i < 18; i++) { const s = new THREE.Mesh(new THREE.SphereGeometry(0.018, 6, 6), new THREE.MeshBasicMaterial({ color: 0xffc145 })); s.visible = false; s.userData.seed = Math.random(); scene.add(s); sparks.push(s); }
-
-  // The time-lapse clock for long steps.
-  const clockCanvas = document.createElement("canvas"); clockCanvas.width = clockCanvas.height = 160;
-  const clockTex = new THREE.CanvasTexture(clockCanvas);
-  const clock = new THREE.Sprite(new THREE.SpriteMaterial({ map: clockTex, transparent: true, depthWrite: false }));
-  clock.scale.set(0.62, 0.62, 1); clock.position.set(COOK_X.stove + 0.95, 2.05, 0.4); clock.visible = false; scene.add(clock);
-  const drawClock = (frac, minutes) => {
-    const g = clockCanvas.getContext("2d"); g.clearRect(0, 0, 160, 160);
-    g.fillStyle = "#F8F4EA"; g.strokeStyle = "#163F2E"; g.lineWidth = 8; g.beginPath(); g.arc(80, 70, 56, 0, Math.PI * 2); g.fill(); g.stroke();
-    g.fillStyle = "rgba(47,122,85,.35)"; g.beginPath(); g.moveTo(80, 70); g.arc(80, 70, 50, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * frac); g.fill();
-    const a = -Math.PI / 2 + Math.PI * 2 * (frac * Math.max(1, minutes / 60) % 1);
-    g.strokeStyle = "#163F2E"; g.lineWidth = 6; g.beginPath(); g.moveTo(80, 70); g.lineTo(80 + Math.cos(a) * 40, 70 + Math.sin(a) * 40); g.stroke();
-    g.fillStyle = "#163F2E"; g.font = "bold 26px Inter, sans-serif"; g.textAlign = "center";
-    g.fillText(cookTimeText(Math.round(minutes * frac), cookLang()) || "0", 80, 152);
-    clockTex.needsUpdate = true;
+  // ── Textures, all painted on canvases ──
+  const texCache = new Map();
+  const tex = (id, size, draw, repeat) => {
+    if (texCache.has(id)) return texCache.get(id);
+    const c = document.createElement("canvas"); c.width = c.height = size;
+    draw(c.getContext("2d"), size, ckRand(ckHash(id)));
+    const t = keep(new THREE.CanvasTexture(c));
+    t.encoding = THREE.sRGBEncoding; t.anisotropy = 4;
+    if (repeat) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(repeat[0], repeat[1]); }
+    texCache.set(id, t);
+    return t;
+  };
+  const shade = (hex, k) => { const c = col(hex); c.multiplyScalar(k); return `#${c.getHexString()}`; };
+  const grain = (light, darkC, lines) => (g, n, r) => {
+    g.fillStyle = light; g.fillRect(0, 0, n, n);
+    for (let i = 0; i < lines; i++) {
+      const y = r() * n, amp = 2 + r() * 7, f = 0.003 + r() * 0.01, ph = r() * 6;
+      g.strokeStyle = darkC; g.globalAlpha = 0.03 + r() * 0.12; g.lineWidth = 0.4 + r() * 1.8;
+      g.beginPath();
+      for (let x = -8; x <= n + 8; x += 8) g.lineTo(x, y + Math.sin(x * f + ph) * amp + Math.sin(x * f * 3.3 + ph) * amp * 0.25);
+      g.stroke();
+    }
+    for (let i = 0; i < 3; i++) { const x = r() * n, y = r() * n; g.globalAlpha = 0.25; g.fillStyle = darkC; g.beginPath(); g.ellipse(x, y, 6 + r() * 6, 2 + r() * 2, 0, 0, 7); g.fill(); }
+    g.globalAlpha = 1;
+  };
+  const speckle = (base, dots, count, size) => (g, n, r) => {
+    g.fillStyle = base; g.fillRect(0, 0, n, n);
+    for (let i = 0; i < count; i++) {
+      g.globalAlpha = 0.08 + r() * 0.35; g.fillStyle = dots[Math.floor(r() * dots.length)];
+      const s = (0.3 + r()) * size * n / 256;
+      g.beginPath(); g.ellipse(r() * n, r() * n, s, s * (0.4 + r()), r() * 3, 0, 7); g.fill();
+    }
+    g.globalAlpha = 1;
+  };
+  const streaks = (base, lineC, count) => (g, n, r) => {
+    g.fillStyle = base; g.fillRect(0, 0, n, n);
+    for (let i = 0; i < count; i++) {
+      const x = r() * n; g.strokeStyle = lineC; g.globalAlpha = 0.1 + r() * 0.3; g.lineWidth = 0.6 + r() * 2;
+      g.beginPath(); g.moveTo(x, 0); g.bezierCurveTo(x + (r() - 0.5) * 20, n / 3, x + (r() - 0.5) * 20, 2 * n / 3, x + (r() - 0.5) * 10, n); g.stroke();
+    }
+    g.globalAlpha = 1;
+  };
+  const bands = (list) => (g, n, r) => {
+    let y = 0;
+    for (const [c, h] of list) {
+      const hh = h * n; g.fillStyle = c; g.beginPath(); g.moveTo(0, y);
+      for (let x = 0; x <= n; x += 12) g.lineTo(x, y + Math.sin(x * 0.04 + r() * 0.6) * 3);
+      g.lineTo(n, y + hh + 5); g.lineTo(0, y + hh + 5); g.closePath(); g.fill(); y += hh;
+    }
+    for (let i = 0; i < 500; i++) { g.globalAlpha = 0.06 + r() * 0.12; g.fillStyle = r() < 0.5 ? "#ffffff" : "#7a3b33"; g.fillRect(r() * n, r() * n, 1 + r() * 3, 1 + r() * 2); }
+    g.globalAlpha = 1;
+  };
+  const marble = (base, fat) => (g, n, r) => {
+    g.fillStyle = base; g.fillRect(0, 0, n, n);
+    for (let i = 0; i < 40; i++) {
+      g.strokeStyle = fat; g.globalAlpha = 0.25 + r() * 0.4; g.lineWidth = 0.8 + r() * 3;
+      let x = r() * n, y = r() * n; g.beginPath(); g.moveTo(x, y);
+      for (let k = 0; k < 6; k++) { x += (r() - 0.5) * 40; y += (r() - 0.5) * 40; g.lineTo(x, y); }
+      g.stroke();
+    }
+    g.globalAlpha = 1;
+  };
+  const leaf = (c1, c2) => (g, n, r) => {
+    const grd = g.createLinearGradient(0, 0, n, 0); grd.addColorStop(0, c1); grd.addColorStop(0.5, shade(c1, 1.15)); grd.addColorStop(1, c1);
+    g.fillStyle = grd; g.fillRect(0, 0, n, n);
+    g.strokeStyle = c2; g.lineWidth = n / 28; g.globalAlpha = 0.9; g.beginPath(); g.moveTo(n / 2, n); g.lineTo(n / 2, 0); g.stroke();
+    g.lineWidth = n / 120; g.globalAlpha = 0.45;
+    for (let y = n * 0.9; y > 0; y -= n / 9) { g.beginPath(); g.moveTo(n / 2, y); g.quadraticCurveTo(n * 0.3, y - n / 14, 0, y - n / 6); g.moveTo(n / 2, y); g.quadraticCurveTo(n * 0.7, y - n / 14, n, y - n / 6); g.stroke(); }
+    for (let i = 0; i < 200; i++) { g.globalAlpha = 0.06; g.fillStyle = r() < 0.5 ? "#ffffff" : "#123d12"; g.fillRect(r() * n, r() * n, 2, 2); }
+    g.globalAlpha = 1;
+  };
+  const scales = (base, line) => (g, n) => {
+    const grd = g.createLinearGradient(0, 0, 0, n); grd.addColorStop(0, shade(base, 0.6)); grd.addColorStop(0.5, base); grd.addColorStop(1, "#e9ecee");
+    g.fillStyle = grd; g.fillRect(0, 0, n, n); g.strokeStyle = line; g.globalAlpha = 0.35; g.lineWidth = 1;
+    for (let y = 0; y < n; y += 8) for (let x = (y / 8) % 2 ? 4 : 0; x < n; x += 8) { g.beginPath(); g.arc(x, y, 5, 0, Math.PI); g.stroke(); }
+    g.globalAlpha = 1;
   };
 
-  let props = [];          // sprites made for the current step
-  const inPot = [];        // ingredients already in the pot (persist between steps)
-  const onBoard = [];
-  let fromX = cook.position.x, toX = cook.position.x;
+  const std = (o) => new THREE.MeshStandardMaterial(o.color !== undefined ? { ...o, color: col(o.color) } : o);
+  const shadowed = (m, cast = true) => { m.castShadow = cast; m.receiveShadow = true; return m; };
 
-  const clearProps = () => { for (const p of props) { scene.remove(p); p.material.map && p.material.map.dispose(); p.material.dispose(); } props = []; };
-  const potTop = () => (kaldero.visible ? 1.5 : 1.2);
+  // ── The kitchen ──
+  const table = shadowed(new THREE.Mesh(keep(new THREE.BoxGeometry(7, 0.06, 4.4)),
+    keep(std({ map: tex("table", 1024, grain("#9c6c3d", "#4a2a12", 110), [3, 2]), roughness: 0.62 }))), false);
+  table.position.set(0, -0.03, 0); scene.add(table);
+  const backsplash = new THREE.Mesh(keep(new THREE.BoxGeometry(7, 1.2, 0.04)), keep(std({
+    map: tex("tiles", 512, (g, n, r) => { g.fillStyle = "#e9e3d6"; g.fillRect(0, 0, n, n); g.strokeStyle = "#bdb3a0"; g.lineWidth = 3; for (let i = 0; i <= n; i += n / 4) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i, n); g.moveTo(0, i); g.lineTo(n, i); g.stroke(); } for (let i = 0; i < 300; i++) { g.globalAlpha = 0.05; g.fillStyle = "#8a7a60"; g.fillRect(r() * n, r() * n, 3, 3); } g.globalAlpha = 1; }, [10, 2]),
+    roughness: 0.25 })));
+  backsplash.position.set(0, 0.6, -1.0); scene.add(backsplash);
 
-  function enter(step, index, steps) {
-    clearProps();
-    fromX = cook.position.x; toX = cookStation(step);
-    // Rebuild what's in the pot so jumping around stays consistent.
-    for (const p of inPot.splice(0)) scene.remove(p);
-    for (const p of onBoard.splice(0)) scene.remove(p);
-    const done = steps.slice(0, index);
-    const potKinds = new Set(["saute", "add", "pour", "fry", "deepfry", "boil", "simmer", "marinate", "grill", "bake", "steam"]);
-    const vesselNow = step.vessel || (done.slice().reverse().find((s) => s.vessel) || {}).vessel || "kawali";
-    kaldero.visible = vesselNow === "kaldero"; kawali.visible = !kaldero.visible && !["oven", "ihawan", "steamer"].includes(vesselNow);
-    appliance.visible = ["oven", "ihawan", "steamer"].includes(vesselNow);
-    appliance.material.color.set(vesselNow === "ihawan" ? 0x1f2937 : vesselNow === "steamer" ? 0xb8c2cc : 0x4b5563);
-    const added = new Set();
-    for (const s of done) if (potKinds.has(s.kind)) for (const it of s.items) added.add(it);
-    [...added].slice(-6).forEach((it, k) => { const sp = cookSprite(THREE, it.icon, null, 0.26); sp.position.set(COOK_X.stove - 0.2 + (k % 3) * 0.2, potTop() + 0.05 + Math.floor(k / 3) * 0.12, 0.62); scene.add(sp); inPot.push(sp); });
-    const cutDone = done.filter((s) => s.kind === "cut").flatMap((s) => s.items).filter((it) => !added.has(it));
-    cutDone.slice(-4).forEach((it, k) => { const sp = cookSprite(THREE, it.icon, null, 0.18); sp.position.set(COOK_X.board - 0.3 + k * 0.18, 1.1, 0.68); scene.add(sp); onBoard.push(sp); });
+  const board = shadowed(new THREE.Mesh(keep(new THREE.BoxGeometry(0.52, 0.028, 0.36)),
+    keep(std({ map: tex("board", 512, grain("#c79660", "#7a4a22", 60)), roughness: 0.55 }))));
+  board.position.set(CK_AT.board[0], 0.014, CK_AT.board[1]); scene.add(board);
+  const BOARD_Y = 0.028;
 
-    if (step.kind === "shop") {
-      step.items.slice(0, 12).forEach((it, k) => {
-        const sp = cookSprite(THREE, it.icon, it.label, 0.42);
-        sp.userData = { k, start: new THREE.Vector3(COOK_X.shop - 0.9 + (k % 4) * 0.6, 2.35 - Math.floor(k / 4) * 0.55, 0.9) };
-        sp.position.copy(sp.userData.start); scene.add(sp); props.push(sp);
-      });
-    } else if (step.kind === "serve") {
-      const dish = cookSprite(THREE, "🍲", null, 0.6); dish.position.set(COOK_X.plate, 1.25, 0.6); scene.add(dish); props.push(dish);
-      if (cookShow && cookShow.cost) { const tag = cookSprite(THREE, "💰", `₱${Number(cookShow.cost).toFixed(0)}/serving`, 0.55); tag.position.set(COOK_X.plate, 1.95, 0.6); scene.add(tag); props.push(tag); }
-    } else if (step.items.length) {
-      step.items.slice(0, 5).forEach((it, k) => {
-        const sp = cookSprite(THREE, it.icon, step.kind === "cut" || step.kind === "peel" ? it.label : null, step.kind === "cut" ? 0.5 : 0.32);
-        sp.userData = { k };
-        sp.position.set(step.kind === "cut" || step.kind === "peel" ? COOK_X.board - 0.1 : COOK_X.board + k * 0.15, 1.25, 0.6);
-        scene.add(sp); props.push(sp);
-      });
+  // Stove: a dark enamel top, a burner, a cast-iron grate and a ring of blue flame.
+  const stoveTop = shadowed(new THREE.Mesh(keep(new THREE.BoxGeometry(0.64, 0.03, 0.54)), keep(std({ color: 0x0e0f11, metalness: 0.1, roughness: 0.75, envMapIntensity: 0.4 }))), false);
+  stoveTop.position.set(CK_AT.stove[0], 0.015, CK_AT.stove[1]); scene.add(stoveTop);
+  const burner = new THREE.Mesh(keep(new THREE.CylinderGeometry(0.06, 0.07, 0.02, 32)), keep(std({ color: 0x2a2a2a, metalness: 0.8, roughness: 0.4 })));
+  burner.position.set(CK_AT.stove[0], 0.04, CK_AT.stove[1]); scene.add(burner);
+  const iron = keep(std({ color: 0x151515, metalness: 0.6, roughness: 0.55 }));
+  const grate = new THREE.Group(); grate.position.set(CK_AT.stove[0], 0.03, CK_AT.stove[1]); scene.add(grate);
+  const ring = shadowed(new THREE.Mesh(keep(new THREE.TorusGeometry(0.19, 0.008, 8, 48)), iron)); ring.rotation.x = Math.PI / 2; ring.position.y = 0.05; grate.add(ring);
+  for (let k = 0; k < 4; k++) { const bar = shadowed(new THREE.Mesh(keep(new THREE.BoxGeometry(0.16, 0.012, 0.014)), iron)); const a = k * Math.PI / 2; bar.position.set(Math.cos(a) * 0.13, 0.05, Math.sin(a) * 0.13); bar.rotation.y = -a; grate.add(bar); }
+  const flameMat = keep(new THREE.MeshBasicMaterial({ color: 0x4a8dff, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false }));
+  const flameGeo = keep(new THREE.ConeGeometry(0.006, 0.035, 6));
+  const flames = [];
+  for (let k = 0; k < 22; k++) { const f = new THREE.Mesh(flameGeo, flameMat); const a = k / 22 * Math.PI * 2; f.position.set(CK_AT.stove[0] + Math.cos(a) * 0.068, 0.06, CK_AT.stove[1] + Math.sin(a) * 0.068); f.rotation.z = -Math.cos(a) * 0.9; f.rotation.x = Math.sin(a) * 0.9; f.visible = false; scene.add(f); flames.push(f); }
+  const VESSEL_Y = 0.09;
+
+  // Kaldero (steel pot) and kawali (black wok), turned on a lathe.
+  const steel = keep(std({ color: 0xeef1f4, metalness: 1, roughness: 0.14, envMapIntensity: 1.7, side: THREE.DoubleSide }));
+  const potGeo = keep(new THREE.LatheGeometry([[0, 0], [0.145, 0], [0.152, 0.006], [0.155, 0.02], [0.155, 0.17], [0.162, 0.176], [0.162, 0.181], [0.152, 0.181]].map(([x, y]) => new THREE.Vector2(x, y)), 64));
+  const kaldero = new THREE.Group(); kaldero.position.set(CK_AT.stove[0], VESSEL_Y, CK_AT.stove[1]); scene.add(kaldero);
+  kaldero.add(shadowed(new THREE.Mesh(potGeo, steel)));
+  [-1, 1].forEach((sx) => { const h = shadowed(new THREE.Mesh(keep(new THREE.TorusGeometry(0.026, 0.006, 8, 20, Math.PI)), steel)); h.position.set(sx * 0.165, 0.14, 0); h.rotation.set(0, sx > 0 ? -Math.PI / 2 : Math.PI / 2, 0); kaldero.add(h); });
+  const wokPts = []; for (let i = 0; i <= 16; i++) { const a = (i / 16) * 0.85; wokPts.push(new THREE.Vector2(0.3 * Math.sin(a), 0.3 * (1 - Math.cos(a)))); }
+  const castIron = keep(std({ color: 0x232427, metalness: 0.75, roughness: 0.42, side: THREE.DoubleSide }));
+  const kawali = new THREE.Group(); kawali.position.set(CK_AT.stove[0], VESSEL_Y - 0.03, CK_AT.stove[1]); scene.add(kawali);
+  kawali.add(shadowed(new THREE.Mesh(keep(new THREE.LatheGeometry(wokPts, 64)), castIron)));
+  [-1, 1].forEach((sx) => { const h = shadowed(new THREE.Mesh(keep(new THREE.TorusGeometry(0.03, 0.007, 8, 20, Math.PI)), castIron)); h.position.set(sx * 0.235, 0.095, 0); h.rotation.set(0, sx > 0 ? -Math.PI / 2 : Math.PI / 2, 0); kawali.add(h); });
+  const WOK_R = (y) => 0.3 * Math.sin(Math.acos(Math.max(-1, Math.min(1, 1 - y / 0.3))));
+
+  // Liquid surfaces (broth, oil) that rise and change colour.
+  const liquidMat = keep(std({ color: 0xcfe0e6, roughness: 0.06, metalness: 0, transparent: true, opacity: 0.85 }));
+  const liquid = new THREE.Mesh(keep(new THREE.CircleGeometry(1, 64)), liquidMat); liquid.rotation.x = -Math.PI / 2; liquid.receiveShadow = true; scene.add(liquid);
+
+  // Steel mixing bowl, white plate, soup bowl, paper-towel rack.
+  const bowlPts = []; for (let i = 0; i <= 14; i++) { const a = (i / 14) * 1.35; bowlPts.push(new THREE.Vector2(0.17 * Math.sin(a), 0.17 * (1 - Math.cos(a)) * 0.75)); }
+  const mixBowl = shadowed(new THREE.Mesh(keep(new THREE.LatheGeometry(bowlPts, 48)), steel)); mixBowl.position.set(CK_AT.bowl[0], 0.001, CK_AT.bowl[1]); scene.add(mixBowl);
+  const bowlLiquidMat = keep(std({ color: 0x2b1408, roughness: 0.08, transparent: true, opacity: 0.9 }));
+  const bowlLiquid = new THREE.Mesh(keep(new THREE.CircleGeometry(0.12, 40)), bowlLiquidMat); bowlLiquid.rotation.x = -Math.PI / 2; bowlLiquid.position.set(CK_AT.bowl[0], 0.03, CK_AT.bowl[1]); bowlLiquid.visible = false; scene.add(bowlLiquid);
+  const glaze = keep(std({ color: 0xfbfaf6, roughness: 0.18, metalness: 0, side: THREE.DoubleSide }));
+  const plate = shadowed(new THREE.Mesh(keep(new THREE.LatheGeometry([[0, 0.004], [0.1, 0.004], [0.13, 0.014], [0.16, 0.024], [0.165, 0.026], [0.16, 0.028], [0.13, 0.018], [0.1, 0.008], [0, 0.008]].map(([x, y]) => new THREE.Vector2(x, y)), 64)), glaze));
+  plate.position.set(CK_AT.plate[0], 0, CK_AT.plate[1]); scene.add(plate);
+  const soupBowl = shadowed(new THREE.Mesh(keep(new THREE.LatheGeometry([[0, 0], [0.05, 0], [0.06, 0.004], [0.1, 0.04], [0.12, 0.075], [0.124, 0.08], [0.116, 0.078], [0.095, 0.045], [0.055, 0.01], [0, 0.01]].map(([x, y]) => new THREE.Vector2(x, y)), 64)), glaze));
+  soupBowl.position.set(CK_AT.plate[0], 0, CK_AT.plate[1]); soupBowl.visible = false; scene.add(soupBowl);
+  const soupMat = keep(std({ color: 0xd6a35a, roughness: 0.06, transparent: true, opacity: 0.92 }));
+  const soup = new THREE.Mesh(keep(new THREE.CircleGeometry(0.098, 48)), soupMat); soup.rotation.x = -Math.PI / 2; soup.position.set(CK_AT.plate[0], 0.05, CK_AT.plate[1]); soup.visible = false; scene.add(soup);
+  const rack = new THREE.Group(); rack.position.set(CK_AT.rack[0], 0, CK_AT.rack[1]); scene.add(rack);
+  rack.add(shadowed(new THREE.Mesh(keep(new THREE.LatheGeometry([[0, 0.004], [0.14, 0.004], [0.15, 0.016], [0.145, 0.018], [0, 0.008]].map(([x, y]) => new THREE.Vector2(x, y)), 48)), glaze)));
+  const towel = new THREE.Mesh(keep(new THREE.PlaneGeometry(0.2, 0.2, 8, 8)), keep(std({ map: tex("towel", 256, speckle("#fbfbf8", ["#e6e6e0", "#d9d9d2"], 900, 3)), roughness: 0.95, side: THREE.DoubleSide })));
+  towel.rotation.x = -Math.PI / 2; towel.rotation.z = 0.4; towel.position.y = 0.012; rack.add(towel);
+
+  // Knife (chef's knife, blade on edge) and a wooden sandok.
+  const knife = new THREE.Group(); scene.add(knife);
+  const bladeShape = new THREE.Shape(); bladeShape.moveTo(0, 0); bladeShape.lineTo(0.17, 0); bladeShape.quadraticCurveTo(0.215, 0.004, 0.23, 0.03); bladeShape.lineTo(0.0, 0.045); bladeShape.lineTo(0, 0);
+  const blade = shadowed(new THREE.Mesh(keep(new THREE.ExtrudeGeometry(bladeShape, { depth: 0.0018, bevelEnabled: false })), keep(std({ color: 0xe8ecef, metalness: 1, roughness: 0.12 }))));
+  knife.add(blade);
+  const handle = shadowed(new THREE.Mesh(keep(new THREE.BoxGeometry(0.11, 0.022, 0.016)), keep(std({ color: 0x1d1a18, roughness: 0.35 })))); handle.position.set(-0.055, 0.03, 0.001); knife.add(handle);
+  [-0.03, -0.06, -0.09].forEach((x) => { const rv = new THREE.Mesh(keep(new THREE.CylinderGeometry(0.003, 0.003, 0.02, 8)), steel); rv.rotation.x = Math.PI / 2; rv.position.set(x, 0.03, 0.001); knife.add(rv); });
+  const knifeRest = () => { knife.position.set(CK_AT.board[0] + 0.05, BOARD_Y + 0.001, CK_AT.board[1] + 0.13); knife.rotation.set(-Math.PI / 2, 0, -0.15); };
+  knifeRest();
+  const woodMat = keep(std({ map: tex("sandok", 256, grain("#b88550", "#6e4523", 30)), roughness: 0.6 }));
+  const sandok = new THREE.Group(); scene.add(sandok);
+  const stick = shadowed(new THREE.Mesh(keep(new THREE.CylinderGeometry(0.007, 0.009, 0.3, 10)), woodMat)); stick.position.y = 0.15; sandok.add(stick);
+  const scoop = shadowed(new THREE.Mesh(keep(new THREE.SphereGeometry(0.03, 16, 10, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2)), woodMat)); scoop.scale.set(1, 0.45, 1.3); scoop.position.y = 0.012; sandok.add(scoop);
+  const sandokRest = () => { sandok.position.set(CK_AT.stove[0] + 0.36, 0.012, CK_AT.stove[1] + 0.2); sandok.rotation.set(Math.PI / 2, 0, 0.5); };
+  sandokRest();
+
+  // Steam, bubbles and droplets.
+  const puffTex = tex("puff", 64, (g, n) => { const gr = g.createRadialGradient(n / 2, n / 2, 1, n / 2, n / 2, n / 2); gr.addColorStop(0, "rgba(255,255,255,.75)"); gr.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = gr; g.fillRect(0, 0, n, n); });
+  const puffs = [];
+  for (let i = 0; i < 24; i++) { const p = new THREE.Sprite(keep(new THREE.SpriteMaterial({ map: puffTex, transparent: true, depthWrite: false, opacity: 0 }))); p.userData.seed = (i * 0.618) % 1; scene.add(p); puffs.push(p); }
+  const bubbleMat = keep(std({ color: 0xffffff, roughness: 0.05, transparent: true, opacity: 0.55 }));
+  const bubbles = new THREE.InstancedMesh(keep(new THREE.SphereGeometry(1, 8, 6)), bubbleMat, 80);
+  bubbles.count = 0; scene.add(bubbles);
+  const bubbleSeeds = Array.from({ length: 80 }, (_, i) => { const r = ckRand(i + 11); return [r(), r(), r()]; });
+  const dropMat = keep(new THREE.MeshBasicMaterial({ color: 0xffffff }));
+  const drops = new THREE.InstancedMesh(keep(new THREE.BoxGeometry(1, 1, 1)), dropMat, 60); drops.count = 0; scene.add(drops);
+  const stream = new THREE.Mesh(keep(new THREE.CylinderGeometry(0.004, 0.006, 1, 8, 1, true)), keep(std({ color: 0xffffff, roughness: 0.05, transparent: true, opacity: 0.85 })));
+  stream.visible = false; scene.add(stream);
+  const dummy = new THREE.Object3D();
+
+  // ── Ingredient models ──
+  // Each returns a group sitting on y = 0, at real size.
+  const look = (kind) => CK_LOOK[kind] || CK_LOOK.misc;
+  const foodMat = (kind, part, brownAmt, extra = {}) => {
+    const L = look(kind);
+    const base = col(part === "flesh" ? L[1] : L[0]);
+    const m = std({ color: 0xffffff, roughness: 0.55, ...extra });
+    m.userData.base = base; m.userData.done = col(L[2]);
+    m.userData.b0 = brownAmt || 0;
+    ckBrown(m, brownAmt || 0);
+    return m;
+  };
+  function ckBrown(m, amt) {
+    if (!m.userData.done) return;
+    const from = m.map ? col(0xffffff) : m.userData.base;
+    // With a texture, the colour multiplies it: divide out the texture's own colour so the result is the cooked colour.
+    const b = m.userData.base, d = m.userData.done;
+    const to = m.map ? new THREE.Color(Math.min(1.5, d.r / Math.max(0.05, b.r)), Math.min(1.5, d.g / Math.max(0.05, b.g)), Math.min(1.5, d.b / Math.max(0.05, b.b))) : d;
+    m.color.copy(from).lerp(to, Math.max(0, Math.min(1, amt)));
+    m.roughness = 0.55 - 0.25 * Math.min(1, amt);
+  }
+  const skinTex = (kind) => {
+    const L = look(kind);
+    switch (kind) {
+      case "onion": case "redonion": return tex(`skin-${kind}`, 256, streaks(L[0], shade(L[0], 0.6), 70));
+      case "garlic": return tex("skin-garlic", 256, streaks(L[0], "#b9a2a8", 40));
+      case "ginger": case "root": return tex(`skin-${kind}`, 256, speckle(L[0], [shade(L[0], 0.7), shade(L[0], 1.2)], 1400, 4));
+      case "pork": return tex("skin-pork", 512, bands([["#e9bfa6", 0.12], ["#f3e2d4", 0.2], ["#c9706a", 0.22], ["#efdccd", 0.12], ["#bd605b", 0.34]]));
+      case "beef": return tex("skin-beef", 256, marble("#9a2e2a", "#f0d6cf"));
+      case "mince": return tex("skin-mince", 256, speckle("#d98f88", ["#f3dcd3", "#b8605c", "#f6e8e0"], 2600, 3));
+      case "chicken": return tex("skin-chicken", 256, speckle("#efd2a4", ["#f6e3c4", "#d9b17c"], 1500, 3));
+      case "fish": return tex("skin-fish", 256, scales("#9aa3a9", "#5c666c"));
+      case "carrot": return tex("skin-carrot", 256, (g, n, r) => { g.fillStyle = L[0]; g.fillRect(0, 0, n, n); g.strokeStyle = "#b85712"; for (let y = 0; y < n; y += 10 + r() * 14) { g.globalAlpha = 0.3; g.lineWidth = 1 + r(); g.beginPath(); g.moveTo(0, y); g.lineTo(n, y + (r() - 0.5) * 6); g.stroke(); } g.globalAlpha = 1; });
+      case "leafy": case "bayleaf": return tex(`leaf-${kind}`, 256, leaf(L[0], kind === "leafy" ? "#e9f4d8" : "#a9b27a"));
+      case "gourd": return tex("skin-gourd", 256, speckle(L[0], ["#86b85a", "#3f7a28"], 900, 4));
+      case "wrapper": case "rolled": return tex(`skin-${kind}`, 256, speckle(L[0], [shade(L[0], 0.92), "#ffffff"], 1200, 3));
+      default: return null;
     }
-    flame.visible = !["shop", "peel", "cut", "marinate", "mix", "wrap", "drain", "serve"].includes(step.kind) && !appliance.visible;
-    clock.visible = !!step.minutes;
-    spoon.visible = ["saute", "stir", "add", "boil", "simmer", "season", "pour", "fry", "deepfry"].includes(step.kind);
+  };
+  const mesh = (geo, mat) => shadowed(new THREE.Mesh(geo, mat));
+  const ellipsoid = (r, sx, sy, sz, mat, seg = 24) => { const m = mesh(new THREE.SphereGeometry(r, seg, Math.round(seg * 0.7)), mat); m.scale.set(sx, sy, sz); m.position.y = r * sy; return m; };
+  const bentLeaf = (w, h, mat, curl) => {
+    const geo = new THREE.PlaneGeometry(w, h, 4, 8);
+    const p = geo.attributes.position;
+    for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i); const edge = 1 - Math.abs(x) / (w / 2); p.setX(i, x * (0.25 + 0.75 * Math.sin(Math.PI * (y / h + 0.5)))); p.setZ(i, Math.abs(x) * curl + Math.sin((y / h + 0.5) * Math.PI) * 0.01 * edge); }
+    geo.computeVertexNormals();
+    const m = mesh(geo, mat); m.rotation.x = -Math.PI / 2; return m;
+  };
+  const ramekin = (r = 0.055, h = 0.035) => mesh(new THREE.LatheGeometry([[0, 0], [r * 0.82, 0], [r * 0.9, 0.003], [r, h], [r * 0.93, h], [r * 0.82, 0.006], [0, 0.006]].map(([x, y]) => new THREE.Vector2(x, y)), 36), glaze);
+
+  function wholeModel(it, brownAmt) {
+    const kind = cookFoodKind(it), g = new THREE.Group(), r = ckRand(ckHash(it.key));
+    const skin = () => foodMat(kind, "skin", brownAmt, { map: skinTex(kind) || null, roughness: kind === "tomato" || kind === "eggplant" || kind === "chili" ? 0.28 : 0.6 });
+    switch (kind) {
+      case "onion": case "redonion": {
+        const n = it.text && /\b([2-9])\b/.test(it.text) ? 2 : 1;
+        for (let k = 0; k < n; k++) { const o = ellipsoid(0.04, 1, 0.88, 1, skin()); o.position.x = k * 0.085; g.add(o); const tip = mesh(new THREE.ConeGeometry(0.008, 0.022, 8), o.material); tip.position.set(k * 0.085, 0.078, 0); g.add(tip); }
+        break;
+      }
+      case "garlic": {
+        const m = skin();
+        for (let k = 0; k < 8; k++) { const a = (k / 8) * Math.PI * 2; const c = ellipsoid(0.014, 1, 1.5, 1.1, m, 12); c.position.set(Math.cos(a) * 0.015, 0, Math.sin(a) * 0.015); c.rotation.set(Math.sin(a) * 0.35, 0, -Math.cos(a) * 0.35); g.add(c); }
+        const tip = mesh(new THREE.ConeGeometry(0.006, 0.02, 8), m); tip.position.y = 0.045; g.add(tip);
+        break;
+      }
+      case "ginger": { const m = skin(); for (let k = 0; k < 5; k++) { const e = ellipsoid(0.016 + r() * 0.008, 1.8, 0.8, 1, m, 12); e.position.set((r() - 0.5) * 0.06, 0, (r() - 0.5) * 0.04); e.rotation.y = r() * 3; g.add(e); } break; }
+      case "tomato": {
+        const n = 3;
+        for (let k = 0; k < n; k++) {
+          const t = ellipsoid(0.034, 1, 0.86, 1, foodMat(kind, "skin", brownAmt, { roughness: 0.22 })); t.position.set((k % 2) * 0.07, 0, Math.floor(k / 2) * 0.07); g.add(t);
+          const calyx = mesh(new THREE.ConeGeometry(0.014, 0.006, 5), std({ color: 0x3d7a2a, roughness: 0.6 })); calyx.position.set(t.position.x, 0.06, t.position.z); g.add(calyx);
+        }
+        break;
+      }
+      case "pork": case "beef": {
+        const side = foodMat(kind, "skin", brownAmt, { map: skinTex(kind) });
+        const top = foodMat(kind, "skin", brownAmt, { map: kind === "pork" ? tex("pork-top", 256, speckle("#e6bea3", ["#efd2bf", "#cf9c84"], 900, 4)) : skinTex("beef") });
+        const bottom = foodMat(kind, "flesh", brownAmt, { map: tex(`${kind}-bottom`, 256, marble(look(kind)[1], "#f5e3dc")) });
+        const slab = mesh(new THREE.BoxGeometry(0.2, kind === "pork" ? 0.045 : 0.035, 0.13), [side, side, top, bottom, side, side]);
+        slab.position.y = slab.geometry.parameters.height / 2; g.add(slab);
+        if (/ribs/.test(it.key)) { const bone = std({ color: 0xf1e9dc, roughness: 0.5 }); for (let k = 0; k < 4; k++) { const b = mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.14, 8), bone); b.rotation.x = Math.PI / 2; b.position.set(-0.07 + k * 0.045, 0.006, 0); g.add(b); } }
+        break;
+      }
+      case "mince": { const m = mesh(new THREE.SphereGeometry(0.07, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), foodMat(kind, "skin", brownAmt, { map: skinTex(kind) })); m.scale.y = 0.45; g.add(m); break; }
+      case "chicken": {
+        const m = foodMat(kind, "skin", brownAmt, { map: skinTex(kind), roughness: 0.45 });
+        for (let k = 0; k < 5; k++) { const p = new THREE.Group(); const meat = ellipsoid(0.026, 1.3, 0.75, 1, m, 16); p.add(meat); const bone = mesh(new THREE.CylinderGeometry(0.006, 0.008, 0.04, 8), std({ color: 0xf0e2c8, roughness: 0.5 })); bone.rotation.z = Math.PI / 2; bone.position.set(0.045, 0.012, 0); p.add(bone); p.position.set((k % 3) * 0.075 - 0.07, 0, Math.floor(k / 3) * 0.07); p.rotation.y = r() * 3; g.add(p); }
+        break;
+      }
+      case "fish": {
+        const m = foodMat(kind, "skin", brownAmt, { map: skinTex(kind), metalness: 0.3, roughness: 0.32 });
+        const body = ellipsoid(0.045, 2.8, 0.55, 0.8, m, 24); g.add(body);
+        const tail = mesh(new THREE.ConeGeometry(0.03, 0.06, 4), m); tail.rotation.z = Math.PI / 2; tail.scale.set(1, 1, 0.25); tail.position.set(0.15, 0.025, 0); g.add(tail);
+        const eye = mesh(new THREE.SphereGeometry(0.006, 8, 8), std({ color: 0x111111, roughness: 0.1 })); eye.position.set(-0.1, 0.035, 0.022); g.add(eye);
+        break;
+      }
+      case "shrimp": { const m = foodMat(kind, "skin", brownAmt, { roughness: 0.3, transparent: true, opacity: 0.95 }); for (let k = 0; k < 6; k++) { const s = mesh(new THREE.TorusGeometry(0.02, 0.008, 8, 16, Math.PI * 1.3), m); s.rotation.x = -Math.PI / 2; s.position.set((k % 3) * 0.05 - 0.05, 0.008, Math.floor(k / 3) * 0.05); s.rotation.z = r() * 3; g.add(s); } break; }
+      case "carrot": { const m = skin(); for (let k = 0; k < 2; k++) { const c = mesh(new THREE.ConeGeometry(0.018, 0.16, 16), m); c.rotation.z = Math.PI / 2; c.position.set(0, 0.018, k * 0.045); g.add(c); const top = mesh(new THREE.ConeGeometry(0.01, 0.04, 6), std({ color: 0x4f8f2f })); top.rotation.z = -Math.PI / 2; top.position.set(-0.1, 0.018, k * 0.045); g.add(top); } break; }
+      case "radish": { const m = foodMat(kind, "skin", brownAmt, { roughness: 0.4 }); const d = mesh(new THREE.CylinderGeometry(0.025, 0.02, 0.2, 20), m); d.rotation.z = Math.PI / 2; d.position.y = 0.025; g.add(d); break; }
+      case "root": { const m = skin(); for (let k = 0; k < 2; k++) { const e = ellipsoid(0.035, 1.25, 0.85, 1, m, 16); e.position.x = k * 0.085; g.add(e); } break; }
+      case "gourd": { const e = ellipsoid(0.05, 1.7, 0.95, 1, skin(), 24); g.add(e); break; }
+      case "eggplant": { const m = foodMat(kind, "skin", brownAmt, { roughness: 0.18 }); for (let k = 0; k < 2; k++) { const e = ellipsoid(0.025, 3.4, 1, 1, m, 20); e.position.z = k * 0.055; g.add(e); const cap = mesh(new THREE.ConeGeometry(0.02, 0.03, 6), std({ color: 0x3f6b2a, roughness: 0.6 })); cap.rotation.z = Math.PI / 2; cap.position.set(-0.085, 0.025, k * 0.055); g.add(cap); } break; }
+      case "chili": { const m = foodMat(kind, "skin", brownAmt, { roughness: 0.2 }); for (let k = 0; k < 3; k++) { const c = mesh(new THREE.ConeGeometry(0.008, 0.11, 12), m); c.rotation.z = Math.PI / 2 + (r() - 0.5) * 0.3; c.position.set(0, 0.008, k * 0.022); g.add(c); } break; }
+      case "okra": { const m = foodMat(kind, "skin", brownAmt, { roughness: 0.5 }); for (let k = 0; k < 6; k++) { const c = mesh(new THREE.ConeGeometry(0.01, 0.08, 5), m); c.rotation.z = Math.PI / 2; c.position.set(0, 0.01, k * 0.022 - 0.05); c.rotation.x = r(); g.add(c); } break; }
+      case "beans": { const m = foodMat(kind, "skin", brownAmt, { roughness: 0.45 }); for (let k = 0; k < 10; k++) { const b = mesh(new THREE.CylinderGeometry(0.0035, 0.0035, 0.3, 8), m); b.rotation.z = Math.PI / 2; b.rotation.y = (r() - 0.5) * 0.15; b.position.set(0, 0.004 + (k % 3) * 0.006, k * 0.007 - 0.03); g.add(b); } break; }
+      case "leafy": case "bayleaf": {
+        const m = foodMat(kind, "skin", brownAmt, { map: skinTex(kind), side: THREE.DoubleSide, roughness: 0.5 });
+        const n = kind === "leafy" ? 7 : 5, w = kind === "leafy" ? 0.08 : 0.025, h = kind === "leafy" ? 0.17 : 0.06;
+        for (let k = 0; k < n; k++) { const l = bentLeaf(w, h, m, 0.25); l.rotation.z = (k / n - 0.5) * 1.2; l.position.set(Math.sin((k / n - 0.5) * 1.2) * h * 0.4, 0.004 + k * 0.002, 0); g.add(l); }
+        break;
+      }
+      case "scallion": { const m = std({ map: tex("scallion", 128, (gg, n) => { const grd = gg.createLinearGradient(0, 0, n, 0); grd.addColorStop(0, "#f2f5e8"); grd.addColorStop(0.3, "#cfe3a6"); grd.addColorStop(0.45, "#5aa23e"); grd.addColorStop(1, "#3f8a2d"); gg.fillStyle = grd; gg.fillRect(0, 0, n, n); }), roughness: 0.4 }); for (let k = 0; k < 6; k++) { const s = mesh(new THREE.CylinderGeometry(0.004, 0.004, 0.25, 8), m); s.rotation.z = Math.PI / 2; s.position.set(0, 0.004, k * 0.009); g.add(s); } break; }
+      case "egg": { const m = foodMat(kind, "skin", 0, { roughness: 0.35 }); for (let k = 0; k < 2; k++) { const e = ellipsoid(0.022, 1, 1.3, 1, m, 20); e.position.x = k * 0.05; g.add(e); } break; }
+      case "citrus": { const m = foodMat(kind, "skin", brownAmt, { roughness: 0.4 }); for (let k = 0; k < 6; k++) { const c = ellipsoid(0.014, 1.6, 0.8, 1, m, 12); c.position.set((k % 3) * 0.035, 0, Math.floor(k / 3) * 0.03); c.rotation.y = r(); g.add(c); } break; }
+      case "wrapper": { const m = foodMat(kind, "skin", 0, { map: skinTex(kind), roughness: 0.8 }); const s = mesh(new THREE.BoxGeometry(0.15, 0.012, 0.15), m); s.position.y = 0.006; s.rotation.y = 0.3; g.add(s); break; }
+      case "rolled": { const m = foodMat(kind, "skin", brownAmt, { map: skinTex(kind), roughness: 0.6 }); for (let k = 0; k < 6; k++) { const c = mesh(new THREE.CylinderGeometry(0.011, 0.011, 0.09, 14), m); c.rotation.z = Math.PI / 2; c.rotation.y = (r() - 0.5) * 0.4; c.position.set((r() - 0.5) * 0.02, 0.011 + Math.floor(k / 3) * 0.02, (k % 3) * 0.026 - 0.026); g.add(c); } break; }
+      case "cube": { const m = std({ color: 0xd4a52c, metalness: 0.85, roughness: 0.35 }); for (let k = 0; k < 2; k++) { const c = mesh(new THREE.BoxGeometry(0.022, 0.022, 0.022), m); c.position.set(k * 0.03, 0.011, 0); c.rotation.y = r(); g.add(c); } break; }
+      case "powder": case "grain": case "misc": case "peppercorn": {
+        g.add(ramekin(kind === "grain" ? 0.07 : 0.05));
+        const fill = kind === "powder" ? cookPowderColor(it) : look(kind)[1];
+        const top = mesh(new THREE.CircleGeometry(kind === "grain" ? 0.062 : 0.044, 32), std({ map: tex(`fill-${fill}-${kind}`, 128, speckle(fill, [shade(fill, 0.8), "#ffffff"], kind === "grain" ? 900 : 500, kind === "grain" ? 5 : 2)), roughness: 0.9 }));
+        top.rotation.x = -Math.PI / 2; top.position.y = 0.028; g.add(top);
+        if (kind === "peppercorn") { const pm = std({ color: 0x1f1813, roughness: 0.9, envMapIntensity: 0.3 }); for (let k = 0; k < 18; k++) { const p = mesh(new THREE.SphereGeometry(0.004, 6, 6), pm); p.position.set((r() - 0.5) * 0.06, 0.032, (r() - 0.5) * 0.06); g.add(p); } }
+        break;
+      }
+      case "bottle": case "water": {
+        const [lc] = cookLiquidLook(it);
+        const glass = std({ color: 0xffffff, roughness: 0.05, metalness: 0, transparent: true, opacity: 0.28 });
+        const big = kind === "water";
+        const body = mesh(new THREE.CylinderGeometry(big ? 0.055 : 0.028, big ? 0.05 : 0.028, big ? 0.15 : 0.16, 24), glass); body.position.y = big ? 0.075 : 0.08; g.add(body);
+        const inner = mesh(new THREE.CylinderGeometry(big ? 0.05 : 0.025, big ? 0.046 : 0.025, big ? 0.11 : 0.12, 24), std({ color: lc, roughness: 0.1, transparent: true, opacity: big ? 0.45 : 0.92 })); inner.position.y = big ? 0.058 : 0.064; inner.name = "fill"; g.add(inner);
+        if (!big) { const neck = mesh(new THREE.CylinderGeometry(0.01, 0.024, 0.05, 16), glass); neck.position.y = 0.185; g.add(neck); const cap = mesh(new THREE.CylinderGeometry(0.011, 0.011, 0.016, 16), std({ color: /soy|oyster/.test(it.key) ? 0xc0261d : /fish/.test(it.key) ? 0x1d5239 : 0xd8b02a, roughness: 0.4 })); cap.position.y = 0.218; g.add(cap);
+          const label = mesh(new THREE.CylinderGeometry(0.0285, 0.0285, 0.06, 24, 1, true), std({ color: 0xf3ead2, roughness: 0.7 })); label.position.y = 0.085; g.add(label); }
+        else { const h = mesh(new THREE.TorusGeometry(0.035, 0.006, 8, 16, Math.PI), glass); h.position.set(0.06, 0.08, 0); h.rotation.z = -Math.PI / 2; g.add(h); }
+        break;
+      }
+      default: g.add(ramekin()); break;
+    }
+    return g;
   }
 
+  // Cut pieces: an instanced pile of the right shape and size, flesh side showing.
+  function piecesModel(it, style, radius, brownAmt, seedExtra = 0) {
+    const kind = cookFoodKind(it), r = ckRand(ckHash(it.key) + seedExtra);
+    const flesh = foodMat(kind, ["beef", "mince", "chicken", "fish", "shrimp", "leafy", "bayleaf", "rolled", "wrapper"].includes(kind) ? "skin" : "flesh", brownAmt,
+      { map: kind === "pork" ? tex("pork-cut", 256, marble(look("pork")[1], "#f2dfd4")) : ["beef", "mince", "chicken", "leafy", "fish"].includes(kind) ? skinTex(kind) : null, roughness: 0.5, side: kind === "leafy" ? THREE.DoubleSide : THREE.FrontSide });
+    const meat = ["pork", "beef", "chicken", "fish", "shrimp"].includes(kind);
+    let geo, n;
+    const fleck = kind === "leafy" && ["minced", "diced", "grated"].includes(style);
+    if (fleck) flesh.map = null, flesh.userData.base = col(look(kind)[0]), flesh.color.copy(flesh.userData.base);
+    switch (kind === "leafy" && !fleck ? "leaf" : style) {
+      case "leaf": geo = new THREE.PlaneGeometry(0.045, 0.035); n = 22; break;
+      case "minced": geo = new THREE.BoxGeometry(0.007, 0.005, 0.007); n = 70; break;
+      case "grated": geo = new THREE.BoxGeometry(0.022, 0.003, 0.003); n = 60; break;
+      case "diced": geo = new THREE.BoxGeometry(0.014, 0.012, 0.014); n = 36; break;
+      case "cubes": geo = new THREE.BoxGeometry(0.03, 0.026, 0.03); n = meat ? 14 : 18; break;
+      case "strips": geo = new THREE.BoxGeometry(0.05, 0.005, 0.005); n = 32; break;
+      case "thin": case "sliced":
+        if (kind === "onion" || kind === "redonion") { geo = new THREE.TorusGeometry(0.024, 0.0028, 6, 18, Math.PI); n = 26; }
+        else if (meat) { geo = new THREE.BoxGeometry(0.06, style === "thin" ? 0.005 : 0.01, 0.035); n = 10; }
+        else { geo = new THREE.CylinderGeometry(kind === "eggplant" || kind === "radish" ? 0.024 : 0.018, kind === "eggplant" || kind === "radish" ? 0.024 : 0.018, style === "thin" ? 0.003 : 0.006, 16); n = 16; }
+        break;
+      case "wedges": geo = new THREE.SphereGeometry(0.034, 10, 8, 0, Math.PI / 3); n = 8; break;
+      case "quartered": geo = new THREE.SphereGeometry(0.036, 12, 8, 0, Math.PI / 2); n = 8; break;
+      case "halved": geo = new THREE.SphereGeometry(0.036, 14, 10, 0, Math.PI); n = 4; break;
+      case "crushed": geo = new THREE.DodecahedronGeometry(0.011); n = 14; break;
+      default:
+        if (kind === "chicken" || kind === "fish") { geo = new THREE.SphereGeometry(0.024, 14, 10); geo.scale(1.5, 0.75, 1); n = 8; }
+        else { geo = meat ? new THREE.BoxGeometry(0.045, 0.03, 0.04) : new THREE.DodecahedronGeometry(0.022); n = meat ? 9 : 10; }
+        break;
+    }
+    if (["wedges", "quartered", "halved"].includes(style)) flesh.side = THREE.DoubleSide;
+    const inst = new THREE.InstancedMesh(geo, flesh, n);
+    inst.castShadow = inst.receiveShadow = true;
+    const c = new THREE.Color();
+    for (let i = 0; i < n; i++) {
+      const a = r() * Math.PI * 2, d = Math.sqrt(r()) * radius;
+      const sz = geo.parameters && geo.parameters.height ? geo.parameters.height : 0.01;
+      dummy.position.set(Math.cos(a) * d, sz / 2 + r() * radius * 0.25 * (1 - d / radius), Math.sin(a) * d);
+      dummy.rotation.set(style === "minced" || style === "diced" || style === "crushed" ? r() * 3 : (kind === "leafy" ? -Math.PI / 2 + (r() - 0.5) : (r() - 0.5) * 0.4), r() * 6.3, (r() - 0.5) * 0.4);
+      if (["halved", "quartered", "wedges"].includes(style)) dummy.rotation.set(Math.PI / 2 + (r() - 0.5) * 0.3, r() * 6.3, 0);
+      dummy.scale.setScalar(0.8 + r() * 0.4);
+      dummy.updateMatrix(); inst.setMatrixAt(i, dummy.matrix);
+      c.setScalar(0.88 + r() * 0.14); inst.setColorAt(i, c);
+    }
+    const g = new THREE.Group(); g.add(inst); g.userData.inst = inst; g.userData.n = n;
+    return g;
+  }
+
+  const fit = (obj, maxR) => {
+    const box = new THREE.Box3().setFromObject(obj); const s = box.getSize(V(0, 0, 0));
+    const k = Math.min(1, (maxR * 2) / Math.max(0.001, Math.max(s.x, s.z)));
+    obj.scale.multiplyScalar(k); return obj;
+  };
+  const modelFor = (it, st, radius, seedExtra, where) => {
+    const kind = cookFoodKind(it), b = st.brown.get(it) || 0;
+    let style = st.cut.get(it);
+    const title = (typeof cookShow !== "undefined" && cookShow && cookShow.title) || "";
+    if (!style && ["pot", "plate"].includes(where || st.loc.get(it)) && ["pork", "beef", "chicken"].includes(kind) && !/lechon|kawali|crispy|bagnet|liempo|fried/i.test(title)) style = kind === "chicken" ? "pieces" : "cubes";
+    // Big vegetables never go into the pot whole.
+    if (!style && ["pot", "plate"].includes(where || st.loc.get(it)) && ["gourd", "root", "eggplant", "radish", "carrot"].includes(kind)) style = "pieces";
+    const loose = ["pot", "plate", "bowl", "rack"].includes(where || st.loc.get(it));
+    if (loose && ["powder", "cube", "peppercorn", "misc"].includes(kind)) return piecesModel(kind === "peppercorn" ? { key: it.key, label: "peppercorn" } : it, kind === "cube" ? "crushed" : "minced", radius * 0.6, 0, seedExtra);
+    if (style && !["bottle", "water", "powder", "cube", "grain", "misc", "peppercorn"].includes(kind)) return piecesModel(it, style, radius, b, seedExtra);
+    return fit(wholeModel(it, b), radius * 1.15);
+  };
+
+  // ── Per-step objects ──
+  let dyn = new THREE.Group(); scene.add(dyn);
+  let brownMax = 1, heatOn = false, movers = [], cur = null, curIndex = 0, potItems = [], spoonMode = null, pourInfo = null, cutInfo = null, wrapInfo = null, brownList = [], camGoal = null;
+  const camPos = V(0, 2.4, 1.5), camLook = V(0, 0, -0.2);
+  let firstFrame = true;
+
+  const clearDyn = () => {
+    dyn.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => m.dispose()); });
+    scene.remove(dyn); dyn = new THREE.Group(); scene.add(dyn);
+  };
+  const vesselGroup = (v) => (v === "kaldero" ? kaldero : kawali);
+  const contentY = (st) => {
+    if (st.vessel === "kaldero") return VESSEL_Y + 0.008 + Math.max(st.level * 0.15, 0.004);
+    return VESSEL_Y - 0.03 + 0.012 + Math.max(st.oil, st.level) * 0.06;
+  };
+  const vesselR = (st) => (st.vessel === "kaldero" ? 0.13 : 0.15);
+  const spotOf = (st, it, which) => {
+    const where = which || st.loc.get(it);
+    const i = st.items.indexOf(it);
+    if (where === "prep") { const [x, z] = ckPrepSpot(i < 0 ? 0 : i); return V(x, 0, z); }
+    if (where === "board") return V(CK_AT.board[0] - 0.05 + ((i % 3) - 1) * 0.12, BOARD_Y, CK_AT.board[1] - 0.04 + ((i % 2) * 0.08));
+    if (where === "bowl") return V(CK_AT.bowl[0], 0.012, CK_AT.bowl[1]);
+    if (where === "pot") { const r = ckRand(i + 3); const a = r() * 6.3, d = r() * vesselR(st) * 0.45; return V(CK_AT.stove[0] + Math.cos(a) * d, contentY(st) - 0.006, CK_AT.stove[1] + Math.sin(a) * d); }
+    if (where === "rack") return V(CK_AT.rack[0] + ((i % 3) - 1) * 0.04, 0.014, CK_AT.rack[1]);
+    if (where === "plate") { const r = ckRand(i + 9); const a = r() * 6.3, d = r() * 0.05; return V(CK_AT.plate[0] + Math.cos(a) * d, st.served === "bowl" ? 0.042 : 0.01, CK_AT.plate[1] + Math.sin(a) * d); }
+    return V(0, -5, 0);
+  };
+  const radiusAt = (where) => ({ prep: 0.05, board: 0.07, bowl: 0.085, pot: 0.075, rack: 0.06, plate: 0.075 })[where] || 0.05;
+
+  function place(st, it, where, seedExtra) {
+    const kind = cookFoodKind(it);
+    if (where === "prep") {
+      const g = new THREE.Group(); const p = spotOf(st, it, "prep"); g.position.copy(p);
+      if (st.cut.has(it) && !["bottle", "water", "powder", "cube", "grain", "misc", "peppercorn"].includes(kind)) { g.add(ramekin(0.065, 0.04)); const pile = piecesModel(it, st.cut.get(it), 0.045, st.brown.get(it) || 0, seedExtra); pile.position.y = 0.007; g.add(pile); }
+      else g.add(modelFor(it, st, 0.075));
+      dyn.add(g); return g;
+    }
+    const m = modelFor(it, st, radiusAt(where), seedExtra, where);
+    m.position.copy(spotOf(st, it, where));
+    dyn.add(m); return m;
+  }
+
+  function enter(step, index, steps, cost) {
+    clearDyn();
+    movers = []; potItems = []; spoonMode = null; pourInfo = null; cutInfo = null; wrapInfo = null; brownList = [];
+    knifeRest(); sandokRest(); stream.visible = false; drops.count = 0;
+    cur = step; curIndex = index;
+    const st = cookState(steps, index), after = cookApply(cookState(steps, index), step);
+    // The vessel on the stove: the one this step uses, else the last one used.
+    const v = (["heat", "saute", "add", "pour", "fry", "deepfry", "boil", "simmer", "cook", "stir", "season", "drain"].includes(step.kind) && step.vessel) || st.vessel || "kawali";
+    kaldero.visible = v === "kaldero"; kawali.visible = v !== "kaldero";
+    if (!st.vessel || st.vessel !== v) { st.vessel = v; }
+    if (!after.vessel) after.vessel = v;
+    soupBowl.visible = step.kind === "serve" && after.served === "bowl"; plate.visible = !soupBowl.visible;
+    bowlLiquid.visible = !!st.bowlLiquid; if (st.bowlLiquid) bowlLiquidMat.color.copy(col(st.bowlLiquid));
+
+    // Bottles and ramekins that pour this step (handled below, not drawn twice).
+    const pourers = step.items.filter((it) => (it.liquid && ["pour", "add", "saute", "season", "boil", "simmer"].includes(step.kind) && after.loc.get(it) !== "bowl") || (cookFoodKind(it) === "powder" && step.kind === "season"));
+    if (step.kind === "heat") { const oil = st.items.find((it) => it.fryOil); if (oil) pourers.push(oil); }
+    if (step.kind === "deepfry") { const oil = st.items.find((it) => it.fryOil); if (oil && st.oil < 0.5) pourers.push(oil); }
+    const pourer = pourers[0];
+    const moving = new Set();
+    const movesNow = (it) => st.loc.get(it) !== after.loc.get(it) && after.loc.get(it) !== "used" && after.loc.get(it) !== "wrapped";
+    if (step.kind === "shop") step.items.forEach((it) => moving.add(it));
+    for (const it of after.items) if (movesNow(it)) moving.add(it);
+    if (["cut", "peel"].includes(step.kind)) step.items.forEach((it) => moving.add(it));
+
+    // Everything that stays put this step.
+    for (const it of st.items) {
+      const where = st.loc.get(it);
+      if (moving.has(it) || it === pourer || where === "used" || where === "wrapped") continue;
+      if (st.loc.get(it) !== "prep" && it.liquid) continue;
+      const o = place(st, it, where);
+      if (where === "pot") potItems.push(o);
+      // Liquids stay on the prep row as bottles even after pouring.
+    }
+    for (const it of st.items) if (it.liquid && st.loc.get(it) !== "prep" && !moving.has(it) && it !== pourer) place(st, it, "prep");
+    // Empty ramekins left on the prep row after cut pieces moved on.
+    for (const it of st.items) if (st.cut.has(it) && st.loc.get(it) !== "prep" && cookFoodKind(it) !== "bottle") { const r = ramekin(0.065, 0.04); r.position.copy(spotOf(st, it, "prep")); dyn.add(r); }
+    if (st.rolled && !st.items.some((it) => it.key === "rolled")) { const pseudo = { key: "rolled", label: "lumpia" }; st.items.push(pseudo); st.loc.set(pseudo, "board"); }
+    if (!step.items.some((it) => it.key === "rolled")) for (const it of st.items) if (it.key === "rolled" && st.loc.get(it) === "board" && !moving.has(it)) place(st, it, "board");
+
+    // Movers: from where they are to where this step puts them.
+    let k = 0;
+    const len = cookStepLength(step);
+    for (const it of moving) {
+      const from = step.kind === "shop" ? "prep" : st.loc.get(it) || "board";
+      let to = after.loc.get(it) || from;
+      if (step.kind === "cut" || step.kind === "peel") to = "board";
+      const obj = from === "prep" && step.kind !== "shop" && !(step.kind === "cut") ? modelFor(it, st, from === "prep" ? 0.05 : radiusAt(to)) : (step.kind === "cut" ? fit(wholeModel(it, st.brown.get(it) || 0), 0.085) : modelFor(it, st, step.kind === "shop" ? 0.075 : radiusAt(to), 0, step.kind === "shop" ? "prep" : to));
+      if (step.kind === "shop") { const p = spotOf(st, it, "prep"); obj.position.copy(p); obj.scale.multiplyScalar(0.0001); obj.userData.full = obj.scale.x / 0.0001; }
+      dyn.add(obj);
+      const pFrom = spotOf(st, it, from), pTo = to === "board" && step.kind === "cut" ? V(CK_AT.board[0] - 0.02, BOARD_Y, CK_AT.board[1]) : spotOf(after, it, to);
+      const stagger = step.kind === "shop" ? 0.4 + k * ((len - 1.4) / Math.max(1, moving.size)) : 0.25 + k * 0.22;
+      movers.push({ it, obj, from: pFrom, to: pTo, t0: stagger, t1: stagger + (step.kind === "shop" ? 0.45 : 0.75), shop: step.kind === "shop", liquid: it.liquid });
+      if (to === "pot") potItems.push(obj);
+      k++;
+    }
+    // Liquids and powders poured in: the bottle or ramekin flies over the pot and tilts.
+    if (pourer) {
+      const it = pourer;
+      const o = place(st, it, "prep");
+      pourInfo = { obj: o, home: o.position.clone(), it, color: cookFoodKind(it) === "powder" ? cookPowderColor(it) : cookLiquidLook(it)[0], powder: cookFoodKind(it) === "powder", rubbing: step.kind === "season" && !st.items.some((x) => st.loc.get(x) === "pot") };
+    }
+    if (step.kind === "cut") {
+      const it = step.items[0], m = movers.find((x) => x.it === it);
+      const pile = piecesModel(it, step.style, 0.06, st.brown.get(it) || 0, 1); pile.position.set(CK_AT.board[0] + 0.07, BOARD_Y, CK_AT.board[1]); pile.userData.inst.count = 0; dyn.add(pile);
+      cutInfo = { whole: m && m.obj, pile, n: pile.userData.n };
+      if (m) { m.t0 = 0.1; m.t1 = 0.7; }
+    }
+    if (step.kind === "wrap") {
+      const sheet = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.002, 0.15), foodMat("wrapper", "skin", 0, { map: skinTex("wrapper"), roughness: 0.8 })); sheet.position.set(CK_AT.board[0], BOARD_Y + 0.001, CK_AT.board[1]); sheet.rotation.y = Math.PI / 4; dyn.add(sheet);
+      const log = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.011, 0.1, 14), foodMat("mince", "skin", 0, { map: skinTex("mince") })); log.rotation.z = Math.PI / 2; log.position.set(CK_AT.board[0], BOARD_Y + 0.012, CK_AT.board[1] + 0.04); dyn.add(log);
+      const rolls = wholeModel({ key: "rolled", label: "lumpia" }, 0); rolls.position.set(CK_AT.board[0] + 0.17, BOARD_Y, CK_AT.board[1] - 0.02); rolls.scale.setScalar(0.001); dyn.add(rolls);
+      wrapInfo = { sheet, log, rolls };
+    }
+    if (["fry", "deepfry", "saute"].includes(step.kind)) {
+      for (const it of after.items) if (after.loc.get(it) === "pot" || after.loc.get(it) === "rack") brownList.push([it, st.brown.get(it) || 0, after.brown.get(it) || 0]);
+    }
+    const toBowl = movers.length > 0 && movers.every((m) => after.loc.get(m.it) === "bowl");
+    spoonMode = toBowl || ["mix", "marinate"].includes(step.kind) ? "bowl" : ["saute", "stir", "add", "simmer", "cook"].includes(step.kind) ? "pot" : null;
+    brownMax = step.kind === "saute" ? 0.35 : step.kind === "fry" ? 0.8 : 1;
+    heatOn = after.heat;
+
+    // Liquid level and colour, before and after.
+    const lc0 = st.oil > st.level ? "#c98a1c" : cookMixColor(st.parts), lc1 = after.oil > after.level ? "#c98a1c" : cookMixColor(after.parts);
+    liquid.userData = { from: Math.max(st.level, st.oil), to: Math.max(after.level, after.oil), c0: col(lc0), c1: col(lc1), oil: after.oil > after.level, st, after };
+    if (step.kind === "serve" && after.served === "bowl") { soupMat.color.copy(col(cookMixColor(st.parts))); const l = soupMat.color.r * 0.3 + soupMat.color.g * 0.59 + soupMat.color.b * 0.11; soupMat.opacity = Math.max(0.4, Math.min(0.93, 0.3 + (1 - l) * 1.1)); }
+
+    // Camera.
+    const at = (xz, d) => ({ x: xz[0], z: xz[1], d });
+    camGoal = step.kind === "shop" ? at([0, -0.42], 2.5)
+      : ["cut", "peel", "wrap"].includes(step.kind) ? at(CK_AT.board, 0.95)
+      : ["mix", "marinate"].includes(step.kind) || toBowl ? at([CK_AT.bowl[0] + 0.2, CK_AT.bowl[1] - 0.05], 1.05)
+      : step.kind === "serve" ? at(CK_AT.plate, 0.85)
+      : step.kind === "drain" ? at([(CK_AT.stove[0] + CK_AT.rack[0]) / 2, CK_AT.stove[1]], 1.15)
+      : ["add", "pour", "saute", "season", "heat", "deepfry"].includes(step.kind) && movers.length + (pourInfo ? 1 : 0) > 0 ? at([CK_AT.stove[0] - 0.15, CK_AT.stove[1] - 0.12], 1.35)
+      : at(CK_AT.stove, 0.9);
+    if (firstFrame) { const p = camFor(camGoal); camPos.copy(p.pos); camLook.copy(p.look); firstFrame = false; }
+
+    cookHud("cook-hud", null);
+    cookHud("cook-timer", null);
+    if (step.kind === "serve" && cost) cookHud("cook-hud", `₱${Math.round(cost)} ${cookLang() === "en" ? "per serving" : "bawat serving"}`);
+  }
+
+  let aspect = 16 / 9;
+  function camFor(g) {
+    const d = g.d * (aspect < 1.25 ? 1.45 : aspect < 1.6 ? 1.15 : 1);
+    return { pos: V(g.x, d * 0.9, g.z + d * 0.48), look: V(g.x, 0, g.z) };
+  }
+
+  const ease = (u) => (u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u));
   function update(step, t, len, dt) {
     const time = performance.now() / 1000;
-    // Walk to the station in the first 0.8 s.
-    const walk = Math.min(1, t / 0.8);
-    cook.position.x = fromX + (toX - fromX) * (walk < 1 ? walk * walk * (3 - 2 * walk) : 1);
-    const walking = walk < 1 && Math.abs(toX - fromX) > 0.05;
-    const swing = walking ? Math.sin(time * 14) * 0.6 : 0;
-    hipL.rotation.x = swing; hipR.rotation.x = -swing;
-    cook.position.y = walking ? Math.abs(Math.sin(time * 14)) * 0.04 : 0;
-    // Arms by action.
-    let sLx = walking ? -swing * 0.6 : 0, sRx = walking ? swing * 0.6 : 0, eLx = -0.2, eRx = -0.2, sRz = 0, sLz = 0;
-    const k = step.kind, act = walk >= 1;
-    if (act && k === "cut") { sRx = -1.0; eRx = -0.9 + Math.abs(Math.sin(time * 12)) * 0.7; sLx = -0.9; eLx = -0.9; }
-    else if (act && k === "peel") { sRx = -1.0; sLx = -1.0; eRx = -1.0 + Math.sin(time * 9) * 0.3; eLx = -1.0 - Math.sin(time * 9) * 0.3; }
-    else if (act && ["saute", "stir", "boil", "simmer", "fry", "deepfry", "add", "season"].includes(k)) { sRx = -1.0 + Math.sin(time * 6) * 0.25; sRz = Math.cos(time * 6) * 0.25; eRx = -0.8; sLx = -0.4; }
-    else if (act && k === "pour") { sRx = -1.4; eRx = -0.4; sRz = -0.4 - Math.sin(Math.min(1, t / 1.5) * Math.PI) * 0.5; }
-    else if (act && k === "shop") { sRx = -1.2 + Math.sin(time * 5) * 0.4; eRx = -0.5; sLx = -0.6; }
-    else if (act && k === "serve") { sRx = -1.3; sLx = -1.3; eRx = -0.3; eLx = -0.3; }
-    else if (act && k === "heat") { sRx = -0.9; eRx = -0.4; }
-    shoulderL.rotation.set(sLx, 0, sLz - 0.08); shoulderR.rotation.set(sRx, 0, sRz + 0.08);
-    elbowL.rotation.x = eLx; elbowR.rotation.x = eRx;
-    head.rotation.y = act ? Math.sin(time * 1.5) * 0.08 : 0;
-
-    // Props.
-    const frac = Math.min(1, t / len);
-    if (k === "shop") {
-      props.forEach((sp) => {
-        const start = 0.6 + sp.userData.k * ((len - 1.2) / Math.max(1, props.length));
-        const u = Math.max(0, Math.min(1, (t - start) / 0.6));
-        const end = new THREE.Vector3(COOK_X.shop + (Math.random() - 0.5) * 0.02, 1.05, 0.6);
-        sp.position.lerpVectors(sp.userData.start, end, u * u);
-        sp.position.y += Math.sin(u * Math.PI) * 0.3;
-        sp.material.opacity = 1 - Math.max(0, u - 0.85) * 6;
-      });
-      bayong.scale.y = 1 + 0.05 * Math.sin(time * 8) * (frac < 1 ? 1 : 0);
-    } else if (k === "cut") {
-      knife.position.set(cook.position.x + 0.25, 1.06 + Math.abs(Math.sin(time * 12)) * 0.12, 0.5);
-      const sp = props[0];
-      if (sp) { const sq = 1 - 0.55 * frac; sp.scale.set(0.5 * sq, 0.5 * sq * 1.25, 1); sp.position.y = 1.18 - 0.12 * frac; }
-      if (frac > 0.55 && props.length === 1 && step.items[0]) {
-        for (let i = 0; i < 6; i++) { const bit = cookSprite(THREE, step.items[0].icon, null, 0.12); bit.position.set(COOK_X.board - 0.28 + i * 0.1, 1.05, 0.66 + (i % 2) * 0.06); scene.add(bit); props.push(bit); }
-      }
-    } else if (["add", "saute", "pour", "fry", "deepfry", "marinate", "season"].includes(k)) {
-      knife.position.set(COOK_X.board + 0.15, 1.05, 0.5);
-      props.forEach((sp) => {
-        const u = Math.max(0, Math.min(1, (t - 0.8 - sp.userData.k * 0.25) / 0.9));
-        const target = k === "marinate" ? new THREE.Vector3(COOK_X.board, 1.1, 0.6) : new THREE.Vector3(COOK_X.stove + (sp.userData.k - 2) * 0.1, potTop() + 0.08, 0.62);
-        const start = new THREE.Vector3(COOK_X.board + sp.userData.k * 0.15, 1.25, 0.6);
-        sp.position.lerpVectors(start, target, u);
-        sp.position.y += Math.sin(u * Math.PI) * 0.45;
-      });
+    if (!cur) return;
+    // Camera glides toward the step's view.
+    const goal = camFor(camGoal);
+    const k = 1 - Math.exp(-dt * 2.4);
+    camPos.lerp(goal.pos, k); camLook.lerp(goal.look, k);
+    camera.position.copy(camPos); camera.lookAt(camLook);
+    if (step.kind === "shop") {
+      // Follow each ingredient as it comes out, then pull back to the whole spread.
+      const now = movers.filter((m) => t >= m.t0 - 0.15).pop() || null;
+      camGoal = t > len - 1.0 || !now ? { x: 0, z: -0.45, d: 2.0 } : { x: now.from.x, z: now.from.z + 0.06, d: 0.75 };
     }
-    // Fire, steam, bubbles, sizzle.
-    flame.scale.set(1, 0.8 + Math.sin(time * 20) * 0.15, 1);
-    const steaming = ["boil", "simmer", "steam", "serve"].includes(k) || (["add", "pour"].includes(k) && kaldero.visible);
-    const sizzling = ["fry", "deepfry", "saute"].includes(k) || (k === "heat" && frac > 0.5);
+
+    // Movers fly in arcs (shopping items pop up in place instead).
+    for (const m of movers) {
+      const u = ease((t - m.t0) / (m.t1 - m.t0));
+      if (m.shop) {
+        const s = u <= 0 ? 0.0001 : (1 + Math.sin(u * Math.PI) * 0.12) * u;
+        m.obj.scale.setScalar(Math.max(0.0001, s * m.obj.userData.full));
+        if (t >= m.t0 - 0.15 && m.it.label && movers.filter((x) => t >= x.t0 - 0.15).pop() === m) cookHud("cook-hud", m.it.label);
+        continue;
+      }
+      m.obj.position.lerpVectors(m.from, m.to, u);
+      m.obj.position.y += Math.sin(u * Math.PI) * 0.18;
+      if (step.kind === "peel" && t > m.t1) { m.obj.rotation.y = (t - m.t1) * 2.5; m.obj.rotation.z = Math.sin(t * 6) * 0.1; }
+    }
+    if (step.kind === "shop" && t > len - 0.5) cookHud("cook-hud", null);
+
+    // The knife chops, the whole ingredient shrinks, the pile grows.
+    if (cutInfo) {
+      const u = Math.max(0, Math.min(1, (t - 0.8) / (len - 1.2)));
+      if (t > 0.8 && u < 1) {
+        const chop = Math.abs(Math.sin(time * 13));
+        knife.rotation.set(0, Math.PI / 2 + 0.15, 0);
+        knife.position.set(CK_AT.board[0] - 0.06 + u * 0.1, BOARD_Y + 0.004 + chop * 0.05, CK_AT.board[1] + 0.12);
+        knife.rotation.z = -chop * 0.25;
+      } else knifeRest();
+      if (cutInfo.whole) { const w = cutInfo.whole; if (!w.userData.s0) w.userData.s0 = w.scale.x; const s = Math.max(0.001, 1 - u); w.scale.setScalar(w.userData.s0 * s); w.visible = s > 0.04; }
+      cutInfo.pile.userData.inst.count = Math.round(cutInfo.n * u);
+    }
+    if (wrapInfo) {
+      const u = Math.max(0, Math.min(1, (t - 0.6) / (len - 1.4)));
+      wrapInfo.sheet.scale.z = 1 - u * 0.85; wrapInfo.log.position.z = CK_AT.board[1] + 0.04 - u * 0.05; wrapInfo.log.scale.set(1 + u * 0.3, 1, 1 + u * 0.3);
+      wrapInfo.sheet.visible = wrapInfo.log.visible = u < 0.98;
+      wrapInfo.rolls.scale.setScalar(Math.max(0.001, ease((t - len * 0.6) / (len * 0.3))));
+    }
+    // Bottle or ramekin: up over the pot, tilt, pour, back.
+    stream.visible = false; drops.count = 0;
+    if (pourInfo) {
+      const target = pourInfo.rubbing ? V(CK_AT.rack[0] + 0.12, 0.25, CK_AT.rack[1] + 0.05) : V(CK_AT.stove[0] + 0.2, 0.36, CK_AT.stove[1]);
+      const up = ease(t / 0.8), back = ease((t - (len - 0.9)) / 0.8);
+      const p = pourInfo.home.clone().lerp(target, up).lerp(pourInfo.home, back);
+      p.y += Math.sin(up * Math.PI) * 0.1;
+      pourInfo.obj.position.copy(p);
+      const tilt = up >= 1 && back <= 0 ? 1 : Math.min(up, 1 - back);
+      pourInfo.obj.rotation.z = tilt * (pourInfo.powder ? 1.2 : 2.0);
+      const pouring = up >= 1 && back <= 0;
+      if (pouring && !pourInfo.powder) {
+        const top = p.clone().add(V(-0.2, -0.09, 0)); const bottomY = pourInfo.rubbing ? 0.02 : contentY(liquid.userData.after);
+        stream.visible = true; stream.material.color.copy(col(pourInfo.color)); stream.position.set(top.x, (top.y + bottomY) / 2, top.z); stream.scale.set(1, top.y - bottomY, 1);
+      }
+      if (pouring && pourInfo.powder) {
+        drops.count = 40; dropMat.color.copy(col(pourInfo.color));
+        for (let i = 0; i < 40; i++) { const s = bubbleSeeds[i]; const f = (time * 1.6 + s[0]) % 1; dummy.position.set(p.x - 0.06 + (s[1] - 0.5) * 0.03, p.y - 0.02 - f * (p.y - 0.12), p.z + (s[2] - 0.5) * 0.03); dummy.rotation.set(s[0] * 6, s[1] * 6, 0); dummy.scale.setScalar(0.003); dummy.updateMatrix(); drops.setMatrixAt(i, dummy.matrix); }
+        drops.instanceMatrix.needsUpdate = true;
+      }
+    }
+    // The sandok stirs the pot or the bowl; what's in the pot turns slowly with it.
+    if (spoonMode && t > 0.6 && t < len - 0.3) {
+      const c = spoonMode === "pot" ? CK_AT.stove : CK_AT.bowl, r = spoonMode === "pot" ? 0.07 : 0.08, a = time * 3.2;
+      sandok.position.set(c[0] + Math.cos(a) * r, spoonMode === "pot" ? contentY(liquid.userData.after) - 0.01 : 0.02, c[1] + Math.sin(a) * r);
+      sandok.rotation.set(-0.35, 0, 0.35);
+      if (spoonMode === "pot") for (const o of potItems) { const dx = o.position.x - CK_AT.stove[0], dz = o.position.z - CK_AT.stove[1]; const ang = Math.atan2(dz, dx) + dt * 0.8, rr = Math.hypot(dx, dz); o.position.x = CK_AT.stove[0] + Math.cos(ang) * rr; o.position.z = CK_AT.stove[1] + Math.sin(ang) * rr; o.rotation.y += dt * 0.8; }
+    } else sandokRest();
+
+    // Liquid surface.
+    const L = liquid.userData, u = ease((t - 0.8) / Math.max(0.5, len - 1.6));
+    const lvl = L.from + (L.to - L.from) * (pourInfo || movers.some((m) => m.liquid) || step.kind === "deepfry" || step.kind === "drain" ? u : 1);
+    const st = L.after;
+    if (lvl > 0.005 && !(step.kind === "serve" && t > len * 0.5 && st.served === "bowl")) {
+      liquid.visible = true;
+      const y = st.vessel === "kaldero" ? VESSEL_Y + 0.008 + lvl * 0.15 : VESSEL_Y - 0.03 + 0.004 + lvl * 0.06;
+      const rr = st.vessel === "kaldero" ? 0.152 : WOK_R(0.004 + lvl * 0.06);
+      liquid.position.set(CK_AT.stove[0], y, CK_AT.stove[1]); liquid.scale.setScalar(rr);
+      liquidMat.color.copy(L.c0).lerp(L.c1, u);
+      const lum = liquidMat.color.r * 0.3 + liquidMat.color.g * 0.59 + liquidMat.color.b * 0.11;
+      liquidMat.opacity = L.oil ? 0.55 : Math.max(0.28, Math.min(0.93, 0.25 + (1 - lum) * 1.1));
+    } else liquid.visible = false;
+    if (step.kind === "serve" && st.served === "bowl") { soup.visible = t > len * 0.4; soup.scale.setScalar(Math.max(0.01, ease((t - len * 0.4) / (len * 0.4)))); } else soup.visible = false;
+
+    // Browning while frying.
+    if (brownList.length) {
+      const bu = ease((t - 0.9) / (len - 1.2));
+      for (const o of potItems) o.traverse((x) => { if (x.material && !Array.isArray(x.material) && x.material.userData.done) ckBrown(x.material, Math.max(x.material.userData.b0 || 0, bu * brownMax)); if (Array.isArray(x.material)) x.material.forEach((mm) => mm.userData.done && ckBrown(mm, Math.max(mm.userData.b0 || 0, bu * brownMax))); });
+    }
+
+    // Fire, bubbles, steam.
+    const heated = heatOn && !["shop", "peel", "cut", "mix", "marinate", "wrap", "serve"].includes(step.kind) && (step.kind !== "drain" || t < len * 0.4);
+    flames.forEach((f, i) => { f.visible = heated; f.scale.set(1, 0.8 + Math.sin(time * 30 + i) * 0.25, 1); });
+    const boiling = ["boil"].includes(step.kind) ? 1 : ["simmer", "cook"].includes(step.kind) ? 0.4 : ["fry", "deepfry"].includes(step.kind) ? 0.8 : ["saute"].includes(step.kind) ? 0.5 : ["add", "pour", "stir", "season"].includes(step.kind) && liquid.visible ? 0.25 : 0;
+    const frying = ["fry", "deepfry", "saute"].includes(step.kind) || L.oil;
+    const nb = liquid.visible ? Math.round(80 * boiling) : 0;
+    bubbles.count = nb;
+    if (nb) {
+      bubbleMat.color.copy(col(frying ? 0xfff2c0 : 0xffffff));
+      const rr = liquid.scale.x * 0.9;
+      for (let i = 0; i < nb; i++) {
+        const s = bubbleSeeds[i], ph = (time * (frying ? 2.4 : 1.1) * (0.6 + s[2]) + s[0]) % 1;
+        const a = s[1] * 6.3 + i, d = Math.sqrt(s[0]) * rr;
+        dummy.position.set(CK_AT.stove[0] + Math.cos(a) * d, liquid.position.y + 0.001, CK_AT.stove[1] + Math.sin(a) * d);
+        dummy.scale.setScalar((frying ? 0.0025 : 0.004) * (0.4 + s[2]) * Math.sin(ph * Math.PI) + 0.0001); dummy.rotation.set(0, 0, 0);
+        dummy.updateMatrix(); bubbles.setMatrixAt(i, dummy.matrix);
+      }
+      bubbles.instanceMatrix.needsUpdate = true;
+    }
+    const steamy = (["boil", "simmer", "cook", "steam"].includes(step.kind) ? 1 : 0) || (step.kind === "serve" ? 0.7 : 0) || (liquid.visible && heated && !L.oil ? 0.35 : 0) || (frying && heated ? 0.3 : 0);
     puffs.forEach((p, i) => {
-      const s = p.userData.seed;
-      const cycle = (time * (k === "simmer" ? 0.35 : 0.6) + s) % 1;
-      const x0 = k === "serve" ? COOK_X.plate : COOK_X.stove;
-      p.position.set(x0 + (s - 0.5) * 0.4 + Math.sin(time + i) * 0.05, (k === "serve" ? 1.2 : potTop()) + cycle * 0.9, 0.6);
-      p.scale.setScalar(0.18 + cycle * 0.35);
-      p.material.opacity = steaming ? (1 - cycle) * (k === "simmer" ? 0.45 : 0.75) : 0;
+      const s = p.userData.seed, cycle = (time * 0.32 + s) % 1;
+      const base = step.kind === "serve" ? V(CK_AT.plate[0], 0.04, CK_AT.plate[1]) : V(CK_AT.stove[0], liquid.visible ? liquid.position.y : VESSEL_Y, CK_AT.stove[1]);
+      p.position.set(base.x + (s - 0.5) * 0.18 + Math.sin(time * 0.7 + i) * 0.03, base.y + cycle * 0.45, base.z + ((i * 0.37) % 1 - 0.5) * 0.14);
+      p.scale.setScalar(0.05 + cycle * 0.16);
+      p.material.opacity = steamy * (1 - cycle) * 0.32;
     });
-    sparks.forEach((s) => {
-      s.visible = sizzling;
-      if (!sizzling) return;
-      const c = (time * 2.2 + s.userData.seed * 3) % 1;
-      s.position.set(COOK_X.stove + (s.userData.seed - 0.5) * 0.6, 1.2 + Math.sin(c * Math.PI) * 0.35, 0.55 + (s.userData.seed - 0.5) * 0.4);
-    });
-    if (clock.visible) drawClock(frac, step.minutes || 0);
+
+    // Time-lapse clock for long steps.
+    if (step.minutes) { const f = Math.max(0, Math.min(1, (t - 0.5) / (len - 1))); cookHud("cook-timer", `⏱ ${cookTimeText(Math.max(1, Math.round(step.minutes * f)), cookLang())}`); }
+
     renderer.render(scene, camera);
   }
 
   function resize() {
     const box = canvas.parentElement.getBoundingClientRect();
-    const w = Math.max(200, box.width), h = Math.max(160, Math.round(w * (w < 560 ? 0.78 : 0.5)));
+    const w = Math.max(200, box.width), h = Math.max(160, Math.round(w * (w < 560 ? 0.8 : 0.5625)));
     renderer.setSize(w, h, false); canvas.style.width = `${w}px`; canvas.style.height = `${h}px`;
-    camera.aspect = w / h;
-    camera.position.z = w < 560 ? 6.6 : 4.9;
-    camera.updateProjectionMatrix();
+    aspect = w / h; camera.aspect = aspect; camera.updateProjectionMatrix();
   }
   resize();
   const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(resize) : null;
@@ -828,8 +1474,10 @@ function cookBuildScene(THREE, canvas) {
     enter, update,
     dispose() {
       if (ro) ro.disconnect();
-      clearProps();
-      scene.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } });
+      clearDyn();
+      scene.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => m.dispose()); });
+      for (const x of statics) if (x.dispose) x.dispose();
+      envRT.dispose();
       renderer.dispose();
     },
   };
