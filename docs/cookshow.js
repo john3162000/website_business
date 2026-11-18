@@ -561,8 +561,9 @@ function cookPlayerMarkup(message, inline) {
         ${inline ? "" : `<button type="button" class="wx-btn cook-edit-btn" id="cook-edit" onclick="cookEditToggle()">✏️ ${escapeHtml(cookT("cook.edit", "Ayusin ang mga hakbang"))}</button>`}
       </div>${inline ? `<ol id="cook-steps" class="cook-steps" aria-label="${escapeHtml(cookT("cook.steps", "Mga hakbang"))}"></ol></div><div class="cook-right">` : ""}
       ${inline ? `<section id="cook-builder" class="cook-builder" aria-label="${escapeHtml(cookT("cook.next.q", "Ano ang susunod na gagawin?"))}"></section>` : ""}
+      ${inline ? "" : `<ol id="cook-steps" class="cook-steps" aria-label="${escapeHtml(cookT("cook.steps", "Mga hakbang"))}"></ol>`}
       <section id="cook-list" class="cook-list-wrap" hidden></section>
-      ${inline ? "</div>" : `<ol id="cook-steps" class="cook-steps" aria-label="${escapeHtml(cookT("cook.steps", "Mga hakbang"))}"></ol>`}
+      ${inline ? "</div>" : ""}
       ${inline ? "" : `<p class="cook-note">${escapeHtml(cookT("cook.note", "Gawa ng SarapSulit mula sa mga sangkap at paraan ng recipe. Para sa buong paraan, buksan ang orihinal na recipe."))}</p>`}`;
 }
 
@@ -1009,8 +1010,20 @@ function cookShowStep() {
     b.classList.toggle("on", on);
     if (on) b.setAttribute("aria-current", "step"); else b.removeAttribute("aria-current");
   });
-  const cur = document.querySelector("#cook-steps .cook-step.on");
-  if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: "nearest" });
+  document.querySelectorAll("#cook-steps .cook-edit-row").forEach((li, k) => li.classList.toggle("on", k === cookShow.i));
+  cookScrollStepList();
+}
+
+/**
+ * Keeps the current step in view inside the step list's own scroll box. The page (or pop-up) itself never
+ * moves, so the video stays where the person is watching it.
+ */
+function cookScrollStepList() {
+  const list = document.getElementById("cook-steps");
+  const cur = list && list.querySelector(".cook-step.on, .cook-edit-row.on");
+  if (!cur || list.scrollHeight <= list.clientHeight) return;
+  const top = cur.offsetTop - (list.clientHeight - cur.offsetHeight) / 2;
+  list.scrollTop = Math.max(0, top);
 }
 
 function cookToggle() {
