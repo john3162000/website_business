@@ -779,11 +779,51 @@ function cookFoodKind(it) {
   const s = `${it.key || ""} ${it.label || ""}`.toLowerCase().replace(/_/g, " ");
   if (it.key === "rolled") return "rolled";
   if (it.water) return "water";
+  if (/mussel|tahong|clam|halaan|scallop|snail|kuhol|oyster(?! sauce)|talaba/.test(s)) return "shells";
+  if (/crab|alimango|alimasag|lobster|ulang|crayfish/.test(s)) return "crab";
+  if (/squid ball|fish ball|kikiam|meatball|bola[- ]bola/.test(s)) return "balls";
+  if (/squid|pusit|octopus|calamari/.test(s)) return "squid";
+  if (/beer|\bcola\b|soda|mirin|sake|cream|half and half|creamer|evaporated|condensed/.test(s) && !/cream cheese|cream of tartar|whipped|ice cream|sour cream/.test(s)) return "bottle";
+  if (/^mix |sinigang mix|soup mix|recipe mix|instant mix|sachet|packet/.test(s)) return "packet";
+  if (/vanilla|extract|flavou?ring|food colou?ring|liquor|rum|brandy|whisky|gin\b|sriracha|hot sauce|tabasco|worcestershire/.test(s)) return "bottle";
+  if (/mayonnaise|mayo|honey|pulot|relish|mustard|yogh?urt|peanut butter|jam|jelly spread|cream cheese|cheez whiz|nutella|lard|ghee|matamis na bao|sandwich spread/.test(s)) return "jar";
   if (/wrapper/.test(s)) return "wrapper";
   if (/cube|bouillon/.test(s)) return "cube";
   if (it.liquid) return "bottle";
   if (/peppercorn/.test(s)) return "peppercorn";
-  if (/salt|sugar|pepper ground|black pepper|white pepper|powder|seasoning|msg|magic sarap|flour|starch|paprika|cumin/.test(s)) return "powder";
+  if (/sesame|pine nut|cashew|peanut|almond|walnut|pecan|hazelnut|macadamia|pistachio|pili|sunflower seed|pumpkin seed|pepita/.test(s)) return "seeds";
+  if (/annatto|atsuete|achuete/.test(s)) return "annatto";
+  if (/strawberr|cherry|cranberr|raspberr/.test(s)) return "berries";
+  if (/blueberr|grape|ubas/.test(s)) return "grapes";
+  if (/caper/.test(s)) return "peas";
+  if (/squid ball|fish ball|kikiam|meatball|bola/.test(s)) return "balls";
+  if (/pepper flake|chili flake|chili powder|oregano|dill|thyme|rosemary|basil dried|dried herb|italian seasoning|parsley flakes|yeast|grated coconut|desiccated|coconut grated|coconut flakes|cinnamon|nutmeg|clove|cumin|turmeric|curry powder|five spice|star anise|cocoa|baking soda|baking powder|gelatin/.test(s)) return "powder";
+  if (/cassava|kamoteng kahoy|ube|purple yam|french fries|hash brown|tater tot/.test(s)) return "root";
+  if (/saffron|coriander|cardamom|fennel seed|sage|tarragon|cream of tartar|pancake mix|additive/.test(s)) return "powder";
+  if (/miso|pesto|salsa|pico de gallo|guacamole|molasses|refried|sauerkraut|kimchi|pickle|gravy|dressing|thousand island|coleslaw|sour cream|whipped cream|canned pumpkin|pumpkin canned|latik|bagoong|shrimp paste|tomato paste/.test(s)) return "jar";
+  if (/shortening/.test(s)) return "butter";
+  if (/chocolate|tablea|cacao/.test(s)) return "chocolate";
+  if (/marshmallow/.test(s)) return "balls";
+  if (/lamb|mutton|venison/.test(s)) return "beef";
+  if (/bratwurst|salami|pepperoni/.test(s)) return "sausage";
+  if (/snapper|smelt|anchov|maya-maya|dalagang bukid|sapsap/.test(s)) return "fish";
+  if (/linguine|miswa|misua|oats|oat bran|wheat bran|hominy|couscous|quinoa/.test(s)) return "grain";
+  if (/mixed vegetables|green olive/.test(s)) return "peas";
+  if (/black olive|olive|prune|date/.test(s)) return /green/.test(s) ? "peas" : "grapes";
+  if (/winged bean|sigarilyas|asparagus/.test(s)) return "beans";
+  if (/bamboo shoot|labong|heart of palm|ubod|fennel bulb/.test(s)) return "radish";
+  if (/brussels/.test(s)) return "broccoli";
+  if (/chive/.test(s)) return "scallion";
+  if (/kale|arugula|mint|nori|seaweed|lato|herbs? fresh/.test(s)) return "leafy";
+  if (/pimiento|green chile/.test(s)) return "chili";
+  if (/avocado|santol|peach|kiwi|mandarin|orange|buko|young coconut|pear|lychee|rambutan|lanzones|chico|atis/.test(s)) return "fruit";
+  if (/cherr/.test(s)) return "berries";
+  if (/cannellini|beans canned|baked beans/.test(s)) return "pulses";
+  if (/roll|muffin|crouton|taco shell/.test(s)) return "bread";
+  if (/turkey|duck|quail(?! egg)/.test(s)) return "chicken";
+  if (/pig ear|pig.s ear|bagnet|chicharon|lechon|crackling|maskara|tenga/.test(s)) return "pork";
+  if (/pie crust|tart shell|tortilla|pita|wrapper dough|puff pastry/.test(s)) return "bread";
+  if (/salt|sugar|pepper ground|black pepper|white pepper|powder|seasoning|msg|magic sarap|flour|starch|paprika|cumin/.test(s) && !/bell pepper/.test(s)) return "powder";
   if (/bay leaf|laurel/.test(s)) return "bayleaf";
   if (/garlic|bawang/.test(s)) return "garlic";
   if (/green onion|scallion|spring onion|leek|dahon ng sibuyas/.test(s)) return "scallion";
@@ -818,7 +858,7 @@ function cookFoodKind(it) {
   if (/raisin|pasas/.test(s)) return "raisins";
   if (/tapioca|sago|nata de coco|kaong|gulaman|jelly|pearl/.test(s)) return "sago";
   if (/mung|monggo|chickpea|garbanzo|kidney bean|red bean|white bean/.test(s)) return "pulses";
-  if (/mango|mangga|jackfruit|langka|pineapple|pinya|papaya ripe|fruit cocktail|apple|melon/.test(s)) return "fruit";
+  if (/guava|bayabas|mango|mangga|jackfruit|langka|pineapple|pinya|papaya ripe|fruit cocktail|apple|melon/.test(s)) return "fruit";
   if (/banana|saging|saba|plantain/.test(s)) return "banana";
   if (/mushroom|kabute|shiitake/.test(s)) return "mushroom";
   if (/broccoli|cauliflower/.test(s)) return /cauli/.test(s) ? "cauliflower" : "broccoli";
@@ -845,7 +885,12 @@ const CK_LOOK = {
   corn: ["#f2c230", "#f5cf52", "#d99a28"], raisins: ["#4a2a2c", "#5b3436", "#3a2022"], sago: ["#eef0ee", "#f4f5f2", "#e8e2d0"],
   pulses: ["#4f7a33", "#d9c58a", "#8a6a3a"], fruit: ["#f2b632", "#f6c44a", "#d9902a"], banana: ["#f0cf45", "#f6ead0", "#c98a3a"],
   mushroom: ["#b49478", "#efe4d6", "#7a5636"], broccoli: ["#3f7d2c", "#8ab865", "#2f5e22"], cauliflower: ["#f1ede0", "#f5f1e6", "#d9b06a"],
-  bread: ["#d8a057", "#f2e2c0", "#a8642a"], water: ["#d8e6ea", "#d8e6ea", "#d8e6ea"], bottle: ["#8a5a2a", "#8a5a2a", "#8a5a2a"],
+  bread: ["#d8a057", "#f2e2c0", "#a8642a"],
+  seeds: ["#e8d6a8", "#efe2c0", "#c99a52"], annatto: ["#b5341f", "#c4462a", "#8a2614"], berries: ["#c8202f", "#e04a52", "#9a1a24"],
+  grapes: ["#3b3f8f", "#5a5fae", "#2b2e6a"], balls: ["#efe2c8", "#f3e9d4", "#c99248"], packet: ["#e5b53a", "#e5b53a", "#e5b53a"],
+  jar: ["#f4efe2", "#f4efe2", "#f4efe2"],
+  shells: ["#2a2a3a", "#f0c98a", "#e8a85a"], crab: ["#5a6a5a", "#f4e4d0", "#e2552a"], squid: ["#efe6e0", "#f6efe9", "#e0b480"],
+  chocolate: ["#4a2a1c", "#5a3424", "#3a2016"], water: ["#d8e6ea", "#d8e6ea", "#d8e6ea"], bottle: ["#8a5a2a", "#8a5a2a", "#8a5a2a"],
 };
 
 /** Liquid colour and how strongly it tints a pot. */
@@ -859,9 +904,40 @@ function cookLiquidLook(it) {
   if (/coconut|gata/.test(s)) return ["#f3eee2", 2];
   if (/milk|cream/.test(s)) return ["#f7f3ea", 2];
   if (/oil/.test(s)) return ["#e7bf47", 0.6];
+  if (/vanilla|extract|rum|brandy|whisky|worcestershire/.test(s)) return ["#4a2614", 1.5];
+  if (/sriracha|hot sauce|tabasco|food colou?ring/.test(s)) return ["#c0261a", 2];
+  if (/gin\b|liquor|flavou?ring/.test(s)) return ["#f0ead8", 0.3];
   if (/tomato|ketchup|banana sauce/.test(s)) return ["#b2271b", 2.2];
   if (/broth|stock/.test(s)) return ["#d4a456", 1];
   return ["#8a5a2a", 1];
+}
+
+/** Fruit skin colour by name (the fruit model is shared). */
+function cookFruitColor(it) {
+  const s = `${it.key || ""} ${it.label || ""}`.toLowerCase();
+  const table = [[/avocado/, "#3d5a22"], [/kiwi|chico|santol/, "#8a6a3e"], [/orange|mandarin|dalandan|ponkan/, "#e8851e"], [/apple/, "#b8232a"], [/guava|bayabas|buko|young coconut/, "#7aa23a"],
+    [/peach/, "#f0a36a"], [/pear/, "#c9c25a"], [/lychee|rambutan/, "#c0392b"], [/lanzones|langka|jackfruit|pineapple|pinya|melon/, "#d9b24a"], [/atis/, "#8fb35a"]];
+  const hit = table.find(([re]) => re.test(s));
+  return hit ? hit[1] : null;
+}
+
+/** What's in a jar: colour and how glossy. */
+function cookJarLook(it) {
+  const s = `${it.key || ""} ${it.label || ""}`.toLowerCase();
+  if (/honey|pulot/.test(s)) return ["#c9861c", 0.1, true];
+  if (/relish/.test(s)) return ["#7a8a2a", 0.4];
+  if (/mustard/.test(s)) return ["#d9a521", 0.3];
+  if (/peanut butter/.test(s)) return ["#b07a3c", 0.5];
+  if (/jam|matamis na bao|nutella/.test(s)) return /nutella/.test(s) ? ["#4a2a1a", 0.3] : ["#8a3a1e", 0.2];
+  if (/cheez|cheese/.test(s)) return ["#f0b62e", 0.3];
+  if (/pesto|guacamole/.test(s)) return ["#5a7a2a", 0.4];
+  if (/kimchi|salsa|pico|tomato paste|gravy/.test(s)) return /gravy/.test(s) ? ["#7a4a24", 0.2] : ["#b3301e", 0.35];
+  if (/molasses|miso|latik/.test(s)) return ["#4a2a14", 0.2];
+  if (/bagoong|shrimp paste/.test(s)) return ["#a0503a", 0.4];
+  if (/pickle|sauerkraut|coleslaw/.test(s)) return ["#c9c48a", 0.4];
+  if (/pumpkin|refried/.test(s)) return /pumpkin/.test(s) ? ["#d9821e", 0.4] : ["#7a4a2a", 0.5];
+  if (/lard|ghee/.test(s)) return ["#f4ecd2", 0.5];
+  return ["#f6f1e2", 0.35]; // mayonnaise, yogurt, sandwich spread
 }
 
 /** The word on a bottle's label (generic, never a brand). */
@@ -872,6 +948,12 @@ function cookBottleWord(it) {
   if (/fish sauce|fish_sauce|patis/.test(s)) return "PATIS";
   if (/vinegar|suka/.test(s)) return "SUKA";
   if (/sesame/.test(s)) return "SESAME";
+  if (/vanilla/.test(s)) return "VANILLA";
+  if (/sriracha|hot sauce|tabasco/.test(s)) return "HOT";
+  if (/worcestershire/.test(s)) return "SAUCE";
+  if (/food colou?ring/.test(s)) return "COLOR";
+  if (/extract|flavou?ring/.test(s)) return "FLAVOR";
+  if (/rum|brandy|whisky|gin\b|liquor|wine/.test(s)) return "ALAK";
   if (/oil/.test(s)) return "MANTIKA";
   if (/coconut|gata/.test(s)) return "GATA";
   if (/ketchup|tomato|banana/.test(s)) return "SAUCE";
@@ -883,7 +965,12 @@ function cookPowderColor(it) {
   if (/black pepper|pepper_ground|paminta/.test(s)) return "#4b4038";
   if (/magic|sarap|msg|seasoning|bouillon/.test(s)) return "#e2c56c";
   if (/garlic/.test(s)) return "#e8d8a8";
-  if (/paprika|chili/.test(s)) return "#b8432a";
+  if (/paprika|chili|pepper flake/.test(s)) return "#b8432a";
+  if (/oregano|dill|thyme|rosemary|basil|herb|italian|parsley/.test(s)) return "#6f7f3a";
+  if (/cinnamon|nutmeg|clove|cumin|five spice|star anise/.test(s)) return "#8a5a32";
+  if (/turmeric|curry/.test(s)) return "#d9a521";
+  if (/cocoa/.test(s)) return "#4a2c1e";
+  if (/yeast/.test(s)) return "#d8c08a";
   if (/brown sugar/.test(s)) return "#a8743c";
   return "#f7f5ef";
 }
@@ -1371,16 +1458,59 @@ function cookBuildScene(THREE, canvas) {
         break;
       }
       case "sausage": { const m = foodMat(kind, "skin", brownAmt, { roughness: 0.35 }); for (let k = 0; k < 4; k++) { const c = mesh(new THREE.CapsuleGeometry ? new THREE.CapsuleGeometry(0.012, 0.07, 6, 12) : new THREE.CylinderGeometry(0.012, 0.012, 0.09, 14), m); c.rotation.z = Math.PI / 2; c.position.set(0, 0.012, k * 0.026 - 0.04); g.add(c); } break; }
-      case "peas": case "corn": case "raisins": case "sago": case "pulses": {
+      case "jar": {
+        const [c, rough, clear] = cookJarLook(it);
+        const glassJ = std({ color: 0xffffff, roughness: 0.03, transparent: true, opacity: 0.2, envMapIntensity: 2.2 });
+        const body = mesh(new THREE.CylinderGeometry(0.036, 0.036, 0.075, 28), glassJ); body.position.y = 0.0375; g.add(body);
+        const fill = mesh(new THREE.CylinderGeometry(0.033, 0.033, 0.06, 28), std({ color: c, roughness: rough, transparent: !!clear, opacity: clear ? 0.9 : 1 })); fill.position.y = 0.032; g.add(fill);
+        const lid = mesh(new THREE.CylinderGeometry(0.037, 0.037, 0.014, 28), std({ color: 0xc8a23a, metalness: 0.7, roughness: 0.35 })); lid.position.y = 0.082; g.add(lid);
+        break;
+      }
+      case "packet": {
+        const word = (it.label || "").replace(/\b(knorr|maggi|mama sita'?s?|del monte|ufc|datu puti|silver swan|ajinomoto)\b/gi, "").trim().split(/\s+/).slice(0, 2).join(" ").toUpperCase() || "MIX";
+        const lt = tex(`packet-${word}`, 256, (gg, n) => { gg.fillStyle = "#e5b53a"; gg.fillRect(0, 0, n, n); gg.fillStyle = "#1d5239"; gg.fillRect(0, n * 0.62, n, n * 0.38); gg.fillStyle = "#fff8e6"; gg.font = `bold ${n * 0.13}px Inter, Arial, sans-serif`; gg.textAlign = "center"; gg.fillText(word.slice(0, 14), n / 2, n * 0.84); gg.fillStyle = "rgba(255,255,255,.35)"; gg.fillRect(0, 0, n, n * 0.08); });
+        const pk = mesh(organic(box(0.09, 0.008, 0.12, 4), 0, 0.04, 21), [std({ color: 0xe5b53a, roughness: 0.35, metalness: 0.3 }), std({ color: 0xe5b53a, roughness: 0.35, metalness: 0.3 }), std({ map: lt, roughness: 0.35, metalness: 0.2 }), std({ color: 0xe5b53a }), std({ color: 0xe5b53a }), std({ color: 0xe5b53a })]);
+        pk.position.y = 0.006; pk.rotation.y = 0.25; g.add(pk);
+        break;
+      }
+      case "shells": {
+        const m = foodMat(kind, "skin", 0, { roughness: 0.35, metalness: 0.15 });
+        for (let k = 0; k < 8; k++) { const sh = ellipsoid(0.018, 1.6, 0.45, 0.9, m, 14); sh.position.set((k % 4) * 0.032 - 0.05, 0, Math.floor(k / 4) * 0.03); sh.rotation.y = r() * 3; g.add(sh); }
+        break;
+      }
+      case "crab": {
+        const shell = foodMat(kind, "skin", brownAmt, { roughness: 0.4, bumpMap: pores(), bumpScale: 0.002 });
+        const body = ellipsoid(0.05, 1.3, 0.4, 1, shell, 24); g.add(body);
+        for (let k = 0; k < 8; k++) { const side = k < 4 ? -1 : 1, i = k % 4; const leg = mesh(new THREE.CylinderGeometry(0.004, 0.003, 0.06, 6), shell); leg.rotation.z = side * 1.2; leg.rotation.y = (i - 1.5) * 0.35; leg.position.set(side * 0.075, 0.012, (i - 1.5) * 0.022); g.add(leg); }
+        [-1, 1].forEach((sd) => { const cl = ellipsoid(0.014, 1.6, 0.8, 1, shell, 12); cl.position.set(sd * 0.04, 0.005, -0.06); g.add(cl); });
+        break;
+      }
+      case "squid": {
+        const m = foodMat(kind, "skin", brownAmt, { roughness: 0.3, bumpMap: pores(), bumpScale: 0.001 });
+        for (let k = 0; k < 2; k++) { const t = mesh(new THREE.ConeGeometry(0.022, 0.13, 16), m); t.rotation.z = Math.PI / 2; t.position.set(0, 0.022, k * 0.055); g.add(t); for (let a = 0; a < 6; a++) { const tn = mesh(new THREE.CylinderGeometry(0.002, 0.003, 0.06, 5), m); tn.rotation.z = Math.PI / 2 + (r() - 0.5) * 0.3; tn.position.set(-0.09, 0.006, k * 0.055 + (a - 2.5) * 0.006); g.add(tn); } }
+        break;
+      }
+      case "chocolate": {
+        const m = foodMat(kind, "skin", 0, { roughness: 0.3 });
+        const bar = mesh(box(0.1, 0.01, 0.06, 2), m); bar.position.y = 0.005; g.add(bar);
+        for (let x = 0; x < 4; x++) for (let z = 0; z < 2; z++) { const sq = mesh(new THREE.BoxGeometry(0.021, 0.004, 0.025), m); sq.position.set(-0.036 + x * 0.024, 0.012, -0.014 + z * 0.028); g.add(sq); }
+        break;
+      }
+      case "balls": { const m = foodMat(kind, "skin", brownAmt, { roughness: 0.5 }); for (let k = 0; k < 8; k++) { const b = ellipsoid(0.012, 1, 0.95, 1, m, 12); b.position.set((k % 4) * 0.026 - 0.04, 0, Math.floor(k / 4) * 0.026); g.add(b); } break; }
+      case "peas": case "corn": case "raisins": case "sago": case "pulses": case "seeds": case "annatto": case "berries": case "grapes": {
         g.add(ramekin(0.055));
         const m = foodMat(kind, "skin", brownAmt, { roughness: kind === "sago" ? 0.1 : 0.45, transparent: kind === "sago", opacity: kind === "sago" ? 0.85 : 1 });
-        const geo = kind === "raisins" ? organic(new THREE.SphereGeometry(0.006, 8, 6), 0, 0.3, 3) : new THREE.SphereGeometry(kind === "corn" ? 0.005 : kind === "pulses" ? 0.004 : 0.006, 8, 6);
+        const geo = kind === "raisins" ? organic(new THREE.SphereGeometry(0.006, 8, 6), 0, 0.3, 3)
+          : kind === "seeds" ? (() => { const q = new THREE.SphereGeometry(0.004, 8, 6); q.scale(1.6, 0.6, 1); return q; })()
+          : kind === "berries" ? organic(new THREE.SphereGeometry(0.011, 12, 8), 0, 0.12, 4)
+          : kind === "grapes" ? new THREE.SphereGeometry(0.009, 12, 8)
+          : new THREE.SphereGeometry(kind === "corn" ? 0.005 : kind === "pulses" || kind === "annatto" ? 0.004 : 0.006, 8, 6);
         const inst = new THREE.InstancedMesh(geo, m, 60); inst.castShadow = true;
         for (let k = 0; k < 60; k++) { const a = r() * 6.3, d = Math.sqrt(r()) * 0.042; dummy.position.set(Math.cos(a) * d, 0.012 + r() * 0.016, Math.sin(a) * d); dummy.rotation.set(r() * 3, r() * 3, 0); dummy.scale.setScalar(0.8 + r() * 0.4); dummy.updateMatrix(); inst.setMatrixAt(k, dummy.matrix); }
         g.add(inst);
         break;
       }
-      case "fruit": { const m = foodMat(kind, "skin", brownAmt, { roughness: 0.3 }); for (let k = 0; k < 2; k++) { const e = ellipsoid(0.035, 1.45, 0.9, 1, m, 20); e.position.x = k * 0.1; g.add(e); } break; }
+      case "fruit": { const m = foodMat(kind, "skin", brownAmt, { roughness: 0.3 }); const fc = cookFruitColor(it); if (fc) { m.userData.base = col(fc); m.color.copy(m.userData.base); } for (let k = 0; k < 2; k++) { const e = ellipsoid(0.035, 1.45, 0.9, 1, m, 20); e.position.x = k * 0.1; g.add(e); } break; }
       case "banana": { const m = foodMat(kind, "skin", brownAmt, { roughness: 0.45 }); for (let k = 0; k < 3; k++) { const b = mesh(new THREE.TorusGeometry(0.07, 0.014, 10, 20, 1.3), m); b.rotation.x = -Math.PI / 2; b.position.set(-0.04, 0.014 + k * 0.004, k * 0.022 - 0.05); g.add(b); } break; }
       case "mushroom": { const cap = foodMat(kind, "skin", brownAmt, { roughness: 0.6 }), stem = foodMat(kind, "flesh", brownAmt, { roughness: 0.6 }); for (let k = 0; k < 4; k++) { const x = (k % 2) * 0.05, z = Math.floor(k / 2) * 0.05; const st = mesh(new THREE.CylinderGeometry(0.006, 0.008, 0.02, 10), stem); st.position.set(x, 0.01, z); g.add(st); const c = mesh(new THREE.SphereGeometry(0.02, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), cap); c.position.set(x, 0.018, z); c.scale.y = 0.6; g.add(c); } break; }
       case "broccoli": case "cauliflower": { const m = foodMat(kind, "skin", brownAmt, { roughness: 0.75, bumpMap: pores(), bumpScale: 0.003 }); const stem = foodMat(kind, "flesh", 0); const s0 = mesh(new THREE.CylinderGeometry(0.012, 0.016, 0.05, 10), stem); s0.rotation.z = Math.PI / 2; s0.position.set(0.04, 0.016, 0); g.add(s0); for (let k = 0; k < 9; k++) { const f = ellipsoid(0.018, 1, 0.8, 1, m, 12); f.position.set((r() - 0.5) * 0.05, 0.008 + r() * 0.012, (r() - 0.5) * 0.05); g.add(f); } break; }
@@ -1459,8 +1589,8 @@ function cookBuildScene(THREE, canvas) {
     const CK_DEFAULT_CUT = { gourd: "pieces", root: "pieces", eggplant: "sliced", radish: "sliced", carrot: "sliced", onion: "sliced", redonion: "sliced", garlic: "minced", ginger: "strips", tomato: "wedges", fruit: "cubes", banana: "sliced", tofu: "cubes", sausage: "sliced", ham: "diced", cheese: "diced", mushroom: "sliced", broccoli: "pieces", cauliflower: "pieces" };
     if (!style && ["pot", "plate", "bowl"].includes(where || st.loc.get(it)) && CK_DEFAULT_CUT[kind]) style = CK_DEFAULT_CUT[kind];
     const loose = ["pot", "plate", "bowl", "rack"].includes(where || st.loc.get(it));
-    if (loose && ["powder", "cube", "peppercorn", "misc", "peas", "corn", "raisins", "sago", "pulses"].includes(kind)) return piecesModel(kind === "peppercorn" ? { key: it.key, label: "peppercorn" } : it, kind === "cube" ? "crushed" : ["peas", "corn", "raisins", "sago", "pulses", "peppercorn"].includes(kind) ? "beads" : "minced", radius * 0.6, 0, seedExtra);
-    if (style && !["bottle", "water", "powder", "cube", "grain", "misc", "peppercorn", "peas", "corn", "raisins", "sago", "pulses"].includes(kind)) return piecesModel(it, style, radius, b, seedExtra);
+    if (loose && ["powder", "cube", "peppercorn", "misc", "peas", "corn", "raisins", "sago", "pulses", "seeds", "annatto", "jar", "packet"].includes(kind)) return piecesModel(kind === "peppercorn" ? { key: it.key, label: "peppercorn" } : it, kind === "cube" ? "crushed" : ["peas", "corn", "raisins", "sago", "pulses", "peppercorn", "seeds", "annatto"].includes(kind) ? "beads" : "minced", radius * 0.6, 0, seedExtra);
+    if (style && !["bottle", "water", "powder", "cube", "grain", "misc", "peppercorn", "peas", "corn", "raisins", "sago", "pulses", "seeds", "annatto", "jar", "packet"].includes(kind)) return piecesModel(it, style, radius, b, seedExtra);
     return fit(wholeModel(it, b), radius * 1.15);
   };
 
