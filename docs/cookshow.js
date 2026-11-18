@@ -25,11 +25,11 @@ function cookCutStyle(text) {
   const rules = [
     [/\b(minced|mince|finely chopped|finely diced)\b/, "minced"],
     [/\b(julienne|julienned|matchsticks?|strips?)\b/, "strips"],
+    [/\b(crush|crushed|pounded|smashed|bruised)\b/, "crushed"],
     [/\b(cubed|cubes?)\b/, "cubes"],
     [/\b(diced|dice|chopped|chop)\b/, "diced"],
     [/\b(thinly sliced|sliced thinly)\b/, "thin"],
     [/\b(sliced|slices?|rings?)\b/, "sliced"],
-    [/\b(crushed|pounded|smashed|bruised)\b/, "crushed"],
     [/\b(quartered|quarters?)\b/, "quartered"],
     [/\b(halved|halves|cut in half)\b/, "halved"],
     [/\b(wedges?)\b/, "wedges"],
@@ -66,6 +66,7 @@ function cookTimeText(minutes, lang) {
 
 // Emoji stand-ins until the drawn icon set is ready (proposal: drawn icons + photos).
 const COOK_ICONS = [
+  [/peppercorn|pepper corn|black pepper|paminta/, "🧂"], [/bay leaf|laurel|parsley|cilantro|kinchay|basil|tanglad|lemongrass|pandan|leaves|leaf|herb/, "🌿"],
   [/onion|sibuyas|shallot|leek|scallion|green onion/, "🧅"], [/garlic|bawang/, "🧄"], [/ginger|luya/, "🫚"],
   [/chicken|manok/, "🍗"], [/egg|itlog/, "🥚"], [/shrimp|prawn|hipon/, "🦐"], [/squid|pusit|calamari/, "🦑"],
   [/crab|alimango|alimasag/, "🦀"], [/clam|mussel|tahong|halaan|oyster/, "🦪"],
@@ -90,6 +91,15 @@ function cookIcon(name) {
 }
 
 const COOK_LIQUID = /(^|_)(water|broth|stock|sauce|vinegar|milk|cream|juice|wine|oil|soy|patis|syrup)(_|$)|fish_sauce|soy_sauce/;
+// Bouillon cubes, powders and granules are named after a liquid but go in by hand.
+const COOK_SOLID_LIQUID = /cube|powder|granule|mix(_|$)/;
+// Wrappers: lumpia, turon, siomai, banana leaves.
+const COOK_WRAPPER = /wrapper|spring_roll|banana_leaf|dahon_saging/;
+/** "Lumpia wrapper" → "lumpia" (the rolled dish). */
+function cookWrappedName(label) {
+  const n = String(label || "").replace(/\s*(wrappers?|sheets?)\b.*$/i, "").trim().toLowerCase();
+  return n || "lumpia";
+}
 // Frying oil: shown by "heat the oil", never listed as something added.
 const COOK_FRY_OIL = /^oil_(cooking|vegetable|canola|palm|corn|frying)$|^cooking_oil$/;
 // Things that are never cut on the board.
@@ -119,7 +129,7 @@ function cookItemsFromLines(lines) {
     const water = l.status === "water" || (/\bwater\b/i.test(name) && !/coconut/i.test(name));
     out.push({
       key, label: name, text, icon: cookIcon(`${name} ${l.slug || ""}`),
-      liquid: water || COOK_LIQUID.test(l.slug || name.toLowerCase().replace(/\s+/g, "_")),
+      liquid: water || (COOK_LIQUID.test(l.slug || name.toLowerCase().replace(/\s+/g, "_")) && !COOK_SOLID_LIQUID.test(l.slug || name.toLowerCase())),
       water, toTaste: l.status === "to-taste", fryOil: !!(l.slug && COOK_FRY_OIL.test(l.slug)),
       cut: (l.slug && COOK_NO_CUT.test(l.slug)) || water ? null : cookCutStyle(text),
       peel: /\b(peeled|deveined|shelled|cleaned|gutted|scaled)\b/i.test(text),
@@ -142,6 +152,9 @@ function cookWords(s) {
  */
 function cookMentions(sentence, items) {
   const words = new Set(cookWords(sentence));
+  // "pepper corn" in a step, "peppercorn" in the list.
+  const plain = String(sentence || "").toLowerCase().replace(/[^a-z ]/g, " ").split(/\s+/).filter(Boolean);
+  for (let i = 0; i + 1 < plain.length; i++) for (const w of cookWords(plain[i] + plain[i + 1])) words.add(w);
   const scored = items.filter((it) => !it.fryOil).map((it) => ({ it, score: it.words.filter((w) => words.has(w)).length }));
   const winners = new Set();
   for (const w of words) {
@@ -258,8 +271,9 @@ function buildCookScript(recipe) {
   const cutDone = new Set();
   for (const it of items.filter((x) => x.cut).slice(0, 8)) { steps.push({ kind: "cut", items: [it], style: it.cut.style, size: it.cut.size }); cutDone.add(it); }
 
-  const text = [...(recipe.instructions || []), ...(recipe.methodNotes ? [recipe.methodNotes] : [])].join(" ");
-  const sentences = text.split(/(?<=[.!?;])\s+|\n+/).map((x) => x.trim()).filter(Boolean);
+  // Split each step on its own: many steps have no final period.
+  const sentences = [...(recipe.instructions || []), ...(recipe.methodNotes ? [recipe.methodNotes] : [])]
+    .flatMap((step) => String(step || "").split(/(?<=[.!?;])\s+|\n+/)).map((x) => x.trim()).filter(Boolean);
   let actions = cookActionsFromText(sentences, items);
   const cooking = actions.filter((a) => COOK_TIMED.has(a.kind) || a.kind === "heat" || a.kind === "saute");
   if (!cooking.length) actions = cookTemplate(recipe.title, recipe.frying, items).map((a) => ({ items: [], minutes: null, ...a }));
@@ -283,15 +297,37 @@ function buildCookScript(recipe) {
       steps.push({ kind: "cut", items: its.slice(0, 1), style: a.cut.style, size: a.cut.size, vessel: vessel || "kawali" });
       continue;
     }
-    if (["add", "pour", "mix", "saute", "wrap"].includes(a.kind) && !its.length) continue;
-    const kind = a.kind === "add" && its.every((x) => x.liquid) ? "pour" : a.kind;
+    const wrappers = items.filter((it) => COOK_WRAPPER.test(it.key));
+    let kind = a.kind;
+    // "Put the filling on a wrapper" and "wrap and roll" are one wrapping step.
+    if (kind === "add" && its.length && its.every((it) => COOK_WRAPPER.test(it.key))) kind = "wrap";
+    if (kind === "wrap" && !its.length) its = wrappers;
+    // "Deep fry the lumpia" names the wrapper: show the rolled dish instead.
+    if (["fry", "deepfry"].includes(kind) && its.some((it) => COOK_WRAPPER.test(it.key))) {
+      its = its.filter((it) => !COOK_WRAPPER.test(it.key));
+      if (!its.length) its = [{ key: "rolled", label: cookWrappedName(wrappers[0] && wrappers[0].label), icon: "🌯", words: [] }];
+    }
+    // Seasoning lists only what goes on: "rub the Magic Sarap over the pork belly".
+    if (kind === "season") its = its.filter((it) => !mains.has(it));
+    if (["add", "pour", "mix", "saute", "wrap"].includes(kind) && !its.length) continue;
+    // Filler with nothing to show: a bare "stir" or "cook for a while".
+    if ((kind === "stir" && !its.length) || (kind === "cook" && !a.minutes && !its.length)) continue;
+    if (kind === "add" && its.every((x) => x.liquid && !COOK_SOLID_LIQUID.test(x.key))) kind = "pour";
+    if (kind === "pour" && its.length && !its.some((x) => x.liquid)) kind = "add";
     const prev = steps[steps.length - 1];
-    // Merge "add X" + "add Y" (or two stirs) into one step; keep timed steps separate.
-    if (prev && prev.kind === kind && !COOK_TIMED.has(kind) && prev.vessel === (vessel || "kawali")) {
+    const here = vessel || "kawali";
+    // Merge "add X" + "add Y" into one step.
+    if (prev && prev.kind === kind && !COOK_TIMED.has(kind) && prev.vessel === here) {
       for (const it of its) if (!prev.items.includes(it)) prev.items.push(it);
       continue;
     }
-    steps.push({ kind, items: its, minutes: a.minutes || null, vessel: vessel || "kawali" });
+    // "Bring to a boil" then "simmer 2 hours" stays two steps, but two simmers in a row become one.
+    if (prev && COOK_TIMED.has(kind) && (prev.kind === kind || (["simmer", "cook"].includes(prev.kind) && ["simmer", "cook"].includes(kind))) && prev.vessel === here) {
+      prev.minutes = Math.max(prev.minutes || 0, a.minutes || 0) || null;
+      for (const it of its) if (!prev.items.includes(it)) prev.items.push(it);
+      continue;
+    }
+    steps.push({ kind, items: its, minutes: a.minutes || null, vessel: here });
   }
   const seasonings = items.filter((it) => it.toTaste);
   const seasonStep = steps.find((x) => x.kind === "season");
@@ -325,6 +361,7 @@ function cookCaption(step, lang = "tl") {
     case "shop": return en ? `Shop for the ingredients (${step.items.length})` : `Mamalengke ng mga sangkap (${step.items.length})`;
     case "peel": return en ? `Clean and peel: ${list}` : `Linisin at balatan: ${list}`;
     case "cut": {
+      if (step.style === "crushed" && step.items.every((it) => /cube|cracker|chicharon/.test(it.key))) return en ? `Crush the ${list}` : `Durugin ang ${list}`;
       const style = L(COOK_STYLE_TEXT[step.style] || ["hiwain", "cut"]);
       const size = step.size ? ` (${en ? "about" : "mga"} ${step.size} cm)` : "";
       return en ? `Cut the ${list}: ${style}${size}` : `Hiwain ang ${list}: ${style}${size}`;
@@ -574,8 +611,8 @@ function cookBuildScene(THREE, canvas) {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(document.documentElement.classList.contains("dark") ? 0x16291f : 0xf3ecdb);
   const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 50);
-  camera.position.set(0, 2.55, 6.1);
-  camera.lookAt(0, 1.05, 0);
+  camera.position.set(0, 2.35, 4.9);
+  camera.lookAt(0, 1.25, 0);
 
   scene.add(new THREE.HemisphereLight(0xfff6e5, 0x6b5a3a, 0.9));
   const sun = new THREE.DirectionalLight(0xffffff, 0.75);
@@ -696,7 +733,7 @@ function cookBuildScene(THREE, canvas) {
         scene.add(sp); props.push(sp);
       });
     }
-    flame.visible = !["shop", "peel", "cut", "marinate", "serve"].includes(step.kind) && !appliance.visible;
+    flame.visible = !["shop", "peel", "cut", "marinate", "mix", "wrap", "drain", "serve"].includes(step.kind) && !appliance.visible;
     clock.visible = !!step.minutes;
     spoon.visible = ["saute", "stir", "add", "boil", "simmer", "season", "pour", "fry", "deepfry"].includes(step.kind);
   }
@@ -780,7 +817,7 @@ function cookBuildScene(THREE, canvas) {
     const w = Math.max(200, box.width), h = Math.max(160, Math.round(w * (w < 560 ? 0.78 : 0.5)));
     renderer.setSize(w, h, false); canvas.style.width = `${w}px`; canvas.style.height = `${h}px`;
     camera.aspect = w / h;
-    camera.position.z = w < 560 ? 7.6 : 6.1;
+    camera.position.z = w < 560 ? 6.6 : 4.9;
     camera.updateProjectionMatrix();
   }
   resize();
