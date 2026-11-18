@@ -188,11 +188,12 @@ const COOK_VERBS = [
   ["add", /\b(add|put|place|toss in|return)\b/],
   ["stir", /\bstir\b/],
   ["season", /\b(season|rub|to taste|sprinkle)\b/],
+  ["chill", /\b(refrigerat\w*|chill|freez\w*|fridge|ref)\b/],
   ["drain", /\b(drain|set aside|remove (it|them|from|the)|let (it )?cool|wire rack|paper towel)/],
   ["serve", /\b(serve|transfer to a serving|garnish)/],
 ];
 
-const COOK_TIMED = new Set(["marinate", "boil", "simmer", "cook", "fry", "deepfry", "grill", "bake", "steam"]);
+const COOK_TIMED = new Set(["marinate", "boil", "simmer", "cook", "fry", "deepfry", "grill", "bake", "steam", "chill"]);
 const COOK_POT_WORDS = /\b(pot|casserole|kaldero|saucepan|stockpot|dutch oven)\b/;
 const COOK_PAN_WORDS = /\b(pan|wok|skillet|kawali|frying pan)\b/;
 
@@ -241,12 +242,40 @@ function cookTemplate(title, frying, items) {
   const veg = solid.filter((it) => !aromatics.includes(it.key) && !meats.includes(it.key) && !/cube|powder|seasoning/.test(it.key)).map((it) => it.key);
   const waters = items.filter((it) => it.water).map((it) => it.key);
   const sauces = items.filter((it) => it.liquid && !it.water && !it.fryOil).map((it) => it.key);
+  const all = solid.map((it) => it.key);
+  const sweet = /\b(minatamis|ginataang (mais|bilo|halo|saging)|champorado|porridge|lugaw|arroz caldo|goto|biko|suman|kakanin|maja|leche|flan|halaya|pudding|puto|kutsinta|turon|banana cue|camote cue|bibingka)\b/.test(t);
+  // No stove at all: salads, drinks, dips, pickles, kinilaw, chilled desserts.
+  if (/\b(salad|smoothie|shake|juice|lemonade|mayonnaise|mayo|pesto|spread|dip|dressing|salsa|kinilaw|kilawin|kilawing|ceviche|atchara|achara|pickle|jelly|ref cake|refrigerator cake|icebox|sandwich|ice cream|float|graham)\b/.test(t)) {
+    const out = [{ kind: "mix", items: [...all, ...sauces] }];
+    if (/\b(jelly|ref cake|refrigerator|icebox|ice cream|float|graham|salad|atchara|achara|pickle|kinilaw|kilawin|kilawing|ceviche)\b/.test(t)) out.push({ kind: "chill", minutes: /ice cream|float|ref cake|refrigerator|icebox|graham/.test(t) ? 360 : /atchara|achara|pickle/.test(t) ? 1440 : 60 });
+    return out;
+  }
+  // Patties and fritters: mix, shape, fry.
+  if (/\b(burger|hamburger|patty|patties|meatball|bola[- ]bola|torta|tortang|okoy|ukoy|pancake|fritter|nuggets?)\b/.test(t)) {
+    const filling = all.filter((k) => !/bun|bread|pandesal|lettuce/.test(k));
+    return [{ kind: "mix", items: filling }, { kind: "heat" }, { kind: "fry", items: meats.length ? meats : filling.slice(0, 1), minutes: 8 }, { kind: "drain" }];
+  }
   if (frying === "deep" || /\b(fried|prito|pritong|crispy|lumpia|shanghai|turon|kawali|chicharon)\b/.test(t)) {
     return [{ kind: "heat" }, { kind: "deepfry", items: meats.length ? meats : veg, minutes: 15 }, { kind: "drain" }];
   }
   if (/\b(sinigang|tinola|nilaga|bulalo|sopas|soup|sabaw|batchoy|molo|pochero)\b/.test(t)) {
     return [{ kind: "add", items: meats, vessel: "kaldero" }, { kind: "pour", items: waters }, { kind: "boil", minutes: /bulalo|nilaga|pochero/.test(t) ? 180 : 45 },
       { kind: "add", items: veg }, { kind: "simmer", minutes: 10 }, { kind: "season", items: sauces }];
+  }
+  if (sweet) {
+    return [{ kind: "pour", items: [...sauces, ...waters], vessel: "kaldero" }, { kind: "boil" }, { kind: "add", items: all }, { kind: "simmer", minutes: 25 }, { kind: "stir", items: all.slice(0, 1) }];
+  }
+  if (/\b(ginataan|ginataang|gata|curry|kare[- ]kare|laing|bicol express|bringhe|guinataan)\b/.test(t)) {
+    return [{ kind: "heat" }, { kind: "saute", items: aromatics }, { kind: "add", items: meats }, { kind: "pour", items: [...sauces, ...waters] },
+      { kind: "simmer", minutes: 25 }, { kind: "add", items: veg }, { kind: "simmer", minutes: 10 }, { kind: "season" }];
+  }
+  if (/\b(pancit|canton|bihon|sotanghon|miki|mami|noodles?|pasta|spaghetti|macaroni|carbonara|alfredo|palabok)\b/.test(t)) {
+    const noodles = keys(solid, /noodle|pasta|spaghetti|macaroni|penne|bihon|canton|sotanghon|miki|misua|fettuccine|linguine/);
+    return [{ kind: "heat" }, { kind: "saute", items: aromatics }, { kind: "add", items: meats.filter((k) => !noodles.includes(k)) }, { kind: "add", items: veg.filter((k) => !noodles.includes(k)) },
+      { kind: "pour", items: [...sauces, ...waters] }, { kind: "boil" }, { kind: "add", items: noodles }, { kind: "cook", minutes: 5 }, { kind: "season" }];
+  }
+  if (/\b(stir[- ]?fry|stir[- ]?fried|ginisang|guisado|sauteed|chopsuey|chop suey)\b/.test(t)) {
+    return [{ kind: "heat" }, { kind: "saute", items: aromatics }, { kind: "fry", items: meats, minutes: 5 }, { kind: "add", items: veg }, { kind: "pour", items: sauces }, { kind: "cook", minutes: 3 }, { kind: "season" }];
   }
   if (/\b(adobo|paksiw|humba|pata tim|asado)\b/.test(t)) {
     return [{ kind: "heat" }, { kind: "saute", items: aromatics }, { kind: "add", items: meats }, { kind: "pour", items: [...sauces, ...waters] },
@@ -269,17 +298,17 @@ function buildCookScript(recipe) {
   const peel = items.filter((it) => it.peel);
   if (peel.length) steps.push({ kind: "peel", items: peel });
   const cutDone = new Set();
-  for (const it of items.filter((x) => x.cut).slice(0, 8)) { steps.push({ kind: "cut", items: [it], style: it.cut.style, size: it.cut.size }); cutDone.add(it); }
+  for (const it of items.filter((x, i, all) => x.cut && all.findIndex((y) => y.cut && y.label.toLowerCase() === x.label.toLowerCase()) === i).slice(0, 8)) { steps.push({ kind: "cut", items: [it], style: it.cut.style, size: it.cut.size }); cutDone.add(it); }
 
   // Split each step on its own: many steps have no final period.
   const sentences = [...(recipe.instructions || []), ...(recipe.methodNotes ? [recipe.methodNotes] : [])]
     .flatMap((step) => String(step || "").split(/(?<=[.!?;])\s+|\n+/)).map((x) => x.trim()).filter(Boolean);
   let actions = cookActionsFromText(sentences, items);
-  const cooking = actions.filter((a) => COOK_TIMED.has(a.kind) || a.kind === "heat" || a.kind === "saute");
+  const cooking = actions.filter((a) => COOK_TIMED.has(a.kind) || ["heat", "saute", "mix", "wrap"].includes(a.kind));
   if (!cooking.length) actions = cookTemplate(recipe.title, recipe.frying, items).map((a) => ({ items: [], minutes: null, ...a }));
 
   let vessel = null, lastMain = null;
-  const mains = new Set(items.filter((it) => !it.liquid && !it.toTaste && !/cube|powder|seasoning|salt|sugar|pepper/.test(it.key)));
+  const mains = new Set(items.filter((it) => !it.liquid && !it.toTaste && !/cube|powder|seasoning|salt|sugar|black_pepper|pepper_ground|peppercorn|white_pepper/.test(it.key)));
   for (const a of actions) {
     if (a.kind === "serve") continue;
     if (a.vessel) vessel = a.vessel;
@@ -288,13 +317,15 @@ function buildCookScript(recipe) {
     else if (["boil", "simmer"].includes(a.kind)) vessel = vessel || "kaldero";
     if (["grill", "bake", "steam"].includes(a.kind)) vessel = a.kind === "grill" ? "ihawan" : a.kind === "bake" ? "oven" : "steamer";
     let its = (a.items || []).map((k) => byKey.get(k)).filter(Boolean);
-    for (const it of its) if (mains.has(it)) lastMain = it;
+    // "Fry it", "slice into pieces": the last meat or fish named.
+    for (const it of its) if (mains.has(it) && /pork|beef|chicken|fish|bangus|tilapia|shrimp|squid|meat|belly|ribs|liempo|lumpia|rolled|tofu|egg/.test(`${it.key} ${it.label}`.toLowerCase())) lastMain = it;
     if (a.kind === "cut") {
       // "Slice into serving pieces" after cooking: cut whatever was cooked last.
       if (!its.length && lastMain) its = [lastMain];
-      its = its.filter((it) => !cutDone.has(it) || steps.some((s) => COOK_TIMED.has(s.kind) && s.items.includes(it)));
+      its = its.filter((it) => !cutDone.has(it) || steps.some((s, i) => i > steps.findIndex((c) => c.kind === "cut" && c.items.includes(it)) && COOK_TIMED.has(s.kind) && s.items.includes(it)));
       if (!its.length) continue;
       steps.push({ kind: "cut", items: its.slice(0, 1), style: a.cut.style, size: a.cut.size, vessel: vessel || "kawali" });
+      cutDone.add(its[0]);
       continue;
     }
     const wrappers = items.filter((it) => COOK_WRAPPER.test(it.key));
@@ -313,7 +344,9 @@ function buildCookScript(recipe) {
     // Filler with nothing to show: a bare "stir" or "cook for a while".
     if ((kind === "stir" && !its.length) || (kind === "cook" && !a.minutes && !its.length)) continue;
     if (kind === "add" && its.every((x) => x.liquid && !COOK_SOLID_LIQUID.test(x.key))) kind = "pour";
-    if (kind === "pour" && its.length && !its.some((x) => x.liquid)) kind = "add";
+    if (kind === "pour" && its.some((x) => !x.liquid)) kind = "add";
+    if (["fry", "deepfry", "grill"].includes(kind) && !its.length) { if (lastMain && kind !== "deepfry") its = [lastMain]; else if (!a.minutes && kind !== "deepfry") continue; }
+    if (kind === "drain" && !steps.some((x) => COOK_TIMED.has(x.kind) && x.kind !== "marinate" && x.kind !== "chill")) continue;
     const prev = steps[steps.length - 1];
     const here = vessel || "kawali";
     // Merge "add X" + "add Y" into one step.
@@ -333,7 +366,7 @@ function buildCookScript(recipe) {
   const seasonStep = steps.find((x) => x.kind === "season");
   if (seasonings.length && !seasonStep) steps.push({ kind: "season", items: seasonings, vessel: vessel || "kawali" });
   else if (seasonStep) for (const it of seasonings) if (!seasonStep.items.includes(it)) seasonStep.items.push(it);
-  steps.push({ kind: "serve", items: [], vessel: vessel || "kawali" });
+  steps.push({ kind: "serve", items: [], vessel: vessel || "kawali", cold: steps.some((x) => x.kind === "chill") || !steps.some((x) => COOK_TIMED.has(x.kind) && !["marinate", "chill"].includes(x.kind) || x.kind === "heat") });
   return steps.slice(0, 24);
 }
 
@@ -383,8 +416,9 @@ function cookCaption(step, lang = "tl") {
     case "wrap": return en ? `Wrap in ${list} and roll` : `Ibalot sa ${list} at irolyo`;
     case "cook": return en ? `Cook${time}` : `Lutuin${time}`;
     case "season": return en ? `Season${list ? ` with ${list}` : ""} to taste` : `Timplahan${list ? ` ng ${list}` : ""} ayon sa panlasa`;
+    case "chill": return en ? `Chill in the fridge${time}` : `Palamigin sa ref${time}`;
     case "drain": return en ? "Take out and let it drain" : "Hanguin at patuluin";
-    case "serve": return en ? "Serve while hot" : "Ihain habang mainit";
+    case "serve": return step.cold ? (en ? "Serve cold" : "Ihain nang malamig") : en ? "Serve while hot" : "Ihain habang mainit";
     default: return step.kind;
   }
 }
@@ -503,7 +537,7 @@ function cookStart(title, steps, costPerServing) {
 
 function cookStepIcon(s) {
   return { shop: "🧺", peel: "🧽", cut: "🔪", marinate: "🥣", heat: "🔥", saute: "🍳", add: "➕", pour: "🫗", boil: "♨️", simmer: "♨️",
-    fry: "🍳", deepfry: "🛢️", grill: "🔥", bake: "🔥", steam: "♨️", stir: "🥄", mix: "🥣", wrap: "🌯", cook: "♨️", season: "🧂", drain: "🧻", serve: "🍽️" }[s.kind] || "•";
+    fry: "🍳", deepfry: "🛢️", grill: "🔥", bake: "🔥", steam: "♨️", stir: "🥄", mix: "🥣", wrap: "🌯", cook: "♨️", chill: "🧊", season: "🧂", drain: "🧻", serve: "🍽️" }[s.kind] || "•";
 }
 
 function cookShowStep() {
@@ -628,7 +662,23 @@ function cookFoodKind(it) {
   if (/sitaw|string bean|green bean|long bean|baguio bean/.test(s)) return "beans";
   if (/pechay|bok choy|kangkong|spinach|malunggay|cabbage|lettuce|leaves|greens|mustasa|parsley|cilantro|kinchay|herb|basil/.test(s)) return "leafy";
   if (/tamarind|sampalok|calamansi|lemon|lime|kamias/.test(s)) return "citrus";
-  if (/rice|noodle|pasta|bihon|canton|sotanghon|misua|miki|macaroni|spaghetti/.test(s)) return "grain";
+  if (/rice|noodle|pasta|bihon|canton|sotanghon|misua|miki|macaroni|spaghetti|penne|fettuccine/.test(s)) return "grain";
+  if (/butter|margarine/.test(s)) return "butter";
+  if (/cheese|keso/.test(s)) return "cheese";
+  if (/tofu|tokwa/.test(s)) return "tofu";
+  if (/\bham\b|hamon|bacon/.test(s)) return "ham";
+  if (/chorizo|hotdog|hot dog|sausage|longganisa|longanisa|vienna/.test(s)) return "sausage";
+  if (/peas|edamame/.test(s)) return "peas";
+  if (/corn|mais/.test(s)) return "corn";
+  if (/raisin|pasas/.test(s)) return "raisins";
+  if (/tapioca|sago|nata de coco|kaong|gulaman|jelly|pearl/.test(s)) return "sago";
+  if (/mung|monggo|chickpea|garbanzo|kidney bean|red bean|white bean/.test(s)) return "pulses";
+  if (/mango|mangga|jackfruit|langka|pineapple|pinya|papaya ripe|fruit cocktail|apple|melon/.test(s)) return "fruit";
+  if (/banana|saging|saba|plantain/.test(s)) return "banana";
+  if (/mushroom|kabute|shiitake/.test(s)) return "mushroom";
+  if (/broccoli|cauliflower/.test(s)) return /cauli/.test(s) ? "cauliflower" : "broccoli";
+  if (/bread|bun|pandesal|crumb|panko|cracker|graham|biscuit/.test(s)) return "bread";
+  if (/celery|snow pea|snap pea|cucumber|pipino|zucchini/.test(s)) return "beans";
   return "misc";
 }
 
@@ -644,7 +694,13 @@ const CK_LOOK = {
   egg: ["#ead3b1", "#f6c84a", "#efd27a"], bayleaf: ["#7c8b4b", "#7c8b4b", "#5f6b38"], citrus: ["#7b9b3b", "#d9c271", "#99894a"],
   wrapper: ["#f2e7ca", "#f2e7ca", "#c98a3a"], rolled: ["#ead6a6", "#ead6a6", "#b9772e"], grain: ["#f4f1ea", "#f4f1ea", "#f4f1ea"],
   cube: ["#d6a72c", "#c9a46a", "#c9a46a"], powder: ["#f5f2ea", "#f5f2ea", "#f5f2ea"], peppercorn: ["#2b231d", "#2b231d", "#2b231d"],
-  misc: ["#c9b48a", "#e8dcc0", "#b08a50"], water: ["#d8e6ea", "#d8e6ea", "#d8e6ea"], bottle: ["#8a5a2a", "#8a5a2a", "#8a5a2a"],
+  misc: ["#c9b48a", "#e8dcc0", "#b08a50"],
+  butter: ["#f2d46a", "#f4dc80", "#d9a441"], cheese: ["#f0c13a", "#f4d060", "#d9902a"], tofu: ["#f3eee0", "#f6f2e6", "#c98e3e"],
+  ham: ["#e59a96", "#eaa9a4", "#b8683e"], sausage: ["#a8392b", "#c4594a", "#6e2a1e"], peas: ["#5f9e3c", "#7ab34e", "#4e8a31"],
+  corn: ["#f2c230", "#f5cf52", "#d99a28"], raisins: ["#4a2a2c", "#5b3436", "#3a2022"], sago: ["#eef0ee", "#f4f5f2", "#e8e2d0"],
+  pulses: ["#4f7a33", "#d9c58a", "#8a6a3a"], fruit: ["#f2b632", "#f6c44a", "#d9902a"], banana: ["#f0cf45", "#f6ead0", "#c98a3a"],
+  mushroom: ["#b49478", "#efe4d6", "#7a5636"], broccoli: ["#3f7d2c", "#8ab865", "#2f5e22"], cauliflower: ["#f1ede0", "#f5f1e6", "#d9b06a"],
+  bread: ["#d8a057", "#f2e2c0", "#a8642a"], water: ["#d8e6ea", "#d8e6ea", "#d8e6ea"], bottle: ["#8a5a2a", "#8a5a2a", "#8a5a2a"],
 };
 
 /** Liquid colour and how strongly it tints a pot. */
@@ -737,15 +793,16 @@ function cookApply(st, s) {
     case "boil": case "simmer": case "cook":
       s.items.forEach(toPot);
       if (s.minutes >= 30 && st.level > 0.2) st.level = Math.max(0.2, st.level * 0.8);
-      if (st.level > 0) st.parts.push(["#d6a35a", Math.min(1.5, (s.minutes || 15) / 40), 0]);
+      if (st.level > 0) st.parts.push(["#d6a35a", Math.min(2, (s.minutes || 15) / 20), 0]);
       // Meat stewed in a dark sauce (adobo, humba) takes on its colour.
       if (st.level > 0 && cookMixLum(st.parts) < 0.5) brown(inPot().filter((it) => ["pork", "beef", "chicken"].includes(cookFoodKind(it))), Math.min(0.85, (s.minutes || 20) / 35));
       break;
     case "season": for (const it of s.items) { if (it.liquid) toPot(it); else st.loc.set(it, "used"); } break;
-    case "drain": for (const it of inPot()) st.loc.set(it, "rack"); if (st.vessel === "kaldero") { st.level = 0; st.parts = []; } break;
+    // Only the food comes out; spices and leaves go with the water.
+    case "drain": for (const it of inPot()) st.loc.set(it, ["peppercorn", "bayleaf", "powder", "cube", "misc", "citrus"].includes(cookFoodKind(it)) ? "used" : "rack"); if (st.vessel === "kaldero") { st.level = 0; st.parts = []; } break;
     case "serve":
-      for (const it of st.items) if (["pot", "rack"].includes(st.loc.get(it)) || (st.loc.get(it) === "board" && st.brown.get(it))) st.loc.set(it, "plate");
-      st.served = st.level > 0.25 ? "bowl" : "plate";
+      for (const it of st.items) if (["pot", "rack"].includes(st.loc.get(it)) || (s.cold && st.loc.get(it) === "bowl") || (st.loc.get(it) === "board" && st.brown.get(it))) st.loc.set(it, "plate");
+      st.served = st.level > 0.25 || (s.cold && st.items.some((it) => /cream|milk|mayonnaise|yogurt|gata|coconut/.test(it.key))) ? "bowl" : "plate";
       break;
     default: break;
   }
@@ -921,6 +978,7 @@ function cookBuildScene(THREE, canvas) {
   const flames = [];
   for (let k = 0; k < 22; k++) { const f = new THREE.Mesh(flameGeo, flameMat); const a = k / 22 * Math.PI * 2; f.position.set(CK_AT.stove[0] + Math.cos(a) * 0.068, 0.06, CK_AT.stove[1] + Math.sin(a) * 0.068); f.rotation.z = -Math.cos(a) * 0.9; f.rotation.x = Math.sin(a) * 0.9; f.visible = false; scene.add(f); flames.push(f); }
   const VESSEL_Y = 0.09;
+  const WOK_Y = VESSEL_Y - 0.004; // the wok's round bottom sits in the grate ring, above the bars
 
   // Kaldero (steel pot) and kawali (black wok), turned on a lathe.
   const steel = keep(std({ color: 0xeef1f4, metalness: 1, roughness: 0.14, envMapIntensity: 1.7, side: THREE.DoubleSide }));
@@ -930,7 +988,7 @@ function cookBuildScene(THREE, canvas) {
   [-1, 1].forEach((sx) => { const h = shadowed(new THREE.Mesh(keep(new THREE.TorusGeometry(0.026, 0.006, 8, 20, Math.PI)), steel)); h.position.set(sx * 0.165, 0.14, 0); h.rotation.set(0, sx > 0 ? -Math.PI / 2 : Math.PI / 2, 0); kaldero.add(h); });
   const wokPts = []; for (let i = 0; i <= 16; i++) { const a = (i / 16) * 0.85; wokPts.push(new THREE.Vector2(0.3 * Math.sin(a), 0.3 * (1 - Math.cos(a)))); }
   const castIron = keep(std({ color: 0x232427, metalness: 0.75, roughness: 0.42, side: THREE.DoubleSide }));
-  const kawali = new THREE.Group(); kawali.position.set(CK_AT.stove[0], VESSEL_Y - 0.03, CK_AT.stove[1]); scene.add(kawali);
+  const kawali = new THREE.Group(); kawali.position.set(CK_AT.stove[0], WOK_Y, CK_AT.stove[1]); scene.add(kawali);
   kawali.add(shadowed(new THREE.Mesh(keep(new THREE.LatheGeometry(wokPts, 64)), castIron)));
   [-1, 1].forEach((sx) => { const h = shadowed(new THREE.Mesh(keep(new THREE.TorusGeometry(0.03, 0.007, 8, 20, Math.PI)), castIron)); h.position.set(sx * 0.235, 0.095, 0); h.rotation.set(0, sx > 0 ? -Math.PI / 2 : Math.PI / 2, 0); kawali.add(h); });
   const WOK_R = (y) => 0.3 * Math.sin(Math.acos(Math.max(-1, Math.min(1, 1 - y / 0.3))));
@@ -1160,6 +1218,28 @@ function cookBuildScene(THREE, canvas) {
         else { const h = mesh(new THREE.TorusGeometry(0.035, 0.006, 8, 16, Math.PI), glass); h.position.set(0.06, 0.08, 0); h.rotation.z = -Math.PI / 2; g.add(h); }
         break;
       }
+      case "butter": case "cheese": case "tofu": case "ham": {
+        const m = foodMat(kind, "skin", brownAmt, { roughness: kind === "butter" ? 0.3 : 0.5 });
+        const dims = { butter: [0.09, 0.03, 0.045], cheese: [0.1, 0.035, 0.06], tofu: [0.08, 0.04, 0.08], ham: [0.12, 0.012, 0.09] }[kind];
+        const b = mesh(organic(box(...dims, 3), 0.08, 0.01, ckHash(it.key)), m); b.position.y = dims[1] / 2; g.add(b);
+        if (kind === "ham") for (let k = 1; k < 3; k++) { const c = b.clone(); c.position.set(k * 0.01, dims[1] / 2 + k * 0.012, k * 0.008); g.add(c); }
+        break;
+      }
+      case "sausage": { const m = foodMat(kind, "skin", brownAmt, { roughness: 0.35 }); for (let k = 0; k < 4; k++) { const c = mesh(new THREE.CapsuleGeometry ? new THREE.CapsuleGeometry(0.012, 0.07, 6, 12) : new THREE.CylinderGeometry(0.012, 0.012, 0.09, 14), m); c.rotation.z = Math.PI / 2; c.position.set(0, 0.012, k * 0.026 - 0.04); g.add(c); } break; }
+      case "peas": case "corn": case "raisins": case "sago": case "pulses": {
+        g.add(ramekin(0.055));
+        const m = foodMat(kind, "skin", brownAmt, { roughness: kind === "sago" ? 0.1 : 0.45, transparent: kind === "sago", opacity: kind === "sago" ? 0.85 : 1 });
+        const geo = kind === "raisins" ? organic(new THREE.SphereGeometry(0.006, 8, 6), 0, 0.3, 3) : new THREE.SphereGeometry(kind === "corn" ? 0.005 : kind === "pulses" ? 0.004 : 0.006, 8, 6);
+        const inst = new THREE.InstancedMesh(geo, m, 60); inst.castShadow = true;
+        for (let k = 0; k < 60; k++) { const a = r() * 6.3, d = Math.sqrt(r()) * 0.042; dummy.position.set(Math.cos(a) * d, 0.012 + r() * 0.016, Math.sin(a) * d); dummy.rotation.set(r() * 3, r() * 3, 0); dummy.scale.setScalar(0.8 + r() * 0.4); dummy.updateMatrix(); inst.setMatrixAt(k, dummy.matrix); }
+        g.add(inst);
+        break;
+      }
+      case "fruit": { const m = foodMat(kind, "skin", brownAmt, { roughness: 0.3 }); for (let k = 0; k < 2; k++) { const e = ellipsoid(0.035, 1.45, 0.9, 1, m, 20); e.position.x = k * 0.1; g.add(e); } break; }
+      case "banana": { const m = foodMat(kind, "skin", brownAmt, { roughness: 0.45 }); for (let k = 0; k < 3; k++) { const b = mesh(new THREE.TorusGeometry(0.07, 0.014, 10, 20, 1.3), m); b.rotation.x = -Math.PI / 2; b.position.set(-0.04, 0.014 + k * 0.004, k * 0.022 - 0.05); g.add(b); } break; }
+      case "mushroom": { const cap = foodMat(kind, "skin", brownAmt, { roughness: 0.6 }), stem = foodMat(kind, "flesh", brownAmt, { roughness: 0.6 }); for (let k = 0; k < 4; k++) { const x = (k % 2) * 0.05, z = Math.floor(k / 2) * 0.05; const st = mesh(new THREE.CylinderGeometry(0.006, 0.008, 0.02, 10), stem); st.position.set(x, 0.01, z); g.add(st); const c = mesh(new THREE.SphereGeometry(0.02, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), cap); c.position.set(x, 0.018, z); c.scale.y = 0.6; g.add(c); } break; }
+      case "broccoli": case "cauliflower": { const m = foodMat(kind, "skin", brownAmt, { roughness: 0.75, bumpMap: pores(), bumpScale: 0.003 }); const stem = foodMat(kind, "flesh", 0); const s0 = mesh(new THREE.CylinderGeometry(0.012, 0.016, 0.05, 10), stem); s0.rotation.z = Math.PI / 2; s0.position.set(0.04, 0.016, 0); g.add(s0); for (let k = 0; k < 9; k++) { const f = ellipsoid(0.018, 1, 0.8, 1, m, 12); f.position.set((r() - 0.5) * 0.05, 0.008 + r() * 0.012, (r() - 0.5) * 0.05); g.add(f); } break; }
+      case "bread": { const m = foodMat(kind, "skin", brownAmt, { roughness: 0.7, bumpMap: pores(), bumpScale: 0.002 }); for (let k = 0; k < 2; k++) { const d = mesh(new THREE.SphereGeometry(0.04, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2), m); d.scale.y = 0.55; d.position.x = k * 0.085; g.add(d); } break; }
       default: g.add(ramekin()); break;
     }
     return g;
@@ -1177,6 +1257,7 @@ function cookBuildScene(THREE, canvas) {
     switch (kind === "leafy" && !fleck ? "leaf" : style) {
       case "leaf": geo = new THREE.PlaneGeometry(0.045, 0.035); n = 22; break;
       case "minced": geo = organic(box(0.007, 0.005, 0.007, 1), 0.25, 0.2, 3); n = 70; break;
+      case "beads": geo = new THREE.SphereGeometry(kind === "peppercorn" ? 0.0035 : 0.005, 8, 6); n = kind === "peppercorn" ? 20 : 45; break;
       case "grated": geo = new THREE.BoxGeometry(0.022, 0.003, 0.003); n = 60; break;
       case "diced": geo = organic(box(0.014, 0.012, 0.014, 2), 0.25, 0.12, 5); n = 36; break;
       case "cubes": geo = organic(box(0.03, 0.026, 0.03, 4), meat ? 0.35 : 0.2, meat ? 0.1 : 0.05, ckHash(it.key)); n = meat ? 14 : 18; break;
@@ -1229,10 +1310,12 @@ function cookBuildScene(THREE, canvas) {
     const title = (typeof cookShow !== "undefined" && cookShow && cookShow.title) || "";
     if (!style && ["pot", "plate"].includes(where || st.loc.get(it)) && ["pork", "beef", "chicken"].includes(kind) && !/lechon|kawali|crispy|bagnet|liempo|fried/i.test(title)) style = kind === "chicken" ? "pieces" : "cubes";
     // Big vegetables never go into the pot whole.
-    if (!style && ["pot", "plate"].includes(where || st.loc.get(it)) && ["gourd", "root", "eggplant", "radish", "carrot"].includes(kind)) style = "pieces";
+    // Whole vegetables and fruit never go into a pot, salad or plate whole: show them the way cooks cut them.
+    const CK_DEFAULT_CUT = { gourd: "pieces", root: "pieces", eggplant: "sliced", radish: "sliced", carrot: "sliced", onion: "sliced", redonion: "sliced", garlic: "minced", ginger: "strips", tomato: "wedges", fruit: "cubes", banana: "sliced", tofu: "cubes", sausage: "sliced", ham: "diced", cheese: "diced", mushroom: "sliced", broccoli: "pieces", cauliflower: "pieces" };
+    if (!style && ["pot", "plate", "bowl"].includes(where || st.loc.get(it)) && CK_DEFAULT_CUT[kind]) style = CK_DEFAULT_CUT[kind];
     const loose = ["pot", "plate", "bowl", "rack"].includes(where || st.loc.get(it));
-    if (loose && ["powder", "cube", "peppercorn", "misc"].includes(kind)) return piecesModel(kind === "peppercorn" ? { key: it.key, label: "peppercorn" } : it, kind === "cube" ? "crushed" : "minced", radius * 0.6, 0, seedExtra);
-    if (style && !["bottle", "water", "powder", "cube", "grain", "misc", "peppercorn"].includes(kind)) return piecesModel(it, style, radius, b, seedExtra);
+    if (loose && ["powder", "cube", "peppercorn", "misc", "peas", "corn", "raisins", "sago", "pulses"].includes(kind)) return piecesModel(kind === "peppercorn" ? { key: it.key, label: "peppercorn" } : it, kind === "cube" ? "crushed" : ["peas", "corn", "raisins", "sago", "pulses", "peppercorn"].includes(kind) ? "beads" : "minced", radius * 0.6, 0, seedExtra);
+    if (style && !["bottle", "water", "powder", "cube", "grain", "misc", "peppercorn", "peas", "corn", "raisins", "sago", "pulses"].includes(kind)) return piecesModel(it, style, radius, b, seedExtra);
     return fit(wholeModel(it, b), radius * 1.15);
   };
 
@@ -1249,7 +1332,7 @@ function cookBuildScene(THREE, canvas) {
   const vesselGroup = (v) => (v === "kaldero" ? kaldero : kawali);
   const contentY = (st) => {
     if (st.vessel === "kaldero") return VESSEL_Y + 0.008 + Math.max(st.level * 0.15, 0.004);
-    return VESSEL_Y - 0.03 + 0.012 + Math.max(st.oil, st.level) * 0.06;
+    return WOK_Y + 0.012 + Math.max(st.oil, st.level) * 0.06;
   };
   const vesselR = (st) => (st.vessel === "kaldero" ? 0.13 : 0.15);
   const spotOf = (st, it, which) => {
@@ -1365,13 +1448,13 @@ function cookBuildScene(THREE, canvas) {
     // Liquid level and colour, before and after.
     const lc0 = st.oil > st.level ? "#c98a1c" : cookMixColor(st.parts), lc1 = after.oil > after.level ? "#c98a1c" : cookMixColor(after.parts);
     liquid.userData = { from: Math.max(st.level, st.oil), to: Math.max(after.level, after.oil), c0: col(lc0), c1: col(lc1), oil: after.oil > after.level, st, after };
-    if (step.kind === "serve" && after.served === "bowl") { soupMat.color.copy(col(cookMixColor(st.parts))); const l = soupMat.color.r * 0.3 + soupMat.color.g * 0.59 + soupMat.color.b * 0.11; soupMat.opacity = Math.max(0.4, Math.min(0.93, 0.3 + (1 - l) * 1.1)); }
+    if (step.kind === "serve" && after.served === "bowl") { soupMat.color.copy(col(st.parts.length ? cookMixColor(st.parts) : "#f5efe0")); const l = soupMat.color.r * 0.3 + soupMat.color.g * 0.59 + soupMat.color.b * 0.11; soupMat.opacity = Math.max(0.4, Math.min(0.93, 0.3 + (1 - l) * 1.1)); }
 
     // Camera.
     const at = (xz, d) => ({ x: xz[0], z: xz[1], d });
     camGoal = step.kind === "shop" ? at([0, -0.42], 2.5)
       : ["cut", "peel", "wrap"].includes(step.kind) ? at(CK_AT.board, 0.95)
-      : ["mix", "marinate"].includes(step.kind) || toBowl ? at([CK_AT.bowl[0] + 0.2, CK_AT.bowl[1] - 0.05], 1.05)
+      : ["mix", "marinate", "chill"].includes(step.kind) || toBowl ? at([CK_AT.bowl[0] + 0.2, CK_AT.bowl[1] - 0.05], 1.05)
       : step.kind === "serve" ? at(CK_AT.plate, 0.85)
       : step.kind === "drain" ? at([(CK_AT.stove[0] + CK_AT.rack[0]) / 2, CK_AT.stove[1]], 1.15)
       : ["add", "pour", "saute", "season", "heat", "deepfry"].includes(step.kind) && movers.length + (pourInfo ? 1 : 0) > 0 ? at([CK_AT.stove[0] - 0.15, CK_AT.stove[1] - 0.12], 1.35)
@@ -1472,7 +1555,7 @@ function cookBuildScene(THREE, canvas) {
     const st = L.after;
     if (lvl > 0.005 && !(step.kind === "serve" && t > len * 0.5 && st.served === "bowl")) {
       liquid.visible = true;
-      const y = st.vessel === "kaldero" ? VESSEL_Y + 0.008 + lvl * 0.15 : VESSEL_Y - 0.03 + 0.004 + lvl * 0.06;
+      const y = st.vessel === "kaldero" ? VESSEL_Y + 0.008 + lvl * 0.15 : WOK_Y + 0.004 + lvl * 0.06;
       const rr = st.vessel === "kaldero" ? 0.152 : WOK_R(0.004 + lvl * 0.06);
       liquid.position.set(CK_AT.stove[0], y, CK_AT.stove[1]); liquid.scale.setScalar(rr);
       liquidMat.color.copy(L.c0).lerp(L.c1, u);
@@ -1510,7 +1593,7 @@ function cookBuildScene(THREE, canvas) {
       }
       bubbles.instanceMatrix.needsUpdate = true;
     }
-    const steamy = (["boil", "simmer", "cook", "steam"].includes(step.kind) ? 1 : 0) || (step.kind === "serve" ? 0.7 : 0) || (liquid.visible && heated && !L.oil ? 0.35 : 0) || (frying && heated ? 0.3 : 0);
+    const steamy = (["boil", "simmer", "cook", "steam"].includes(step.kind) ? 1 : 0) || (step.kind === "serve" && !step.cold ? 0.7 : 0) || (liquid.visible && heated && !L.oil ? 0.35 : 0) || (frying && heated ? 0.3 : 0);
     puffs.forEach((p, i) => {
       const s = p.userData.seed, cycle = (time * 0.32 + s) % 1;
       const base = step.kind === "serve" ? V(CK_AT.plate[0], 0.04, CK_AT.plate[1]) : V(CK_AT.stove[0], liquid.visible ? liquid.position.y : VESSEL_Y, CK_AT.stove[1]);
