@@ -539,27 +539,31 @@ function cookOpenDialog(message) {
     dlg.addEventListener("click", (e) => { if (e.target === dlg) closeCookShow(); });
     document.body.appendChild(dlg);
   }
-  dlg.innerHTML = `
-    <div class="cook-panel" role="dialog" aria-modal="true" aria-labelledby="cook-title">
+  dlg.innerHTML = `<div class="cook-panel" role="dialog" aria-modal="true" aria-labelledby="cook-title">${cookPlayerMarkup(message, false)}</div>`;
+  dlg.classList.add("open");
+  document.body.style.overflow = "hidden";
+  if (typeof dlgOpen === "function") dlgOpen(dlg.querySelector(".cook-panel"), closeCookShow);
+}
+
+/** The player's insides, shared by the pop-up and the kitchen in Ulam ko. */
+function cookPlayerMarkup(message, inline) {
+  return `
       <div class="cook-head">
-        <div class="min-w-0"><p class="cook-kicker">🎬 ${escapeHtml(cookT("cook.title", "Panoorin kung paano"))}</p><h2 id="cook-title" tabindex="-1" data-dlg-focus class="cook-name">${escapeHtml(message)}</h2></div>
-        <button type="button" onclick="closeCookShow()" class="dlg-x" aria-label="Isara">✕</button>
+        <div class="min-w-0"><p class="cook-kicker">${inline ? `🍳 ${escapeHtml(cookT("cook.kitchen", "Lutuin mo ang ulam mo"))}` : `🎬 ${escapeHtml(cookT("cook.title", "Panoorin kung paano"))}`}</p><h2 id="cook-title" tabindex="-1" data-dlg-focus class="cook-name">${escapeHtml(message)}</h2></div>
+        ${inline ? `<button type="button" onclick="cookKitchenClose()" class="wx-btn">${escapeHtml(cookT("cook.kitchenClose", "Isara ang kusina"))}</button>` : `<button type="button" onclick="closeCookShow()" class="dlg-x" aria-label="Isara">✕</button>`}
       </div>
-      <div class="cook-stage"><canvas id="cook-canvas" aria-hidden="true"></canvas><p id="cook-hud" class="cook-hud" hidden></p><p id="cook-timer" class="cook-timer" hidden></p><p id="cook-caption" class="cook-caption" aria-live="polite"></p></div>
+      ${inline ? `<div class="cook-left">` : ""}<div class="cook-stage"><canvas id="cook-canvas" aria-hidden="true"></canvas><p id="cook-hud" class="cook-hud" hidden></p><p id="cook-timer" class="cook-timer" hidden></p><p id="cook-caption" class="cook-caption" aria-live="polite"></p></div>
       <div class="cook-controls">
         <button type="button" class="wx-btn" onclick="cookGo(-1)" aria-label="${escapeHtml(cookT("cook.prev", "Nakaraan"))}">⏮</button>
         <button type="button" class="wx-btn on" id="cook-play" onclick="cookToggle()">▶</button>
         <button type="button" class="wx-btn" onclick="cookGo(1)" aria-label="${escapeHtml(cookT("cook.next", "Susunod"))}">⏭</button>
         <span id="cook-count" class="cook-count"></span>
-        <button type="button" class="wx-btn cook-edit-btn" id="cook-edit" onclick="cookEditToggle()">✏️ ${escapeHtml(cookT("cook.edit", "Ayusin ang mga hakbang"))}</button>
-      </div>
+        ${inline ? "" : `<button type="button" class="wx-btn cook-edit-btn" id="cook-edit" onclick="cookEditToggle()">✏️ ${escapeHtml(cookT("cook.edit", "Ayusin ang mga hakbang"))}</button>`}
+      </div>${inline ? `<ol id="cook-steps" class="cook-steps" aria-label="${escapeHtml(cookT("cook.steps", "Mga hakbang"))}"></ol></div><div class="cook-right">` : ""}
+      ${inline ? `<section id="cook-builder" class="cook-builder" aria-label="${escapeHtml(cookT("cook.next.q", "Ano ang susunod na gagawin?"))}"></section>` : ""}
       <section id="cook-list" class="cook-list-wrap" hidden></section>
-      <ol id="cook-steps" class="cook-steps" aria-label="${escapeHtml(cookT("cook.steps", "Mga hakbang"))}"></ol>
-      <p class="cook-note">${escapeHtml(cookT("cook.note", "Gawa ng SarapSulit mula sa mga sangkap at paraan ng recipe. Para sa buong paraan, buksan ang orihinal na recipe."))}</p>
-    </div>`;
-  dlg.classList.add("open");
-  document.body.style.overflow = "hidden";
-  if (typeof dlgOpen === "function") dlgOpen(dlg.querySelector(".cook-panel"), closeCookShow);
+      ${inline ? "</div>" : `<ol id="cook-steps" class="cook-steps" aria-label="${escapeHtml(cookT("cook.steps", "Mga hakbang"))}"></ol>`}
+      ${inline ? "" : `<p class="cook-note">${escapeHtml(cookT("cook.note", "Gawa ng SarapSulit mula sa mga sangkap at paraan ng recipe. Para sa buong paraan, buksan ang orihinal na recipe."))}</p>`}`;
 }
 
 function cookFail(msg) {
@@ -567,16 +571,19 @@ function cookFail(msg) {
   if (name) name.textContent = msg;
 }
 
-function cookStart(title, built, costPerServing, key) {
+function cookStart(title, built, costPerServing, key, opts = {}) {
   cookStop();
   // The person's own edited steps for this recipe or dish, if saved on this device.
-  const saved = key ? cookSavedSteps(key) : null;
+  const saved = key && !opts.fresh ? cookSavedSteps(key) : null;
   const steps = saved ? cookRestoreSteps(saved, built) : built;
-  cookShow = { title, steps, built, key, edited: !!saved, editing: false, i: 0, t: 0, playing: false, cost: costPerServing, last: 0, three: null };
+  cookShow = { title, steps, built, key, edited: !!saved, editing: !!opts.builder, builder: !!opts.builder, inline: !!opts.inline, extra: opts.extra || [],
+    i: 0, t: 0, playing: false, cost: costPerServing, last: 0, three: null, stopAt: null, draft: null };
+  if (cookShow.builder) cookWriteSteps(key, steps);
   document.getElementById("cook-title").textContent = title;
   cookRenderSteps();
   cookShowStep();
   cookRenderList(steps);
+  if (cookShow.builder) cookRenderBuilder();
   const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   loadThree().then(() => {
     if (!cookShow) return;
@@ -585,13 +592,234 @@ function cookStart(title, built, costPerServing, key) {
     const shop = steps[0] && steps[0].kind === "shop" ? steps[0].items : [];
     setTimeout(() => { if (cookShow && cookShow.three) cookFillThumbs(cookShow.three.thumbs(shop)); }, 50);
     cookEnterStep();
-    cookShow.playing = !reduce;
+    cookShow.playing = !reduce && !opts.paused;
     document.getElementById("cook-play").textContent = cookShow.playing ? "⏸" : "▶";
     cookShow.last = performance.now();
     cookShow.raf = requestAnimationFrame(cookFrame);
   }).catch(() => {
-    document.querySelector("#cook-dialog .cook-stage").innerHTML = `<p class="cook-caption">${escapeHtml(cookT("cook.textOnly", "Hindi ma-load ang 3D. Heto ang mga hakbang."))}</p>`;
+    document.querySelector(".cook-stage").innerHTML = `<p class="cook-caption">${escapeHtml(cookT("cook.textOnly", "Hindi ma-load ang 3D. Heto ang mga hakbang."))}</p>`;
   });
+}
+
+// ── "Lutuin mo": the kitchen in Ulam ko, where people build their own dish's method ──
+
+const COOK_ACTIONS = [
+  ["cut", "🔪", "Hiwain", "Cut"], ["peel", "🧽", "Balatan", "Peel"], ["marinate", "🥣", "Ibabad", "Marinate"], ["mix", "🥣", "Paghaluin", "Mix"],
+  ["wrap", "🌯", "Ibalot", "Wrap"], ["heat", "🔥", "Painitin", "Heat"], ["saute", "🍳", "Igisa", "Sauté"], ["add", "➕", "Ilagay", "Add"],
+  ["pour", "🫗", "Ibuhos", "Pour"], ["boil", "♨️", "Pakuluan", "Boil"], ["simmer", "♨️", "Hinaan ang apoy", "Simmer"], ["fry", "🍳", "Iprito", "Fry"],
+  ["deepfry", "🛢️", "Iprito nang lubog", "Deep-fry"], ["grill", "🔥", "Ihawin", "Grill"], ["steam", "♨️", "I-steam", "Steam"], ["bake", "🔥", "I-bake", "Bake"],
+  ["stir", "🥄", "Haluin", "Stir"], ["season", "🧂", "Timplahan", "Season"], ["chill", "🧊", "Palamigin", "Chill"], ["drain", "🧻", "Hanguin", "Take out"],
+];
+const COOK_DEFAULT_MIN = { marinate: 30, boil: 10, simmer: 20, cook: 5, fry: 5, deepfry: 10, grill: 10, steam: 15, bake: 25, chill: 60 };
+const COOK_NEEDS_ITEMS = new Set(["cut", "peel", "marinate", "mix", "wrap", "saute", "add", "pour", "fry", "deepfry", "grill"]);
+const COOK_ON_STOVE = new Set(["heat", "saute", "add", "pour", "fry", "deepfry", "boil", "simmer", "cook", "stir", "season", "drain"]);
+
+/**
+ * The kitchen's comments on a method, like a simulation: raw meat, frying in a cold pan, boiling a dry pot,
+ * ingredients never used, total time. Pure, tested. Each note: { type: "warn" | "info" | "ok", tl, en }.
+ */
+function cookCheck(steps) {
+  const shop = steps[0] && steps[0].kind === "shop" ? steps[0].items : [];
+  const raw = (it) => ["pork", "beef", "chicken", "fish", "shrimp", "mince", "squid", "crab", "shells", "balls", "sausage", "egg"].includes(cookFoodKind(it));
+  const heatKinds = new Set(["boil", "simmer", "cook", "fry", "deepfry", "grill", "bake", "steam", "saute"]);
+  const notes = [], cooked = new Set(), used = new Set(), heated = {};
+  let inPot = new Set(), liquid = false, vessel = null, total = 0, warnedHeat = false, warnedDry = false, warnedOil = false;
+  const name = (list) => cookList(list).replace(/ at /g, " at ");
+  const nameEn = (list) => cookList(list).replace(/ at /g, " and ");
+  for (const s of steps) {
+    if (s.kind === "shop" || s.kind === "serve") continue;
+    for (const it of s.items || []) used.add(it);
+    const v = s.vessel || vessel || "kawali";
+    if (COOK_ON_STOVE.has(s.kind) || heatKinds.has(s.kind)) { if (vessel && v !== vessel && !["drain"].includes(s.kind)) { inPot = new Set(); liquid = false; } vessel = v; }
+    if (s.kind === "heat") heated[v] = true;
+    if (["saute", "fry", "deepfry"].includes(s.kind) && !heated[v] && !warnedHeat) {
+      notes.push({ type: "warn", tl: `Painitin muna ang ${v} bago ${s.kind === "saute" ? "mag-gisa" : "magprito"}.`, en: `Heat the ${v === "kaldero" ? "pot" : "pan"} before you ${s.kind === "saute" ? "sauté" : "fry"}.` });
+      warnedHeat = true;
+    }
+    if (["saute", "add", "pour", "fry", "deepfry", "grill", "steam", "bake", "boil", "simmer", "cook", "season"].includes(s.kind)) {
+      for (const it of s.items || []) { if (it.liquid && !it.fryOil) liquid = true; else if (!it.fryOil) inPot.add(it); }
+    }
+    if (s.kind === "boil" && !liquid && !warnedDry) {
+      notes.push({ type: "warn", tl: "Walang tubig o sabaw sa kaldero bago pakuluan. Magbuhos muna.", en: "There's no water or broth in the pot before boiling. Pour some in first." });
+      warnedDry = true;
+    }
+    if (s.kind === "deepfry" && !shop.some((it) => it.fryOil) && !warnedOil) {
+      notes.push({ type: "warn", tl: "Walang mantika sa listahan ng sangkap para sa pagprito.", en: "There's no cooking oil in the ingredients for frying." });
+      warnedOil = true;
+    }
+    if (heatKinds.has(s.kind)) { for (const it of inPot) cooked.add(it); for (const it of s.items || []) cooked.add(it); }
+    if (s.kind === "drain") inPot = new Set();
+    if (s.minutes) total += s.minutes;
+  }
+  const hilaw = shop.filter((it) => raw(it) && !cooked.has(it));
+  if (hilaw.length) notes.unshift({ type: "warn", tl: `Hilaw pa ang ${name(hilaw)}. Lutuin muna bago ihain.`, en: `The ${nameEn(hilaw)} ${hilaw.length > 1 ? "are" : "is"} still raw. Cook before serving.` });
+  const unused = shop.filter((it) => !used.has(it) && !it.toTaste && !it.fryOil && !it.water);
+  if (unused.length && used.size) notes.push({ type: "info", tl: `Hindi pa nagagamit: ${name(unused)}.`, en: `Not used yet: ${nameEn(unused)}.` });
+  if (!used.size && !steps.some((s) => !["shop", "serve"].includes(s.kind))) notes.push({ type: "info", tl: "Pumili ng unang gagawin sa itaas.", en: "Pick the first thing to do above." });
+  if (total) notes.push({ type: "info", tl: `Kabuuang oras: ${cookTimeText(total, "tl")}.`, en: `Total time: ${cookTimeText(total, "en")}.` });
+  if (!notes.some((n) => n.type === "warn") && used.size && shop.some(raw)) notes.unshift({ type: "ok", tl: "Luto na lahat ng karne at isda. Mukhang masarap!", en: "All the meat and fish is cooked. Looks delicious!" });
+  return notes;
+}
+
+/** The idle card in Ulam ko: start from the suggested method, from scratch, or carry on. */
+function cookKitchenIdle() {
+  const box = document.getElementById("mydish-kitchen");
+  if (!box || typeof currentDish === "undefined" || !currentDish) return;
+  const key = `d${currentDish.id || "new"}`;
+  const has = !!cookSavedSteps(key);
+  box.innerHTML = `
+    <div class="cook-kitchen-idle">
+      <div class="min-w-0"><h3 class="cook-kitchen-h">🍳 ${escapeHtml(cookT("cook.kitchen", "Lutuin mo ang ulam mo"))}</h3>
+        <p class="cook-kitchen-p">${escapeHtml(cookT("cook.kitchenIntro", "Ikaw ang kusinero: piliin ang gagawin, ang sangkap, paano hiwain at gaano katagal, at panoorin itong maluto."))}</p></div>
+      <div class="cook-kitchen-btns">
+        ${has ? `<button type="button" class="cook-open-btn on" onclick="cookKitchenStart('continue')">▶ ${escapeHtml(cookT("cook.kitchenContinue", "Ituloy ang luto ko"))}</button>` : ""}
+        <button type="button" class="cook-open-btn" onclick="cookKitchenStart('suggest')">✨ ${escapeHtml(cookT("cook.kitchenSuggest", "Simulan sa mungkahing paraan"))}</button>
+        <button type="button" class="cook-open-btn" onclick="cookKitchenStart('blank')">🧑‍🍳 ${escapeHtml(cookT("cook.kitchenBlank", "Ako ang bahala (simula sa wala)"))}</button>
+      </div>
+    </div>`;
+}
+
+/** Ingredients of the dish being edited, as engine lines when the dish has been priced. */
+function cookDishLines() {
+  return typeof lastResult !== "undefined" && lastResult && lastResult.lines ? lastResult.lines : currentDish.lines;
+}
+
+function cookKitchenStart(mode) {
+  if (typeof currentDish === "undefined" || !currentDish) return;
+  const box = document.getElementById("mydish-kitchen");
+  if (!box) return;
+  // The pop-up player and the kitchen share one player: close the pop-up first.
+  if (document.getElementById("cook-dialog")?.classList.contains("open")) closeCookShow();
+  box.innerHTML = `<div class="cook-panel cook-inline">${cookPlayerMarkup(currentDish.title || cookT("cook.kitchen", "Lutuin mo ang ulam mo"), true)}</div>`;
+  const key = `d${currentDish.id || "new"}`;
+  const lines = cookDishLines();
+  const cost = lastResult && lastResult.summary && !lastResult.summary.costIncomplete ? lastResult.summary.cost : null;
+  const extra = cookItemsFromLines(lines).filter((it) => it.water);
+  const go = (instructions, notes) => {
+    const built = buildCookScript({ title: currentDish.title, lines, instructions, methodNotes: notes });
+    const steps = mode === "blank" ? [built[0], built[built.length - 1]] : built;
+    cookStart(currentDish.title, steps, cost, key, { inline: true, builder: true, extra, fresh: mode !== "continue", paused: mode === "blank" });
+    box.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+  if (mode === "blank" || !currentDish.fromRecipeId) return go([], null);
+  fetch(`${API_BASE}/api/recipes/${currentDish.fromRecipeId}`).then((r) => r.json())
+    .then((d) => go(((d.recipe && d.recipe.instructions) || []).map((x) => x.text), d.recipe && d.recipe.methodNotes))
+    .catch(() => go([], null));
+}
+
+function cookKitchenClose() { cookStop(); }
+
+/** Ulam ko's "Panoorin" button: open the kitchen below (carry on if there's a saved method). */
+function cookKitchenWatch() {
+  if (typeof currentDish === "undefined" || !currentDish) return;
+  cookKitchenStart(cookSavedSteps(`d${currentDish.id || "new"}`) ? "continue" : "suggest");
+}
+
+/** Ulam ko re-drew the editor: stop a running kitchen and show the start card. */
+function cookKitchenReset() {
+  if (cookShow && cookShow.inline) { cancelAnimationFrame(cookShow.raf); if (cookShow.three) cookShow.three.dispose(); cookShow = null; }
+  cookKitchenIdle();
+}
+
+/** The dish's ingredients changed (recalculated in Ulam ko): refresh the kitchen's list and chips. */
+function cookKitchenSync() {
+  if (!cookShow || !cookShow.builder || typeof currentDish === "undefined" || !currentDish) return;
+  const items = cookItemsFromLines(cookDishLines());
+  const shop = items.filter((it) => !it.water);
+  cookShow.extra = items.filter((it) => it.water);
+  // Keep the same item objects where the key still matches, so existing steps stay linked.
+  const old = new Map(cookShow.steps[0].items.map((it) => [it.key, it]));
+  cookShow.steps[0] = { ...cookShow.steps[0], items: shop.map((it) => old.get(it.key) || it) };
+  cookRenderList(cookShow.steps); cookRenderBuilder(); cookWriteSteps(cookShow.key, cookShow.steps);
+}
+
+function cookBuilderItems() {
+  const shop = cookShow.steps[0] && cookShow.steps[0].kind === "shop" ? cookShow.steps[0].items : [];
+  const extra = (cookShow.extra || []).filter((w) => !shop.some((it) => it.key === w.key));
+  return [...shop, ...extra];
+}
+
+function cookChipThumb(it) {
+  const ph = cookPhotos && cookPhotos[it.key];
+  return ph && ph.thumb ? `<img src="${escapeHtml(ph.thumb)}" alt="" width="28" height="28" loading="lazy" referrerpolicy="no-referrer">` : `<span aria-hidden="true">${escapeHtml(it.icon || "🥄")}</span>`;
+}
+
+function cookDraftStep() {
+  const d = cookShow.draft;
+  if (!d) return null;
+  const items = cookBuilderItems().filter((it) => d.keys.includes(it.key));
+  const s = { kind: d.kind, items, vessel: COOK_ON_STOVE.has(d.kind) || ["grill", "bake", "steam"].includes(d.kind) ? d.vessel : undefined };
+  if (d.kind === "cut") { s.style = d.style; s.size = d.size || null; }
+  if (COOK_TIMED.has(d.kind)) s.minutes = d.minutes || null;
+  if (d.kind === "pour" && items.some((it) => !it.liquid)) s.kind = "add";
+  return s;
+}
+
+function cookRenderBuilder() {
+  const box = document.getElementById("cook-builder");
+  if (!box || !cookShow) return;
+  const en = cookLang() === "en", d = cookShow.draft;
+  const items = cookBuilderItems();
+  const acts = COOK_ACTIONS.map(([k, ico, tl, e]) => `<button type="button" class="cook-act${d && d.kind === k ? " on" : ""}" aria-pressed="${d && d.kind === k}" onclick="cookPick('${k}')"><span aria-hidden="true">${ico}</span> ${escapeHtml(en ? e : tl)}</button>`).join("");
+  let form = "";
+  if (d) {
+    const needs = COOK_NEEDS_ITEMS.has(d.kind) || ["season", "boil", "simmer", "steam", "bake"].includes(d.kind);
+    const list = d.kind === "pour" ? [...items.filter((it) => it.liquid), ...items.filter((it) => !it.liquid)] : d.kind === "wrap" ? items.filter((it) => /wrapper|leaf/.test(it.key)).concat(items.filter((it) => !/wrapper|leaf/.test(it.key))) : items;
+    const chips = needs ? `<div class="cook-form-row"><span class="cook-form-l">${escapeHtml(cookT("cook.which", en ? "Which ingredients?" : "Aling sangkap?"))}${d.kind === "cut" ? ` <small>(${escapeHtml(en ? "one at a time" : "isa-isa")})</small>` : ""}</span>
+        <div class="cook-chips">${list.map((it) => `<button type="button" class="cook-chip${d.keys.includes(it.key) ? " on" : ""}" aria-pressed="${d.keys.includes(it.key)}" onclick="cookPickItem('${escapeHtml(it.key)}')">${cookChipThumb(it)}<span>${escapeHtml(it.label)}</span></button>`).join("")}</div></div>` : "";
+    const cut = d.kind === "cut" ? `<div class="cook-form-row"><span class="cook-form-l">${escapeHtml(en ? "How to cut" : "Paano hiwain")}</span>
+        <div class="cook-chips">${Object.keys(COOK_STYLE_TEXT).map((k) => `<button type="button" class="cook-chip sm${d.style === k ? " on" : ""}" aria-pressed="${d.style === k}" onclick="cookDraftSet('style','${k}')">${escapeHtml(COOK_STYLE_TEXT[k][en ? 1 : 0])}</button>`).join("")}</div>
+        <label class="cook-in-l">${escapeHtml(en ? "Size" : "Laki")} <input class="cook-in cook-num" type="number" min="0" max="20" step="0.5" value="${d.size || ""}" placeholder="cm" oninput="cookDraftSet('size', this.value)"> cm</label></div>` : "";
+    const time = COOK_TIMED.has(d.kind) ? `<div class="cook-form-row"><span class="cook-form-l">${escapeHtml(en ? "How long" : "Gaano katagal")}</span>
+        <div class="cook-chips">${[5, 10, 15, 30, 45, 60, 120, 180].map((m) => `<button type="button" class="cook-chip sm${d.minutes === m ? " on" : ""}" aria-pressed="${d.minutes === m}" onclick="cookDraftSet('minutes', ${m})">${escapeHtml(cookTimeText(m, en ? "en" : "tl"))}</button>`).join("")}
+        <label class="cook-in-l"><input class="cook-in cook-num" type="number" min="1" max="2880" value="${d.minutes || ""}" oninput="cookDraftSet('minutes', this.value)"> ${escapeHtml(cookT("cook.min", "min"))}</label></div></div>` : "";
+    const ves = COOK_ON_STOVE.has(d.kind) ? `<div class="cook-form-row"><span class="cook-form-l">${escapeHtml(en ? "In the" : "Saan")}</span>
+        <div class="cook-chips">${[["kawali", "🍳 Kawali", "🍳 Pan"], ["kaldero", "🍲 Kaldero", "🍲 Pot"]].map(([v, tl, e]) => `<button type="button" class="cook-chip sm${d.vessel === v ? " on" : ""}" aria-pressed="${d.vessel === v}" onclick="cookDraftSet('vessel','${v}')">${escapeHtml(en ? e : tl)}</button>`).join("")}</div></div>` : "";
+    const step = cookDraftStep();
+    const ready = step && (!COOK_NEEDS_ITEMS.has(d.kind) || step.items.length);
+    form = `<div class="cook-form">${chips}${cut}${time}${ves}
+      <div class="cook-form-go"><span class="cook-preview">${ready ? `${escapeHtml(cookStepIcon(step))} ${escapeHtml(cookCaption(step, en ? "en" : "tl"))}` : escapeHtml(en ? "Pick the ingredients first." : "Pumili muna ng sangkap.")}</span>
+      <button type="button" class="wx-btn on cook-go" onclick="cookAddDraft()"${ready ? "" : " disabled"}>➕ ${escapeHtml(cookT("cook.addCook", en ? "Add and cook" : "Idagdag at lutuin"))}</button></div></div>`;
+  }
+  const notes = cookCheck(cookShow.steps);
+  box.innerHTML = `<h3 class="cook-list-h">${escapeHtml(cookT("cook.next.q", en ? "What's next?" : "Ano ang susunod na gagawin?"))}</h3>
+    <div class="cook-acts">${acts}</div>${form}
+    <div class="cook-check" aria-live="polite"><p class="cook-check-h">🧑‍🍳 ${escapeHtml(cookT("cook.feedback", en ? "Kitchen notes" : "Puna ng kusina"))}</p>
+      <ul>${notes.map((n) => `<li class="cook-note-${n.type}">${n.type === "warn" ? "⚠️" : n.type === "ok" ? "✅" : "ℹ️"} ${escapeHtml(en ? n.en : n.tl)}</li>`).join("")}</ul></div>`;
+}
+
+function cookPick(kind) {
+  const prev = [...cookShow.steps].reverse().find((s) => s.vessel);
+  cookShow.draft = { kind, keys: [], style: "diced", size: null, minutes: COOK_DEFAULT_MIN[kind] || null, vessel: (prev && prev.vessel) || (["boil", "simmer"].includes(kind) ? "kaldero" : "kawali") };
+  cookRenderBuilder();
+}
+function cookPickItem(key) {
+  const d = cookShow.draft; if (!d) return;
+  if (d.kind === "cut") d.keys = d.keys[0] === key ? [] : [key];
+  else d.keys = d.keys.includes(key) ? d.keys.filter((k) => k !== key) : [...d.keys, key];
+  cookRenderBuilder();
+}
+function cookDraftSet(field, value) {
+  const d = cookShow.draft; if (!d) return;
+  if (field === "style" || field === "vessel") d[field] = value;
+  else { const n = parseFloat(value); d[field] = Number.isFinite(n) && n > 0 ? n : null; }
+  if (field === "size" || (field === "minutes" && typeof value === "string")) { // typing: keep the focus in the box
+    const pv = document.querySelector("#cook-builder .cook-preview"); const st = cookDraftStep(); if (pv && st) pv.textContent = `${cookStepIcon(st)} ${cookCaption(st, cookLang())}`;
+    return;
+  }
+  cookRenderBuilder();
+}
+function cookAddDraft() {
+  const step = cookDraftStep();
+  if (!step || (COOK_NEEDS_ITEMS.has(step.kind) && !step.items.length)) return;
+  const at = cookShow.steps[cookShow.steps.length - 1].kind === "serve" ? cookShow.steps.length - 1 : cookShow.steps.length;
+  cookShow.steps = [...cookShow.steps.slice(0, at), step, ...cookShow.steps.slice(at)];
+  cookShow.draft = null;
+  cookStepsChanged();
+  // Play the new step once, like a simulation, then wait for the next one.
+  cookShow.i = at; cookShow.t = 0; cookShow.stopAt = at; cookShow.playing = true;
+  document.getElementById("cook-play").textContent = "⏸";
+  cookShowStep(); cookEnterStep();
 }
 
 // ── Editing the steps (saved on this device) ──
@@ -661,7 +889,7 @@ function cookRenderSteps() {
       <button type="button" class="cook-tool" onclick="cookEditMove(${i}, 1)" aria-label="${escapeHtml(cookT("cook.down", "Ibaba"))}"${i >= n - 2 ? " disabled" : ""}>↓</button>
       <button type="button" class="cook-tool" onclick="cookEditRemove(${i})" aria-label="${escapeHtml(cookT("cook.remove", "Alisin"))}">🗑</button></span>`;
     return `<li class="cook-edit-row${i === cookShow.i ? " on" : ""}"><div class="cook-edit-top">${head}${tools}</div>${style || time ? `<div class="cook-edit-in">${style}${time}</div>` : ""}</li>`;
-  }).join("") + (ed ? `<li class="cook-edit-foot">
+  }).join("") + (ed && !cookShow.builder ? `<li class="cook-edit-foot">
       <label class="cook-in-l">${escapeHtml(cookT("cook.addStep", "Magdagdag ng hakbang"))}: <select class="cook-in" id="cook-add-kind">${COOK_ADDABLE.map((k) => opt(k, "", cookCaption({ kind: k, items: [] }, lang))).join("")}</select></label>
       <button type="button" class="wx-btn" onclick="cookEditAdd()">＋</button>
       <span class="cook-edit-actions"><button type="button" class="wx-btn on" onclick="cookEditSave()">💾 ${escapeHtml(cookT("cook.save", "I-save sa device na ito"))}</button>
@@ -675,6 +903,7 @@ function cookRenderSteps() {
 function cookStepsChanged() {
   cookShow.i = Math.min(cookShow.i, cookShow.steps.length - 1); cookShow.t = 0;
   cookRenderSteps(); cookShowStep(); cookEnterStep();
+  if (cookShow.builder) { cookWriteSteps(cookShow.key, cookShow.steps); cookRenderBuilder(); }
 }
 function cookEditToggle() { if (!cookShow) return; cookShow.editing = !cookShow.editing; if (cookShow.editing) cookShow.playing = false; const pb = document.getElementById("cook-play"); if (pb) pb.textContent = cookShow.playing ? "⏸" : "▶"; cookRenderSteps(); }
 function cookEditMove(i, d) { cookShow.steps = cookMoveStep(cookShow.steps, i, d); if (cookShow.i === i) cookShow.i = i + d; cookStepsChanged(); }
@@ -724,7 +953,7 @@ function cookRenderList(steps) {
     </ul>
     <p class="cook-list-total">${priced.length ? `${escapeHtml(cookT("cook.listTotal", en ? "Total for the whole dish" : "Kabuuan para sa buong ulam"))}: <b>₱${Math.round(total)}</b>` : ""}${priced.length < shop.filter((it) => !it.toTaste).length ? ` <span class="cook-list-gap">· ${escapeHtml(cookT("cook.listGap", en ? "— = no price yet" : "— = wala pang presyo"))}</span>` : ""}</p>`;
   box.hidden = false;
-  cookLoadPhotos().then((p) => cookFillPhotos(p, shop));
+  cookLoadPhotos().then((p) => { cookFillPhotos(p, shop); if (cookShow && cookShow.builder) cookRenderBuilder(); });
 }
 
 // Credited Wikimedia Commons photos for the most-used ingredients (docs/cookphotos.json), loaded when the player opens.
@@ -805,9 +1034,11 @@ function closeCookShow() {
 
 function cookStop() {
   if (!cookShow) return;
+  const wasInline = cookShow.inline;
   cancelAnimationFrame(cookShow.raf);
   if (cookShow.three) cookShow.three.dispose();
   cookShow = null;
+  if (wasInline) cookKitchenIdle();
 }
 
 /** Seconds a step plays: the shopping step grows with the list; cooking steps get time for the clock. */
@@ -835,11 +1066,13 @@ function cookFrame(now) {
     cookShow.t += dt;
     const len = cookStepLength(cookShow.steps[cookShow.i]);
     if (cookShow.t >= len) {
-      if (cookShow.i < cookShow.steps.length - 1) { cookShow.i++; cookShow.t = 0; cookShowStep(); cookEnterStep(); }
+      if (cookShow.stopAt === cookShow.i) { cookShow.t = len; cookShow.playing = false; cookShow.stopAt = null; document.getElementById("cook-play").textContent = "▶"; }
+      else if (cookShow.i < cookShow.steps.length - 1) { cookShow.i++; cookShow.t = 0; cookShowStep(); cookEnterStep(); }
       else { cookShow.t = len; cookShow.playing = false; document.getElementById("cook-play").textContent = "▶"; }
     }
   }
-  if (cookShow.three) cookShow.three.update(cookShow.steps[cookShow.i], cookShow.t, cookStepLength(cookShow.steps[cookShow.i]), dt);
+  const cv = document.getElementById("cook-canvas");
+  if (cookShow.three && cv && cv.offsetParent !== null) cookShow.three.update(cookShow.steps[cookShow.i], cookShow.t, cookStepLength(cookShow.steps[cookShow.i]), dt);
   cookShow.raf = requestAnimationFrame(cookFrame);
 }
 
@@ -1773,7 +2006,7 @@ function cookBuildScene(THREE, canvas) {
       const from = step.kind === "shop" ? "prep" : st.loc.get(it) || "board";
       let to = after.loc.get(it) || from;
       if (step.kind === "cut" || step.kind === "peel") to = "board";
-      const obj = from === "prep" && step.kind !== "shop" && !(step.kind === "cut") ? modelFor(it, st, from === "prep" ? 0.05 : radiusAt(to)) : (step.kind === "cut" ? fit(wholeModel(it, st.brown.get(it) || 0), 0.085) : modelFor(it, st, step.kind === "shop" ? 0.075 : radiusAt(to), 0, step.kind === "shop" ? "prep" : to));
+      const obj = from === "prep" && step.kind !== "shop" && !(step.kind === "cut") ? modelFor(it, st, from === "prep" ? 0.05 : radiusAt(to), 0, to) : (step.kind === "cut" ? fit(wholeModel(it, st.brown.get(it) || 0), 0.085) : modelFor(it, st, step.kind === "shop" ? 0.075 : radiusAt(to), 0, step.kind === "shop" ? "prep" : to));
       if (step.kind === "shop") { const p = spotOf(st, it, "prep"); obj.position.copy(p); obj.scale.multiplyScalar(0.0001); obj.userData.full = obj.scale.x / 0.0001; }
       dyn.add(obj);
       const pFrom = spotOf(st, it, from), pTo = to === "board" && step.kind === "cut" ? V(CK_AT.board[0] - 0.02, BOARD_Y, CK_AT.board[1]) : spotOf(after, it, to);

@@ -7,8 +7,8 @@ import vm from "node:vm";
 
 const ctx = vm.createContext({});
 vm.runInContext(`${readFileSync(new URL("./cookshow.js", import.meta.url), "utf8")}
-;globalThis.api = { cookCutStyle, cookMinutes, cookTimeText, cookItemsFromLines, cookMentions, buildCookScript, cookCaption, cookFoodKind, cookState, cookMixColor, cookBottleWord, cookSerializeSteps, cookRestoreSteps, cookMoveStep, cookCompact, COOK_THREE_SRI };`, ctx);
-const { cookCutStyle, cookMinutes, cookTimeText, cookItemsFromLines, cookMentions, buildCookScript, cookCaption, cookFoodKind, cookState, cookMixColor, cookBottleWord, cookSerializeSteps, cookRestoreSteps, cookMoveStep, cookCompact, COOK_THREE_SRI } = ctx.api;
+;globalThis.api = { cookCutStyle, cookMinutes, cookTimeText, cookItemsFromLines, cookMentions, buildCookScript, cookCaption, cookFoodKind, cookState, cookMixColor, cookBottleWord, cookSerializeSteps, cookRestoreSteps, cookMoveStep, cookCompact, cookCheck, COOK_THREE_SRI };`, ctx);
+const { cookCutStyle, cookMinutes, cookTimeText, cookItemsFromLines, cookMentions, buildCookScript, cookCaption, cookFoodKind, cookState, cookMixColor, cookBottleWord, cookSerializeSteps, cookRestoreSteps, cookMoveStep, cookCompact, cookCheck, COOK_THREE_SRI } = ctx.api;
 const plain = (x) => JSON.parse(JSON.stringify(x));
 
 const line = (slug, label, text, status = "ok") => ({ slug, label, text, status });
@@ -212,4 +212,28 @@ test("ingredient photos: Wikimedia Commons only, each with its licence and autho
     assert.ok(p.artist && p.artist.length > 1, slug);
     if (/^CC BY/.test(p.license)) assert.match(p.licenseUrl, /^https?:\/\/creativecommons\.org\//, slug);
   }
+});
+
+test("kitchen notes: raw meat, cold pan, dry pot, unused ingredients, total time", () => {
+  const built = steps(ADOBO);
+  const [shop, serve] = [built[0], built[built.length - 1]];
+  const pork = shop.items.find((i) => i.key === "pork_belly"), garlic = shop.items.find((i) => i.key === "garlic");
+  const types = (list) => list.map((n) => `${n.type}:${n.tl}`);
+  // Nothing done yet.
+  assert.match(types(cookCheck([shop, serve])).join("|"), /Pumili ng unang gagawin/);
+  // Frying in a cold pan, the pork never cooked through, a dry boil.
+  const bad = cookCheck([shop, { kind: "saute", items: [garlic], vessel: "kawali" }, { kind: "add", items: [pork], vessel: "kaldero" }, { kind: "boil", items: [], vessel: "kaldero" }, serve]);
+  const text = types(bad).join("|");
+  assert.match(text, /warn:Painitin muna ang kawali bago mag-gisa/);
+  assert.match(text, /warn:Walang tubig o sabaw sa kaldero/);
+  assert.doesNotMatch(text, /Hilaw pa/, "boiling cooks what's in the pot");
+  assert.match(text, /info:Hindi pa nagagamit: bay leaf/);
+  const raw = cookCheck([shop, { kind: "cut", items: [pork], style: "cubes" }, serve]);
+  assert.equal(raw[0].type, "warn");
+  assert.equal(raw[0].tl, "Hilaw pa ang pork belly. Lutuin muna bago ihain.");
+  // The engine's own adobo passes, with its total time.
+  const good = cookCheck(built);
+  assert.equal(good[0].type, "ok");
+  assert.ok(!good.some((n) => n.type === "warn"), JSON.stringify(good));
+  assert.ok(good.some((n) => /Kabuuang oras: 1 oras 55 minuto/.test(n.tl)), JSON.stringify(good));
 });

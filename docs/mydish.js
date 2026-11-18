@@ -210,12 +210,14 @@ function renderEditor() {
         </div>
         <div class="flex items-center gap-3 flex-wrap pt-2 border-t border-gray-100">
           <button onclick="saveCurrentDish()" class="bg-green-700 hover:bg-green-600 text-white text-sm font-medium px-5 py-2 rounded-full">Save on this device</button>
-          <button type="button" onclick="openCookShowDish()" class="cook-open-btn">${typeof t === "function" ? t("cook.watch") : "🎬 Panoorin kung paano"}</button>
+          <button type="button" onclick="cookKitchenWatch()" class="cook-open-btn">${typeof t === "function" ? t("cook.watch") : "🎬 Panoorin kung paano"}</button>
           <span id="mydish-saved" class="text-xs text-gray-500"></span>
         </div>
       </div>
       <div id="mydish-result" class="space-y-4">${lastResult ? dishResultHtml(lastResult) : `<p class="text-sm text-gray-400">Add ingredients to see the cost and nutrition.</p>`}</div>
-    </div>`;
+    </div>
+    <section id="mydish-kitchen" class="cook-kitchen" aria-label="Lutuin mo ang ulam mo"></section>`;
+  if (typeof cookKitchenReset === "function") cookKitchenReset();
 }
 
 function dishEdit(i, field, value) {
@@ -273,6 +275,7 @@ async function computeDish() {
     if (req !== dishRequest) return; // a newer edit is on its way
     lastResult = data;
     out.innerHTML = dishResultHtml(data);
+    if (typeof cookKitchenSync === "function") cookKitchenSync(); // the kitchen below follows the ingredients
   } catch (e) {
     if (req === dishRequest) out.innerHTML = `<p class="text-sm text-red-600">Couldn’t calculate the dish (${escapeHtml(e.message)}).</p>`;
   } finally {
