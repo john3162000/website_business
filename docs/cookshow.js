@@ -421,7 +421,8 @@ async function openCookShow(id) {
       title: rec.title, lines: c.lines || rec.ingredients || [], instructions: (rec.instructions || []).map((s) => s.text),
       methodNotes: rec.methodNotes, frying: c.method && c.method.frying,
     });
-    cookStart(rec.title || "", steps, c.costPerServing);
+    // A dish with an unpriced main ingredient shows no price (the site flags it "Incomplete price").
+    cookStart(rec.title || "", steps, c.costGaps && c.costGaps.items && c.costGaps.items.length ? null : c.costPerServing);
   } catch (e) {
     cookFail(e.message);
   }
