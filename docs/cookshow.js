@@ -130,7 +130,7 @@ function cookItemsFromLines(lines) {
     out.push({
       key, label: name, text, icon: cookIcon(`${name} ${l.slug || ""}`),
       liquid: water || (COOK_LIQUID.test(l.slug || name.toLowerCase().replace(/\s+/g, "_")) && !COOK_SOLID_LIQUID.test(l.slug || name.toLowerCase())),
-      water, toTaste: l.status === "to-taste", group: l.group || "", cost: typeof l.cost === "number" ? l.cost : null, fryOil: !!(l.slug && COOK_FRY_OIL.test(l.slug)),
+      water, toTaste: l.status === "to-taste", group: l.group || "", grams: typeof l.gAP === "number" ? l.gAP : null, cost: typeof l.cost === "number" ? l.cost : null, fryOil: !!(l.slug && COOK_FRY_OIL.test(l.slug)),
       cut: (l.slug && COOK_NO_CUT.test(l.slug)) || water ? null : cookCutStyle(text),
       peel: /\b(peeled|deveined|shelled|cleaned|gutted|scaled)\b/i.test(text),
       words: cookWords(`${name} ${l.name || ""} ${(l.slug || "").replace(/_/g, " ")} ${text}`),
@@ -1513,19 +1513,33 @@ function cookState(steps, upto) {
   return st;
 }
 
+/** Food takes on a sauce's colour (stewing, marinating); the strongest exposure so far wins. */
+function cookTint(st, it, hex, amt) {
+  if (!st.tint) st.tint = new Map();
+  const cur = st.tint.get(it);
+  st.tint.set(it, cur && cur[1] >= amt ? [cur[0], cur[1]] : [hex, amt]);
+}
+
 function cookApply(st, s) {
   const burnt = cookBurn(s);
   const potKinds = ["heat", "saute", "add", "pour", "fry", "deepfry", "boil", "simmer", "cook", "stir", "season", "grill", "bake", "steam", "strain", "top"];
   for (const it of s.items || []) if (!st.loc.has(it)) { st.items.push(it); st.loc.set(it, "board"); }
   if (potKinds.includes(s.kind) && s.vessel) {
-    if (st.vessel && st.vessel !== s.vessel) { st.parts = []; st.level = 0; st.oil = 0; }
-    st.vessel = s.vessel;
+    // A stew stays in its pot: adding, seasoning or simmering never moves the food to another pan.
+    // Only frying, heating a new pan or an appliance starts in a different vessel.
+    const full = st.items.some((it) => st.loc.get(it) === "pot") || st.level > 0.1;
+    const carry = st.vessel && st.vessel !== s.vessel && full && !["fry", "deepfry", "saute", "heat", "grill", "bake", "steam"].includes(s.kind);
+    if (!carry) {
+      if (st.vessel && st.vessel !== s.vessel) { st.parts = []; st.level = 0; st.oil = 0; }
+      st.vessel = s.vessel;
+    }
   }
   const toPot = (it) => {
-    if (it.liquid && !it.fryOil) { st.parts.push(cookLiquidLook(it).concat([it.water ? 0.4 : 0.1])); st.level = Math.min(0.85, st.level + (it.water ? 0.4 : 0.1)); }
+    if (cookIsPoured(it)) { const cups = cookAmountCups(it); st.parts.push(cookPouredLook(it).concat([cups])); st.level = Math.min(0.85, st.level + Math.min(0.5, cups * 0.22)); }
     else if (it.fryOil) st.oil = Math.max(st.oil, 0.18);
     else {
-      if (st.loc.get(it) === "bowl" && st.bowlLiquid) { st.parts.push([st.bowlLiquid, 3, 0.12]); st.level = Math.min(0.85, st.level + 0.12); st.bowlLiquid = null; }
+      // The marinade follows the meat into the pot, all of it.
+      if (st.loc.get(it) === "bowl" && st.bowlLiquid) { const cups = st.bowlCups || 0.5; st.parts.push([st.bowlLiquid, 3, cups]); st.level = Math.min(0.85, st.level + Math.min(0.4, cups * 0.22)); st.bowlLiquid = null; st.bowlCups = 0; }
       st.loc.set(it, "pot");
     }
   };
@@ -1534,7 +1548,10 @@ function cookApply(st, s) {
   switch (s.kind) {
     case "cut": for (const it of s.items) { st.cut.set(it, (s.cuts && s.cuts[it.key]) || s.style); if (st.loc.get(it) !== "prep") st.loc.set(it, "board"); } break;
     case "mix": case "marinate":
-      for (const it of s.items) { if (it.liquid) st.bowlLiquid = cookLiquidLook(it)[0]; else st.loc.set(it, "bowl"); }
+      { const poured = s.items.filter(cookIsPoured);
+        if (poured.length) { st.bowlLiquid = cookMixColor([...(st.bowlLiquid ? [[st.bowlLiquid, 1, 0.3]] : []), ...poured.map((it) => cookPouredLook(it).concat([cookAmountCups(it)]))]); st.bowlCups = (st.bowlCups || 0) + poured.reduce((a, it) => a + (it.grams > 0 ? cookAmountCups(it) : 0.5), 0); }
+        for (const it of s.items) if (!cookIsPoured(it)) st.loc.set(it, "bowl");
+        if (s.kind === "marinate" && st.bowlLiquid) for (const it of s.items) if (!cookIsPoured(it)) cookTint(st, it, st.bowlLiquid, Math.min(0.45, 0.12 + (s.minutes || 30) / 240)); }
       break;
     case "wrap":
       for (const it of st.items) if (st.loc.get(it) === "bowl" || s.items.includes(it)) st.loc.set(it, "wrapped");
@@ -1543,13 +1560,18 @@ function cookApply(st, s) {
     case "heat": st.heat = true; if (st.items.some((it) => it.fryOil)) st.oil = Math.max(st.oil, 0.18); break;
     case "saute": case "add": case "pour":
       // Before the stove is on, "add" after a "mix" goes into the mixing bowl (lumpia filling).
-      if (!st.heat && s.kind !== "saute" && st.items.some((it) => st.loc.get(it) === "bowl")) { for (const it of s.items) if (!it.liquid) st.loc.set(it, "bowl"); break; }
+      if (!st.heat && s.kind !== "saute" && st.items.some((it) => st.loc.get(it) === "bowl")) {
+        const poured = s.items.filter(cookIsPoured);
+        if (poured.length) { st.bowlLiquid = cookMixColor([...(st.bowlLiquid ? [[st.bowlLiquid, 1, 0.3]] : []), ...poured.map((it) => cookPouredLook(it).concat([cookAmountCups(it)]))]); st.bowlCups = (st.bowlCups || 0) + poured.reduce((a, it) => a + (it.grams > 0 ? cookAmountCups(it) : 0.5), 0); }
+        for (const it of s.items) if (!cookIsPoured(it)) st.loc.set(it, "bowl");
+        break;
+      }
       s.items.forEach(toPot); if (s.kind === "saute") brown(s.items.filter((it) => !it.liquid), 0.35); break;
     case "fry": s.items.forEach(toPot); brown(inPot(), 0.7); break;
     case "deepfry": st.oil = 0.8; s.items.forEach(toPot); brown(s.items.length ? s.items : inPot(), 1); break;
     case "bake": case "grill": case "steam":
       st.heat = true;
-      if (!s.items.length) for (const it of st.items) if (["bowl", "wrapped", "board", "pot"].includes(st.loc.get(it)) && !it.liquid) st.loc.set(it, "pot");
+      if (!s.items.length) for (const it of st.items) if (["bowl", "wrapped", "board", "pot"].includes(st.loc.get(it)) && !cookIsPoured(it)) st.loc.set(it, "pot");
       if (!s.items.length && st.rolled) st.loc.set(st.items.find((it) => it.key === "rolled") || {}, "pot");
       s.items.forEach(toPot);
       if (s.kind !== "steam") brown(inPot().filter((it) => !it.liquid), s.kind === "bake" ? 0.7 : 0.85);
@@ -1560,8 +1582,13 @@ function cookApply(st, s) {
       if (st.level > 0) st.parts.push(["#d6a35a", Math.min(2, (s.minutes || 15) / 20), 0]);
       // Meat stewed in a dark sauce (adobo, humba) takes on its colour.
       if (st.level > 0 && cookMixLum(st.parts) < 0.5) brown(inPot().filter((it) => ["pork", "beef", "chicken"].includes(cookFoodKind(it))), Math.min(0.85, (s.minutes || 20) / 35));
+      // Everything stewing in a coloured sauce takes on its colour: dark in toyo, red in tomato sauce.
+      if (st.level > 0 && st.parts.length) {
+        const sauce = cookMixColor(st.parts), pale = cookMixLum(st.parts) > 0.75;
+        if (!pale) for (const it of inPot()) cookTint(st, it, sauce, Math.min(0.7, 0.15 + (s.minutes || 15) / 80));
+      }
       break;
-    case "season": for (const it of s.items) { if (it.liquid) toPot(it); else st.loc.set(it, "used"); } break;
+    case "season": for (const it of s.items) { if (cookIsPoured(it)) toPot(it); else st.loc.set(it, "used"); } break;
     // Strain: the food (or just what's named) goes to the strainer, the water is poured off.
     case "strain": {
       const out = s.items && s.items.length ? s.items.filter((it) => st.loc.get(it) === "pot") : inPot();
@@ -1571,7 +1598,7 @@ function cookApply(st, s) {
     }
     // Put on top: into the pot (or onto what's there), sitting on top, and it stays on top on the plate.
     case "top": for (const it of s.items) {
-      if (it.liquid) { toPot(it); continue; } // a sauce poured over the top: into the pot's liquid, the bottle stays out
+      if (cookIsPoured(it)) { toPot(it); continue; } // a sauce poured over the top: into the pot's liquid, the bottle stays out
       st.loc.set(it, st.items.some((x) => st.loc.get(x) === "pot") ? "pot" : "plate"); st.top.add(it);
     } break;
     // Only the food comes out; spices and leaves go with the water.
@@ -1597,15 +1624,39 @@ function cookMixLum(parts) {
   return (((n >> 16) & 255) * 0.3 + ((n >> 8) & 255) * 0.59 + (n & 255) * 0.11) / 255;
 }
 
+/**
+ * Whether an ingredient goes in poured or spooned (its bottle, jar or packet stays on the counter):
+ * liquids, anything that comes in a bottle, and jarred sauces and pastes. Pure, tested.
+ */
+function cookIsPoured(it) {
+  if (!it || it.fryOil) return false;
+  return !!it.liquid || ["bottle", "water", "jar"].includes(cookFoodKind(it));
+}
+
+/** Its colour and how strongly it colours a dish: a liquid's look, or a jar's contents. */
+function cookPouredLook(it) {
+  if (cookFoodKind(it) === "jar") { const [c] = cookJarLook(it); return [c, /tomato|kimchi|salsa|bagoong|shrimp paste|gravy|molasses|miso|pesto/.test(`${it.key} ${it.label}`.toLowerCase()) ? 2.4 : 1.2]; }
+  return cookLiquidLook(it);
+}
+
+/** How much of the pot an ingredient fills, in cups (from its grams), so ½ cup of toyo outweighs a spoon of patis. */
+function cookAmountCups(it) {
+  if (it.grams > 0) return Math.max(0.02, Math.min(6, it.grams / 240));
+  return it.water ? 1.5 : 0.1;
+}
+
 /** The pot's liquid colour: a weighted mix of what was poured in. */
 function cookMixColor(parts) {
+  // Light passes through every ingredient in a liquid, so dark ones (toyo, oyster sauce) dominate and pale
+  // ones (water, vinegar) barely lighten it: a weighted geometric mean of each channel, not an average.
   let r = 0, g = 0, b = 0, w = 0;
   for (const [hex, strength, amount] of parts) {
     const n = parseInt(hex.slice(1), 16), k = strength * Math.max(0.05, amount || 0.1);
-    r += ((n >> 16) & 255) * k; g += ((n >> 8) & 255) * k; b += (n & 255) * k; w += k;
+    const ch = (v) => Math.log(Math.max(8, v) / 255);
+    r += ch((n >> 16) & 255) * k; g += ch((n >> 8) & 255) * k; b += ch(n & 255) * k; w += k;
   }
   if (!w) return "#cfe0e6";
-  const h = (x) => Math.round(x / w).toString(16).padStart(2, "0");
+  const h = (x) => Math.round(Math.exp(x / w) * 255).toString(16).padStart(2, "0");
   return `#${h(r)}${h(g)}${h(b)}`;
 }
 
@@ -2238,7 +2289,28 @@ function cookBuildScene(THREE, canvas) {
     const k = Math.min(1, (maxR * 2) / Math.max(0.001, Math.max(s.x, s.z)));
     obj.scale.multiplyScalar(k); return obj;
   };
+  /** The model for an ingredient where it is, coloured by any sauce it stewed or marinated in. */
   const modelFor = (it, st, radius, seedExtra, where) => {
+    const at = where || st.loc.get(it);
+    // A poured ingredient is only ever its bottle or jar on the counter, never inside the food.
+    if (cookIsPoured(it) && at && at !== "prep") return new THREE.Group();
+    const m = modelForRaw(it, st, radius, seedExtra, where);
+    const tint = st.tint && st.tint.get(it);
+    if (tint && at !== "prep") {
+      const c = col(tint[0]);
+      m.traverse((o) => {
+        if (!o.material) return;
+        for (const mm of Array.isArray(o.material) ? o.material : [o.material]) {
+          mm.color.lerp(c, tint[1]);
+          if (mm.userData) { mm.userData.base = mm.userData.base ? mm.userData.base.clone().lerp(c, tint[1]) : mm.userData.base; }
+          mm.roughness = Math.max(0.2, mm.roughness - 0.15 * tint[1]); // glossy with sauce
+        }
+        if (o.isInstancedMesh && o.instanceColor) o.instanceColor.needsUpdate = true;
+      });
+    }
+    return m;
+  };
+  const modelForRaw = (it, st, radius, seedExtra, where) => {
     const kind = cookFoodKind(it), b = st.brown.get(it) || 0;
     const at = where || st.loc.get(it);
     // Eggs leave their shell: cracked into a pan, beaten into a mixture. Boiled, fried or salted eggs stay as they are.
@@ -2294,7 +2366,7 @@ function cookBuildScene(THREE, canvas) {
     if (where === "pot") {
       const r = ckRand(i + 3); const a = r() * 6.3, d = r() * vesselR(st) * (onTop ? 0.2 : 0.45);
       // In a stew or soup the pieces sit down in the liquid (only their tops show); in oil or a dry pan, on the bottom.
-      const sunk = !onTop && !APPLIANCE[st.vessel] && st.level > 0.2 && !it.liquid ? (st.vessel === "kaldero" ? 0.018 : 0.01) : 0;
+      const sunk = !onTop && !APPLIANCE[st.vessel] && st.level > 0.2 && !cookIsPoured(it) ? (st.vessel === "kaldero" ? 0.018 : 0.01) : 0;
       return V(CK_AT.stove[0] + Math.cos(a) * d, contentY(st) - 0.006 - sunk + onTop, CK_AT.stove[1] + Math.sin(a) * d);
     }
     if (where === "rack") return V(CK_AT.rack[0] + ((i % 3) - 1) * 0.04, 0.014, CK_AT.rack[1]);
@@ -2323,7 +2395,7 @@ function cookBuildScene(THREE, canvas) {
     cur = step; curIndex = index;
     const st = cookState(steps, index), after = cookApply(cookState(steps, index), step);
     // The vessel on the stove: the one this step uses, else the last one used.
-    const v = (["heat", "saute", "add", "pour", "fry", "deepfry", "boil", "simmer", "cook", "stir", "season", "drain", "strain", "top", "bake", "grill", "steam"].includes(step.kind) && step.vessel) || st.vessel || "kawali";
+    const v = after.vessel || st.vessel || "kawali";
     const appl = !!APPLIANCE[v];
     kaldero.visible = v === "kaldero"; kawali.visible = !appl && v !== "kaldero";
     ovenG.visible = v === "oven"; grillG.visible = v === "ihawan"; steamerG.visible = v === "steamer";
@@ -2342,7 +2414,7 @@ function cookBuildScene(THREE, canvas) {
     bowlLiquid.userData.grow = !st.bowlLiquid && !!after.bowlLiquid;
 
     // Bottles and ramekins that pour this step (handled below, not drawn twice).
-    const pourers = step.items.filter((it) => (it.liquid && ["pour", "add", "saute", "season", "boil", "simmer"].includes(step.kind) && after.loc.get(it) !== "bowl") || (cookFoodKind(it) === "powder" && step.kind === "season"));
+    const pourers = step.items.filter((it) => (cookIsPoured(it) && ["pour", "add", "saute", "season", "boil", "simmer", "top", "mix", "marinate"].includes(step.kind)) || (cookFoodKind(it) === "powder" && step.kind === "season"));
     if (step.kind === "heat") { const oil = st.items.find((it) => it.fryOil); if (oil) pourers.push(oil); }
     if (step.kind === "deepfry") { const oil = st.items.find((it) => it.fryOil); if (oil && st.oil < 0.5) pourers.push(oil); }
     const pourer = pourers[0];
@@ -2358,13 +2430,13 @@ function cookBuildScene(THREE, canvas) {
     for (const it of st.items) {
       const where = st.loc.get(it);
       if (moving.has(it) || it === pourer || where === "used" || where === "wrapped") continue;
-      if (st.loc.get(it) !== "prep" && it.liquid) continue;
+      if (st.loc.get(it) !== "prep" && cookIsPoured(it)) continue; // the bottle stays on the counter, never in the food
       if (dumplings.visible && where === "pot") continue; // shown as the dumplings
       const o = place(st, it, where);
       if (where === "pot") potItems.push(o);
       // Liquids stay on the prep row as bottles even after pouring.
     }
-    for (const it of st.items) if (it.liquid && st.loc.get(it) !== "prep" && !moving.has(it) && it !== pourer) place(st, it, "prep");
+    for (const it of st.items) if (cookIsPoured(it) && st.loc.get(it) !== "prep" && !moving.has(it) && it !== pourer) place(st, it, "prep");
     // Empty ramekins left on the prep row after cut pieces moved on.
     for (const it of st.items) if (st.cut.has(it) && st.loc.get(it) !== "prep" && cookFoodKind(it) !== "bottle") { const r = ramekin(0.065, 0.04); r.position.copy(spotOf(st, it, "prep")); dyn.add(r); }
     if (st.rolled && !st.items.some((it) => it.key === "rolled")) { const pseudo = { key: "rolled", label: "lumpia" }; st.items.push(pseudo); st.loc.set(pseudo, "board"); }
