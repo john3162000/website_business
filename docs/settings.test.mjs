@@ -74,3 +74,11 @@ test("every data-i18n key used in index.html is translated", () => {
   assert.ok(keys.length > 40, `only ${keys.length} keys`);
   for (const k of keys) assert.ok(k in I18N, `${k} missing from I18N`);
 });
+
+test("vegetarian / vegan are saved diets", () => {
+  const { readSettings, writeSettings } = ctx.api;
+  const mem = new Map(); const st = { getItem: (k) => mem.get(k) ?? null, setItem: (k, v) => mem.set(k, String(v)) };
+  writeSettings(st, { ...readSettings(st), diets: ["vegan", "vegetarian", "nonsense"] });
+  assert.deepEqual([...readSettings(st).diets], ["vegan", "vegetarian"]);
+  assert.ok(ctx.api.I18N["diet.vegan"] && ctx.api.I18N["diet.vegetarian"]);
+});

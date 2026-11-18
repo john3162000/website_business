@@ -358,6 +358,32 @@ export function costGaps(lines: CompiledLine[], pricedCost: number, ctx: Pick<Co
   return { items: [...new Set(items)], share: Math.round(share * 100) / 100 };
 }
 
+// ── Vegetarian / vegan, from each line's catalog diet class ──
+// Catalog rows marked PLANT that still aren't vegan (honey) or vegetarian (gelatin, marshmallows),
+// and a PLANT soup base that has milk in it.
+const NOT_VEGAN_PLANT = new Set(["honey", "soup_cream_mushroom"]);
+const NOT_VEGETARIAN_PLANT = new Set(["gelatin_dessert", "marshmallows"]);
+
+/**
+ * "vegan" when every ingredient is a plant, "vegetarian" when the only animal foods are dairy and egg,
+ * otherwise null. Optional lines count too (the safe side), water doesn't, and an unknown ingredient
+ * means we can't say (null).
+ */
+export function vegClass(lines: Pick<CompiledLine, "slug" | "status">[], canonicals: CompileContext["canonicals"]): "vegan" | "vegetarian" | null {
+  let vegan = true;
+  for (const l of lines) {
+    if (l.status === "water" || l.status === "skipped") continue;
+    if (l.status === "unmatched" || !l.slug) return null;
+    const diet = canonicals[l.slug]?.dietClass ?? null;
+    if (!diet) return null;
+    if (NOT_VEGETARIAN_PLANT.has(l.slug)) return null;
+    if (diet === "PLANT") { if (NOT_VEGAN_PLANT.has(l.slug)) vegan = false; continue; }
+    if (diet === "DAIRY" || diet === "EGG") { vegan = false; continue; }
+    return null; // meat, poultry, fish, seafood, or an animal condiment (patis, bagoong, stock cubes)
+  }
+  return vegan ? "vegan" : "vegetarian";
+}
+
 // ── Frying detection (proposal §5.2), from title, instructions and oil volume ──
 const FRY_TITLE = /\b(lumpia|shanghai|turon|okoy|ukoy|maruya|empanada|bunuelos|buñuelos|donuts?|doughnuts?|chicharon|chicharron|crispy|prito|pritong|fried|kawali|bagnet|calamares|rebosado|tempura|tokwa|nuggets?|fritters?|karioka|camote cue|banana cue|kwek|tokneneng)\b/i;
 const WRAPPED = /\b(lumpia|shanghai|turon|empanada|okoy|ukoy|maruya|bunuelos|buñuelos|donuts?|doughnuts?|fritters?|karioka|spring rolls?|wonton)\b/i;

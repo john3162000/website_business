@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { compileRecipe, costGaps, isHidden, sectionOf, unknownLineCount } from "./compile.ts";
+import { compileRecipe, costGaps, isHidden, sectionOf, unknownLineCount, vegClass } from "./compile.ts";
 import { testContext } from "./test-context.ts";
 
 const ctx = testContext();
@@ -408,4 +408,14 @@ test("recheck: every derived price points at a parent that has its own price sou
     assert.ok(p.daName || p.psaName || manualPrices?.[d.from], `${slug}: parent ${d.from} has a DA, PSA or shop price`);
     assert.ok(d.factor && d.factor > 0 && d.why, `${slug}: factor and reason`);
   }
+});
+
+test("vegetarian / vegan from the ingredients' diet classes", () => {
+  const veg = (title: string, ingredients: ReturnType<typeof ing>[]) => vegClass(compileRecipe({ id: 9, title, servings: 4, ingredients, instructions: [] }, ctx).lines, ctx.canonicals);
+  assert.equal(veg("Ginisang gulay", [ing("1", "tbsp", "cooking oil"), ing("3", "cloves", "garlic"), ing("1", "piece", "onion"), ing("2", "cups", "pechay"), ing("1", "cup", "water"), ing(null, null, "salt to taste")]), "vegan");
+  assert.equal(veg("Tortang talong", [ing("2", "pieces", "eggplant"), ing("2", null, "eggs"), ing("1", "tbsp", "cooking oil")]), "vegetarian");
+  assert.equal(veg("Ginisang gulay with patis", [ing("2", "cups", "pechay"), ing("1", "tbsp", "fish sauce")]), null, "patis is an animal condiment");
+  assert.equal(veg("Adobo", [ing("1", "lb", "pork belly"), ing("1/2", "cup", "soy sauce")]), null);
+  assert.equal(veg("Honey toast", [ing("2", "slices", "white bread"), ing("1", "tbsp", "honey")]), "vegetarian", "honey is not vegan");
+  assert.equal(veg("Mallows", [ing("1", "cup", "marshmallows")]), null, "gelatin is not vegetarian");
 });

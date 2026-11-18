@@ -400,3 +400,14 @@ test("drag and drop: only meals the dish suits, not full, not already there", ()
   assert.deepEqual(plain(p.slots), { "Martes|Hapunan": [1, 2, 3, 4, 5], "Linggo|Hapunan": [7] });
   assert.equal(moveInPlan(p, "Linggo|Hapunan", "Martes|Hapunan", 7), p); // full: nothing moves
 });
+
+test("vegetarian and vegan follow the backend's ingredient check", () => {
+  const D = (veg) => ({ title: "Dish", veg, nutrition: {}, ingredientNames: [] });
+  assert.equal(dietOk(D("vegan"), "vegan"), true);
+  assert.equal(dietOk(D("vegan"), "vegetarian"), true, "vegan dishes are vegetarian too");
+  assert.equal(dietOk(D("vegetarian"), "vegetarian"), true);
+  assert.equal(dietOk(D("vegetarian"), "vegan"), false, "egg or dairy is not vegan");
+  assert.equal(dietOk(D(null), "vegetarian"), false, "meat, fish, patis or an unknown ingredient");
+  assert.equal(dietOk(D(undefined), "vegan"), false);
+  assert.match(dietNote(["vegan"]), /Puro halaman/);
+});

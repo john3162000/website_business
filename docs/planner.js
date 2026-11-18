@@ -413,6 +413,8 @@ const DIETS = [
   { key: "kidney", icon: "🫘", label: "Kidney", note: "500 mg sodium pababa, 20 g protein pababa, walang processed o lamang-loob." },
   { key: "gout", icon: "🦶", label: "Gout / uric acid", note: "Walang lamang-loob, shellfish, sardinas, dilis o tuyo." },
   { key: "lowcal", icon: "🔥", label: "Low calorie", note: "450 kcal pababa bawat serving." },
+  { key: "vegetarian", icon: "🥗", label: "Vegetarian", note: "Walang karne, manok, isda o seafood, at walang patis, bagoong o sabaw na gawa sa hayop; pwede ang itlog at gatas." },
+  { key: "vegan", icon: "🌱", label: "Vegan", note: "Puro halaman: walang karne, isda, itlog, gatas o honey." },
 ];
 const PROCESSED_WORDS = /\b(hotdogs?|longg?anisa|tocino|ham|bacon|sausages?|corned beef|spam|luncheon|chorizo|tapa|tuyo|daing|danggit|tinapa|instant|cup noodles?|franks?)\b/i;
 const ORGAN_WORDS = /\b(liver|atay|isaw|bituka|intestines?|tripe|tuwalya|gizzards?|balunbalunan|dinuguan|blood|kidneys?|lengua|tongue|bopis|sisig|papaitan|brains?|chicharon bulaklak)\b/i;
@@ -437,6 +439,9 @@ function dietOk(r, diet) {
     case "kidney": return known && r.sodium != null && r.sodium <= 500 && (r.protein ?? 99) <= 20 && !PROCESSED_WORDS.test(words) && !ORGAN_WORDS.test(words);
     case "gout": return !ORGAN_WORDS.test(words) && !SHELL_WORDS.test(words);
     case "lowcal": return known && r.calories > 0 && r.calories <= 450;
+    // Every ingredient checked against the catalog (backend `veg`); an unknown ingredient means no.
+    case "vegetarian": return r.veg === "vegetarian" || r.veg === "vegan";
+    case "vegan": return r.veg === "vegan";
     default: return true;
   }
 }
