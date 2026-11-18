@@ -662,6 +662,20 @@ function cookLiquidLook(it) {
   return ["#8a5a2a", 1];
 }
 
+/** The word on a bottle's label (generic, never a brand). */
+function cookBottleWord(it) {
+  const s = `${it.key || ""} ${it.label || ""}`.toLowerCase();
+  if (/soy|toyo/.test(s)) return "TOYO";
+  if (/oyster/.test(s)) return "OYSTER";
+  if (/fish sauce|fish_sauce|patis/.test(s)) return "PATIS";
+  if (/vinegar|suka/.test(s)) return "SUKA";
+  if (/sesame/.test(s)) return "SESAME";
+  if (/oil/.test(s)) return "MANTIKA";
+  if (/coconut|gata/.test(s)) return "GATA";
+  if (/ketchup|tomato|banana/.test(s)) return "SAUCE";
+  return "SAWSAWAN";
+}
+
 function cookPowderColor(it) {
   const s = `${it.key || ""} ${it.label || ""}`.toLowerCase();
   if (/black pepper|pepper_ground|paminta/.test(s)) return "#4b4038";
@@ -812,13 +826,14 @@ function cookBuildScene(THREE, canvas) {
   const grain = (light, darkC, lines) => (g, n, r) => {
     g.fillStyle = light; g.fillRect(0, 0, n, n);
     for (let i = 0; i < lines; i++) {
-      const y = r() * n, amp = 2 + r() * 7, f = 0.003 + r() * 0.01, ph = r() * 6;
+      // Whole waves across the width, so the texture tiles without seams.
+      const y = r() * n, amp = 2 + r() * 7, f = (1 + Math.floor(r() * 3)) * 2 * Math.PI / n, ph = r() * 6;
       g.strokeStyle = darkC; g.globalAlpha = 0.03 + r() * 0.12; g.lineWidth = 0.4 + r() * 1.8;
       g.beginPath();
-      for (let x = -8; x <= n + 8; x += 8) g.lineTo(x, y + Math.sin(x * f + ph) * amp + Math.sin(x * f * 3.3 + ph) * amp * 0.25);
+      for (let x = 0; x <= n; x += 4) g.lineTo(x, y + Math.sin(x * f + ph) * amp + Math.sin(x * f * 3 + ph) * amp * 0.25);
       g.stroke();
     }
-    for (let i = 0; i < 3; i++) { const x = r() * n, y = r() * n; g.globalAlpha = 0.25; g.fillStyle = darkC; g.beginPath(); g.ellipse(x, y, 6 + r() * 6, 2 + r() * 2, 0, 0, 7); g.fill(); }
+    for (let i = 0; i < 3; i++) { const x = n * 0.15 + r() * n * 0.7, y = n * 0.15 + r() * n * 0.7; g.globalAlpha = 0.25; g.fillStyle = darkC; g.beginPath(); g.ellipse(x, y, 6 + r() * 6, 2 + r() * 2, 0, 0, 7); g.fill(); }
     g.globalAlpha = 1;
   };
   const speckle = (base, dots, count, size) => (g, n, r) => {
@@ -920,12 +935,12 @@ function cookBuildScene(THREE, canvas) {
   const WOK_R = (y) => 0.3 * Math.sin(Math.acos(Math.max(-1, Math.min(1, 1 - y / 0.3))));
 
   // Liquid surfaces (broth, oil) that rise and change colour.
-  const liquidMat = keep(std({ color: 0xcfe0e6, roughness: 0.06, metalness: 0, transparent: true, opacity: 0.85 }));
+  const liquidMat = keep(std({ color: 0xcfe0e6, roughness: 0.04, metalness: 0, transparent: true, opacity: 0.85, envMapIntensity: 1.4 }));
   const liquid = new THREE.Mesh(keep(new THREE.CircleGeometry(1, 64)), liquidMat); liquid.rotation.x = -Math.PI / 2; liquid.receiveShadow = true; scene.add(liquid);
 
   // Steel mixing bowl, white plate, soup bowl, paper-towel rack.
   const bowlPts = []; for (let i = 0; i <= 14; i++) { const a = (i / 14) * 1.35; bowlPts.push(new THREE.Vector2(0.17 * Math.sin(a), 0.17 * (1 - Math.cos(a)) * 0.75)); }
-  const mixBowl = shadowed(new THREE.Mesh(keep(new THREE.LatheGeometry(bowlPts, 48)), steel)); mixBowl.position.set(CK_AT.bowl[0], 0.001, CK_AT.bowl[1]); scene.add(mixBowl);
+  const mixBowl = shadowed(new THREE.Mesh(keep(new THREE.LatheGeometry(bowlPts, 48)), keep(std({ color: 0xf4f1ea, roughness: 0.2, side: THREE.DoubleSide })))); mixBowl.position.set(CK_AT.bowl[0], 0.001, CK_AT.bowl[1]); scene.add(mixBowl);
   const bowlLiquidMat = keep(std({ color: 0x2b1408, roughness: 0.08, transparent: true, opacity: 0.9 }));
   const bowlLiquid = new THREE.Mesh(keep(new THREE.CircleGeometry(0.12, 40)), bowlLiquidMat); bowlLiquid.rotation.x = -Math.PI / 2; bowlLiquid.position.set(CK_AT.bowl[0], 0.03, CK_AT.bowl[1]); bowlLiquid.visible = false; scene.add(bowlLiquid);
   const glaze = keep(std({ color: 0xfbfaf6, roughness: 0.18, metalness: 0, side: THREE.DoubleSide }));
@@ -977,6 +992,9 @@ function cookBuildScene(THREE, canvas) {
     const L = look(kind);
     const base = col(part === "flesh" ? L[1] : L[0]);
     const m = std({ color: 0xffffff, roughness: 0.55, ...extra });
+    const b = CK_BUMP[kind];
+    if (b && !extra.noBump) { m.bumpMap = b[0](); m.bumpScale = b[1]; }
+    m.userData.crisp = ["pork", "chicken", "rolled", "fish"].includes(kind) && part === "skin";
     m.userData.base = base; m.userData.done = col(L[2]);
     m.userData.b0 = brownAmt || 0;
     ckBrown(m, brownAmt || 0);
@@ -989,7 +1007,12 @@ function cookBuildScene(THREE, canvas) {
     const b = m.userData.base, d = m.userData.done;
     const to = m.map ? new THREE.Color(Math.min(1.5, d.r / Math.max(0.05, b.r)), Math.min(1.5, d.g / Math.max(0.05, b.g)), Math.min(1.5, d.b / Math.max(0.05, b.b))) : d;
     m.color.copy(from).lerp(to, Math.max(0, Math.min(1, amt)));
-    m.roughness = 0.55 - 0.25 * Math.min(1, amt);
+    // Cooked food glistens; fried skin blisters and crackles.
+    m.roughness = Math.max(0.18, (m.userData.r0 ?? (m.userData.r0 = m.roughness)) - 0.3 * Math.min(1, amt));
+    if (m.userData.crisp && amt > 0.5) {
+      if (m.bumpMap !== blisters()) { m.bumpMap = blisters(); m.needsUpdate = true; }
+      m.bumpScale = 0.002 + 0.006 * amt;
+    }
   }
   const skinTex = (kind) => {
     const L = look(kind);
@@ -1010,6 +1033,34 @@ function cookBuildScene(THREE, canvas) {
     }
   };
   const mesh = (geo, mat) => shadowed(new THREE.Mesh(geo, mat));
+  // Real food is never a perfect box: round the corners toward a sphere and add a gentle lumpiness.
+  // The offset depends only on the vertex position, so seams stay closed.
+  function organic(geo, round, bump, seed) {
+    const p = geo.attributes.position, v = new THREE.Vector3();
+    geo.computeBoundingSphere();
+    const R = geo.boundingSphere.radius, sd = (seed % 97) * 0.37;
+    for (let i = 0; i < p.count; i++) {
+      v.fromBufferAttribute(p, i);
+      const len = v.length() || 1;
+      const n = Math.sin(v.x * 180 + sd) * Math.sin(v.y * 210 + sd * 2) * Math.sin(v.z * 170 + sd * 3) + 0.5 * Math.sin(v.x * 420 + v.z * 380 + sd);
+      const target = v.clone().multiplyScalar((R * 0.82) / len);
+      v.lerp(target, round).multiplyScalar(1 + bump * n);
+      p.setXYZ(i, v.x, v.y, v.z);
+    }
+    geo.computeVertexNormals();
+    return geo;
+  }
+  const box = (w, h, d, seg = 3) => new THREE.BoxGeometry(w, h, d, seg, seg, seg);
+  // Grey-scale relief maps (linear, not colour).
+  const bumpTex = (id, draw) => { const t = tex(id, 256, draw); t.encoding = THREE.LinearEncoding; t.wrapS = t.wrapT = THREE.RepeatWrapping; return t; };
+  const blisters = () => bumpTex("bump-blister", (g, n, r) => { g.fillStyle = "#808080"; g.fillRect(0, 0, n, n); for (let i = 0; i < 700; i++) { const x = r() * n, y = r() * n, s = 1.5 + r() * 5; const gr = g.createRadialGradient(x, y, 0, x, y, s); gr.addColorStop(0, "#ffffff"); gr.addColorStop(1, "rgba(128,128,128,0)"); g.fillStyle = gr; g.beginPath(); g.arc(x, y, s, 0, 7); g.fill(); } });
+  const fibres = () => bumpTex("bump-fibre", (g, n, r) => { g.fillStyle = "#808080"; g.fillRect(0, 0, n, n); for (let i = 0; i < 260; i++) { g.strokeStyle = r() < 0.5 ? "#b0b0b0" : "#505050"; g.globalAlpha = 0.5; g.lineWidth = 1 + r() * 2; const y = r() * n; g.beginPath(); g.moveTo(0, y); g.bezierCurveTo(n / 3, y + (r() - 0.5) * 20, 2 * n / 3, y + (r() - 0.5) * 20, n, y + (r() - 0.5) * 10); g.stroke(); } g.globalAlpha = 1; });
+  const pores = () => bumpTex("bump-pores", (g, n, r) => { g.fillStyle = "#909090"; g.fillRect(0, 0, n, n); for (let i = 0; i < 1500; i++) { g.fillStyle = r() < 0.6 ? "#606060" : "#b8b8b8"; g.globalAlpha = 0.6; g.beginPath(); g.arc(r() * n, r() * n, 0.6 + r() * 1.6, 0, 7); g.fill(); } g.globalAlpha = 1; });
+  const ripples = () => bumpTex("bump-ripple", (g, n, r) => { g.fillStyle = "#808080"; g.fillRect(0, 0, n, n); for (let i = 0; i < 90; i++) { const x = r() * n, y = r() * n, s = 8 + r() * 30; const gr = g.createRadialGradient(x, y, 0, x, y, s); const c = r() < 0.5 ? "255,255,255" : "0,0,0"; gr.addColorStop(0, `rgba(${c},.35)`); gr.addColorStop(1, `rgba(${c},0)`); g.fillStyle = gr; g.fillRect(x - s, y - s, 2 * s, 2 * s); } });
+  const CK_BUMP = { pork: [fibres, 0.004], beef: [fibres, 0.005], chicken: [pores, 0.003], mince: [pores, 0.004], rolled: [blisters, 0.003], root: [pores, 0.003], ginger: [pores, 0.004], fish: [pores, 0.0015], gourd: [pores, 0.002], citrus: [pores, 0.002] };
+  const rippleTex = ripples(); rippleTex.repeat.set(2, 2);
+  liquidMat.bumpMap = rippleTex; liquidMat.bumpScale = 0.002;
+  soupMat.bumpMap = rippleTex; soupMat.bumpScale = 0.0015; soupMat.envMapIntensity = 1.4; soupMat.roughness = 0.04;
   const ellipsoid = (r, sx, sy, sz, mat, seg = 24) => { const m = mesh(new THREE.SphereGeometry(r, seg, Math.round(seg * 0.7)), mat); m.scale.set(sx, sy, sz); m.position.y = r * sy; return m; };
   const bentLeaf = (w, h, mat, curl) => {
     const geo = new THREE.PlaneGeometry(w, h, 4, 8);
@@ -1048,7 +1099,7 @@ function cookBuildScene(THREE, canvas) {
         const side = foodMat(kind, "skin", brownAmt, { map: skinTex(kind) });
         const top = foodMat(kind, "skin", brownAmt, { map: kind === "pork" ? tex("pork-top", 256, speckle("#e6bea3", ["#efd2bf", "#cf9c84"], 900, 4)) : skinTex("beef") });
         const bottom = foodMat(kind, "flesh", brownAmt, { map: tex(`${kind}-bottom`, 256, marble(look(kind)[1], "#f5e3dc")) });
-        const slab = mesh(new THREE.BoxGeometry(0.2, kind === "pork" ? 0.045 : 0.035, 0.13), [side, side, top, bottom, side, side]);
+        const slab = mesh(organic(box(0.2, kind === "pork" ? 0.045 : 0.035, 0.13, 6), 0.06, 0.025, ckHash(it.key)), [side, side, top, bottom, side, side]);
         slab.position.y = slab.geometry.parameters.height / 2; g.add(slab);
         if (/ribs/.test(it.key)) { const bone = std({ color: 0xf1e9dc, roughness: 0.5 }); for (let k = 0; k < 4; k++) { const b = mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.14, 8), bone); b.rotation.x = Math.PI / 2; b.position.set(-0.07 + k * 0.045, 0.006, 0); g.add(b); } }
         break;
@@ -1097,12 +1148,14 @@ function cookBuildScene(THREE, canvas) {
       }
       case "bottle": case "water": {
         const [lc] = cookLiquidLook(it);
-        const glass = std({ color: 0xffffff, roughness: 0.05, metalness: 0, transparent: true, opacity: 0.28 });
+        const glass = std({ color: 0xffffff, roughness: 0.02, metalness: 0, transparent: true, opacity: 0.18, envMapIntensity: 2.2 });
         const big = kind === "water";
         const body = mesh(new THREE.CylinderGeometry(big ? 0.055 : 0.028, big ? 0.05 : 0.028, big ? 0.15 : 0.16, 24), glass); body.position.y = big ? 0.075 : 0.08; g.add(body);
         const inner = mesh(new THREE.CylinderGeometry(big ? 0.05 : 0.025, big ? 0.046 : 0.025, big ? 0.11 : 0.12, 24), std({ color: lc, roughness: 0.1, transparent: true, opacity: big ? 0.45 : 0.92 })); inner.position.y = big ? 0.058 : 0.064; inner.name = "fill"; g.add(inner);
         if (!big) { const neck = mesh(new THREE.CylinderGeometry(0.01, 0.024, 0.05, 16), glass); neck.position.y = 0.185; g.add(neck); const cap = mesh(new THREE.CylinderGeometry(0.011, 0.011, 0.016, 16), std({ color: /soy|oyster/.test(it.key) ? 0xc0261d : /fish/.test(it.key) ? 0x1d5239 : 0xd8b02a, roughness: 0.4 })); cap.position.y = 0.218; g.add(cap);
-          const label = mesh(new THREE.CylinderGeometry(0.0285, 0.0285, 0.06, 24, 1, true), std({ color: 0xf3ead2, roughness: 0.7 })); label.position.y = 0.085; g.add(label); }
+          const word = cookBottleWord(it);
+          const labelTex = tex(`label-${word}`, 256, (gg, n) => { gg.fillStyle = "#f3ead2"; gg.fillRect(0, 0, n, n); gg.fillStyle = /TOYO|OYSTER/.test(word) ? "#b3261e" : /PATIS/.test(word) ? "#1d5239" : "#c9961a"; gg.fillRect(0, n * 0.12, n, n * 0.12); gg.fillRect(0, n * 0.76, n, n * 0.12); gg.fillStyle = "#2a2a2a"; gg.font = `bold ${n * 0.2}px Inter, Arial, sans-serif`; gg.textAlign = "center"; gg.textBaseline = "middle"; gg.fillText(word, n * 0.25, n * 0.5); gg.fillText(word, n * 0.75, n * 0.5); });
+          const label = mesh(new THREE.CylinderGeometry(0.0285, 0.0285, 0.06, 32, 1, true), std({ map: labelTex, roughness: 0.6 })); label.position.y = 0.085; g.add(label); }
         else { const h = mesh(new THREE.TorusGeometry(0.035, 0.006, 8, 16, Math.PI), glass); h.position.set(0.06, 0.08, 0); h.rotation.z = -Math.PI / 2; g.add(h); }
         break;
       }
@@ -1122,23 +1175,28 @@ function cookBuildScene(THREE, canvas) {
     if (fleck) flesh.map = null, flesh.userData.base = col(look(kind)[0]), flesh.color.copy(flesh.userData.base);
     switch (kind === "leafy" && !fleck ? "leaf" : style) {
       case "leaf": geo = new THREE.PlaneGeometry(0.045, 0.035); n = 22; break;
-      case "minced": geo = new THREE.BoxGeometry(0.007, 0.005, 0.007); n = 70; break;
+      case "minced": geo = organic(box(0.007, 0.005, 0.007, 1), 0.25, 0.2, 3); n = 70; break;
       case "grated": geo = new THREE.BoxGeometry(0.022, 0.003, 0.003); n = 60; break;
-      case "diced": geo = new THREE.BoxGeometry(0.014, 0.012, 0.014); n = 36; break;
-      case "cubes": geo = new THREE.BoxGeometry(0.03, 0.026, 0.03); n = meat ? 14 : 18; break;
+      case "diced": geo = organic(box(0.014, 0.012, 0.014, 2), 0.25, 0.12, 5); n = 36; break;
+      case "cubes": geo = organic(box(0.03, 0.026, 0.03, 4), meat ? 0.35 : 0.2, meat ? 0.1 : 0.05, ckHash(it.key)); n = meat ? 14 : 18; break;
       case "strips": geo = new THREE.BoxGeometry(0.05, 0.005, 0.005); n = 32; break;
       case "thin": case "sliced":
         if (kind === "onion" || kind === "redonion") { geo = new THREE.TorusGeometry(0.024, 0.0028, 6, 18, Math.PI); n = 26; }
-        else if (meat) { geo = new THREE.BoxGeometry(0.06, style === "thin" ? 0.005 : 0.01, 0.035); n = 10; }
+        else if (meat) { geo = organic(box(0.06, style === "thin" ? 0.005 : 0.012, 0.035, 4), 0.12, 0.06, 7); n = 10; }
         else { geo = new THREE.CylinderGeometry(kind === "eggplant" || kind === "radish" ? 0.024 : 0.018, kind === "eggplant" || kind === "radish" ? 0.024 : 0.018, style === "thin" ? 0.003 : 0.006, 16); n = 16; }
         break;
       case "wedges": geo = new THREE.SphereGeometry(0.034, 10, 8, 0, Math.PI / 3); n = 8; break;
       case "quartered": geo = new THREE.SphereGeometry(0.036, 12, 8, 0, Math.PI / 2); n = 8; break;
       case "halved": geo = new THREE.SphereGeometry(0.036, 14, 10, 0, Math.PI); n = 4; break;
-      case "crushed": geo = new THREE.DodecahedronGeometry(0.011); n = 14; break;
+      case "crushed": geo = organic(new THREE.DodecahedronGeometry(0.011, 1), 0, 0.25, 9); geo.scale(1, 0.55, 1); n = 14; break;
       default:
-        if (kind === "chicken" || kind === "fish") { geo = new THREE.SphereGeometry(0.024, 14, 10); geo.scale(1.5, 0.75, 1); n = 8; }
-        else { geo = meat ? new THREE.BoxGeometry(0.045, 0.03, 0.04) : new THREE.DodecahedronGeometry(0.022); n = meat ? 9 : 10; }
+        if (kind === "chicken") {
+          // Drumsticks and thighs: a lathe-turned shape, lying down.
+          geo = new THREE.LatheGeometry([[0, 0], [0.006, 0.002], [0.007, 0.02], [0.016, 0.035], [0.024, 0.055], [0.024, 0.075], [0.016, 0.09], [0, 0.095]].map(([x, y]) => new THREE.Vector2(x, y)), 16);
+          organic(geo, 0, 0.05, 11); geo.rotateZ(Math.PI / 2); geo.translate(0.045, 0, 0); n = 7;
+        } else if (kind === "fish") { geo = organic(new THREE.SphereGeometry(0.024, 14, 10), 0, 0.06, 13); geo.scale(1.6, 0.6, 1); n = 7; }
+        else if (meat) { geo = organic(box(0.045, 0.032, 0.04, 4), 0.4, 0.1, ckHash(it.key)); n = 9; }
+        else { geo = organic(new THREE.DodecahedronGeometry(0.022, 1), 0.2, 0.12, ckHash(it.key)); n = 10; }
         break;
     }
     if (["wedges", "quartered", "halved"].includes(style)) flesh.side = THREE.DoubleSide;
@@ -1231,7 +1289,9 @@ function cookBuildScene(THREE, canvas) {
     if (!st.vessel || st.vessel !== v) { st.vessel = v; }
     if (!after.vessel) after.vessel = v;
     soupBowl.visible = step.kind === "serve" && after.served === "bowl"; plate.visible = !soupBowl.visible;
-    bowlLiquid.visible = !!st.bowlLiquid; if (st.bowlLiquid) bowlLiquidMat.color.copy(col(st.bowlLiquid));
+    const bl = st.bowlLiquid || after.bowlLiquid;
+    bowlLiquid.visible = !!bl; if (bl) bowlLiquidMat.color.copy(col(bl));
+    bowlLiquid.userData.grow = !st.bowlLiquid && !!after.bowlLiquid;
 
     // Bottles and ramekins that pour this step (handled below, not drawn twice).
     const pourers = step.items.filter((it) => (it.liquid && ["pour", "add", "saute", "season", "boil", "simmer"].includes(step.kind) && after.loc.get(it) !== "bowl") || (cookFoodKind(it) === "powder" && step.kind === "season"));
@@ -1426,6 +1486,10 @@ function cookBuildScene(THREE, canvas) {
       for (const o of potItems) o.traverse((x) => { if (x.material && !Array.isArray(x.material) && x.material.userData.done) ckBrown(x.material, Math.max(x.material.userData.b0 || 0, bu * brownMax)); if (Array.isArray(x.material)) x.material.forEach((mm) => mm.userData.done && ckBrown(mm, Math.max(mm.userData.b0 || 0, bu * brownMax))); });
     }
 
+    if (bowlLiquid.visible) { const g = bowlLiquid.userData.grow ? Math.max(0.01, ease((t - 0.8) / 1.2)) : 1; bowlLiquid.scale.setScalar(0.4 + 0.6 * g); bowlLiquid.position.y = 0.012 + 0.02 * g; }
+    // The surface moves: faster when boiling.
+    rippleTex.offset.set(time * (0.02 + 0.05 * (["boil", "deepfry", "fry"].includes(step.kind) ? 1 : 0.2)), time * 0.013);
+    liquidMat.bumpScale = ["boil", "deepfry", "fry"].includes(step.kind) ? 0.004 : 0.0015;
     // Fire, bubbles, steam.
     const heated = heatOn && !["shop", "peel", "cut", "mix", "marinate", "wrap", "serve"].includes(step.kind) && (step.kind !== "drain" || t < len * 0.4);
     flames.forEach((f, i) => { f.visible = heated; f.scale.set(1, 0.8 + Math.sin(time * 30 + i) * 0.25, 1); });
