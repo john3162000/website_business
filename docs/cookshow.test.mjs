@@ -7,8 +7,8 @@ import vm from "node:vm";
 
 const ctx = vm.createContext({});
 vm.runInContext(`${readFileSync(new URL("./cookshow.js", import.meta.url), "utf8")}
-;globalThis.api = { cookCutStyle, cookMinutes, cookTimeText, cookItemsFromLines, cookMentions, buildCookScript, cookCaption, cookFoodKind, cookState, cookMixColor, cookBottleWord, cookSerializeSteps, cookRestoreSteps, cookMoveStep, cookCompact, cookCheck, COOK_THREE_SRI };`, ctx);
-const { cookCutStyle, cookMinutes, cookTimeText, cookItemsFromLines, cookMentions, buildCookScript, cookCaption, cookFoodKind, cookState, cookMixColor, cookBottleWord, cookSerializeSteps, cookRestoreSteps, cookMoveStep, cookCompact, cookCheck, COOK_THREE_SRI } = ctx.api;
+;globalThis.api = { cookCutStyle, cookMinutes, cookTimeText, cookItemsFromLines, cookMentions, buildCookScript, cookCaption, cookFoodKind, cookState, cookMixColor, cookBottleWord, cookSerializeSteps, cookRestoreSteps, cookMoveStep, cookCompact, cookCheck, cookBurn, COOK_THREE_SRI };`, ctx);
+const { cookCutStyle, cookMinutes, cookTimeText, cookItemsFromLines, cookMentions, buildCookScript, cookCaption, cookFoodKind, cookState, cookMixColor, cookBottleWord, cookSerializeSteps, cookRestoreSteps, cookMoveStep, cookCompact, cookCheck, cookBurn, COOK_THREE_SRI } = ctx.api;
 const plain = (x) => JSON.parse(JSON.stringify(x));
 
 const line = (slug, label, text, status = "ok") => ({ slug, label, text, status });
@@ -256,4 +256,28 @@ test("strain and put on top: read from recipe text, captions and scene state", (
   const served = cookState(s, s.length);
   assert.ok(served.top.has(top.items[0]));
   assert.equal(served.loc.get(top.items[0]), "plate");
+});
+
+test("too long on the fire: overdone, then burnt; the flame changes the limit", () => {
+  assert.equal(cookBurn({ kind: "boil", minutes: 45 }), 0);
+  assert.equal(cookBurn({ kind: "simmer", minutes: 180 }), 0, "bulalo for 3 hours is normal");
+  assert.equal(cookBurn({ kind: "boil", minutes: 1000 }), 2, "1000 minutes boils dry and burns");
+  assert.equal(cookBurn({ kind: "fry", minutes: 25 }), 1);
+  assert.equal(cookBurn({ kind: "fry", minutes: 25, heat: "high" }), 2, "high heat burns sooner");
+  assert.equal(cookBurn({ kind: "fry", minutes: 25, heat: "low" }), 0, "low heat takes longer");
+  assert.equal(cookBurn({ kind: "marinate", minutes: 1440 }), 0, "marinating overnight never burns");
+  assert.equal(cookBurn({ kind: "chill", minutes: 1440 }), 0);
+  assert.equal(cookCaption({ kind: "fry", items: [], minutes: 5, heat: "high" }, "tl"), "Iprito nang 5 minuto sa malakas na apoy");
+  // The kitchen notes flag it, and the scene state chars the food and boils the pot dry.
+  const built = steps(ADOBO);
+  const k = built.findIndex((x) => x.kind === "simmer");
+  const burnt = built.map((x, i) => (i === k ? { ...x, minutes: 1000 } : x));
+  const notes = cookCheck(burnt);
+  assert.match(notes[0].tl, /Masusunog sa hakbang/);
+  assert.ok(!notes.some((n) => n.type === "ok"));
+  const st = cookState(burnt, k + 1);
+  const pork = st.items.find((i) => i.key === "pork_belly");
+  assert.ok(st.brown.get(pork) > 1.5, "charred");
+  assert.equal(st.level, 0, "boiled dry");
+  assert.equal(st.burnt, 2);
 });

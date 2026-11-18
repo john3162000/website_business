@@ -799,6 +799,41 @@
     }
     .cook-mode { display: flex; align-items: center; justify-content: space-between; gap: .5rem; background: #F6EBCD; color: #855F0E; border-radius: .6rem; padding: .4rem .6rem; margin-bottom: .5rem; font-size: .82rem; font-weight: 700; }
     html.dark .cook-mode { background: #3A2F12; color: var(--mango); }
+    .cook-heat { display: flex; gap: .4rem; flex-wrap: wrap; }
+    .cook-heat-btn { display: inline-flex; flex-direction: column; align-items: center; gap: .2rem; min-width: 5.5rem; padding: .45rem .6rem; border-radius: .8rem; border: 1px solid #E7DFCB; background: #fff; color: #1f2937; font-size: .75rem; font-weight: 600; }
+    .cook-heat-btn.on { border-color: #1D5239; box-shadow: 0 0 0 2px rgba(29,82,57,.25); background: #EFF5F0; }
+    .cook-flame { position: relative; display: inline-flex; align-items: flex-end; gap: 2px; height: 30px; }
+    .cook-flame i { display: block; width: 8px; border-radius: 50% 50% 40% 40% / 70% 70% 30% 30%; background: linear-gradient(to top, #1d4ed8, #60a5fa 55%, #fde68a); animation: cookFlick .5s ease-in-out infinite alternate; transform-origin: bottom center; }
+    .cook-flame i:nth-child(2) { animation-delay: .17s; } .cook-flame i:nth-child(3) { animation-delay: .33s; }
+    .cook-flame-low i { height: 9px; } .cook-flame-med i { height: 17px; } .cook-flame-high i { height: 28px; width: 10px; background: linear-gradient(to top, #1d4ed8, #f97316 45%, #fde047); }
+    @keyframes cookFlick { from { transform: scaleY(.82) skewX(-4deg); } to { transform: scaleY(1.06) skewX(4deg); } }
+    @media (prefers-reduced-motion: reduce) { .cook-flame i { animation: none; } }
+    .cook-stove { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; background: linear-gradient(#2b2d31, #1b1c1f); border-radius: 1rem; padding: .75rem 1rem; color: #e5e7eb; }
+    .cook-knob-face { position: relative; width: 11rem; height: 8.5rem; flex: none; }
+    .cook-knob-face .cook-knob { left: auto; right: 1.2rem; margin-left: 0; }
+    .cook-knob { position: absolute; left: 50%; top: 50%; width: 4.4rem; height: 4.4rem; margin: -2.2rem 0 0 -2.2rem; border-radius: 50%; border: 0; cursor: grab; touch-action: none;
+      background: radial-gradient(circle at 35% 30%, #f3f4f6, #b8bcc2 45%, #6b7078 100%); box-shadow: 0 4px 10px rgba(0,0,0,.55), inset 0 -3px 6px rgba(0,0,0,.35);
+      transform: rotate(var(--a, -120deg)); transition: transform .25s cubic-bezier(.3,1.4,.6,1); }
+    .cook-knob:focus-visible { outline: 3px solid #DDAE2B; outline-offset: 3px; }
+    .cook-knob-grip { position: absolute; left: 50%; top: 6%; width: 1.1rem; height: 88%; margin-left: -.55rem; border-radius: .5rem; background: linear-gradient(90deg, #8a8f97, #e5e7eb 50%, #8a8f97); box-shadow: 0 1px 3px rgba(0,0,0,.4); }
+    .cook-knob-grip::before { content: ""; position: absolute; left: 50%; top: 4px; width: 4px; height: 12px; margin-left: -2px; border-radius: 2px; background: #dc2626; }
+    .cook-knob-off, .cook-knob-mark { position: absolute; font-size: .62rem; font-weight: 800; letter-spacing: .02em; color: #9ca3af; background: none; border: 0; padding: .1rem .2rem; white-space: nowrap; }
+    .cook-knob-off { right: 2.6rem; top: -.1rem; }
+    .cook-knob-mark { min-height: 1.6rem; }
+    .cook-knob-mark.m-high { left: 1.4rem; top: .9rem; }
+    .cook-knob-mark.m-med { left: 0; top: 3.45rem; }
+    .cook-knob-mark.m-low { right: 2.3rem; bottom: -.3rem; }
+    .cook-knob-mark.on { color: #fbbf24; }
+    .cook-burner { position: relative; width: 6rem; height: 4.5rem; display: flex; align-items: flex-end; justify-content: center; }
+    .cook-burner-ring { position: absolute; bottom: .2rem; left: 50%; width: 5rem; height: .7rem; margin-left: -2.5rem; border-radius: 50%; background: #0b0b0c; box-shadow: 0 0 0 3px #3f4146; }
+    .cook-burner .cook-flame { position: relative; z-index: 1; margin-bottom: .45rem; gap: 3px; height: 3.2rem; }
+    .cook-knob-now { font-size: .9rem; font-weight: 800; color: #fbbf24; min-width: 8rem; }
+    .cook-flame i:nth-child(4) { animation-delay: .25s; } .cook-flame i:nth-child(5) { animation-delay: .08s; }
+    .cook-burn-note { font-size: .8rem; font-weight: 700; color: #9a3412; background: #fff7ed; border: 1px solid #fdba74; border-radius: .6rem; padding: .4rem .6rem; }
+    .cook-burn-note.burnt { color: #fff; background: #b91c1c; border-color: #b91c1c; }
+    .cook-hud.cook-hud-burn { background: #b91c1c; color: #fff; }
+    html.dark .cook-heat-btn { background: var(--s1); border-color: var(--line); color: var(--tx); }
+    html.dark .cook-heat-btn.on { background: var(--s2); border-color: var(--mint); }
     .cook-controls { display: flex; align-items: center; gap: .5rem; margin: .65rem 0; }
     .cook-controls .wx-btn { min-width: 2.75rem; min-height: 2.75rem; font-size: 1rem; }
     .cook-count { margin-left: auto; font-size: .8rem; color: #6b7280; font-variant-numeric: tabular-nums; }
