@@ -7,8 +7,8 @@ import vm from "node:vm";
 
 const ctx = vm.createContext({});
 vm.runInContext(`${readFileSync(new URL("./cookshow.js", import.meta.url), "utf8")}
-;globalThis.api = { cookCutStyle, cookMinutes, cookTimeText, cookItemsFromLines, cookMentions, buildCookScript, cookCaption, cookFoodKind, cookState, cookMixColor, cookBottleWord, cookSerializeSteps, cookRestoreSteps, cookMoveStep, cookCompact, cookCheck, cookBurn, COOK_THREE_SRI };`, ctx);
-const { cookCutStyle, cookMinutes, cookTimeText, cookItemsFromLines, cookMentions, buildCookScript, cookCaption, cookFoodKind, cookState, cookMixColor, cookBottleWord, cookSerializeSteps, cookRestoreSteps, cookMoveStep, cookCompact, cookCheck, cookBurn, COOK_THREE_SRI } = ctx.api;
+;globalThis.api = { cookCutStyle, cookMinutes, cookTimeText, cookItemsFromLines, cookMentions, buildCookScript, cookCaption, cookFoodKind, cookState, cookMixColor, cookBottleWord, cookSerializeSteps, cookRestoreSteps, cookMoveStep, cookCompact, cookCheck, cookBurn, cookIsPoured, cookMixLum, COOK_THREE_SRI };`, ctx);
+const { cookCutStyle, cookMinutes, cookTimeText, cookItemsFromLines, cookMentions, buildCookScript, cookCaption, cookFoodKind, cookState, cookMixColor, cookBottleWord, cookSerializeSteps, cookRestoreSteps, cookMoveStep, cookCompact, cookCheck, cookBurn, cookIsPoured, cookMixLum, COOK_THREE_SRI } = ctx.api;
 const plain = (x) => JSON.parse(JSON.stringify(x));
 
 const line = (slug, label, text, status = "ok") => ({ slug, label, text, status });
@@ -280,4 +280,29 @@ test("too long on the fire: overdone, then burnt; the flame changes the limit", 
   assert.ok(st.brown.get(pork) > 1.5, "charred");
   assert.equal(st.level, 0, "boiled dry");
   assert.equal(st.burnt, 2);
+});
+
+test("bottles never go into the food; the dish takes the colour of its sauce", () => {
+  const items = cookItemsFromLines([
+    { slug: "fish_sauce", label: "Fish sauce", text: "2 tbsp patis", status: "ok", gAP: 36 },
+    { slug: "soy_sauce", label: "Soy sauce", text: "1/2 cup soy sauce", status: "ok", gAP: 128 },
+    { slug: "tomato_sauce", label: "Tomato sauce", text: "2 cups tomato sauce", status: "ok", gAP: 490 },
+    { slug: "tomato_paste", label: "Tomato paste", text: "3 tbsp tomato paste", status: "ok", gAP: 48 },
+    { slug: "pork_belly", label: "Pork belly", text: "1 kg pork belly", status: "ok", gAP: 1000 },
+    { slug: null, label: null, text: "2 cups water", status: "water", gAP: 473 },
+  ]);
+  const by = (k) => items.find((i) => i.key === k);
+  for (const k of ["fish_sauce", "soy_sauce", "tomato_sauce", "tomato_paste", "water"]) assert.ok(cookIsPoured(by(k)), k);
+  assert.equal(cookIsPoured(by("pork_belly")), false);
+  const shop = { kind: "shop", items };
+  // Adobo-style: pork, lots of toyo, a little water → a dark pot, and the pork takes the colour.
+  const adobo = [shop, { kind: "add", items: [by("pork_belly"), by("soy_sauce"), by("water")], vessel: "kaldero" }, { kind: "season", items: [by("fish_sauce")], vessel: "kaldero" }, { kind: "simmer", items: [], minutes: 40, vessel: "kaldero" }, { kind: "serve", items: [] }];
+  const st = cookState(adobo, 4);
+  assert.ok(cookMixLum(st.parts) < 0.35, `dark: ${cookMixColor(st.parts)}`);
+  for (const k of ["fish_sauce", "soy_sauce", "water"]) assert.notEqual(st.loc.get(by(k)), "pot", `${k} bottle stays out`);
+  assert.ok(st.tint.get(by("pork_belly"))[1] > 0.3, "pork takes the sauce colour");
+  // Tomato sauce → red-orange.
+  const menudo = [shop, { kind: "add", items: [by("pork_belly"), by("tomato_sauce"), by("tomato_paste"), by("water")], vessel: "kaldero" }, { kind: "simmer", items: [], minutes: 30, vessel: "kaldero" }];
+  const red = cookMixColor(cookState(menudo, 3).parts), n = parseInt(red.slice(1), 16);
+  assert.ok(((n >> 16) & 255) > 2 * ((n >> 8) & 255), `red: ${red}`);
 });
