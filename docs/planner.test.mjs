@@ -6,8 +6,8 @@ import vm from "node:vm";
 
 const ctx = vm.createContext({});
 vm.runInContext(`${readFileSync(new URL("./planner.js", import.meta.url), "utf8")}
-;globalThis.api = { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, budgetOverText, isMainUlam, proteinKind, dietOk, cheapestByKind, addSavedPlan, groceryText, groceryRows, groceryHtml, grocerySection, groupGrocery, dietsOk, dietNote, meatTypes, meatOk, dropSlots, moveInPlan, planNutrition, PLAN_NEEDS, planNeeds, cleanPlanTargets, planDayTargets, planTargetLean };`, ctx);
-const { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, budgetOverText, isMainUlam, proteinKind, dietOk, cheapestByKind, addSavedPlan, groceryText, groceryRows, groceryHtml, grocerySection, groupGrocery, dietsOk, dietNote, meatTypes, meatOk, dropSlots, moveInPlan, planNutrition, PLAN_NEEDS, planNeeds, cleanPlanTargets, planDayTargets, planTargetLean } = ctx.api;
+;globalThis.api = { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, budgetOverText, isMainUlam, proteinKind, dietOk, cheapestByKind, addSavedPlan, groceryText, groceryRows, groceryHtml, grocerySection, groupGrocery, dietsOk, dietNote, meatTypes, meatOk, dropSlots, moveInPlan, planNutrition, PLAN_NEEDS, planNeeds, cleanPlanTargets, planDayTargets, planTargetLean, halalIssue };`, ctx);
+const { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, budgetOverText, isMainUlam, proteinKind, dietOk, cheapestByKind, addSavedPlan, groceryText, groceryRows, groceryHtml, grocerySection, groupGrocery, dietsOk, dietNote, meatTypes, meatOk, dropSlots, moveInPlan, planNutrition, PLAN_NEEDS, planNeeds, cleanPlanTargets, planDayTargets, planTargetLean, halalIssue } = ctx.api;
 const plain = (v) => JSON.parse(JSON.stringify(v));
 
 test("slots: add without duplicates, at most 5, remove clears empty slots", () => {
@@ -477,4 +477,26 @@ test("own targets show on the planner's days, and Random week leans toward them"
   assert.ok(planTargetLean({ protein: 120 }, base).protein > 1);
   assert.ok(planTargetLean({ kcal: 1650 }, base).light > 0.5);
   assert.equal(planTargetLean({ kcal: 3000, protein: 50 }, base).light, 0);
+});
+
+test("halal: no pork in any form, blood, alcohol or gelatin; chicken or fish versions of pork dishes pass", () => {
+  const R = (title, ings = []) => ({ title, ingredientNames: ings });
+  assert.equal(halalIssue(R("Pork Adobo", ["pork belly", "soy sauce"])), "pork");
+  assert.equal(halalIssue(R("Chicken Adobo", ["chicken", "soy sauce", "vinegar"])), null);
+  assert.equal(halalIssue(R("Pancit Bihon", ["bihon", "pork cube", "carrot"])), "pork");
+  assert.equal(halalIssue(R("Chicken Tocino", ["chicken thigh", "sugar"])), null);
+  assert.equal(halalIssue(R("Tuna Sisig", ["tuna", "onion"])), null);
+  assert.equal(halalIssue(R("Pork Sisig", ["pork face"])), "pork");
+  assert.equal(halalIssue(R("Lechon Manok", ["whole chicken"])), null);
+  assert.equal(halalIssue(R("Lechon Kawali", ["pork belly"])), "pork");
+  assert.equal(halalIssue(R("Dinuguan", ["pork", "pig blood"])), "blood");
+  assert.equal(halalIssue(R("Cashew Chicken", ["chicken", "cooking rice wine"])), "alcohol");
+  assert.equal(halalIssue(R("Salad", ["lettuce", "red wine vinegar"])), null);
+  assert.equal(halalIssue(R("Root Beer Float", ["root beer", "ice cream"])), null);
+  assert.equal(halalIssue(R("Mango Jelly", ["mango", "unflavored gelatin"])), "gelatin");
+  assert.equal(halalIssue(R("Sinigang na Hipon", ["shrimp", "ginger", "kangkong"])), null); // "ginger" is not "gin"
+  const recipe = { title: "Beef Tapa", ingredientNames: ["beef sirloin"], nutritionCoverage: 1 };
+  assert.ok(dietOk(recipe, "halal"));
+  assert.ok(!dietOk({ title: "Hotdog Sandwich", ingredientNames: ["hotdog"] }, "halal"));
+  assert.ok(dietOk({ title: "Chicken Hotdog Sandwich", ingredientNames: ["chicken hotdog"] }, "halal"));
 });
