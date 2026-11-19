@@ -306,3 +306,89 @@ test("bottles never go into the food; the dish takes the colour of its sauce", (
   const red = cookMixColor(cookState(menudo, 3).parts), n = parseInt(red.slice(1), 16);
   assert.ok(((n >> 16) & 255) > 2 * ((n >> 8) & 255), `red: ${red}`);
 });
+
+// From the home-cook critique: phrases that looked like steps, the "make X first" parts, and food that cooks through.
+const ckKinds = (r) => buildCookScript(r).map((s) => s.kind);
+const caps = (r) => buildCookScript(r).map((s) => cookCaption(s, "tl"));
+
+test("phrases that only look like steps: steam escaping, folding in, sealing a bag, golden brown", () => {
+  const tilapia = { title: "Fried Tilapia", lines: [line("tilapia", "Tilapia", "2 tilapia cleaned"), line("salt", "Salt", "2 tsp salt"), line("oil_cooking", "Cooking oil", "1 cup cooking oil")],
+    instructions: ["Rub salt all over the fish.", "Heat oil in a wide frying pan.", "Put-in the tilapia. Cover the pan, but open it a little so that steam can come out. Fry each side for 8 minutes.", "Remove from the pan and serve."] };
+  assert.ok(!ckKinds(tilapia).includes("steam"));
+  assert.ok(buildCookScript(tilapia).every((s) => s.vessel !== "steamer"));
+  assert.match(caps(tilapia).find((c) => /balatan|hugasan/.test(c)) || "Linisin at hugasan", /hugasan/); // a fish is cleaned, not peeled
+  const mac = { title: "Baked Macaroni", lines: [line("macaroni", "Elbow macaroni", "1 lb elbow macaroni"), line("beef_ground", "Ground beef", "1 lb ground beef"), line("cheese", "Cheese", "2 cups cheese"), line("sauce_spaghetti", "Spaghetti sauce", "15 oz spaghetti sauce")],
+    instructions: ["Cook the macaroni according to package instructions. Drain and set aside.", "Make the meat sauce by browning the beef in a wok. Pour the spaghetti sauce. Cook for 15 minutes.", "Combine the macaroni and meat sauce. Fold until all the ingredients are well blended.", "Arrange the mixture in a baking pan. Spread the cheese on top.", "Bake for 15 minutes."] };
+  const k = ckKinds(mac);
+  assert.ok(!k.includes("wrap") && !k.includes("fill"), k.join());
+  assert.equal(buildCookScript(mac).find((s) => s.kind === "boil").items[0].key, "macaroni");
+  assert.ok(buildCookScript(mac).some((s) => s.kind === "fry" && s.items.some((it) => it.key === "beef_ground")));
+  const humba = { title: "Humba", lines: [line("pork_hock", "Pork hock", "2 lbs pork hock"), line("sugar_brown", "Brown sugar", "3 tbsp brown sugar")],
+    instructions: ["Heat oil in a wok. Fry the pork hock until golden brown.", "Add the brown sugar. Cook for 10 minutes."] };
+  assert.deepEqual(plain(buildCookScript(humba).find((s) => s.kind === "fry").items.map((it) => it.key)), ["pork_hock"]);
+});
+
+test("the fish is the bangus, the chicken is not the chicken powder; flour coats the fish", () => {
+  const items = cookItemsFromLines([line("bangus", "Milkfish (bangus)", "1 bangus"), line("fish_sauce", "Fish sauce", "1 tbsp fish sauce"), line("flour", "All-purpose flour", "1/2 cup flour"),
+    line("chicken_leg", "Chicken leg quarter", "4 chicken leg quarters"), line("seasoning_chicken_powder", "Chicken powder", "1 tsp chicken powder")]);
+  assert.deepEqual(plain(cookMentions("dredge the fish in flour", items).map((it) => it.key)), ["bangus", "flour"]);
+  assert.deepEqual(plain(cookMentions("grill the chicken for 12 minutes", items).map((it) => it.key)), ["chicken_leg"]);
+  assert.deepEqual(plain(cookMentions("season with fish sauce", items).map((it) => it.key)), ["fish_sauce"]);
+  assert.deepEqual(plain(cookMentions("add the chicken powder", items).map((it) => it.key)), ["seasoning_chicken_powder"]);
+  assert.equal(cookCaption({ kind: "coat", items: [items[2], items[0]] }), "Ipagulong ang milkfish (bangus) sa all-purpose flour");
+});
+
+test("leche flan: bowl, caramel, the mixture poured in, steamed, served cold", () => {
+  const flan = { title: "Leche Flan", lines: [line("egg", "Egg", "10 eggs"), line("milk_condensed", "Condensed milk", "1 can condensed milk"), line("milk_fresh", "Fresh milk", "1 cup fresh milk"), line("sugar_white", "White sugar", "1 cup sugar")],
+    instructions: ["Separate the yolk from the egg white.", "Place the egg yolks in a big bowl then beat them using a fork", "Add the condensed milk and mix thoroughly", "Pour-in the fresh milk. Mix well",
+      "Put the mold on top of the stove and heat using low fire", "Put-in the sugar on the mold and mix until the solid sugar turns into liquid (caramel)", "Wait for 5 minutes then pour the egg yolk and milk mixture on the mold",
+      "Steam the mold for 30 to 35 minutes.", "Let it cool down then refrigerate", "Serve for dessert."] };
+  const steps = buildCookScript(flan);
+  assert.deepEqual(plain(steps.map((s) => s.kind)), ["shop", "mix", "cook", "pour", "steam", "chill", "serve"]);
+  assert.ok(steps[2].caramel);
+  assert.match(cookCaption(steps[2]), /caramel/);
+  assert.match(cookCaption(steps[3]), /^Ibuhos ang pinaghalong/);
+  assert.equal(steps[4].vessel, "steamer");
+  assert.ok(steps[6].cold);
+});
+
+test("rice cooker, soaking first, nothing added twice, put back what was set aside", () => {
+  const biko = { title: "Biko", lines: [line("rice_glutinous", "Glutinous rice", "2 cups glutinous rice"), line(null, null, "1 1/2 cups water", "water"), line("sugar_brown", "Brown sugar", "2 cups brown sugar"), line("coconut_milk", "Coconut milk", "4 cups coconut milk")],
+    instructions: ["Combine the sticky rice and water in a rice cooker and cook until the rice is ready.", "Combine the coconut milk with brown sugar in a separate pot and cook in low heat until thick.",
+      "Add the cooked rice in the coconut milk and sugar mixture then mix well. Continue cooking until the liquid evaporates.", "Scoop the cooked biko and place it in a serving plate then flatten the surface."] };
+  const steps = buildCookScript(biko);
+  assert.ok(!steps.some((s) => s.kind === "rollout"));
+  const added = steps.filter((s) => ["add", "pour"].includes(s.kind)).flatMap((s) => s.items.map((it) => it.key));
+  assert.equal(added.filter((k) => k === "rice_glutinous").length, 1);
+  assert.equal(steps.find((s) => s.kind === "cook").until, true);
+  const pancit = { title: "Pancit Bihon", lines: [line("pork", "Pork", "1/2 lb pork"), line("cabbage", "Cabbage", "1 cabbage"), line("noodles_bihon", "Bihon", "1 lb bihon"), line("soy_sauce", "Soy sauce", "4 tbsp soy sauce")],
+    instructions: ["Heat oil in a wok. Add the pork and cook for 2 minutes.", "Put in the cabbage and simmer for 3 minutes.", "Remove all the ingredients except for the liquid and set them aside.",
+      "Add the soy sauce and mix well.", "Add the bihon (soak it in water for about 10 minutes first) and mix well. Cook until the liquid evaporates.", "Put-in the vegetables and meat that were previously cooked."] };
+  const p = buildCookScript(pancit);
+  const soak = p.findIndex((s) => s.kind === "marinate" && s.soak), addBihon = p.findIndex((s) => s.kind === "add" && s.items.some((it) => it.key === "noodles_bihon"));
+  assert.ok(soak > 0 && addBihon > soak, p.map((s) => s.kind).join());
+  const back = p.find((s) => s.back);
+  assert.deepEqual(plain(back.items.map((it) => it.key)), ["pork", "cabbage"]);
+  assert.equal(cookCaption(back), "Ibalik ang pork at cabbage");
+  assert.equal(cookCaption(p.find((s) => s.kind === "drain")), "Hanguin at itabi muna");
+});
+
+test("meat cooks through in the pot: pink turns the cooked colour", () => {
+  const steps = buildCookScript({ title: "Nilaga", lines: [line("pork_belly", "Pork belly", "1 lb pork belly"), line(null, null, "6 cups water", "water")],
+    instructions: ["Put the pork belly and water in a pot.", "Bring to a boil. Simmer for 60 minutes."] });
+  const pork = steps[0].items[0];
+  assert.ok(!cookState(steps, 2).done || !cookState(steps, 2).done.get(pork));
+  assert.equal(cookState(steps, steps.length - 1).done.get(pork), 1);
+});
+
+test("pancit and biko cook dry and go on a plate; brown sugar darkens the pot", () => {
+  const pancit = buildCookScript({ title: "Pancit Bihon", lines: [line("noodles_bihon", "Bihon", "1 lb bihon"), line(null, null, "3 cups water", "water"), line("soy_sauce", "Soy sauce", "4 tbsp soy sauce")],
+    instructions: ["Pour the water and soy sauce in a wok. Bring to a boil.", "Add the bihon and mix well. Cook until the liquid evaporates completely."] });
+  assert.ok(pancit.some((s) => s.reduce));
+  const st = cookState(pancit, pancit.length);
+  assert.equal(st.served, "plate");
+  assert.ok(st.level < 0.1);
+  const biko = buildCookScript({ title: "Biko", lines: [line("coconut_milk", "Coconut milk", "4 cups coconut milk"), line("sugar_brown", "Brown sugar", "2 cups brown sugar")],
+    instructions: ["Pour the coconut milk in a pot.", "Add the brown sugar and cook for 20 minutes."] });
+  assert.ok(cookMixLum(cookState(biko, biko.length - 1).parts) < 0.75);
+});
