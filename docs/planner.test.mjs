@@ -6,8 +6,8 @@ import vm from "node:vm";
 
 const ctx = vm.createContext({});
 vm.runInContext(`${readFileSync(new URL("./planner.js", import.meta.url), "utf8")}
-;globalThis.api = { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, budgetOverText, isMainUlam, proteinKind, dietOk, cheapestByKind, addSavedPlan, groceryText, groceryRows, groceryHtml, grocerySection, groupGrocery, dietsOk, dietNote, meatTypes, meatOk, dropSlots, moveInPlan, planNutrition, PLAN_NEEDS, planNeeds, cleanPlanTargets };`, ctx);
-const { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, budgetOverText, isMainUlam, proteinKind, dietOk, cheapestByKind, addSavedPlan, groceryText, groceryRows, groceryHtml, grocerySection, groupGrocery, dietsOk, dietNote, meatTypes, meatOk, dropSlots, moveInPlan, planNutrition, PLAN_NEEDS, planNeeds, cleanPlanTargets } = ctx.api;
+;globalThis.api = { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, budgetOverText, isMainUlam, proteinKind, dietOk, cheapestByKind, addSavedPlan, groceryText, groceryRows, groceryHtml, grocerySection, groupGrocery, dietsOk, dietNote, meatTypes, meatOk, dropSlots, moveInPlan, planNutrition, PLAN_NEEDS, planNeeds, cleanPlanTargets, planDayTargets, planTargetLean };`, ctx);
+const { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, budgetOverText, isMainUlam, proteinKind, dietOk, cheapestByKind, addSavedPlan, groceryText, groceryRows, groceryHtml, grocerySection, groupGrocery, dietsOk, dietNote, meatTypes, meatOk, dropSlots, moveInPlan, planNutrition, PLAN_NEEDS, planNeeds, cleanPlanTargets, planDayTargets, planTargetLean } = ctx.api;
 const plain = (v) => JSON.parse(JSON.stringify(v));
 
 test("slots: add without duplicates, at most 5, remove clears empty slots", () => {
@@ -457,4 +457,24 @@ test("own daily targets: calories and protein override the PDRI, bad values igno
   const recipes = new Map([[1, { nutrition: { calories: 2200, protein: 70, fiber: 30, iron: 20, calcium: 800, vitaminA: 700, vitaminC: 80 }, sodium: 500, ulam: true }]]);
   assert.equal(planNutrition(p, recipes, planNeeds("adult", {}), { rice: false }).days[0].met.protein, "ok");
   assert.equal(planNutrition(p, recipes, planNeeds("adult", { protein: 140 }), { rice: false }).days[0].met.protein, "low");
+});
+
+test("own targets show on the planner's days, and Random week leans toward them", () => {
+  const recipes = new Map([[1, { nutrition: { calories: 700, protein: 40 }, sodium: 300, ulam: true }], [2, { nutrition: { calories: 300, protein: 10 }, sodium: 200, ulam: true }]]);
+  const p = { people: 1, slots: { [slotKey("Lunes", "Tanghalian")]: [1], [slotKey("Lunes", "Hapunan")]: [1], [slotKey("Martes", "Tanghalian")]: [2] } };
+  assert.deepEqual(plain(planDayTargets(p, recipes, PLAN_NEEDS.adult, {})), {}); // no own targets: nothing on the grid
+  const custom = { kcal: 1800, protein: 80 };
+  const t = planDayTargets(p, recipes, planNeeds("adult", custom), custom, { rice: true });
+  assert.equal(Math.round(t.Lunes.kcal), 1800); // 2 × 700 + 2 cups of rice
+  assert.equal(t.Lunes.kcalMet, "ok");
+  assert.equal(t.Lunes.protein, 88);
+  assert.equal(t.Lunes.proteinMet, "ok");
+  assert.equal(t.Martes.proteinMet, "low");
+  assert.equal(t.Martes.kcalMet, "low");
+  assert.equal(planDayTargets({ slots: { [slotKey("Lunes", "Tanghalian")]: [1, 1, 1] } }, recipes, planNeeds("adult", { kcal: 1500 }), { kcal: 1500 }).Lunes.kcalMet, "over");
+  const base = PLAN_NEEDS.adult;
+  assert.deepEqual(plain(planTargetLean({}, base)), { protein: 0, light: 0 });
+  assert.ok(planTargetLean({ protein: 120 }, base).protein > 1);
+  assert.ok(planTargetLean({ kcal: 1650 }, base).light > 0.5);
+  assert.equal(planTargetLean({ kcal: 3000, protein: 50 }, base).light, 0);
 });

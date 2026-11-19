@@ -702,7 +702,14 @@ function markTarget() {
 
 function renderGrid() {
   const recipes = plannerRecipes();
-  const head = `<div></div>` + DAYS.map((d) => `<div class="plan-day">${d}</div>`).join("");
+  // With the user's own targets, each day shows its calories and protein against them.
+  const custom = typeof loadPlanTargets === "function" ? loadPlanTargets() : {};
+  const age = (typeof SETTINGS !== "undefined" && SETTINGS.age) || null;
+  const tgt = custom.kcal || custom.protein ? planDayTargets(plan, plannerNutritionMap(), planNeeds(age, custom), custom, { rice: planRice }) : {};
+  const head = `<div></div>` + DAYS.map((d) => {
+    const x = tgt[d];
+    return `<div class="plan-day">${d}${x ? `<span class="plan-day-tgt"><span class="t-${x.kcalMet}" title="Calories vs target">${Math.round(x.kcal).toLocaleString("en-PH")} kcal</span><span class="t-${x.proteinMet}" title="Protein vs target">${Math.round(x.protein)} g</span></span>` : ""}</div>`;
+  }).join("");
   const body = MEALS.map((meal) => `<div class="plan-meal">${meal}</div>` + DAYS.map((day) => {
     const key = slotKey(day, meal);
     const ids = plan.slots[key] || [];
@@ -906,10 +913,25 @@ function plannerTasteScorer(recipes) {
   const maxValue = Math.max(1, ...recipes.map((r) => r.valueScore || 0));
   const hasModel = typeof currentTasteModel === "function" && typeof dishKind === "function" && (typeof suggestOn !== "function" || suggestOn());
   const models = hasModel ? { ulam: currentTasteModel("ulam"), meryenda: currentTasteModel("meryenda") } : {};
+  // Own targets: more protein than the PDRI favours protein-rich dishes; fewer calories favours lighter ones.
+  const custom = typeof loadPlanTargets === "function" ? loadPlanTargets() : {};
+  const base = planNeeds((typeof SETTINGS !== "undefined" && SETTINGS.age) || null, {});
+  const lean = planTargetLean(custom, base);
+  const maxP = Math.max(1, ...recipes.map((r) => (r.nutrition && r.nutrition.protein) || 0));
+  const maxK = Math.max(1, ...recipes.map((r) => (r.nutrition && r.nutrition.calories) || 0));
   return (r) => {
     const m = models[hasModel ? dishKind(r) : null];
-    return (r.valueScore || 0) / maxValue + (m ? 2 * tasteScore(m, tasteVec(r)) : 0);
+    const n = r.nutrition || {};
+    return (r.valueScore || 0) / maxValue + (m ? 2 * tasteScore(m, tasteVec(r)) : 0)
+      + lean.protein * ((n.protein || 0) / maxP) - lean.light * ((n.calories || 0) / maxK);
   };
+}
+
+/** How much 🎲 Random week leans toward protein-rich or lighter dishes, from the user's own targets. Pure, tested. */
+function planTargetLean(custom, base) {
+  const protein = custom && custom.protein && base.protein ? Math.max(0, Math.min(1.5, (custom.protein / base.protein - 1) * 2)) : 0;
+  const light = custom && custom.kcal && base.kcal ? Math.max(0, Math.min(1.5, (1 - custom.kcal / base.kcal) * 4)) : 0;
+  return { protein, light };
 }
 
 function randomPools() {
@@ -1041,6 +1063,19 @@ function cleanPlanTargets(v) {
 function planNeeds(age, custom) { const { weight, ...own } = cleanPlanTargets(custom); return { ...(PLAN_NEEDS[age] || PLAN_NEEDS.adult), ...own }; }
 function loadPlanTargets() { try { return cleanPlanTargets(JSON.parse(localStorage.getItem(PLAN_TARGETS_KEY) || "{}")); } catch { return {}; } }
 function savePlanTargets(v) { try { localStorage.setItem(PLAN_TARGETS_KEY, JSON.stringify(cleanPlanTargets(v))); } catch { /* not saved */ } }
+let planTargetsApplied = false;
+/** The "Ilapat" button and Enter: save both fields at once, then update the window and the planner. */
+function applyPlanTargets() {
+  const cur = loadPlanTargets();
+  for (const k of ["kcal", "protein"]) {
+    const v = document.getElementById(`pn-${k}`)?.value;
+    if (v === "" || v == null) delete cur[k]; else cur[k] = Number(v);
+  }
+  savePlanTargets(cur);
+  planTargetsApplied = true;
+  renderPlanNutrition(true);
+  if (typeof renderGrid === "function" && document.getElementById("plan-grid")) renderGrid();
+}
 function setPlanTarget(key, value) {
   const cur = loadPlanTargets();
   if (value === "" || value == null) delete cur[key]; else cur[key] = value;
@@ -1051,16 +1086,30 @@ function setPlanTarget(key, value) {
 function setPlanPreset(kind) {
   const w = Number(document.getElementById("pn-weight")?.value);
   const cur = loadPlanTargets();
-  if (kind === "reset") { savePlanTargets({}); renderPlanNutrition(true); return; }
+  if (kind === "reset") { savePlanTargets({}); planTargetsApplied = false; renderPlanNutrition(true); if (document.getElementById("plan-grid")) renderGrid(); return; }
   if (w >= 20 && w <= 250) cur.weight = Math.round(w);
   if (w >= 20 && w <= 250) cur.protein = Math.round(w * ({ normal: 1.0, active: 1.4, muscle: 1.8, lose: 1.2 }[kind] || 1));
   if (kind === "lose") cur.kcal = Math.max(1200, (planNeeds((typeof SETTINGS !== "undefined" && SETTINGS.age) || null, {}).kcal) - 500);
   savePlanTargets(cur);
+  planTargetsApplied = true;
   renderPlanNutrition(true);
+  if (document.getElementById("plan-grid")) renderGrid();
+}
+
+/**
+ * Each planned day's calories and protein against the user's own targets, for the planner's day headers:
+ * { Lun: { kcal, protein, kcalMet, proteinMet } }, "ok" / "near" (70–99%) / "low" (or "over" past 115% of
+ * the calorie target). Empty when the user set no targets of their own. Pure, tested.
+ */
+function planDayTargets(plan, recipes, needs, custom, { rice = true } = {}) {
+  if (!custom || !(custom.kcal || custom.protein)) return {};
+  const r = planNutrition(plan, recipes, needs, { rice });
+  const met = (v, need, cap) => (!need ? null : cap && v > need * 1.15 ? "over" : v >= need ? "ok" : v >= need * 0.7 ? "near" : "low");
+  return Object.fromEntries(r.days.map((d) => [d.day, { kcal: d.sum.kcal, protein: d.sum.protein, kcalMet: met(d.sum.kcal, needs.kcal, true), proteinMet: met(d.sum.protein, needs.protein) }]));
 }
 
 let planRice = true;
-function setPlanRice(on) { planRice = !!on; renderPlanNutrition(); }
+function setPlanRice(on) { planRice = !!on; renderPlanNutrition(); if (document.getElementById("plan-grid")) renderGrid(); }
 
 /** The week's nutrition opens in its own window (a native dialog: focus, Esc and the backdrop come with it). */
 function openPlanNutrition() {
@@ -1118,9 +1167,11 @@ function planNutritionHtml() {
     <p class="pn-head"><b>${en ? "Per person" : "Bawat tao"}</b> · ${en ? "age" : "edad"} ${escapeHtml(ageTxt)}</p>
     <details class="pn-targets"><summary>🎯 ${en ? "My daily targets" : "Target ko bawat araw"}: <b>${needs.kcal.toLocaleString("en-PH")} kcal</b> · <b>${needs.protein} g ${en ? "protein" : "protina"}</b>${custom.kcal || custom.protein ? ` <span class="pn-own">${en ? "(mine)" : "(sarili ko)"}</span>` : ` <span class="pn-own">(PDRI)</span>`}</summary>
       <div class="pn-target-grid">
-        <label>${en ? "Calories / day" : "Calories bawat araw"}<input id="pn-kcal" class="cook-in" type="number" inputmode="numeric" min="${PLAN_TARGET_LIMITS.kcal[0]}" max="${PLAN_TARGET_LIMITS.kcal[1]}" step="50" value="${custom.kcal || ""}" placeholder="${base.kcal}" onchange="setPlanTarget('kcal', this.value)"> kcal</label>
-        <label>${en ? "Protein / day" : "Protina bawat araw"}<input id="pn-protein" class="cook-in" type="number" inputmode="numeric" min="${PLAN_TARGET_LIMITS.protein[0]}" max="${PLAN_TARGET_LIMITS.protein[1]}" step="1" value="${custom.protein || ""}" placeholder="${base.protein}" onchange="setPlanTarget('protein', this.value)"> g</label>
+        <label>${en ? "Calories / day" : "Calories bawat araw"}<input id="pn-kcal" class="cook-in" type="number" inputmode="numeric" min="${PLAN_TARGET_LIMITS.kcal[0]}" max="${PLAN_TARGET_LIMITS.kcal[1]}" step="50" value="${custom.kcal || ""}" placeholder="${base.kcal}" onkeydown="if(event.key==='Enter'){event.preventDefault();applyPlanTargets()}"> kcal</label>
+        <label>${en ? "Protein / day" : "Protina bawat araw"}<input id="pn-protein" class="cook-in" type="number" inputmode="numeric" min="${PLAN_TARGET_LIMITS.protein[0]}" max="${PLAN_TARGET_LIMITS.protein[1]}" step="1" value="${custom.protein || ""}" placeholder="${base.protein}" onkeydown="if(event.key==='Enter'){event.preventDefault();applyPlanTargets()}"> g</label>
+        <button type="button" class="pn-apply" onclick="applyPlanTargets()">✓ ${en ? "Apply to planner" : "Ilapat sa planner"}</button>
       </div>
+      ${planTargetsApplied ? `<p class="pn-applied" role="status">✓ ${en ? "Applied. The planner now shows each day against your target, and 🎲 Random week leans toward it." : "Na-apply na. Makikita na sa planner ang bawat araw kumpara sa target mo, at susundan ito ng 🎲 Random week."}</p>` : ""}
       <div class="pn-presets"><label>${en ? "Body weight" : "Timbang"} <input id="pn-weight" class="cook-in" type="number" inputmode="numeric" min="20" max="250" placeholder="60" value="${custom.weight || ""}"> kg</label>
         <span class="pn-presets-btns">${[["normal", en ? "Normal (1 g/kg)" : "Karaniwan (1 g/kg)"], ["active", en ? "Active (1.4 g/kg)" : "Aktibo (1.4 g/kg)"], ["muscle", en ? "Build muscle (1.8 g/kg)" : "Magpalaki ng muscle (1.8 g/kg)"], ["lose", en ? "Lose weight (−500 kcal)" : "Magbawas ng timbang (−500 kcal)"]].map(([k, l]) => `<button type="button" class="wx-btn" onclick="setPlanPreset('${k}')">${escapeHtml(l)}</button>`).join("")}
         <button type="button" class="wx-btn" onclick="setPlanPreset('reset')">↺ ${en ? "Back to PDRI" : "Ibalik sa PDRI"}</button></span></div>
