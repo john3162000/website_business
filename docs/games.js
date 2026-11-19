@@ -454,7 +454,7 @@ function renderVersus() {
   box.innerHTML = `
     <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide text-center mb-3">Round ${gameRound + 1} of ${gameRounds.length} · Alin ang mas gusto mo?</p>
     <div class="vs-arena" id="vs-arena">${side("a")}<span class="vs-mark">VS</span>${side("b")}</div>
-    <p class="text-center text-[.7rem] text-gray-400 mt-2"><span class="game-touch-hint" data-i18n="game.vsSwipe">👈 I-swipe pakaliwa o pakanan para pumili 👉</span><span class="game-keys-hint" data-i18n="game.vsKeys">⌨️ ← kaliwa · → kanan · Enter = susunod</span></p>
+    <p class="text-center text-[.7rem] text-gray-400 mt-2"><span class="game-touch-hint" data-i18n="game.vsSwipe">👈 I-swipe pakaliwa o pakanan para pumili 👉</span><span class="game-keys-hint" data-i18n="game.vsKeys">⌨️ ← kaliwa · → kanan · kahit anong key = susunod</span></p>
     <div id="vs-note" class="vs-note hidden"></div>`;
 }
 
@@ -474,7 +474,8 @@ function pickVersus(s) {
   const el = document.getElementById("vs-note");
   el.innerHTML = `<p class="text-xs font-bold uppercase tracking-wide text-amber-700">💡 Alam mo ba? (${escapeHtml(note.dish)})</p>
     <p class="text-sm mt-1">${escapeHtml(note.text)}</p>
-    <button onclick="nextVersus()" class="mt-3 w-full bg-green-800 text-amber-50 rounded-full py-2 text-sm font-semibold">${gameRound + 1 < gameRounds.length ? "Next round →" : "Tingnan ang resulta"}</button>`;
+    <button onclick="nextVersus()" class="mt-3 w-full bg-green-800 text-amber-50 rounded-full py-2 text-sm font-semibold">${gameRound + 1 < gameRounds.length ? "Next round →" : "Tingnan ang resulta"}</button>
+    <p class="game-keys-hint text-center text-[.7rem] text-gray-400 mt-2">⌨️ Pindutin ang kahit anong key para tumuloy</p>`;
   el.classList.remove("hidden");
 }
 
@@ -568,6 +569,11 @@ function gameKeyRating(key) {
   return key === "0" ? 10 : +key;
 }
 
+/** After a pick, which keys go to the next round: any key except Tab, Escape and lone modifiers. Pure, tested. */
+function gameAnyKeyNext(key) {
+  return !!key && !["Tab", "Escape", "Shift", "Control", "Alt", "Meta", "CapsLock", "Fn", "Dead", "Unidentified"].includes(key);
+}
+
 /** Which side a horizontal swipe picks: "a" (left), "b" (right) or null if too short or mostly vertical. Pure, tested. */
 function gameSwipeSide(dx, dy, min = 50) {
   if (Math.abs(dx) < min || Math.abs(dx) < Math.abs(dy) * 1.3) return null;
@@ -602,12 +608,14 @@ function gameOnKey(e) {
     return;
   }
   if (gameMode === "versus" && gameShown("game-versus") && gameRounds.length && gameRound < gameRounds.length) {
-    if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
-      e.preventDefault();
-      if (gameRoundDone) nextVersus(); else pickVersus(e.key === "ArrowLeft" ? "a" : "b");
-    } else if ((e.key === "Enter" || e.key === " ") && gameRoundDone && !(e.target && e.target.tagName === "BUTTON")) {
+    // Pick with ← or →; once picked, any key goes to the next round (not Tab or a lone Shift/Ctrl/Alt).
+    if (gameRoundDone) {
+      if (!gameAnyKeyNext(e.key)) return;
       e.preventDefault();
       nextVersus();
+    } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+      e.preventDefault();
+      pickVersus(e.key === "ArrowLeft" ? "a" : "b");
     }
   }
 }
