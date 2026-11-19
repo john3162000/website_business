@@ -841,6 +841,19 @@
     html.dark .pn-dialog { background: var(--s1); color: var(--tx); }
     html.dark .pn-dialog-head h2 { color: var(--tx); }
     .pn { display: grid; gap: .5rem; font-size: .85rem; }
+    .pn-targets { border: 1px solid #E7DFCB; border-radius: .7rem; background: #fff; }
+    .pn-targets summary { padding: .5rem .6rem; cursor: pointer; min-height: 2.75rem; display: flex; align-items: center; flex-wrap: wrap; gap: .25rem; }
+    .pn-own { font-size: .72rem; color: #6b7280; }
+    .pn-target-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; padding: 0 .6rem; }
+    .pn-target-grid label, .pn-presets label { display: flex; flex-direction: column; gap: .2rem; font-size: .75rem; font-weight: 600; color: #374151; }
+    .pn-target-grid input { width: 100%; }
+    .pn-presets { padding: .5rem .6rem 0; display: grid; gap: .4rem; }
+    .pn-presets label { flex-direction: row; align-items: center; gap: .4rem; }
+    .pn-presets input { width: 5rem; }
+    .pn-presets-btns { display: flex; flex-wrap: wrap; gap: .3rem; }
+    .pn-targets > .pn-legend { padding: .4rem .6rem .6rem; }
+    html.dark .pn-targets { background: var(--s2); border-color: var(--line); }
+    html.dark .pn-target-grid label, html.dark .pn-presets label { color: var(--tx2); }
     .pn-head { color: #4b5563; }
     .pn-week { background: #EFF5F0; border-radius: .8rem; padding: .6rem .8rem; display: grid; gap: .15rem; color: #163F2E; }
     .pn-big { font-family: Fraunces, Georgia, serif; font-size: 1.5rem; font-weight: 700; }

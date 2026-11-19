@@ -1028,6 +1028,37 @@ async function renderReceipt() {
     + receiptFooter(r.total, r.unpriced ? `${r.unpriced} ingredient${r.unpriced > 1 ? "s" : ""} without a price (—)` : "", 0);
 }
 
+// The person's own daily targets (calories, protein), saved on this device; empty = the PDRI default.
+const PLAN_TARGETS_KEY = "sarapsulit.plantargets.v1";
+const PLAN_TARGET_LIMITS = { kcal: [800, 5000], protein: [10, 300], weight: [20, 250] };
+/** Valid custom targets only: numbers in range, else dropped. Pure, tested. */
+function cleanPlanTargets(v) {
+  const out = {};
+  for (const [k, [lo, hi]] of Object.entries(PLAN_TARGET_LIMITS)) { const n = Math.round(Number(v && v[k])); if (Number.isFinite(n) && n >= lo && n <= hi) out[k] = n; }
+  return out;
+}
+/** The day's needs: the age's PDRI values with the person's own calories and protein on top. Pure, tested. */
+function planNeeds(age, custom) { const { weight, ...own } = cleanPlanTargets(custom); return { ...(PLAN_NEEDS[age] || PLAN_NEEDS.adult), ...own }; }
+function loadPlanTargets() { try { return cleanPlanTargets(JSON.parse(localStorage.getItem(PLAN_TARGETS_KEY) || "{}")); } catch { return {}; } }
+function savePlanTargets(v) { try { localStorage.setItem(PLAN_TARGETS_KEY, JSON.stringify(cleanPlanTargets(v))); } catch { /* not saved */ } }
+function setPlanTarget(key, value) {
+  const cur = loadPlanTargets();
+  if (value === "" || value == null) delete cur[key]; else cur[key] = value;
+  savePlanTargets(cur);
+  renderPlanNutrition(true);
+}
+/** Quick picks: by body weight (protein g/kg) and a calorie goal. */
+function setPlanPreset(kind) {
+  const w = Number(document.getElementById("pn-weight")?.value);
+  const cur = loadPlanTargets();
+  if (kind === "reset") { savePlanTargets({}); renderPlanNutrition(true); return; }
+  if (w >= 20 && w <= 250) cur.weight = Math.round(w);
+  if (w >= 20 && w <= 250) cur.protein = Math.round(w * ({ normal: 1.0, active: 1.4, muscle: 1.8, lose: 1.2 }[kind] || 1));
+  if (kind === "lose") cur.kcal = Math.max(1200, (planNeeds((typeof SETTINGS !== "undefined" && SETTINGS.age) || null, {}).kcal) - 500);
+  savePlanTargets(cur);
+  renderPlanNutrition(true);
+}
+
 let planRice = true;
 function setPlanRice(on) { planRice = !!on; renderPlanNutrition(); }
 
@@ -1046,18 +1077,22 @@ function openPlanNutrition() {
   if (typeof dlg.showModal === "function") dlg.showModal(); else dlg.setAttribute("open", "");
 }
 
-function renderPlanNutrition() {
+function renderPlanNutrition(keepOpen) {
   const dlg = document.getElementById("plan-nutrition-dialog");
   if (!dlg) return;
+  const scroll = dlg.scrollTop;
   const en = typeof siteLang === "function" && siteLang() === "en";
   dlg.innerHTML = `<div class="pn-dialog-head"><h2 id="pn-title">🥗 ${en ? "This week's nutrition" : "Sustansya ng linggo"}</h2>
     <button type="button" class="dlg-x" aria-label="Isara" onclick="document.getElementById('plan-nutrition-dialog').close()">✕</button></div>${planNutritionHtml()}`;
+  if (keepOpen) { const d = dlg.querySelector(".pn-targets"); if (d) d.open = true; dlg.scrollTop = scroll; }
 }
 
 function planNutritionHtml() {
   const en = typeof siteLang === "function" && siteLang() === "en";
   const age = (typeof SETTINGS !== "undefined" && SETTINGS.age) || null;
-  const needs = PLAN_NEEDS[age] || PLAN_NEEDS.adult;
+  const custom = loadPlanTargets();
+  const base = PLAN_NEEDS[age] || PLAN_NEEDS.adult;
+  const needs = planNeeds(age, custom);
   const r = planNutrition(plan, plannerNutritionMap(), needs, { rice: planRice });
   const L = en
     ? { kcal: "Calories", protein: "Protein", fiber: "Fiber", iron: "Iron", calcium: "Calcium", vitaminA: "Vitamin A", vitaminC: "Vitamin C", sodium: "Sodium" }
@@ -1081,6 +1116,16 @@ function planNutritionHtml() {
   const metDays = r.days.filter((d) => PLAN_NUTRIENTS.every((k) => d.met[k] === "ok")).length;
   return `<div class="pn">
     <p class="pn-head"><b>${en ? "Per person" : "Bawat tao"}</b> · ${en ? "age" : "edad"} ${escapeHtml(ageTxt)}</p>
+    <details class="pn-targets"><summary>🎯 ${en ? "My daily targets" : "Target ko bawat araw"}: <b>${needs.kcal.toLocaleString("en-PH")} kcal</b> · <b>${needs.protein} g ${en ? "protein" : "protina"}</b>${custom.kcal || custom.protein ? ` <span class="pn-own">${en ? "(mine)" : "(sarili ko)"}</span>` : ` <span class="pn-own">(PDRI)</span>`}</summary>
+      <div class="pn-target-grid">
+        <label>${en ? "Calories / day" : "Calories bawat araw"}<input id="pn-kcal" class="cook-in" type="number" inputmode="numeric" min="${PLAN_TARGET_LIMITS.kcal[0]}" max="${PLAN_TARGET_LIMITS.kcal[1]}" step="50" value="${custom.kcal || ""}" placeholder="${base.kcal}" onchange="setPlanTarget('kcal', this.value)"> kcal</label>
+        <label>${en ? "Protein / day" : "Protina bawat araw"}<input id="pn-protein" class="cook-in" type="number" inputmode="numeric" min="${PLAN_TARGET_LIMITS.protein[0]}" max="${PLAN_TARGET_LIMITS.protein[1]}" step="1" value="${custom.protein || ""}" placeholder="${base.protein}" onchange="setPlanTarget('protein', this.value)"> g</label>
+      </div>
+      <div class="pn-presets"><label>${en ? "Body weight" : "Timbang"} <input id="pn-weight" class="cook-in" type="number" inputmode="numeric" min="20" max="250" placeholder="60" value="${custom.weight || ""}"> kg</label>
+        <span class="pn-presets-btns">${[["normal", en ? "Normal (1 g/kg)" : "Karaniwan (1 g/kg)"], ["active", en ? "Active (1.4 g/kg)" : "Aktibo (1.4 g/kg)"], ["muscle", en ? "Build muscle (1.8 g/kg)" : "Magpalaki ng muscle (1.8 g/kg)"], ["lose", en ? "Lose weight (−500 kcal)" : "Magbawas ng timbang (−500 kcal)"]].map(([k, l]) => `<button type="button" class="wx-btn" onclick="setPlanPreset('${k}')">${escapeHtml(l)}</button>`).join("")}
+        <button type="button" class="wx-btn" onclick="setPlanPreset('reset')">↺ ${en ? "Back to PDRI" : "Ibalik sa PDRI"}</button></span></div>
+      <p class="pn-legend">${en ? "Leave blank to use the PDRI for your age. Your targets stay on this device." : "Iwanang blangko para sa PDRI ng edad mo. Naka-save lang ito sa device na ito."}</p>
+    </details>
     <div class="pn-week"><div><span class="pn-big">${Math.round(r.week.kcal).toLocaleString("en-PH")}</span> kcal ${en ? "for the week" : "sa buong linggo"}</div>
       <div>${en ? "Average" : "Karaniwan"} <b>${Math.round(r.week.avgKcal).toLocaleString("en-PH")}</b> kcal/${en ? "day" : "araw"} · ${en ? "need" : "kailangan"} ~${needs.kcal.toLocaleString("en-PH")}</div>
       <div>${metDays}/${r.days.length} ${en ? "days meet every nutrient" : "araw na pasok ang lahat ng sustansya"}</div></div>
