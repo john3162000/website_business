@@ -260,21 +260,21 @@ function renderRate() {
   if (!r) { box.innerHTML = `${kinds}<p class="text-sm text-gray-500 p-6 text-center">Na-rate mo na lahat! 🎉</p>${rateHistory()}`; return; }
   box.innerHTML = `${kinds}
     ${gameRateActive ? `<p class="text-xs text-center text-green-800 font-semibold mb-2">🧠 Pinili para mas makilala ang panlasa mo</p>` : ""}
-    <div class="game-card">
+    <div class="game-card rate-card">
       <img src="${escapeHtml(r.img)}" alt="" class="game-photo" loading="lazy">
-      <div class="p-4">
+      <div class="rate-body p-4">
         <p class="font-display text-xl font-bold leading-tight">${escapeHtml(r.title)}</p>
         <p class="text-xs text-gray-500 mt-1">${r.costPerServing > 0 ? `₱${r.costPerServing}/serving · ` : ""}${escapeHtml(catLabel(r.category))}</p>
-        <p class="text-sm font-semibold mt-4">Gaano mo kagusto 'to?</p>
+        <p class="rate-q text-sm font-semibold mt-4">Gaano mo kagusto 'to?</p>
         <div class="rate-stage" id="rate-stage">
           ${GAME_COOK_SVG}
           <div class="rate-arm" id="rate-arm"><span class="rate-hand" id="rate-hand">👌</span></div>
         </div>
         <input id="rate-slider" type="range" min="1" max="10" step="1" value="5" class="rate-slider" aria-label="Rating from 1 to 10" oninput="updateRate(+this.value)">
         <div class="flex justify-between text-[.65rem] text-gray-400 -mt-1 px-1"><span>1 · ayoko</span><span>10 · paborito</span></div>
-        <p class="game-keys-hint text-center text-[.7rem] text-gray-400 mt-2" data-i18n="game.rateKeys">⌨️ Pindutin ang 1–9 sa keyboard (0 = 10), rated na agad</p>
-        <p class="text-center mt-3"><span id="rate-num" class="rate-num">5</span><span class="text-gray-400 font-semibold">/10</span> <span id="rate-label" class="text-sm font-semibold text-green-800"></span></p>
-        <div class="flex gap-2 mt-4">
+        <p class="game-keys-hint text-center text-[.7rem] text-gray-400 mt-2" data-i18n="game.rateKeys">⌨️ Pindutin ang 1–9 (0 = 10), rated na agad</p>
+        <p class="rate-score text-center mt-3"><span id="rate-num" class="rate-num">5</span><span class="text-gray-400 font-semibold">/10</span> <span id="rate-label" class="text-sm font-semibold text-green-800"></span></p>
+        <div class="rate-actions flex gap-2 mt-4">
           <button onclick="skipRate()" class="flex-1 border border-gray-200 rounded-full py-2 text-sm font-semibold text-gray-600">Skip</button>
           <button onclick="submitRate()" class="flex-[2] bg-green-800 text-amber-50 rounded-full py-2 text-sm font-semibold">I-rate ✓</button>
         </div>

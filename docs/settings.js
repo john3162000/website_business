@@ -374,7 +374,7 @@ const I18N = {
   "plan.receipt": ["Resibo", "Receipt"],
   "plan.people": ["Ilang tao", "People"],
   "plan.nutrition": ["🥗 Sustansya ng linggo", "🥗 This week's nutrition"],
-  "game.rateKeys": ["⌨️ Pindutin ang 1–9 sa keyboard (0 = 10), rated na agad", "⌨️ Press 1–9 on the keyboard (0 = 10) to rate at once"],
+  "game.rateKeys": ["⌨️ Pindutin ang 1–9 (0 = 10), rated na agad", "⌨️ Press 1–9 (0 = 10) to rate at once"],
   "game.vsSwipe": ["👈 I-swipe pakaliwa o pakanan para pumili 👉", "👈 Swipe left or right to pick 👉"],
   "game.vsKeys": ["⌨️ ← kaliwa · → kanan · Enter = susunod", "⌨️ ← left · → right · Enter = next"],
   "plan.perDish": ["Bawat ulam", "Per dish"],
