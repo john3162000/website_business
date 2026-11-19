@@ -6,8 +6,8 @@ import vm from "node:vm";
 
 const ctx = vm.createContext({});
 vm.runInContext(`${readFileSync(new URL("./planner.js", import.meta.url), "utf8")}
-;globalThis.api = { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, budgetOverText, isMainUlam, proteinKind, dietOk, cheapestByKind, addSavedPlan, groceryText, groceryRows, groceryHtml, grocerySection, groupGrocery, dietsOk, dietNote, meatTypes, meatOk, dropSlots, moveInPlan };`, ctx);
-const { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, budgetOverText, isMainUlam, proteinKind, dietOk, cheapestByKind, addSavedPlan, groceryText, groceryRows, groceryHtml, grocerySection, groupGrocery, dietsOk, dietNote, meatTypes, meatOk, dropSlots, moveInPlan } = ctx.api;
+;globalThis.api = { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, budgetOverText, isMainUlam, proteinKind, dietOk, cheapestByKind, addSavedPlan, groceryText, groceryRows, groceryHtml, grocerySection, groupGrocery, dietsOk, dietNote, meatTypes, meatOk, dropSlots, moveInPlan, planNutrition, PLAN_NEEDS };`, ctx);
+const { loadPlan, savePlan, addToSlot, removeFromSlot, plannedDishes, receiptByDish, receiptByIngredient, formatGrams, slotKey, mealTypes, seriesForMeal, randomWeek, parseBudgetText, budgetWeek, budgetOverText, isMainUlam, proteinKind, dietOk, cheapestByKind, addSavedPlan, groceryText, groceryRows, groceryHtml, grocerySection, groupGrocery, dietsOk, dietNote, meatTypes, meatOk, dropSlots, moveInPlan, planNutrition, PLAN_NEEDS } = ctx.api;
 const plain = (v) => JSON.parse(JSON.stringify(v));
 
 test("slots: add without duplicates, at most 5, remove clears empty slots", () => {
@@ -410,4 +410,33 @@ test("vegetarian and vegan follow the backend's ingredient check", () => {
   assert.equal(dietOk(D(null), "vegetarian"), false, "meat, fish, patis or an unknown ingredient");
   assert.equal(dietOk(D(undefined), "vegan"), false);
   assert.match(dietNote(["vegan"]), /Puro halaman/);
+});
+
+test("weekly nutrition per person: day totals, rice, needs met or short, sodium", () => {
+  const p = loadPlan({ getItem: () => null });
+  p.slots["Lunes|Tanghalian"] = [1];
+  p.slots["Lunes|Hapunan"] = [2];
+  p.slots["Martes|Tanghalian"] = [3];
+  const big = { calories: 1000, protein: 40, fiber: 15, iron: 12, calcium: 500, vitaminA: 400, vitaminC: 50 };
+  const recipes = new Map([
+    [1, { nutrition: big, sodium: 900, ulam: true }],
+    [2, { nutrition: big, sodium: 900, ulam: true }],
+    [3, { nutrition: { calories: 300, protein: 10, fiber: 2, iron: 1, calcium: 50, vitaminA: 20, vitaminC: 5 }, sodium: 300, ulam: true }],
+  ]);
+  const r = planNutrition(p, recipes, PLAN_NEEDS.adult, { rice: true });
+  assert.equal(r.days.length, 2);
+  const mon = r.days[0];
+  assert.equal(mon.day, "Lunes");
+  assert.equal(mon.sum.kcal, 2400, "2 dishes + 2 cups of rice");
+  assert.equal(mon.met.kcal, "ok");
+  assert.equal(mon.met.protein, "ok");
+  assert.equal(mon.met.sodium, "ok");
+  assert.equal(r.days[1].met.kcal, "low");
+  assert.equal(r.week.kcal, 2400 + 500);
+  assert.equal(r.week.allMet, false);
+  const noRice = planNutrition(p, recipes, PLAN_NEEDS.adult, { rice: false });
+  assert.equal(noRice.days[0].sum.kcal, 2000);
+  assert.equal(noRice.days[0].met.kcal, "near");
+  recipes.get(1).sodium = 1800;
+  assert.equal(planNutrition(p, recipes, PLAN_NEEDS.adult).days[0].met.sodium, "over");
 });

@@ -94,6 +94,60 @@ function receiptByDish(plan, recipes) {
   return { rows, byDay, total: rows.reduce((s, x) => s + (x.cost || 0), 0), unpriced: rows.filter((x) => x.cost == null).length };
 }
 
+// ── Nutrition for the week (per person) ──
+
+// Daily needs per person, averaged for men and women: Philippine Dietary Reference Intakes 2015 (FNRI),
+// rounded. Guidance only. Sodium is an upper limit (WHO: under 2,000 mg).
+const PLAN_NEEDS = {
+  child:   { kcal: 1700, protein: 35, fiber: 20, iron: 11, calcium: 900, vitaminA: 450, vitaminC: 40 },
+  teen:    { kcal: 2300, protein: 60, fiber: 22, iron: 22, calcium: 1000, vitaminA: 600, vitaminC: 60 },
+  young:   { kcal: 2230, protein: 66, fiber: 25, iron: 19, calcium: 750, vitaminA: 600, vitaminC: 72 },
+  adult:   { kcal: 2150, protein: 66, fiber: 25, iron: 19, calcium: 750, vitaminA: 600, vitaminC: 72 },
+  midlife: { kcal: 2050, protein: 66, fiber: 25, iron: 11, calcium: 800, vitaminA: 600, vitaminC: 72 },
+  senior:  { kcal: 1850, protein: 64, fiber: 25, iron: 11, calcium: 800, vitaminA: 600, vitaminC: 72 },
+};
+const PLAN_SODIUM_MAX = 2000;
+// One cup of cooked white rice per meal that has an ulam (FNRI: ~200 kcal, 4 g protein).
+const PLAN_RICE = { kcal: 200, protein: 4, fiber: 0.6, iron: 0.4, calcium: 10, vitaminA: 0, vitaminC: 0, sodium: 2 };
+const PLAN_NUTRIENTS = ["kcal", "protein", "fiber", "iron", "calcium", "vitaminA", "vitaminC"];
+
+/**
+ * Per person, for each day with dishes: what the planned dishes give (one serving of each), against the
+ * day's needs. `recipes` maps id → { nutrition: {calories, protein, fiber, iron, calcium, vitaminA, vitaminC}, sodium }.
+ * Pure, tested.
+ */
+function planNutrition(plan, recipes, needs, { rice = true } = {}) {
+  const days = [];
+  for (const day of DAYS) {
+    const sum = { kcal: 0, protein: 0, fiber: 0, iron: 0, calcium: 0, vitaminA: 0, vitaminC: 0, sodium: 0 };
+    let dishes = 0, unknown = 0, meals = 0;
+    for (const meal of MEALS) {
+      const ids = plan.slots[slotKey(day, meal)] || [];
+      if (!ids.length) continue;
+      let ulam = false;
+      for (const id of ids) {
+        const r = recipes.get(id);
+        dishes++;
+        if (!r || !r.nutrition || !(r.nutrition.calories > 0)) { unknown++; continue; }
+        const n = r.nutrition;
+        sum.kcal += n.calories || 0; sum.protein += n.protein || 0; sum.fiber += n.fiber || 0; sum.iron += n.iron || 0;
+        sum.calcium += n.calcium || 0; sum.vitaminA += n.vitaminA || 0; sum.vitaminC += n.vitaminC || 0; sum.sodium += r.sodium || 0;
+        if (r.ulam !== false) ulam = true;
+      }
+      if (rice && ulam && meal !== "Meryenda") { meals++; for (const k of Object.keys(PLAN_RICE)) sum[k] += PLAN_RICE[k]; }
+    }
+    if (!dishes) continue;
+    const pct = Object.fromEntries(PLAN_NUTRIENTS.map((k) => [k, needs[k] ? sum[k] / needs[k] : null]));
+    const met = Object.fromEntries(PLAN_NUTRIENTS.map((k) => [k, pct[k] >= 1 ? "ok" : pct[k] >= 0.7 ? "near" : "low"]));
+    met.sodium = sum.sodium > PLAN_SODIUM_MAX ? "over" : "ok";
+    days.push({ day, sum, pct, met, dishes, unknown, riceMeals: meals });
+  }
+  const week = { kcal: days.reduce((a, d) => a + d.sum.kcal, 0), days: days.length };
+  week.avgKcal = days.length ? week.kcal / days.length : 0;
+  week.allMet = days.length > 0 && days.every((d) => PLAN_NUTRIENTS.every((k) => d.met[k] === "ok") && d.met.sodium === "ok");
+  return { days, week };
+}
+
 /**
  * Receipt per ingredient: every planned dish's lines (from /api/recipes/compiled?id=…),
  * scaled from the recipe's servings to the household, summed by ingredient.
@@ -547,6 +601,16 @@ function persist() {
   if (s) savePlan(s, plan);
 }
 
+function plannerNutritionMap() {
+  return new Map(RECIPES.map((r) => {
+    const c = r.cooked || {};
+    const n = { ...(r.nutrition || {}) };
+    // After-cooking values where we have them (vitamin C and A, iron, calcium lose some in the pot).
+    for (const k of ["vitaminC", "vitaminA", "iron", "calcium"]) if (Array.isArray(c[k]) && c[k][0] != null) n[k] = c[k][0];
+    return [r.id, { nutrition: n, sodium: r.sodium || 0, ulam: typeof isMainUlam === "function" ? isMainUlam(r) : true }];
+  }));
+}
+
 function plannerRecipes() {
   return new Map(RECIPES.map((r) => [r.id, { title: r.title, img: r.img, costPerServing: r.costPerServing, priced: r.costPerServing > 0, partial: r.costCoverage < 1 }]));
 }
@@ -938,6 +1002,7 @@ async function renderReceipt() {
     out.innerHTML = `<p class="text-sm text-gray-400">Your receipt appears here once you add dishes.</p>`;
     return;
   }
+  if (receiptMode === "nutrition") { out.innerHTML = planNutritionHtml(); return; }
   if (receiptMode === "dish") {
     const r = receiptByDish(plan, plannerRecipes());
     out.innerHTML = DAYS.filter((d) => r.rows.some((x) => x.day === d)).map((d) => `
@@ -956,6 +1021,46 @@ async function renderReceipt() {
     <div class="rc-row"><span class="rc-name">${escapeHtml(it.label)} <span class="rc-qty">${formatGrams(it.grams)}${it.dishes > 1 ? ` · ${it.dishes} dishes` : ""}</span></span>
     <span>${it.priced ? peso(it.cost) + (it.unpricedGrams > 0 ? "+" : "") : "—"}</span></div>`).join("")).join("")
     + receiptFooter(r.total, r.unpriced ? `${r.unpriced} ingredient${r.unpriced > 1 ? "s" : ""} without a price (—)` : "", 0);
+}
+
+let planRice = true;
+function setPlanRice(on) { planRice = !!on; renderReceipt(); }
+
+function planNutritionHtml() {
+  const en = typeof siteLang === "function" && siteLang() === "en";
+  const age = (typeof SETTINGS !== "undefined" && SETTINGS.age) || null;
+  const needs = PLAN_NEEDS[age] || PLAN_NEEDS.adult;
+  const r = planNutrition(plan, plannerNutritionMap(), needs, { rice: planRice });
+  const L = en
+    ? { kcal: "Calories", protein: "Protein", fiber: "Fiber", iron: "Iron", calcium: "Calcium", vitaminA: "Vitamin A", vitaminC: "Vitamin C", sodium: "Sodium" }
+    : { kcal: "Calories", protein: "Protina", fiber: "Fiber", iron: "Iron", calcium: "Calcium", vitaminA: "Vitamin A", vitaminC: "Vitamin C", sodium: "Sodium (asin)" };
+  const unit = { kcal: "kcal", protein: "g", fiber: "g", iron: "mg", calcium: "mg", vitaminA: "µg", vitaminC: "mg", sodium: "mg" };
+  const fmt = (k, v) => (k === "kcal" || k === "calcium" || k === "vitaminA" || k === "sodium" ? Math.round(v).toLocaleString("en-PH") : (Math.round(v * 10) / 10).toString());
+  const mark = { ok: "✅", near: "🟡", low: "🔴", over: "🧂" };
+  const ageTxt = age ? (typeof t === "function" ? t(`age.${age}`) : age) : (en ? "30–44 (set your age in ⚙️ Settings)" : "30–44 (itakda ang edad sa ⚙️ Settings)");
+  const days = r.days.map((d) => {
+    const lows = PLAN_NUTRIENTS.filter((k) => d.met[k] !== "ok");
+    return `<details class="pn-day"><summary><span class="pn-dname">${escapeHtml(d.day)}</span>
+        <span class="pn-kcal">${fmt("kcal", d.sum.kcal)} kcal <small>/ ${needs.kcal.toLocaleString("en-PH")}</small></span>
+        <span class="pn-marks" aria-label="${escapeHtml(lows.length ? (en ? "Short on: " : "Kulang sa: ") + lows.map((k) => L[k]).join(", ") : en ? "All needs met" : "Pasok lahat")}">${PLAN_NUTRIENTS.map((k) => `<span title="${escapeHtml(L[k])}">${mark[d.met[k]]}</span>`).join("")}${d.met.sodium === "over" ? `<span title="${escapeHtml(L.sodium)}">${mark.over}</span>` : ""}</span></summary>
+      <table class="pn-table"><tbody>${[...PLAN_NUTRIENTS, "sodium"].map((k) => {
+        const need = k === "sodium" ? PLAN_SODIUM_MAX : needs[k], v = d.sum[k], pct = need ? Math.round((v / need) * 100) : 0;
+        return `<tr><th>${escapeHtml(L[k])}</th><td>${fmt(k, v)} ${unit[k]}</td><td class="pn-need">${k === "sodium" ? (en ? "max " : "hanggang ") : ""}${fmt(k, need)} ${unit[k]}</td><td>${mark[d.met[k]]} ${pct}%</td></tr>`;
+      }).join("")}</tbody></table>
+      ${d.unknown ? `<p class="pn-note">${en ? `${d.unknown} dish${d.unknown > 1 ? "es" : ""} without nutrition data` : `${d.unknown} ulam na walang datos ng sustansya`}</p>` : ""}
+    </details>`;
+  }).join("");
+  const metDays = r.days.filter((d) => PLAN_NUTRIENTS.every((k) => d.met[k] === "ok")).length;
+  return `<div class="pn">
+    <p class="pn-head"><b>${en ? "Per person" : "Bawat tao"}</b> · ${en ? "age" : "edad"} ${escapeHtml(ageTxt)}</p>
+    <div class="pn-week"><div><span class="pn-big">${Math.round(r.week.kcal).toLocaleString("en-PH")}</span> kcal ${en ? "for the week" : "sa buong linggo"}</div>
+      <div>${en ? "Average" : "Karaniwan"} <b>${Math.round(r.week.avgKcal).toLocaleString("en-PH")}</b> kcal/${en ? "day" : "araw"} · ${en ? "need" : "kailangan"} ~${needs.kcal.toLocaleString("en-PH")}</div>
+      <div>${metDays}/${r.days.length} ${en ? "days meet every nutrient" : "araw na pasok ang lahat ng sustansya"}</div></div>
+    <label class="pn-rice"><input type="checkbox" ${planRice ? "checked" : ""} onchange="setPlanRice(this.checked)"> ${en ? "Include 1 cup of rice per meal" : "Isama ang 1 tasang kanin bawat kain"}</label>
+    ${days || `<p class="text-sm text-gray-400">${en ? "Add dishes to see the nutrition." : "Magdagdag ng ulam para makita ang sustansya."}</p>`}
+    <p class="pn-legend">✅ ${en ? "met" : "pasok"} · 🟡 70–99% · 🔴 ${en ? "under 70%" : "kulang (wala pang 70%)"} · 🧂 ${en ? "too much sodium" : "sobra sa asin"}. ${en ? "Order of marks" : "Ayos ng marka"}: ${PLAN_NUTRIENTS.map((k) => L[k]).join(", ")}.</p>
+    <p class="pn-legend">${en ? "Needs: Philippine Dietary Reference Intakes 2015 (FNRI), average of men and women. Guidance only; ask a dietitian for special needs." : "Kailangan: Philippine Dietary Reference Intakes 2015 (FNRI), karaniwan ng lalaki at babae. Gabay lang ito; magtanong sa dietitian para sa espesyal na pangangailangan."}</p>
+  </div>`;
 }
 
 /** Fetches the ingredient lines of planned dishes not seen yet; returns how many were fetched. */

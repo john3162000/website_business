@@ -373,6 +373,7 @@ const I18N = {
   "plan.budgetText": ["₱1,500 sa isang linggo, 4 na tao", "₱1,500 for the week, 4 people"],
   "plan.receipt": ["Resibo", "Receipt"],
   "plan.people": ["Ilang tao", "People"],
+  "plan.nutrition": ["🥗 Sustansya", "🥗 Nutrition"],
   "plan.perDish": ["Bawat ulam", "Per dish"],
   "plan.perIngredient": ["Bawat sangkap", "Per ingredient"],
   "plan.png": ["⬇️ Listahan (PNG)", "⬇️ Grocery list (PNG)"],

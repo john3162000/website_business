@@ -834,6 +834,26 @@
     .cook-hud.cook-hud-burn { background: #b91c1c; color: #fff; }
     html.dark .cook-heat-btn { background: var(--s1); border-color: var(--line); color: var(--tx); }
     html.dark .cook-heat-btn.on { background: var(--s2); border-color: var(--mint); }
+    .pn { display: grid; gap: .5rem; font-size: .85rem; }
+    .pn-head { color: #4b5563; }
+    .pn-week { background: #EFF5F0; border-radius: .8rem; padding: .6rem .8rem; display: grid; gap: .15rem; color: #163F2E; }
+    .pn-big { font-family: Fraunces, Georgia, serif; font-size: 1.5rem; font-weight: 700; }
+    .pn-rice { display: flex; align-items: center; gap: .4rem; font-size: .8rem; color: #374151; min-height: 2.25rem; }
+    .pn-day { border: 1px solid #E7DFCB; border-radius: .7rem; }
+    .pn-day summary { display: flex; align-items: center; gap: .5rem; padding: .45rem .6rem; cursor: pointer; min-height: 2.75rem; flex-wrap: wrap; }
+    .pn-dname { font-weight: 700; min-width: 5.5rem; }
+    .pn-kcal { font-variant-numeric: tabular-nums; } .pn-kcal small { color: #6b7280; }
+    .pn-marks { margin-left: auto; letter-spacing: .05em; }
+    .pn-table { width: 100%; border-collapse: collapse; font-size: .8rem; margin: 0 0 .4rem; }
+    .pn-table th { text-align: left; font-weight: 600; padding: .2rem .6rem; }
+    .pn-table td { padding: .2rem .4rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .pn-need { color: #6b7280; }
+    .pn-note, .pn-legend { font-size: .72rem; color: #6b7280; }
+    .pn-note { padding: 0 .6rem .4rem; }
+    html.dark .pn-week { background: var(--s2); color: var(--tx); }
+    html.dark .pn-day { border-color: var(--line); }
+    html.dark .pn-head, html.dark .pn-rice { color: var(--tx2); }
+    html.dark .pn-kcal small, html.dark .pn-need, html.dark .pn-note, html.dark .pn-legend { color: var(--tx3); }
     .cook-controls { display: flex; align-items: center; gap: .5rem; margin: .65rem 0; }
     .cook-controls .wx-btn { min-width: 2.75rem; min-height: 2.75rem; font-size: 1rem; }
     .cook-count { margin-left: auto; font-size: .8rem; color: #6b7280; font-variant-numeric: tabular-nums; }
@@ -1244,9 +1264,10 @@
             <input id="plan-people" type="number" min="1" max="30" value="4" oninput="setPeople(this.value)" class="w-16 border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
           </label>
         </div>
-        <div class="flex gap-1.5">
+        <div class="flex flex-wrap gap-1.5">
           <button class="wx-btn on" data-receipt="dish" onclick="setReceiptMode('dish')" data-i18n="plan.perDish">Per dish</button>
           <button class="wx-btn" data-receipt="ingredient" onclick="setReceiptMode('ingredient')" data-i18n="plan.perIngredient">Per ingredient</button>
+          <button class="wx-btn" data-receipt="nutrition" onclick="setReceiptMode('nutrition')" data-i18n="plan.nutrition">🥗 Sustansya</button>
         </div>
         <div id="plan-receipt" class="plan-receipt"></div>
         <div class="grid grid-cols-2 gap-2">
