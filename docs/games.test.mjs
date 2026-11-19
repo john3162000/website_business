@@ -24,8 +24,8 @@ test("buildMatchups drops rounds with a missing side; every dish has a fact", ()
   assert.equal(ms.length, 1);
   assert.equal(ms[0].a.recipe.id, 1);
   const many = GAME_MATCHUPS.flatMap(([a, b], i) => [R(100 + i, a.name), R(200 + i, b.name)]);
-  assert.equal(buildMatchups(many).length, 10); // backups only fill gaps
-  assert.ok(GAME_MATCHUPS.length >= 10);
+  assert.equal(buildMatchups(many).length, 30); // backups only fill gaps
+  assert.ok(GAME_MATCHUPS.length >= 30);
   for (const [a, b] of GAME_MATCHUPS) for (const d of [a, b]) assert.ok(GAME_FACTS[d.name], `fact for ${d.name}`);
 });
 
@@ -52,4 +52,17 @@ test("roundNote gives a fact or a price comparison", () => {
   const price = roundNote(m, "b", () => 0.9);
   assert.equal(price.kind, "price");
   assert.match(price.text, /^Mas mura ang Sinigang ng ₱15 per serving kaysa Adobo/);
+});
+
+test("keys and swipes: 1-9 and 0 rate at once; a sideways swipe picks a side", () => {
+  const api3 = vm.runInContext("({ gameKeyRating, gameSwipeSide })", ctx);
+  assert.equal(api3.gameKeyRating("1"), 1);
+  assert.equal(api3.gameKeyRating("7"), 7);
+  assert.equal(api3.gameKeyRating("0"), 10);
+  assert.equal(api3.gameKeyRating("a"), null);
+  assert.equal(api3.gameKeyRating("Enter"), null);
+  assert.equal(api3.gameSwipeSide(-120, 10), "a");
+  assert.equal(api3.gameSwipeSide(90, -20), "b");
+  assert.equal(api3.gameSwipeSide(30, 0), null); // too short: a tap
+  assert.equal(api3.gameSwipeSide(80, 100), null); // mostly scrolling down
 });
