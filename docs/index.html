@@ -354,6 +354,61 @@
     html[data-event="pasko"] .event-deco span { color: #9CC3E6; }
     @keyframes evFall { 0% { transform: translateY(0) rotate(0); } 100% { transform: translateY(110vh) rotate(160deg); } }
     @media (prefers-reduced-motion: reduce) { .event-deco { display: none; } }
+    /* ── Hero decorations per occasion (seasons.js eventHeroDeco) ── */
+    html[data-event] .hero-band { position: relative; overflow: hidden; }
+    html[data-event] .hero-band > :not(.ev-hero) { position: relative; z-index: 1; }
+    .ev-hero { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+    .ev-hang { position: absolute; top: 0; transform-origin: 50% 0; animation: evSway 5s ease-in-out infinite alternate; }
+    .ev-hang svg { display: block; filter: drop-shadow(0 6px 10px rgba(0,0,0,.25)); }
+    .ev-l1 { left: 4%; width: 74px; } .ev-l2 { left: 14%; width: 52px; top: -30px; animation-delay: -1.5s; }
+    .ev-r1 { right: 5%; width: 78px; animation-delay: -2.5s; } .ev-r2 { right: 16%; width: 54px; top: -36px; animation-delay: -.8s; }
+    .ev-glow { animation: evGlow 2.4s ease-in-out infinite alternate; }
+    @keyframes evSway { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
+    @keyframes evGlow { from { filter: brightness(1); } to { filter: brightness(1.35) drop-shadow(0 0 8px rgba(255, 220, 120, .8)); } }
+    .ev-fall { position: absolute; top: -1.5rem; color: rgba(255,255,255,.75); animation-name: evFallHero; animation-timing-function: linear; animation-iteration-count: infinite; }
+    @keyframes evFallHero { from { transform: translateY(0) rotate(0); opacity: 0; } 10% { opacity: 1; } to { transform: translateY(42rem) rotate(200deg); opacity: .2; } }
+    /* Christmas lights along the top of the hero, twinkling. */
+    .ev-lights { position: absolute; left: 0; right: 0; top: 6px; height: 14px;
+      background: radial-gradient(circle at 12px 7px, #FF5A5F 4px, transparent 5px) 0 0 / 72px 14px repeat-x,
+                  radial-gradient(circle at 36px 7px, #FFD166 4px, transparent 5px) 0 0 / 72px 14px repeat-x,
+                  radial-gradient(circle at 60px 7px, #4CD48A 4px, transparent 5px) 0 0 / 72px 14px repeat-x;
+      animation: evTwinkle 1.2s steps(2) infinite; }
+    @keyframes evTwinkle { 50% { filter: brightness(.55); } }
+    /* New Year fireworks: bursts of dots that grow and fade. */
+    .ev-firework { position: absolute; width: 6px; height: 6px; border-radius: 50%; color: var(--fw); animation: evBurst 2.6s ease-out infinite;
+      box-shadow: 0 -40px 0 currentColor, 28px -28px 0 currentColor, 40px 0 0 currentColor, 28px 28px 0 currentColor, 0 40px 0 currentColor, -28px 28px 0 currentColor, -40px 0 0 currentColor, -28px -28px 0 currentColor,
+        0 -22px 0 currentColor, 16px -16px 0 currentColor, 22px 0 0 currentColor, 16px 16px 0 currentColor, 0 22px 0 currentColor, -16px 16px 0 currentColor, -22px 0 0 currentColor, -16px -16px 0 currentColor; }
+    @keyframes evBurst { 0% { transform: scale(.1); opacity: 1; } 70% { opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
+    .ev-cny-pattern { position: absolute; inset: 0; opacity: .12; background: radial-gradient(circle at 20px 20px, transparent 9px, #E0B23A 10px, transparent 11px) 0 0 / 40px 40px; }
+    .ev-rise { position: absolute; bottom: -2rem; width: calc(1.6rem * var(--s)); animation-name: evRise; animation-timing-function: ease-in; animation-iteration-count: infinite; }
+    .ev-rise svg { fill: #F4A6C0; opacity: .8; display: block; }
+    @keyframes evRise { from { transform: translateY(0) rotate(-10deg); opacity: 0; } 15% { opacity: 1; } to { transform: translateY(-34rem) rotate(15deg); opacity: 0; } }
+    .ev-bunting { position: absolute; left: 0; right: 0; top: 0; height: 30px; display: flex; justify-content: space-between; padding: 0 1%;
+      background: linear-gradient(rgba(255,255,255,.6), rgba(255,255,255,.6)) 0 2px / 100% 1.5px no-repeat; animation: evFlutter 3s ease-in-out infinite alternate; transform-origin: top; }
+    .ev-bunting i { width: 26px; height: 26px; background: var(--c); clip-path: polygon(0 0, 100% 0, 50% 100%); margin-top: 3px; }
+    @keyframes evFlutter { from { transform: skewX(-2deg); } to { transform: skewX(2deg); } }
+    .ev-corner { position: absolute; }
+    .ev-sun-wrap { right: 4%; top: 18%; width: 150px; opacity: .9; } .ev-sun { animation: evSpin 40s linear infinite; display: block; }
+    @keyframes evSpin { to { transform: rotate(360deg); } }
+    .ev-stars span { position: absolute; width: 34px; animation: evGlow 2s ease-in-out infinite alternate; }
+    .ev-stars span:nth-child(1) { left: 5%; top: 22%; } .ev-stars span:nth-child(2) { left: 9%; top: 70%; animation-delay: -.7s; } .ev-stars span:nth-child(3) { left: 18%; top: 44%; animation-delay: -1.3s; }
+    .ev-moon-wrap { right: 6%; top: 12%; width: 130px; } .ev-moon-wrap svg { display: block; filter: drop-shadow(0 0 18px rgba(242, 210, 122, .6)); }
+    .ev-moon-star { position: absolute; width: 26px; right: 6px; top: 26px; animation: evGlow 1.8s ease-in-out infinite alternate; }
+    .ev-candles { left: 3%; bottom: 0; display: flex; gap: 6px; align-items: flex-end; } .ev-candles svg { width: 34px; display: block; }
+    .ev-candles svg:nth-child(2) { width: 42px; } .ev-candles-r { left: auto; right: 4%; }
+    .ev-flame { transform-origin: 50% 90%; animation: evFlicker .9s ease-in-out infinite alternate; }
+    @keyframes evFlicker { from { transform: scale(1, 1) rotate(-3deg); opacity: .9; } to { transform: scale(.9, 1.12) rotate(3deg); opacity: 1; } }
+    .ev-palm-l { left: 1%; bottom: -10px; width: 140px; opacity: .5; } .ev-palm-r { right: 1%; bottom: -10px; width: 140px; opacity: .5; transform: scaleX(-1); }
+    .ev-rays { position: absolute; inset: 0; background: conic-gradient(from 180deg at 50% -20%, transparent 0 40%, rgba(255,255,255,.07) 45%, transparent 50%, rgba(255,255,255,.06) 55%, transparent 60%); }
+    .ev-bl { left: 2%; bottom: 8px; display: flex; gap: 4px; } .ev-br { right: 2%; bottom: 8px; display: flex; gap: 4px; }
+    .ev-flower { width: 40px; animation: evSpin 18s linear infinite; } .ev-tie { font-size: 3rem; opacity: .6; }
+    @media (max-width: 639px) {
+      .ev-l2, .ev-r2 { display: none; } .ev-l1 { width: 38px; left: 1%; } .ev-r1 { width: 40px; right: 1%; }
+      .ev-fall { opacity: .5; } .ev-fall:nth-of-type(2n) { display: none; }
+      .ev-sun-wrap { width: 90px; top: 4%; } .ev-moon-wrap { width: 80px; top: 3%; } .ev-palm-l, .ev-palm-r { width: 80px; }
+      .ev-bunting i { width: 18px; height: 18px; } .ev-candles svg { width: 24px; } .ev-candles svg:nth-child(2) { width: 30px; }
+    }
+    @media (prefers-reduced-motion: reduce) { .ev-hero * { animation: none !important; } .ev-fall, .ev-rise, .ev-firework { display: none; } }
     /* The hero takes the occasion's colours (dark backgrounds keep the white text readable). */
     html[data-event="pasko"] .hero-band, html[data-event="pasko"] body.rainy .hero-band { background: #7A1A12; background-image: radial-gradient(ellipse 60% 80% at 85% 10%, rgba(31, 107, 58, .55), transparent 60%), radial-gradient(ellipse 50% 70% at 5% 100%, rgba(217, 162, 27, .25), transparent 60%); }
     html[data-event="bagongtaon"] .hero-band { background: #1F2A44; background-image: radial-gradient(ellipse 60% 80% at 85% 10%, rgba(232, 194, 90, .35), transparent 60%), radial-gradient(ellipse 50% 70% at 5% 100%, rgba(194, 37, 92, .2), transparent 60%); }

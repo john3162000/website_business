@@ -109,3 +109,12 @@ test("event theme: two weeks before a big occasion and during it, never for long
   assert.equal(th(2026, 3, 1), null); // Lent has no theme
   assert.equal(th(2026, 10, 25), "undas+6");
 });
+
+test("hero decorations: each themed occasion draws something, quiet ones stay calm", () => {
+  const api3 = vm.runInContext("({ eventHeroDeco, SEASON_THEMES })", ctx);
+  for (const key of Object.keys(api3.SEASON_THEMES)) assert.ok(api3.eventHeroDeco(key).length > 20, key);
+  assert.match(api3.eventHeroDeco("pasko"), /ev-parol/);
+  assert.match(api3.eventHeroDeco("cny"), /ev-lantern/);
+  assert.doesNotMatch(api3.eventHeroDeco("semanasanta") + api3.eventHeroDeco("undas"), /ev-fall|ev-firework|ev-rise/);
+  assert.equal(api3.eventHeroDeco("kuwaresma"), "");
+});
