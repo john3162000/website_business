@@ -17,16 +17,10 @@ const GAME_MATCHUPS = [
   [{ name: "Lumpiang Shanghai", re: [/^lumpiang shanghai/i, /lumpiang shanghai/i, /lumpia/i] }, { name: "Tokwa't Baboy", re: [/tokwa.?t baboy/i] }],
   [{ name: "Menudo", re: [/menudo/i] }, { name: "Afritada", re: [/^(chicken|pork) afritada( recipe)?$/i, /^(chicken|pork) afritada/i, /afritada(?!ng itlog)/i] }],
   [{ name: "Laing", re: [/^laing\b/i, /\blaing\b/i] }, { name: "Pinakbet", re: [/^pinakbet/i, /pinakbet/i] }],
-  [{ name: "Halo-Halo", re: [/halo.?halo/i] }, { name: "Leche Flan", re: [/^leche flan/i, /leche flan/i] }],
   [{ name: "Pork Barbecue", re: [/^pork barbecue/i, /pork (bbq|barbecue)/i] }, { name: "Inihaw na Liempo", re: [/^inihaw na liempo/i, /inihaw na liempo/i, /grilled (pork belly|liempo)/i] }],
   [{ name: "Beef Tapa", re: [/^(homemade )?beef tapa$/i, /^beef tapa\b/i, /beef tapa/i] }, { name: "Tocino", re: [/^(homemade )?(pork )?tocino( recipe)?\b(?! fried)/i, /pork tocino(?! sisig)/i] }],
   [{ name: "Longganisa", re: [/^skinless (garlic )?longganisa( recipe)?$/i, /longganisang hubad/i] }, { name: "Embutido", re: [/^(pork )?embutido/i, /embutido/i] }],
-  [{ name: "Champorado", re: [/^champorado/i, /champorado/i] }, { name: "Ginataang Bilo-Bilo", re: [/bilo.?bilo/i] }],
   [{ name: "Arroz Caldo", re: [/^arroz caldo/i, /arroz caldo/i] }, { name: "Goto", re: [/^goto\b/i, /\bgoto\b/i] }],
-  [{ name: "Biko", re: [/^biko\b/i, /\bbiko\b/i] }, { name: "Suman", re: [/^suman\b/i, /\bsuman\b/i] }],
-  [{ name: "Puto", re: [/^puto( recipe)?$/i, /^puto\b/i, /\bputo\b/i] }, { name: "Kutsinta", re: [/kutsinta|cuchinta/i] }],
-  [{ name: "Turon", re: [/^turon( recipe)?$/i, /^turon\b/i, /\bturon\b/i] }, { name: "Banana Cue", re: [/banana ?cue/i] }],
-  [{ name: "Maja Blanca", re: [/^maja blanca/i, /maja blanca/i] }, { name: "Buko Pandan", re: [/^buko pandan/i, /buko pandan/i] }],
   [{ name: "Bistek", re: [/^bistek/i, /bistek/i] }, { name: "Mechado", re: [/^(beef )?mechado/i, /mechado/i] }],
   [{ name: "Lechon Paksiw", re: [/^lechon paksiw|^paksiw na lechon/i, /lechon paksiw|paksiw na lechon/i] }, { name: "Humba", re: [/^(pork )?humba/i, /humba/i] }],
   [{ name: "Dinuguan", re: [/^dinuguan/i, /dinuguan/i] }, { name: "Igado", re: [/^igado/i, /igado/i] }],
@@ -35,6 +29,8 @@ const GAME_MATCHUPS = [
   [{ name: "Fried Chicken", re: [/^(pinoy |crispy )?fried chicken/i, /fried chicken/i] }, { name: "Pork Steak", re: [/^pork steak/i, /pork steak/i] }],
   [{ name: "Daing na Bangus", re: [/^daing na bangus/i, /daing na bangus/i] }, { name: "Fried Tilapia", re: [/^fried tilapia/i, /fried tilapia|pritong tilapia/i] }],
   [{ name: "Ginataang Hipon", re: [/^ginataang hipon/i, /ginataang hipon/i] }, { name: "Camaron Rebosado", re: [/^camaron rebosado/i, /camaron rebosado/i] }],
+  [{ name: "Paksiw na Bangus", re: [/^paksiw na bangus/i, /paksiw na bangus/i] }, { name: "Sinigang na Bangus", re: [/^sinigang na bangus( recipe)?$/i, /sinigang na bangus/i] }],
+  [{ name: "Adobong Pusit", re: [/^adobong pusit( recipe)?$/i, /adobong pusit/i] }, { name: "Calamares", re: [/^calamares( recipe)?$/i, /calamares/i] }],
   // Backups, used when a round above has no recipe on the site.
   [{ name: "Chicken Inasal", re: [/^chicken inasal/i, /inasal/i] }, { name: "Lechon Manok", re: [/^lechon manok/i, /lechon manok/i] }],
   [{ name: "Bulalo", re: [/^bulalo( recipe)?$/i, /^bulalo\b(?! (beef )?(mami|pares|kare))/i, /bulalo/i] }, { name: "Batchoy", re: [/^batchoy/i, /batchoy/i] }],
@@ -42,14 +38,40 @@ const GAME_MATCHUPS = [
   [{ name: "Escabeche", re: [/^(fish )?escabeche/i, /escabeche/i] }, { name: "Sweet and Sour Fish", re: [/^sweet and sour fish/i, /sweet and sour fish/i] }],
   [{ name: "Pochero", re: [/^(pork |beef )?pochero/i, /pochero/i] }, { name: "Cocido", re: [/^cocido/i, /cocido/i] }],
   [{ name: "Picadillo", re: [/^picadillo/i, /picadillo/i] }, { name: "Tortang Giniling", re: [/^tortang giniling/i, /tortang giniling/i] }],
-  [{ name: "Buko Pie", re: [/^buko pie/i, /buko pie/i] }, { name: "Egg Pie", re: [/^egg pie/i, /egg pie/i] }],
-  [{ name: "Polvoron", re: [/^polvoron/i, /polvoron/i] }, { name: "Pastillas", re: [/^pastillas/i, /pastillas/i] }],
   [{ name: "Kinilaw", re: [/^kinilaw/i, /kinilaw/i] }, { name: "Sinuglaw", re: [/^sinuglaw/i, /sinuglaw/i] }],
   [{ name: "Sinigang na Hipon", re: [/^sinigang na hipon/i, /sinigang na hipon/i] }, { name: "Halabos na Hipon", re: [/^halabos/i, /halabos/i] }],
-  [{ name: "Palitaw", re: [/^palitaw/i, /palitaw/i] }, { name: "Pichi-Pichi", re: [/^pichi.?pichi/i, /pichi.?pichi/i] }],
-  [{ name: "Pandesal", re: [/^pandesal/i, /pandesal|pan de sal/i] }, { name: "Ensaymada", re: [/^ensaymada/i, /ensaymada|ensaimada/i] }],
+  [{ name: "Ginisang Monggo", re: [/^ginisang (monggo|munggo)( \(monggo\))?$/i, /^ginisang (monggo|munggo)/i, /ginisang (monggo|munggo)/i] }, { name: "Ginataang Langka", re: [/^ginataang langka/i, /ginataang langka/i] }],
+  [{ name: "Pancit Palabok", re: [/^pancit palabok/i, /palabok(?! arroz)/i] }, { name: "Lomi", re: [/^(pork |batangas )?lomi\b/i, /\blomi\b(?! pares)/i] }],
+  [{ name: "Adobong Kangkong", re: [/^adobong kangkong/i, /adobong kangkong/i] }, { name: "Ginisang Repolyo", re: [/^ginisang repolyo$/i, /ginisang repolyo/i] }],
 ];
 const GAME_ROUNDS = 30;
+// Panghimagas (sweets and desserts): their own Versus, 20 rounds.
+const GAME_SWEET_MATCHUPS = [
+  [{ name: "Halo-Halo", re: [/halo.?halo/i] }, { name: "Mais con Yelo", re: [/mais con yelo/i] }],
+  [{ name: "Leche Flan", re: [/^leche flan$/i, /^leche flan/i, /leche flan/i] }, { name: "Ube Halaya", re: [/^ube halaya$/i, /ube halaya|halayang ube/i] }],
+  [{ name: "Champorado", re: [/^champorado/i, /champorado/i] }, { name: "Ginataang Bilo-Bilo", re: [/bilo.?bilo/i] }],
+  [{ name: "Biko", re: [/^biko\b/i, /\bbiko\b/i] }, { name: "Suman", re: [/^suman\b/i, /\bsuman\b/i] }],
+  [{ name: "Puto", re: [/^puto( recipe)?$/i, /^puto\b(?! bumbong)/i, /\bputo\b(?! bumbong)/i] }, { name: "Kutsinta", re: [/kutsinta|cuchinta/i] }],
+  [{ name: "Turon", re: [/^turon \(banana lumpia/i, /^turon( recipe)?$/i, /^turon\b/i, /\bturon\b/i] }, { name: "Banana Cue", re: [/banana ?cue/i] }],
+  [{ name: "Maja Blanca", re: [/^maja blanca/i, /maja blanca/i] }, { name: "Buko Pandan", re: [/^buko pandan/i, /buko pandan/i] }],
+  [{ name: "Buko Pie", re: [/^buko pie/i, /buko pie/i] }, { name: "Egg Pie", re: [/^egg pie/i, /egg pie/i] }],
+  [{ name: "Polvoron", re: [/^polvoron/i, /polvoron/i] }, { name: "Pastillas", re: [/^pastillas/i, /pastillas/i] }],
+  [{ name: "Palitaw", re: [/^palitaw/i, /palitaw/i] }, { name: "Pichi-Pichi", re: [/^pichi.?pichi/i, /pichi.?pichi/i] }],
+  [{ name: "Bibingka", re: [/^bibingka( recipe)?$/i, /^bibingka/i, /bibingka/i] }, { name: "Puto Bumbong", re: [/puto bumbong/i] }],
+  [{ name: "Cassava Cake", re: [/^cassava cake$/i, /^cassava cake/i, /cassava cake/i] }, { name: "Sapin-Sapin", re: [/^sapin.?sapin( recipe)?$/i, /sapin.?sapin/i] }],
+  [{ name: "Mango Float", re: [/^mango float$/i, /mango float/i] }, { name: "Buko Salad", re: [/^buko salad( recipe)?$/i, /buko salad(?! drink)/i] }],
+  [{ name: "Sans Rival", re: [/^sans rival$/i, /sans rival/i] }, { name: "Brazo de Mercedes", re: [/brazo de mercedes/i] }],
+  [{ name: "Ensaymada", re: [/^ensaymada/i, /ensaymada|ensaimada/i] }, { name: "Mamon", re: [/^mamon( recipe)?$/i, /^mamon\b/i] }],
+  [{ name: "Yema", re: [/^yema( recipe)?$/i, /^yema\b(?! cake)/i] }, { name: "Silvanas", re: [/silvanas|sylvanas/i] }],
+  [{ name: "Taho", re: [/^(homemade )?taho\b/i, /\btaho\b/i] }, { name: "Sago't Gulaman", re: [/sago (at|'t|’t) gulaman/i, /sago.*gulaman/i] }],
+  [{ name: "Kalamay", re: [/^kalamay (hati|sa latik)/i, /^kalamay/i, /kalamay/i] }, { name: "Espasol", re: [/espasol/i] }],
+  [{ name: "Ginataang Mais", re: [/^ginataang mais( recipe)?$/i, /ginataang mais/i] }, { name: "Minatamis na Saging", re: [/^minatamis na saging$/i, /minatamis na saging/i] }],
+  [{ name: "Fruit Salad", re: [/^filipino fruit salad$/i, /^fruit salad( recipe)?$/i, /fruit salad(?! macaroni)/i] }, { name: "Custard Cake", re: [/^custard cake( recipe)?$/i, /custard cake/i] }],
+  // Backups, used when a round above has no recipe on the site.
+  [{ name: "Maruya", re: [/^banana fritters \(maruya\)/i, /maruya/i] }, { name: "Kamote Cue", re: [/^kamote cue( recipe)?$/i, /kamote cue|camote cue/i] }],
+  [{ name: "Nilupak", re: [/^nilupak( recipe)?$/i, /nilupak/i] }, { name: "Carioca", re: [/^carioca$/i, /carioca|karioka/i] }],
+];
+const GAME_SWEET_ROUNDS = 20;
 
 const GAME_FACTS = {
   "Sinigang": "Sinigang's sourness traditionally comes from sampalok (tamarind), but kamias, bayabas, kalamansi and santol are used too.",
@@ -129,11 +151,81 @@ const GAME_FACTS = {
   "Pichi-Pichi": "Pichi-pichi is grated cassava and sugar, steamed and rolled in grated coconut or cheese.",
   "Pandesal": "Pandesal means \"bread of salt\", though it's slightly sweet; it's rolled in breadcrumbs before baking.",
   "Ensaymada": "Ensaymada traces back to the ensaïmada of Mallorca, Spain; the Filipino version is topped with butter, sugar and cheese.",
+  "Paksiw na Bangus": "Paksiw means cooking in vinegar, which helps the fish keep longer.",
+  "Sinigang na Bangus": "Bangus belly is the favourite part for sinigang because it's rich and tender.",
+  "Adobong Pusit": "Adobong pusit gets its dark colour from the squid's own ink.",
+  "Calamares": "Calamares comes from the Spanish word for squid.",
+  "Ginisang Monggo": "For many families, ginisang monggo is the traditional Friday ulam.",
+  "Ginataang Langka": "Young (unripe) langka is cooked as a vegetable, unlike the sweet ripe fruit.",
+  "Pancit Palabok": "Palabok's orange sauce gets its colour from atsuete (annatto).",
+  "Lomi": "Lomi is a thick noodle soup famous in Batangas, especially Lipa.",
+  "Adobong Kangkong": "Kangkong (water spinach) is one of the cheapest leafy greens at the palengke.",
+  "Ginisang Repolyo": "Ginisang repolyo is cabbage sautéed with garlic, onion and often pork or egg.",
+  "Mais con Yelo": "Mais con yelo means \"corn with ice\": sweet corn, shaved ice, sugar and milk.",
+  "Ube Halaya": "Ube halaya is purple yam mashed and cooked slowly with milk, butter and sugar.",
+  "Bibingka": "Bibingka is a rice cake traditionally baked in a clay pot lined with banana leaves, with coals above and below.",
+  "Puto Bumbong": "Puto bumbong is purple sticky rice steamed in bamboo tubes (bumbong).",
+  "Cassava Cake": "Cassava cake is grated cassava baked with coconut milk, condensed milk and eggs.",
+  "Sapin-Sapin": "\"Sapin\" means layer: sapin-sapin is a layered rice cake.",
+  "Mango Float": "Mango float is an icebox cake of graham crackers, cream and ripe mango.",
+  "Buko Salad": "Buko salad mixes young coconut strips with cream, condensed milk and fruit cocktail.",
+  "Sans Rival": "\"Sans rival\" is French for \"without rival\".",
+  "Brazo de Mercedes": "Brazo de Mercedes is a soft meringue roll filled with custard.",
+  "Mamon": "Mamon is a soft, buttery Filipino sponge cake baked in small molds.",
+  "Yema": "Yema is a soft candy of egg yolks, condensed milk and sugar.",
+  "Silvanas": "Silvanas are frozen cookies of cashew meringue and buttercream, coated in crumbs.",
+  "Taho": "Taho is soft silken tofu with arnibal (brown sugar syrup) and sago pearls.",
+  "Sago't Gulaman": "Sago't gulaman is a cold drink of brown sugar syrup, sago pearls and gulaman jelly.",
+  "Kalamay": "Kalamay is a sticky sweet of glutinous rice, coconut milk and brown sugar.",
+  "Espasol": "Espasol is a Laguna treat of toasted rice flour and coconut, rolled into logs.",
+  "Ginataang Mais": "Ginataang mais is sweet corn and glutinous rice cooked in coconut milk.",
+  "Minatamis na Saging": "Minatamis na saging is saba cooked in brown sugar syrup.",
+  "Fruit Salad": "Filipino fruit salad mixes fruit cocktail with cream and condensed milk.",
+  "Custard Cake": "Custard cake bakes a chiffon layer and a leche flan layer in one pan.",
+  "Maruya": "Maruya is sliced saba dipped in batter, fried and sprinkled with sugar.",
+  "Kamote Cue": "Kamote cue is sweet potato fried in caramelised brown sugar and skewered on a stick.",
+  "Nilupak": "Nilupak is cassava or saba pounded in a lusong (mortar) with sugar and butter or margarine.",
+  "Carioca": "Carioca is fried glutinous rice balls coated in a brown sugar glaze.",
   "Leche Flan": "A popular story says leche flan used the egg yolks left over when egg whites were used in building old Spanish-era churches.",
 };
 
 // More facts per dish, so a round almost never repeats one. Our own words; well-known kitchen and food-history facts.
 const GAME_MORE_FACTS = {
+  "Maruya": ["The bananas are often fanned out before frying.", "It's a classic afternoon merienda."],
+  "Kamote Cue": ["It's sold beside banana cue by street vendors.", "Kamote is rich in fiber and vitamin A."],
+  "Nilupak": ["\"Lupak\" means to pound or mash.", "It's often topped with grated coconut."],
+  "Carioca": ["They're usually skewered three or four to a stick.", "Grated coconut in the dough gives them a richer taste."],
+  "Paksiw na Bangus": ["Paksiw na bangus often has ampalaya, talong and ginger.", "Many say paksiw tastes even better the next day."],
+  "Sinigang na Bangus": ["Sinigang na bangus is often soured with sampalok, or cooked with miso.", "Mustasa (mustard greens) goes well with sinigang na bangus sa miso."],
+  "Adobong Pusit": ["Squid is best cooked very quickly or for a long time; in between it turns rubbery.", "It's often sautéed with tomatoes and onions before the vinegar goes in."],
+  "Calamares": ["It's squid rings dipped in batter and deep-fried.", "Calamares is usually dipped in spiced vinegar or mayonnaise."],
+  "Ginisang Monggo": ["It's often topped with chicharon, or cooked with tinapa or dilis.", "Mung beans are a cheap source of protein and fiber."],
+  "Ginataang Langka": ["It's often cooked with shrimp, dilis or pork in coconut milk.", "Malunggay leaves are often stirred in at the end."],
+  "Pancit Palabok": ["It's topped with chicharon, shrimp, tinapa flakes, boiled egg and scallions.", "Pancit Malabon is a close cousin with thicker noodles."],
+  "Lomi": ["Its broth is thickened with egg and cornstarch.", "Lomi is often topped with kikiam, liver and chicharon."],
+  "Adobong Kangkong": ["Adobong kangkong is cooked quickly so the leaves stay green.", "The stems go in first because they take longer than the leaves."],
+  "Ginisang Repolyo": ["It's a quick, cheap everyday ulam.", "Cabbage keeps its crunch if it isn't overcooked."],
+  "Mais con Yelo": ["It's a simpler cousin of halo-halo, sold in the same summer stalls.", "Some add pinipig or cornflakes on top for crunch."],
+  "Ube Halaya": ["It's a favourite halo-halo topping.", "Good Shepherd in Baguio is famous for its ube jam."],
+  "Bibingka": ["It's a Simbang Gabi favourite at Christmas.", "It's often topped with salted egg, cheese and grated coconut."],
+  "Puto Bumbong": ["Its colour traditionally comes from pirurutong, a dark purple glutinous rice.", "It's served with butter, muscovado sugar and grated coconut, especially at Simbang Gabi."],
+  "Cassava Cake": ["Its top is a custard layer, browned at the end of baking.", "Cassava (kamoteng kahoy) must always be cooked well, never eaten raw."],
+  "Sapin-Sapin": ["Each layer often has its own flavour and colour, like ube, langka and plain coconut.", "Sapin-sapin is topped with latik."],
+  "Mango Float": ["It needs no oven: it sets in the fridge.", "Sweet Philippine carabao mangoes are the favourite for it."],
+  "Buko Salad": ["It's a Christmas and fiesta staple.", "Kaong and nata de coco are common add-ins."],
+  "Sans Rival": ["It's layers of cashew meringue and buttercream.", "Dumaguete is known for its sans rival."],
+  "Brazo de Mercedes": ["The name is Spanish for \"arm of Mercedes\", after its log shape.", "It uses the whole egg: whites for the meringue, yolks for the filling."],
+  "Mamon": ["It's a classic panaderia snack, often brushed with butter and sugar.", "Taisan is a loaf-shaped cousin of mamon."],
+  "Yema": ["\"Yema\" is Spanish for egg yolk.", "It's often shaped like a small pyramid and wrapped in cellophane."],
+  "Silvanas": ["Like sans rival, they're a Dumaguete favourite.", "They're best kept in the freezer."],
+  "Taho": ["Magtataho carry it in two buckets on a pole, calling \"Tahoooo!\" in the morning.", "It's a classic morning street food."],
+  "Sago't Gulaman": ["Gulaman comes from seaweed (agar), so it sets without gelatin.", "It's sold by street vendors on hot days."],
+  "Kalamay": ["Bohol is famous for kalamay packed in coconut shells.", "It's stirred for a long time until it turns thick and glossy."],
+  "Espasol": ["It's dusted with toasted rice flour, so it looks powdery.", "Espasol is a popular pasalubong from Laguna."],
+  "Ginataang Mais": ["It's a rainy-day merienda, served warm.", "Some add langka for fragrance."],
+  "Minatamis na Saging": ["It's a common halo-halo ingredient.", "It's eaten with shaved ice and milk on hot days."],
+  "Fruit Salad": ["It's a must on Christmas Noche Buena tables.", "Many add cheese cubes, kaong and nata de coco."],
+  "Custard Cake": ["The caramel goes in first, so the flan ends up on top.", "It's sometimes called \"flan cake\"."],
   "Sinigang": ["Sinigang na baboy usually has kangkong, sitaw, labanos, talong, okra and siling haba.", "Sinigang sa miso, cooked with fish and mustasa, is a well-loved version."],
   "Adobo": ["There's adobong puti (vinegar, no soy sauce), adobo sa gata, and adobong dilaw with turmeric.", "Adobo keeps for days without a fridge because of the vinegar, which is why it's a favourite baon."],
   "Kaldereta": ["Many kaldereta recipes thicken the sauce with liver spread, and some melt in cheese.", "Kaldereta usually has potatoes, carrots, bell peppers and olives or green peas."],
@@ -233,11 +325,11 @@ function findDish(recipes, patterns) {
 }
 
 /** The ten face-offs with the recipe found for each side; rounds missing a side are dropped. */
-function buildMatchups(recipes, matchups = GAME_MATCHUPS) {
+function buildMatchups(recipes, matchups = GAME_MATCHUPS, rounds = GAME_ROUNDS) {
   return matchups
     .map(([a, b]) => ({ a: { name: a.name, recipe: findDish(recipes, a.re) }, b: { name: b.name, recipe: findDish(recipes, b.re) } }))
     .filter((m) => m.a.recipe && m.b.recipe)
-    .slice(0, GAME_ROUNDS);
+    .slice(0, rounds);
 }
 
 /** Words and hand for a 1-10 rating. */
@@ -255,7 +347,18 @@ function armReach(rating) {
 }
 
 /** Dishes with a photo not rated yet, of one kind ("ulam"/"meryenda") when given; sauces and condiments are skipped. */
-function ratePool(recipes, rated, kind = null, kindOf = typeof dishKind === "function" ? dishKind : () => "ulam") {
+/** Sweets and desserts (Panghimagas): the Dessert category or a sweet title (kakanin, cakes, halo-halo). */
+function gameSweet(r) {
+  return r.category === "Dessert" || (typeof SWEET_TITLE !== "undefined" && SWEET_TITLE.test(r.title || ""));
+}
+
+/** The game's dish kinds: "ulam", "meryenda" (savoury snacks) or "sweets" (Panghimagas). */
+function gameKindOf(r) {
+  const k = typeof dishKind === "function" ? dishKind(r) : "ulam";
+  return k && gameSweet(r) ? "sweets" : k;
+}
+
+function ratePool(recipes, rated, kind = null, kindOf = gameKindOf) {
   return recipes.filter((r) => r.img && !(String(r.id) in rated) && r.category !== "Sauce & Condiment" && (!kind || kindOf(r) === kind));
 }
 
@@ -322,7 +425,8 @@ function setGameMode(mode) {
 
 /** Active learning: the next dish is one the taste model (of this kind) is least sure about. */
 function chooseRateDish() {
-  const model = tasteModelFrom(RECIPES, gameRatings, gameVsPicks, gameRateKind);
+  // Sweets learn with the meryenda taste model (the model knows ulam and meryenda).
+  const model = tasteModelFrom(RECIPES, gameRatings, gameVsPicks, gameRateKind === "sweets" ? "meryenda" : gameRateKind);
   const pick = pickToLearn(model, ratePool(RECIPES, gameRatings, gameRateKind), { vec: tasteVec });
   gameRateDish = pick.r;
   gameRateActive = pick.active;
@@ -340,12 +444,13 @@ function renderRate() {
   const kinds = `<div class="flex gap-2 justify-center mb-3">
     <button class="wx-btn ${gameRateKind === "ulam" ? "on" : ""}" onclick="setRateKind('ulam')">🍛 Ulam</button>
     <button class="wx-btn ${gameRateKind === "meryenda" ? "on" : ""}" onclick="setRateKind('meryenda')">🍡 Meryenda</button>
+    <button class="wx-btn ${gameRateKind === "sweets" ? "on" : ""}" onclick="setRateKind('sweets')">🍮 Panghimagas</button>
   </div>`;
   if (!r) { box.innerHTML = `${kinds}<p class="text-sm text-gray-500 p-6 text-center">Na-rate mo na lahat! 🎉</p>${rateHistory()}`; return; }
   box.innerHTML = `${kinds}
     ${gameRateActive ? `<p class="text-xs text-center text-green-800 font-semibold mb-2">🧠 Pinili para mas makilala ang panlasa mo</p>` : ""}
     <div class="game-card rate-card">
-      <img src="${escapeHtml(r.img)}" alt="" class="game-photo" loading="lazy">
+      <div class="game-photo-wrap"><img src="${escapeHtml(r.img)}" alt="" class="game-photo" loading="lazy">${gameHeart(r.id)}</div>
       <div class="rate-body p-4">
         <p class="font-display text-xl font-bold leading-tight">${escapeHtml(r.title)}</p>
         <p class="text-xs text-gray-500 mt-1">${r.costPerServing > 0 ? `₱${r.costPerServing}/serving · ` : ""}${escapeHtml(catLabel(r.category))}</p>
@@ -427,8 +532,22 @@ const GAME_COOK_SVG = `<svg class="rate-cook" viewBox="0 0 100 130" aria-hidden=
 
 // ── Versus ──
 
+let gameVsSet = "ulam"; // "ulam" (30 rounds, ulam and more) or "sweets" (Panghimagas, 20 rounds)
+
+function setVersusSet(set) {
+  gameVsSet = set === "sweets" ? "sweets" : "ulam";
+  startVersus();
+}
+
+function gameVsSetChips() {
+  return `<div class="flex gap-2 justify-center mb-3">
+    <button class="wx-btn ${gameVsSet === "ulam" ? "on" : ""}" onclick="setVersusSet('ulam')">🍛 Ulam</button>
+    <button class="wx-btn ${gameVsSet === "sweets" ? "on" : ""}" onclick="setVersusSet('sweets')">🍮 Panghimagas</button>
+  </div>`;
+}
+
 function startVersus() {
-  const all = buildMatchups(RECIPES);
+  const all = gameVsSet === "sweets" ? buildMatchups(RECIPES, GAME_SWEET_MATCHUPS, GAME_SWEET_ROUNDS) : buildMatchups(RECIPES);
   gameRounds = all.sort(() => Math.random() - 0.5);
   gameRound = 0;
   gameRoundDone = false;
@@ -444,14 +563,14 @@ function renderVersus() {
   const m = gameRounds[gameRound];
   const side = (s) => {
     const d = m[s];
-    return `<button class="vs-card" id="vs-${s}" onclick="pickVersus('${s}')">
+    return `<div class="vs-side"><button class="vs-card" id="vs-${s}" onclick="pickVersus('${s}')">
       <img src="${escapeHtml(d.recipe.img || "logo.png")}" alt="" loading="lazy">
       <span class="vs-name">${escapeHtml(d.name)}</span>
       <span class="vs-price">${d.recipe.costPerServing > 0 ? `₱${d.recipe.costPerServing}/serving` : ""}</span>
       <span class="vs-badge">PANALO!</span>
-    </button>`;
+    </button>${gameHeart(d.recipe.id)}</div>`;
   };
-  box.innerHTML = `
+  box.innerHTML = `${gameVsSetChips()}
     <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide text-center mb-3">Round ${gameRound + 1} of ${gameRounds.length} · Alin ang mas gusto mo?</p>
     <div class="vs-arena" id="vs-arena">${side("a")}<span class="vs-mark">VS</span>${side("b")}</div>
     <p class="text-center text-[.7rem] text-gray-400 mt-2"><span class="game-touch-hint" data-i18n="game.vsSwipe">👈 I-swipe pakaliwa o pakanan para pumili 👉</span><span class="game-keys-hint" data-i18n="game.vsKeys">⌨️ ← kaliwa · → kanan · kahit anong key = susunod</span></p>
@@ -488,7 +607,7 @@ function nextVersus() {
 function renderVersusEnd() {
   const winners = gameRounds.map((m) => gameVsPicks[vsKey(m)]).filter((p) => p && p.n).map((p) => p.n);
   const pics = new Map(gameRounds.flatMap((m) => [[m.a.name, m.a.recipe], [m.b.name, m.b.recipe]]));
-  document.getElementById("game-versus").innerHTML = `
+  document.getElementById("game-versus").innerHTML = `${gameVsSetChips()}
     <div class="game-card p-5 text-center">
       <p class="text-3xl">🏆</p>
       <p class="font-display text-2xl font-bold mt-1">Ang mga champion mo</p>
@@ -556,6 +675,38 @@ function tasteSection(kind) {
       <p class="text-[.7rem] text-gray-400 mt-3">Learned on this phone only from your ratings and Versus picks. The more you play, the better it gets.</p>
     </div>
     <div class="mb-4"></div>`;
+}
+
+// ── Heart: add a dish to Favorites (app.js), so it shows in Recipes (⭐ Favorites) and in the planner ──
+
+function gameHeart(id) {
+  const on = typeof favIds === "function" && favIds().has(id);
+  return `<button type="button" class="game-heart ${on ? "on" : ""}" data-gheart="${id}" aria-pressed="${on}" onclick="event.stopPropagation(); gameToggleFav(${id})"
+    aria-label="${on ? "Alisin sa Favorites" : "Idagdag sa Favorites"}" title="${on ? "Nasa Favorites (Recipes at Planner)" : "Idagdag sa Favorites (Recipes at Planner)"}">${on ? "♥" : "♡"}</button>`;
+}
+
+function gameToggleFav(id) {
+  if (typeof toggleFav !== "function") return;
+  toggleFav(id);
+  const on = favIds().has(id);
+  document.querySelectorAll(`[data-gheart="${id}"]`).forEach((b) => {
+    b.classList.toggle("on", on);
+    b.setAttribute("aria-pressed", String(on));
+    b.textContent = on ? "♥" : "♡";
+    b.setAttribute("aria-label", on ? "Alisin sa Favorites" : "Idagdag sa Favorites");
+    b.title = on ? "Nasa Favorites (Recipes at Planner)" : "Idagdag sa Favorites (Recipes at Planner)";
+    if (on) { b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop"); }
+  });
+  gameToast(on ? "♥ Nasa Favorites na (Recipes at Planner)" : "Inalis sa Favorites");
+}
+
+function gameToast(text) {
+  let t = document.getElementById("game-toast");
+  if (!t) { t = document.createElement("div"); t.id = "game-toast"; t.className = "game-toast"; t.setAttribute("role", "status"); document.body.appendChild(t); }
+  t.textContent = text;
+  t.classList.add("show");
+  clearTimeout(gameToast.timer);
+  gameToast.timer = setTimeout(() => t.classList.remove("show"), 2600);
 }
 
 // ── Keyboard and swipe ──
