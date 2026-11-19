@@ -5,7 +5,6 @@
 
 const GAME_RATE_KEY = "sarapsulit.ratings.v1";
 const GAME_VS_KEY = "sarapsulit.versus.v1";
-const GAME_FACT_CHANCE = 0.6; // otherwise a round ends with a price comparison
 
 // Each side tries its patterns in order; the first pattern with a match wins.
 const GAME_MATCHUPS = [
@@ -133,6 +132,93 @@ const GAME_FACTS = {
   "Leche Flan": "A popular story says leche flan used the egg yolks left over when egg whites were used in building old Spanish-era churches.",
 };
 
+// More facts per dish, so a round almost never repeats one. Our own words; well-known kitchen and food-history facts.
+const GAME_MORE_FACTS = {
+  "Sinigang": ["Sinigang na baboy usually has kangkong, sitaw, labanos, talong, okra and siling haba.", "Sinigang sa miso, cooked with fish and mustasa, is a well-loved version."],
+  "Adobo": ["There's adobong puti (vinegar, no soy sauce), adobo sa gata, and adobong dilaw with turmeric.", "Adobo keeps for days without a fridge because of the vinegar, which is why it's a favourite baon."],
+  "Kaldereta": ["Many kaldereta recipes thicken the sauce with liver spread, and some melt in cheese.", "Kaldereta usually has potatoes, carrots, bell peppers and olives or green peas."],
+  "Kare-Kare": ["Kare-kare is traditionally made with oxtail and tripe, with talong, pechay and sitaw.", "Its orange colour comes from atsuete (annatto)."],
+  "Lechon Kawali": ["The pork belly is boiled first so it's tender, then dried so the skin crackles when fried.", "Lechon kawali is usually dipped in lechon sauce or sukang maanghang."],
+  "Crispy Pata": ["Crispy pata is often dipped in soy sauce and vinegar with onions and chili.", "A whole crispy pata is a classic sharing dish for family or barkada."],
+  "Sisig": ["Before the sizzling plate, \"sisig\" meant a sour salad, like green papaya or mango with vinegar.", "Lucia \"Aling Lucing\" Cunanan of Angeles is credited with the sizzling pork sisig."],
+  "Bicol Express": ["Its heat comes from siling labuyo and siling haba, cooked with pork in coconut milk and bagoong.", "Bicolanos are known for cooking with gata and chili, and Bicol Express has both."],
+  "Tinola": ["Tinola uses green papaya or sayote, plus chili leaves or malunggay.", "Native chicken (manok na Tagalog) is prized for tinola for its richer broth."],
+  "Nilaga": ["Nilaga often has potatoes, corn, cabbage, pechay and saba.", "The broth stays clear if you skim off the scum while it boils."],
+  "Pancit Canton": ["Canton noodles are egg noodles, stir-fried with soy sauce and often oyster sauce.", "\"Pancit\" is said to come from the Hokkien \"pian i sit\": something conveniently cooked."],
+  "Pancit Bihon": ["Bihon is soaked in water first so it cooks evenly and doesn't break into bits.", "Pancit is often served with kalamansi to squeeze over it."],
+  "Lumpiang Shanghai": ["Lumpiang Shanghai is a party staple, usually served with sweet chili sauce.", "Rolling them thin helps the filling cook through before the wrapper burns."],
+  "Tokwa't Baboy": ["The dipping sauce is soy sauce and vinegar with onions and chili.", "Tokwa is firm tofu, fried until golden before it's mixed with the pork."],
+  "Menudo": ["Menudo is cut into small cubes, often with hotdogs, potatoes, carrots and raisins.", "\"Menudo\" comes from the Spanish word for small or minute, for its small pieces."],
+  "Afritada": ["Afritada is chicken or pork stewed in tomato sauce with potatoes, carrots and bell peppers.", "Unlike menudo and kaldereta, afritada is usually cooked without liver."],
+  "Laing": ["The gabi leaves are usually dried first; cooking them well keeps them from itching the throat.", "Laing is cooked slowly until the gata thickens and turns oily."],
+  "Pinakbet": ["Ilocanos make pinakbet with bagoong isda (fish); many Tagalog cooks use bagoong alamang (shrimp).", "Its usual vegetables are ampalaya, talong, okra, sitaw, kalabasa and tomato."],
+  "Halo-Halo": ["Common halo-halo layers: shaved ice, milk, sweet beans, nata de coco, kaong, leche flan and ube.", "Halo-halo is a summer favourite, sold in many stalls when the weather is hot."],
+  "Leche Flan": ["Leche flan is steamed or baked in an oval llanera, then turned out so the caramel is on top.", "Using only egg yolks makes leche flan richer and smoother."],
+  "Pork Barbecue": ["Barbecue sticks are often eaten with sukang maanghang or atchara.", "Many cooks brush the leftover marinade on while grilling for a glossy finish."],
+  "Inihaw na Liempo": ["Grilled liempo is often eaten with toyo-mansi or ensaladang mangga.", "The fat on liempo melts over the coals, which keeps the meat juicy."],
+  "Beef Tapa": ["Tapa was once a way to keep meat longer by curing and drying it.", "Beef tapa is usually sliced thin against the grain so it stays tender."],
+  "Tocino": ["Pampanga is especially known for its tocino.", "Tocino's sugar caramelises in the pan, so it's cooked on low heat to keep it from burning."],
+  "Longganisa": ["Vigan longganisa is small and garlicky; Lucban's is known for its garlic and oregano.", "Longganisa with sinangag and itlog is called longsilog."],
+  "Embutido": ["Embutido can be steamed ahead, frozen, then sliced and fried when needed.", "A hard-boiled egg or sausage in the middle gives each slice a pattern."],
+  "Champorado": ["Champorado is often topped with evaporated or condensed milk.", "It's a favourite rainy-day breakfast or merienda."],
+  "Ginataang Bilo-Bilo": ["Some places call it ginataang halo-halo because of all the mix-ins.", "The bilo-bilo balls are done when they float to the top."],
+  "Arroz Caldo": ["\"Arroz caldo\" is Spanish for rice broth, but the dish is believed to come from Chinese congee.", "It's often served with a hard-boiled egg, and is a favourite on rainy days or when sick."],
+  "Goto": ["Goto is often eaten with tokwa't baboy on the side.", "Toasted garlic, scallions and kalamansi are the usual toppings."],
+  "Biko": ["Biko is a fiesta favourite, sliced into squares and shared.", "Latik is made by cooking coconut milk until it turns into brown curds."],
+  "Suman": ["Suman sa ibos is wrapped in buri palm leaves; suman sa lihiya uses lye water.", "Suman is often eaten with sugar, latik or ripe mango."],
+  "Puto": ["Puto Biñan from Laguna is one of the best-known kinds.", "Puto is often topped with cheese or salted egg."],
+  "Kutsinta": ["Kutsinta's brown colour comes from brown sugar, sometimes with a little annatto.", "Kutsinta is steamed in small cups, which gives it its shape."],
+  "Turon": ["Turon is often sold by street vendors alongside banana cue and camote cue.", "Turon is also called \"banana lumpia\"."],
+  "Banana Cue": ["The name comes from \"banana\" and \"barbecue\": it's sold on a stick like barbecue.", "Saba is used because it stays firm when fried."],
+  "Maja Blanca": ["Maja blanca is a classic Christmas and fiesta dessert, often topped with latik.", "It sets as it cools, so it can be sliced into neat squares."],
+  "Buko Pandan": ["Pandan leaves give buko pandan its green colour and scent.", "It's served cold, which makes it a favourite at summer parties."],
+  "Bistek": ["Bistek is topped with plenty of onion rings, added at the end so they stay a bit crisp.", "Kalamansi gives bistek its tangy taste."],
+  "Mechado": ["Mechado is beef stewed in tomato sauce and soy sauce, with potatoes and carrots.", "Mechado often uses tougher cuts that turn tender after long, slow cooking."],
+  "Lechon Paksiw": ["Lechon sauce, made with liver, vinegar and sugar, makes lechon paksiw sweet and thick.", "Lechon paksiw is a common dish the day after a fiesta."],
+  "Humba": ["Humba is often compared to adobo, but it's sweeter and darker.", "Some humba recipes add dried banana blossoms."],
+  "Dinuguan": ["Dinuguan is often called \"chocolate meat\" as a playful nickname.", "Dinuguan and puto are a classic pair."],
+  "Igado": ["Igado often has bell peppers and green peas.", "Igado is a favourite at Ilocano fiestas."],
+  "Ginataang Kalabasa": ["Kalabasa is rich in beta-carotene, which the body turns into vitamin A.", "Kalabasa softens into the gata and makes the sauce creamy and orange."],
+  "Chop Suey": ["Harder vegetables like carrots go in first and leafy ones last, so all stay crisp.", "Chop suey's sauce is thickened with a little cornstarch slurry."],
+  "Filipino Spaghetti": ["Filipino spaghetti is a must at children's birthday parties.", "It's usually topped with grated cheese."],
+  "Baked Macaroni": ["Baked macaroni is often made in big trays to share at Christmas and birthdays.", "The white sauce on top is a béchamel of butter, flour and milk."],
+  "Fried Chicken": ["Many Filipinos eat fried chicken with rice and gravy or banana ketchup.", "Marinating the chicken first seasons it all the way to the bone."],
+  "Pork Steak": ["Pork steak is usually made with pork chops or kasim (shoulder).", "Like bistek, it's finished with plenty of onions."],
+  "Daing na Bangus": ["Bangus is often called the national fish of the Philippines.", "Daing na bangus is a favourite breakfast, with garlic rice and egg (dangsilog)."],
+  "Fried Tilapia": ["Fried tilapia is often eaten with sukang maanghang or tomato and onions.", "Patting the fish dry before frying keeps the oil from splattering."],
+  "Ginataang Hipon": ["The shrimp heads give the gata an orange colour and rich flavour.", "Shrimp cook fast, so they go in near the end to stay tender."],
+  "Camaron Rebosado": ["Camaron rebosado is a classic in Filipino-Chinese restaurants.", "It's usually dipped in sweet and sour sauce."],
+  "Chicken Inasal": ["Inasal is eaten with sinamak (spiced vinegar), soy sauce, kalamansi and chicken oil on the rice.", "Bacolod's Manokan Country is famous for its inasal stalls."],
+  "Lechon Manok": ["Lechon manok is often eaten with a liver-based lechon sauce.", "Turning on the spit cooks the chicken evenly and bastes it in its own juices."],
+  "Bulalo": ["For many, the bone marrow is the best part: scooped out and eaten with rice.", "Bulalo is cooked for hours so the beef shank turns tender."],
+  "Batchoy": ["La Paz batchoy's broth is flavoured with pork bones and shrimp paste.", "Batchoy is often topped with crushed chicharon and fried garlic."],
+  "Tortang Talong": ["Some versions add ground pork to the egg for a heartier torta.", "Tortang talong is often eaten with banana ketchup."],
+  "Ginisang Ampalaya": ["Cooking ampalaya with egg softens its bitterness.", "Ampalaya is a good source of vitamin C."],
+  "Escabeche": ["Escabeche is often made with lapu-lapu or tilapia, with ginger and bell peppers.", "The fish is fried first so it stays firm under the sauce."],
+  "Sweet and Sour Fish": ["The sauce is usually vinegar, sugar and ketchup, thickened with cornstarch.", "Pineapple chunks and bell peppers are common in the sauce."],
+  "Pochero": ["Pochero comes from the Spanish puchero, a cooking pot.", "Saba bananas make pochero's broth slightly sweet."],
+  "Cocido": ["Cocido and pochero are cousins: both are Spanish-style boiled meals with chickpeas.", "Cocido is often served with a separate sauce for dipping."],
+  "Picadillo": ["Picadillo comes from the Spanish \"picar\", to chop or mince.", "It's a quick weeknight dish because ground meat cooks fast."],
+  "Tortang Giniling": ["Tortang giniling is often eaten with banana ketchup.", "The meat is cooked first, then mixed with beaten egg and fried."],
+  "Buko Pie": ["Buko pie is linked to Los Baños, Laguna, where it's sold along the highway.", "The filling is young coconut meat in a creamy custard."],
+  "Egg Pie": ["Egg pie is a classic in Filipino panaderias.", "Its top bakes into a browned layer while the inside stays soft."],
+  "Polvoron": ["Polvoron is wrapped in colourful paper; eat it slowly, or the powder makes you cough!", "Some versions add pinipig, peanuts or cookies and cream."],
+  "Pastillas": ["Bulacan pastillas wrappers are often cut into fine designs called pabalat.", "The original pastillas de leche used carabao's milk."],
+  "Kinilaw": ["Kinilaw often uses tuna or tanigue with ginger, onions, chili and coconut vinegar.", "The fish is eaten soon after mixing so it stays fresh and firm."],
+  "Sinuglaw": ["Sinuglaw is especially popular in Davao.", "The grilled pork's smokiness balances the sour kinilaw."],
+  "Sinigang na Hipon": ["Shrimp go in near the end so they stay tender.", "Sinigang na hipon often has kangkong, labanos and sitaw."],
+  "Halabos na Hipon": ["Halabos means cooking shrimp quickly in very little liquid.", "The shrimp turn bright orange when they're done."],
+  "Palitaw": ["Palitaw is coated in grated coconut, sugar and toasted sesame seeds.", "Its flat shape comes from pressing the dough before boiling."],
+  "Pichi-Pichi": ["Pichi-pichi uses lye water for its chewy, jelly-like texture.", "It's often rolled in grated coconut or grated cheese."],
+  "Pandesal": ["Pandesal is the classic breakfast bread, bought warm from the panaderia in the morning.", "It's often eaten with coffee, cheese or a filling like corned beef."],
+  "Ensaymada": ["Ensaymada is coiled before baking, which gives it its spiral shape.", "Some bakeries top it with salted egg or ube."],
+};
+
+/** Every fact for a dish: the main one first. */
+function gameFactsFor(name) {
+  return [GAME_FACTS[name], ...(GAME_MORE_FACTS[name] || [])].filter(Boolean);
+}
+
 // ── Pure helpers ──
 
 /** The best recipe for a dish: first pattern with a match, then photo and price first, then the shortest title. */
@@ -179,21 +265,18 @@ function nextRateDish(recipes, rated, rng = Math.random, kind = null) {
   return pool.length ? pool[Math.floor(rng() * pool.length)] : null;
 }
 
-/** What to say after a round: a fact about one of the two dishes, or which one is cheaper. */
-function roundNote(m, winnerSide, rng = Math.random) {
-  const win = m[winnerSide];
-  const other = m[winnerSide === "a" ? "b" : "a"];
-  const pa = win.recipe.costPerServing, pb = other.recipe.costPerServing;
-  const facts = [win, other].filter((d) => GAME_FACTS[d.name]);
-  if (facts.length && (rng() < GAME_FACT_CHANCE || !(pa > 0 && pb > 0))) {
-    const pick = facts.length > 1 && rng() >= 0.5 ? facts[1] : facts[0];
-    return { kind: "fact", dish: pick.name, text: GAME_FACTS[pick.name] };
-  }
-  if (!(pa > 0 && pb > 0)) return { kind: "price", text: "Wala pang kumpletong presyo ang isa sa dalawa ngayon." };
-  if (Math.abs(pa - pb) < 1) return { kind: "price", text: `Halos pareho ang presyo: about ₱${pa.toFixed(0)} per serving each.` };
-  const cheap = pa < pb ? win : other, dear = pa < pb ? other : win;
-  const diff = Math.abs(pa - pb).toFixed(0);
-  return { kind: "price", text: `Mas mura ang ${cheap.name} ng ₱${diff} per serving kaysa ${dear.name} (based on today's prices).` };
+/**
+ * What to say after a round: a fact about one of the two dishes, one not shown yet when there is one.
+ * Never about prices. `seen` is the set of facts already shown. Pure, tested.
+ */
+function roundNote(m, winnerSide, rng = Math.random, seen = new Set()) {
+  const win = m[winnerSide], other = m[winnerSide === "a" ? "b" : "a"];
+  const all = [win, other].flatMap((d) => gameFactsFor(d.name).map((text) => ({ dish: d.name, text })));
+  const fresh = all.filter((f) => !seen.has(f.text));
+  const pool = fresh.length ? fresh : all;
+  if (!pool.length) return { kind: "fact", dish: win.name, text: `Napili mo ang ${win.name}!` };
+  const f = pool[Math.min(pool.length - 1, Math.floor(rng() * pool.length))];
+  return { kind: "fact", dish: f.dish, text: f.text };
 }
 
 // ── State and storage ──
@@ -207,6 +290,7 @@ let gameRounds = [];
 let gameRound = 0;
 let gameRoundDone = false;
 let gameMode = "rate";
+let gameSeenFacts = new Set(); // facts already shown this visit, so a replay shows new ones
 
 function gameLoad(key) {
   try { return JSON.parse(localStorage.getItem(key) || "{}") || {}; } catch { return {}; }
@@ -385,9 +469,10 @@ function pickVersus(s) {
   if (typeof trackEvent === "function") trackEvent("game/versus-pick");
   document.getElementById(`vs-${s}`).classList.add("win");
   document.getElementById(`vs-${s === "a" ? "b" : "a"}`).classList.add("lose");
-  const note = roundNote(m, s);
+  const note = roundNote(m, s, Math.random, gameSeenFacts);
+  gameSeenFacts.add(note.text);
   const el = document.getElementById("vs-note");
-  el.innerHTML = `<p class="text-xs font-bold uppercase tracking-wide ${note.kind === "fact" ? "text-amber-700" : "text-green-800"}">${note.kind === "fact" ? `💡 Alam mo ba? (${escapeHtml(note.dish)})` : "₱ Presyo ngayon"}</p>
+  el.innerHTML = `<p class="text-xs font-bold uppercase tracking-wide text-amber-700">💡 Alam mo ba? (${escapeHtml(note.dish)})</p>
     <p class="text-sm mt-1">${escapeHtml(note.text)}</p>
     <button onclick="nextVersus()" class="mt-3 w-full bg-green-800 text-amber-50 rounded-full py-2 text-sm font-semibold">${gameRound + 1 < gameRounds.length ? "Next round →" : "Tingnan ang resulta"}</button>`;
   el.classList.remove("hidden");
