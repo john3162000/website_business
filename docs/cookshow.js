@@ -332,6 +332,7 @@ function cookActionsFromText(sentences, items) {
       if (kind === "wrap") a.fork = /\bfork\b/.test(s);
       if (kind === "dough") a.knead = /\bknead|masahin\b/.test(s);
       if (kind === "cook" && /\buntil\b/.test(s)) a.until = true;
+      if (["cook", "simmer", "boil"].includes(kind) && /\b(evaporat\w*|absorb\w*|(is |becomes |turns )?dry|until (it |the sauce |the mixture )?thick\w*|reduc\w*|no more liquid)\b/.test(s)) a.reduce = true;
       if (["add", "pour"].includes(kind) && /\bmixture\b/.test(s)) a.mixture = true;
       if (kind === "add" && /\b(back|return|previously|reserved|set aside earlier|that were (cooked|fried))\b/.test(s)) a.back = true;
       if (kind === "drain") a.aside = /\b(set (it |them )?aside|let (it )?cool)\b/.test(s) && !/\b(drain|paper towels?|wire rack|strain)\b/.test(s);
@@ -526,7 +527,7 @@ function buildCookScript(recipe) {
     if (kind === "add" && a.back && !its.length) {
       const k = steps.map((x) => x.kind).lastIndexOf("drain");
       const back = new Set();
-      for (let j = 0; j < k; j++) { const x = steps[j]; if (["drain", "strain"].includes(x.kind)) back.clear(); else if (["add", "saute", "fry"].includes(x.kind)) for (const it of x.items) if (!it.liquid) back.add(it); }
+      for (let j = 0; j < k; j++) { const x = steps[j]; if (["drain", "strain"].includes(x.kind)) back.clear(); else if (["add", "fry"].includes(x.kind)) for (const it of x.items) if (!it.liquid && !/salt|sugar|black_pepper|white_pepper|peppercorn|msg|cube|powder|seasoning|bouillon|granule/.test(it.key) && !/garlic|onion|ginger|shallot/.test(it.key)) back.add(it); }
       its = [...back];
       if (its.length) { steps.push({ kind: "add", items: its, minutes: null, vessel: vessel || "kawali", back: true }); continue; }
     }
@@ -555,6 +556,7 @@ function buildCookScript(recipe) {
     // "Bring to a boil" then "simmer 2 hours" stays two steps, but two simmers in a row become one.
     if (prev && COOK_TIMED.has(kind) && (prev.kind === kind || (["simmer", "cook"].includes(prev.kind) && ["simmer", "cook"].includes(kind))) && prev.vessel === here) {
       prev.minutes = Math.max(prev.minutes || 0, a.minutes || 0) || null;
+      if (a.reduce) prev.reduce = true;
       for (const it of its) if (!prev.items.includes(it)) prev.items.push(it);
       continue;
     }
@@ -565,6 +567,7 @@ function buildCookScript(recipe) {
     const st1 = { kind, items: its, minutes: a.minutes || null, vessel: here };
     if (mixture) st1.mixture = true;
     if (a.until && kind === "cook") st1.until = true;
+    if (a.reduce && ["cook", "simmer", "boil"].includes(kind)) st1.reduce = true;
     if (a.aside) st1.aside = true;
     if (a.soak) st1.soak = true;
     if (a.sun) { st1.sun = true; if (!st1.items.length && lastMain) st1.items = [lastMain]; }
@@ -616,7 +619,7 @@ function cookCompact(input) {
   }
   if (out.length > 17) {
     // Still long: a bare simmer or "cook" with no time and nothing added says little.
-    out = out.filter((s, i) => !(["simmer", "cook"].includes(s.kind) && !s.minutes && !s.items.length && i > 0));
+    out = out.filter((s, i) => !(["simmer", "cook"].includes(s.kind) && !s.minutes && !s.items.length && !s.reduce && !s.until && i > 0));
   }
   if (out.length > 17) {
     // Still long: neighbouring cuts become one step that keeps each item's own cut.
@@ -1555,6 +1558,8 @@ function cookFoodKind(it) {
   if (/wrapper/.test(s)) return "wrapper";
   if (/cube|bouillon/.test(s)) return "cube";
   if (it.liquid) return "bottle";
+  if (/\b(butter|margarine)\b/.test(s) && !/peanut|cookie|bean/.test(s)) return "butter";
+  if (/liver spread|reno|pate\b/.test(s)) return "jar";
   if (/peppercorn/.test(s)) return "peppercorn";
   if (/sesame|pine nut|cashew|peanut|almond|walnut|pecan|hazelnut|macadamia|pistachio|pili|sunflower seed|pumpkin seed|pepita/.test(s)) return "seeds";
   if (/annatto|atsuete|achuete/.test(s)) return "annatto";
@@ -1792,6 +1797,8 @@ function cookApply(st, s) {
     if (cookIsPoured(it)) { const cups = cookAmountCups(it); st.parts.push(cookPouredLook(it).concat([cups])); st.level = Math.min(0.85, st.level + Math.min(0.5, cups * 0.22)); }
     else if (it.fryOil) st.oil = Math.max(st.oil, 0.18);
     else {
+      // Brown sugar, panocha and chocolate melt into the liquid and darken it (biko, champorado, humba).
+      if (/sugar_brown|brown sugar|muscovado|panocha|panutsa|tablea|chocolate|cocoa/.test(`${it.key} ${it.label}`.toLowerCase())) st.parts.push([/tablea|chocolate|cocoa/.test(it.key) ? "#3d1f12" : "#7a4519", 2, Math.max(0.3, cookAmountCups(it))]);
       // The marinade follows the meat into the pot, all of it, unless the meat is fried first (the marinade waits).
       if (st.loc.get(it) === "bowl" && st.bowlLiquid && !["fry", "deepfry", "saute", "grill", "bake"].includes(s.kind)) { const cups = st.bowlCups || 0.5; st.parts.push([st.bowlLiquid, 3, cups]); st.level = Math.min(0.85, st.level + Math.min(0.4, cups * 0.22)); st.bowlLiquid = null; st.bowlCups = 0; }
       st.loc.set(it, "pot");
@@ -1865,6 +1872,8 @@ function cookApply(st, s) {
       if (s.caramel) { for (const it of s.items) st.loc.set(it, "used"); st.parts = [["#a65e1c", 2, 0.4]]; st.level = Math.max(st.level, 0.12); st.caramel = true; st.heat = true; break; }
       s.items.forEach(toPot);
       if (s.minutes >= 30 && st.level > 0.2) st.level = Math.max(0.2, st.level * 0.8);
+      // "Cook until the liquid evaporates": pancit and biko end up dry, not as soup.
+      if (s.reduce) st.level = Math.min(st.level, 0.06);
       if (st.level > 0) st.parts.push(["#d6a35a", Math.min(2, (s.minutes || 15) / 20), 0]);
       // Meat stewed in a dark sauce (adobo, humba) takes on its colour.
       if (st.level > 0 && cookMixLum(st.parts) < 0.5) brown(inPot().filter((it) => ["pork", "beef", "chicken"].includes(cookFoodKind(it))), Math.min(0.85, (s.minutes || 20) / 35));
@@ -1892,6 +1901,8 @@ function cookApply(st, s) {
     case "serve":
       if (st.custard) { for (const it of st.items) if (["pot", "rack", "bowl"].includes(st.loc.get(it))) st.loc.set(it, "used"); st.served = "plate"; break; }
       for (const it of st.items) if (["pot", "rack"].includes(st.loc.get(it)) || (s.cold && st.loc.get(it) === "bowl") || (st.loc.get(it) === "board" && st.brown.get(it))) st.loc.set(it, "plate");
+      // Pasta and pancit go on a plate, sauce and all; soups and stews go in a bowl.
+      if (st.items.some((it) => ["pot", "rack", "plate"].includes(st.loc.get(it)) && /noodle|pasta|spaghetti|macaroni|bihon|canton|sotanghon|miki|penne|fettuccine|linguine|palabok/.test(it.key))) { st.level = Math.min(st.level, 0.06); st.served = "plate"; break; }
       st.served = (st.level > 0.25 && !["ihawan", "oven", "steamer"].includes(st.vessel)) || (s.cold && st.items.some((it) => /cream|milk|mayonnaise|yogurt|gata|coconut/.test(it.key))) ? "bowl" : "plate";
       break;
     default: break;
@@ -2631,7 +2642,7 @@ function cookBuildScene(THREE, canvas) {
       case "grated": geo = new THREE.BoxGeometry(0.022, 0.003, 0.003); n = 60; break;
       case "diced": geo = organic(box(0.016, 0.013, 0.016, 2), 0.25, 0.12, 5); n = 40; break;
       case "cubes": geo = organic(box(0.03, 0.026, 0.03, 4), meat ? 0.35 : 0.2, meat ? 0.1 : 0.05, ckHash(it.key)); n = meat ? 14 : 18; break;
-      case "strips": geo = new THREE.BoxGeometry(0.05, 0.005, 0.005); n = 32; break;
+      case "strips": geo = kind === "beans" ? new THREE.CylinderGeometry(0.0045, 0.0045, 0.055, 8).rotateZ(Math.PI / 2) : new THREE.BoxGeometry(0.05, 0.005, 0.005); n = kind === "beans" ? 22 : 32; break;
       case "thin": case "sliced":
         if (kind === "onion" || kind === "redonion") { geo = new THREE.TorusGeometry(0.024, 0.0028, 6, 18, Math.PI); n = 26; }
         else if (meat) { geo = organic(box(0.06, style === "thin" ? 0.005 : 0.012, 0.035, 4), 0.12, 0.06, 7); n = 10; }
@@ -2652,7 +2663,9 @@ function cookBuildScene(THREE, canvas) {
         break;
     }
     if (["wedges", "quartered", "halved"].includes(style)) flesh.side = THREE.DoubleSide;
-    const inst = new THREE.InstancedMesh(geo, flesh, n);
+    // Slices of a vegetable with a coloured skin keep it round the edge: purple eggplant, green ampalaya and okra.
+    const rim = ["thin", "sliced"].includes(style) && geo.type === "CylinderGeometry" && ["eggplant", "gourd", "okra", "chili", "carrot", "radish", "beans"].includes(kind);
+    const inst = new THREE.InstancedMesh(geo, rim ? [foodMat(kind, "skin", brownAmt, { roughness: 0.4 }), flesh, flesh] : kind === "beans" && style === "strips" ? foodMat(kind, "skin", brownAmt, { roughness: 0.4 }) : flesh, n);
     inst.castShadow = inst.receiveShadow = true;
     const c = new THREE.Color();
     for (let i = 0; i < n; i++) {
@@ -2684,13 +2697,31 @@ function cookBuildScene(THREE, canvas) {
     }
     return g;
   }
+  function boneInModel(it, kind, b, radius) {
+    const g = new THREE.Group(), r = ckRand(ckHash(it.key) + 3);
+    const meat = foodMat(kind, "skin", b, { map: skinTex(kind) || null, roughness: 0.5 });
+    const boneMat = std({ color: 0xeee5d0, roughness: 0.6 }), marrowMat = std({ color: 0xc99a62, roughness: 0.35 });
+    const hock = kind === "pork";
+    const n = hock ? 2 : 3;
+    for (let k = 0; k < n; k++) {
+      const piece = new THREE.Group();
+      const R = hock ? 0.05 : 0.045, H = hock ? 0.06 : 0.032;
+      const body = mesh(organic(new THREE.CylinderGeometry(R, R * 1.05, H, 28, 3), 0.12, 0.04, k + 2), meat); body.position.y = H / 2; body.scale.x = 1.15; piece.add(body);
+      const bone = mesh(new THREE.CylinderGeometry(0.015, 0.016, H + 0.016, 18), boneMat); bone.position.set(0.006, H / 2, 0); bone.userData.noTint = true; piece.add(bone);
+      const marrow = mesh(new THREE.CylinderGeometry(0.0095, 0.0095, H + 0.018, 14), marrowMat); marrow.position.copy(bone.position); marrow.userData.noTint = true; piece.add(marrow);
+      const a = (k / n) * Math.PI * 2 + r(), d = n > 1 ? R * 1.05 : 0;
+      piece.position.set(Math.cos(a) * d, 0, Math.sin(a) * d); piece.rotation.y = r() * 6;
+      g.add(piece);
+    }
+    return fit(g, radius * 1.25);
+  }
   function looseGrain(it, radius) {
     const s2 = `${it.key} ${it.label}`.toLowerCase(), g = new THREE.Group(), r = ckRand(ckHash(it.key));
     if (/noodle|pasta|spaghetti|bihon|canton|sotanghon|misua|miki|macaroni|penne|linguine|fettuccine/.test(s2)) {
       const short = /macaroni|penne/.test(s2);
       const m = std({ color: /bihon|sotanghon/.test(s2) ? 0xf4efe2 : /canton|miki|egg/.test(s2) ? 0xe9c56a : 0xe8cf8a, roughness: 0.35 });
-      if (short) { const geo = new THREE.TorusGeometry(0.008, 0.004, 6, 10, Math.PI * 0.8); for (let k = 0; k < 40; k++) { const p2 = mesh(geo, m); const a = r() * 6.3, d = Math.sqrt(r()) * radius; p2.position.set(Math.cos(a) * d, 0.006 + r() * 0.01, Math.sin(a) * d); p2.rotation.set(r() * 3, r() * 3, r() * 3); g.add(p2); } return g; }
-      for (let k = 0; k < 28; k++) { const pts = []; let x = (r() - 0.5) * radius, z = (r() - 0.5) * radius; for (let j = 0; j < 7; j++) { pts.push(new THREE.Vector3(x, 0.004 + r() * 0.008, z)); x += (r() - 0.5) * radius * 0.7; z += (r() - 0.5) * radius * 0.7; x = Math.max(-radius, Math.min(radius, x)); z = Math.max(-radius, Math.min(radius, z)); } g.add(mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, /bihon|misua|sotanghon/.test(s2) ? 0.0016 : 0.003, 5), m)); }
+      if (short) { const geo = new THREE.TorusGeometry(0.012, 0.0055, 8, 12, Math.PI * 0.85); for (let k = 0; k < 70; k++) { const p2 = mesh(geo, m); const a = r() * 6.3, d = Math.sqrt(r()) * radius; p2.position.set(Math.cos(a) * d, 0.006 + r() * 0.01, Math.sin(a) * d); p2.rotation.set(r() * 3, r() * 3, r() * 3); g.add(p2); } return g; }
+      for (let k = 0; k < 55; k++) { const pts = []; let x = (r() - 0.5) * radius, z = (r() - 0.5) * radius; for (let j = 0; j < 7; j++) { pts.push(new THREE.Vector3(x, 0.004 + r() * 0.008, z)); x += (r() - 0.5) * radius * 0.7; z += (r() - 0.5) * radius * 0.7; x = Math.max(-radius, Math.min(radius, x)); z = Math.max(-radius, Math.min(radius, z)); } g.add(mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, /bihon|misua|sotanghon/.test(s2) ? 0.0022 : 0.0035, 5), m)); }
       return g;
     }
     const m = std({ color: /glutinous|malagkit/.test(s2) ? 0xfbf9f2 : /brown|red/.test(s2) ? 0xc9a47a : 0xf7f5ee, roughness: 0.5 });
@@ -2716,11 +2747,14 @@ function cookBuildScene(THREE, canvas) {
       const c = col(cookedHex), raw = col((CK_LOOK[cookFoodKind(it)] || CK_LOOK.misc)[1]);
       const ratio = new THREE.Color(Math.min(1.4, c.r / Math.max(0.05, raw.r)), Math.min(1.4, c.g / Math.max(0.05, raw.g)), Math.min(1.4, c.b / Math.max(0.05, raw.b)));
       m.traverse((o) => {
-        if (!o.material) return;
+        if (!o.material || o.userData.noTint) return;
         for (const mm of Array.isArray(o.material) ? o.material : [o.material]) {
-          const target = mm.map || o.isInstancedMesh ? mm.color.clone().multiply(ratio) : c;
+          // A raw-meat texture (pink, marbled) can't be recoloured without odd tints: cooked meat loses it.
+          if (mm.map && done >= 0.5) { mm.map = null; mm.needsUpdate = true; mm.color.copy(c); if (mm.userData) mm.userData.base = c.clone(); continue; }
+          if (mm.map) { mm.color.lerp(new THREE.Color(0.86, 0.8, 0.76), done); continue; }
+          const target = o.isInstancedMesh ? mm.color.clone().multiply(ratio) : c;
           mm.color.lerp(target, done);
-          if (mm.userData && mm.userData.base) mm.userData.base = mm.userData.base.clone().lerp(mm.map ? mm.userData.base.clone().multiply(ratio) : c, done);
+          if (mm.userData && mm.userData.base) mm.userData.base = mm.userData.base.clone().lerp(c, done);
         }
       });
     }
@@ -2728,7 +2762,7 @@ function cookBuildScene(THREE, canvas) {
     if (tint && at !== "prep") {
       const c = col(tint[0]);
       m.traverse((o) => {
-        if (!o.material) return;
+        if (!o.material || o.userData.noTint) return;
         for (const mm of Array.isArray(o.material) ? o.material : [o.material]) {
           mm.color.lerp(c, tint[1]);
           if (mm.userData) { mm.userData.base = mm.userData.base ? mm.userData.base.clone().lerp(c, tint[1]) : mm.userData.base; }
@@ -2747,6 +2781,8 @@ function cookBuildScene(THREE, canvas) {
       const othersInBowl = st.items.some((x) => x !== it && st.loc.get(x) === at && !x.liquid);
       return safely("egg", it, () => crackedEgg(it, at !== "bowl" && (st.heat || b > 0), at === "bowl" || othersInBowl, (String(it.text || "").match(/\b([1-9])\b/) || [])[1] | 0));
     }
+    // Bone-in cuts (bulalo shank, pata): thick rounds of meat around a white bone with marrow, never slices.
+    if (["beef", "pork"].includes(kind) && /shank|bulalo|bone[- ]?in|marrow|hock|\bpata\b|knuckle|osso/.test(`${it.key} ${it.label}`.toLowerCase()) && ["pot", "plate", "rack", "board", "bowl"].includes(at)) return safely("bone", it, () => boneInModel(it, kind, b, radius));
     // Rice and noodles: loose grains or strands, not a cup.
     if (kind === "grain" && ["pot", "plate", "bowl", "rack"].includes(at)) return safely("grain", it, () => looseGrain(it, radius));
     let style = st.cut.get(it);
@@ -2754,7 +2790,7 @@ function cookBuildScene(THREE, canvas) {
     if (!style && ["pot", "plate"].includes(where || st.loc.get(it)) && ["pork", "beef", "chicken"].includes(kind) && !/lechon|kawali|crispy|bagnet|liempo|fried/i.test(title)) style = kind === "chicken" ? "pieces" : "cubes";
     // Big vegetables never go into the pot whole.
     // Whole vegetables and fruit never go into a pot, salad or plate whole: show them the way cooks cut them.
-    const CK_DEFAULT_CUT = { gourd: "pieces", root: "pieces", eggplant: "sliced", radish: "sliced", carrot: "sliced", onion: "sliced", redonion: "sliced", garlic: "minced", ginger: "strips", tomato: "wedges", fruit: "cubes", banana: "sliced", tofu: "cubes", sausage: "sliced", ham: "diced", cheese: "diced", mushroom: "sliced", broccoli: "pieces", cauliflower: "pieces" };
+    const CK_DEFAULT_CUT = { beans: "strips", okra: "sliced", gourd: "pieces", root: "pieces", eggplant: "sliced", radish: "sliced", carrot: "sliced", onion: "sliced", redonion: "sliced", garlic: "minced", ginger: "strips", tomato: "wedges", fruit: "cubes", banana: "sliced", tofu: "cubes", sausage: "sliced", ham: "diced", cheese: "diced", mushroom: "sliced", broccoli: "pieces", cauliflower: "pieces" };
     if (!style && ["pot", "plate", "bowl"].includes(where || st.loc.get(it)) && CK_DEFAULT_CUT[kind]) style = CK_DEFAULT_CUT[kind];
     const loose = ["pot", "plate", "bowl", "rack"].includes(where || st.loc.get(it));
     if (loose && ["powder", "cube", "peppercorn", "misc", "peas", "corn", "raisins", "sago", "pulses", "seeds", "annatto", "jar", "packet"].includes(kind)) return piecesModel(kind === "peppercorn" ? { key: it.key, label: "peppercorn" } : it, kind === "cube" ? "crushed" : ["peas", "corn", "raisins", "sago", "pulses", "peppercorn", "seeds", "annatto"].includes(kind) ? "beads" : "minced", radius * 0.6, 0, seedExtra);
@@ -2815,6 +2851,11 @@ function cookBuildScene(THREE, canvas) {
     }
     const m = modelFor(it, st, radiusAt(where), seedExtra, where);
     m.position.copy(spotOf(st, it, where));
+    // In a soup, thin pieces (sitaw, okra, leaves) sink only halfway, so they still show above the liquid.
+    if (where === "pot" && !APPLIANCE[st.vessel]) {
+      const drop = contentY(st) - m.position.y, box = new THREE.Box3().setFromObject(m), h = box.max.y - box.min.y;
+      if (drop > 0 && h > 0) m.position.y = contentY(st) - Math.min(drop, h * 0.45);
+    }
     dyn.add(m); return m;
   }
 
@@ -2865,7 +2906,8 @@ function cookBuildScene(THREE, canvas) {
       if (moving.has(it) || it === pourer || where === "used" || where === "wrapped") continue;
       if (st.loc.get(it) !== "prep" && cookIsPoured(it)) continue; // the bottle stays on the counter, never in the food
       if (dumplings.visible && where === "pot") continue; // shown as the dumplings
-      const o = place(st, it, where);
+      // While it boils or simmers, the food in the pot already shows how cooked it gets this step.
+      const o = place(where === "pot" && ["boil", "simmer", "cook", "steam"].includes(step.kind) ? { ...st, done: after.done, tint: after.tint } : st, it, where);
       if (where === "pot") potItems.push(o);
       // Liquids stay on the prep row as bottles even after pouring.
     }

@@ -380,3 +380,15 @@ test("meat cooks through in the pot: pink turns the cooked colour", () => {
   assert.ok(!cookState(steps, 2).done || !cookState(steps, 2).done.get(pork));
   assert.equal(cookState(steps, steps.length - 1).done.get(pork), 1);
 });
+
+test("pancit and biko cook dry and go on a plate; brown sugar darkens the pot", () => {
+  const pancit = buildCookScript({ title: "Pancit Bihon", lines: [line("noodles_bihon", "Bihon", "1 lb bihon"), line(null, null, "3 cups water", "water"), line("soy_sauce", "Soy sauce", "4 tbsp soy sauce")],
+    instructions: ["Pour the water and soy sauce in a wok. Bring to a boil.", "Add the bihon and mix well. Cook until the liquid evaporates completely."] });
+  assert.ok(pancit.some((s) => s.reduce));
+  const st = cookState(pancit, pancit.length);
+  assert.equal(st.served, "plate");
+  assert.ok(st.level < 0.1);
+  const biko = buildCookScript({ title: "Biko", lines: [line("coconut_milk", "Coconut milk", "4 cups coconut milk"), line("sugar_brown", "Brown sugar", "2 cups brown sugar")],
+    instructions: ["Pour the coconut milk in a pot.", "Add the brown sugar and cook for 20 minutes."] });
+  assert.ok(cookMixLum(cookState(biko, biko.length - 1).parts) < 0.75);
+});
