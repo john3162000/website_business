@@ -345,6 +345,45 @@ function cookActionsFromText(sentences, items) {
   return out;
 }
 
+// Dips served on the side: [match in a "serve with …" sentence, Tagalog name, English name, colour].
+const COOK_DIPS = [
+  [/sweet (and |& )?(sour|chili|chilli)|sweet[- ]chili/, "sweet chili sauce", "sweet chili sauce", "#d9452b"],
+  [/lechon sauce|liver sauce|mang tomas|all[- ]around sarsa/, "sarsa ng lechon", "lechon sauce", "#6e3f1f"],
+  [/atchara|achara|pickled papaya/, "atchara", "pickled papaya (atchara)", "#e9c46a"],
+  [/toyo[- ]?mansi|(soy sauce|toyo) (and|with|at) (calamansi|kalamansi|lemon)|(calamansi|kalamansi) (and|with|at) (soy|toyo)/, "toyo't kalamansi", "soy sauce with calamansi", "#3b2416"],
+  [/spiced vinegar|sukang? (maanghang|iloko|pinakurat|tuba)|vinegar (dip|with (garlic|chili|onion))|(garlic|chili|spicy) vinegar|vinegar dipping/, "sukang maanghang", "spiced vinegar", "#ece3cc"],
+  [/banana ketchup|ketchup|catsup/, "ketchup", "ketchup", "#c8321e"],
+  [/bagoong/, "bagoong", "shrimp paste (bagoong)", "#8a4a5a"],
+  [/fish sauce|patis/, "patis't kalamansi", "fish sauce with calamansi", "#b5722a"],
+  [/soy sauce|toyo/, "toyo", "soy sauce", "#2e1c12"],
+  [/vinegar|suka/, "suka", "vinegar", "#ece3cc"],
+];
+
+/**
+ * The dip served on the side, from the recipe's own "serve with …" or "dip in …" sentence, else what the
+ * dish is usually eaten with (lumpia with sweet chili, lechon kawali with lechon sauce, siomai with toyo't
+ * kalamansi, fried fish with spiced vinegar). Null for dishes eaten without one. Pure, tested.
+ */
+/** Bulalo shank, pata, knuckle: cuts with the bone in. */
+function cookBoneIn(it) { return /shank|bulalo|bone[- ]?in|marrow|hock|\bpata\b|knuckle|osso/.test(`${it.key} ${it.label}`.toLowerCase()); }
+
+function cookDip(title, sentences) {
+  const t = String(title || "").toLowerCase();
+  for (const raw of sentences || []) {
+    const sn = String(raw || "").toLowerCase();
+    if (!/\b(serve (it |them )?(with|alongside)|served with|dip(ping)?\b|sawsawan|condiments?|on the side)\b/.test(sn)) continue;
+    const side = sn.slice(sn.search(/\b(serve (it |them )?(with|alongside)|served with|dip(ping)?\b|sawsawan|condiments?|on the side)\b/));
+    for (const [re, tl, en, color] of COOK_DIPS) if (re.test(side)) return { tl, en, color };
+  }
+  const by = (name) => { const d = COOK_DIPS.find((x) => x[1] === name); return { tl: d[1], en: d[2], color: d[3] }; };
+  if (/\b(lumpia|shanghai|okoy|ukoy|fish ?balls?|kikiam|kwek[- ]?kwek|tokneneng|calamares|camaron)\b/.test(t)) return by(/shanghai|lumpia/.test(t) ? "sweet chili sauce" : "sukang maanghang");
+  if (/\b(lechon|bagnet|crispy pata|chicharon)\b/.test(t)) return by("sarsa ng lechon");
+  if (/\b(siomai|shumai|dumplings?|siopao)\b/.test(t) && !/siopao/.test(t)) return by("toyo't kalamansi");
+  if (/\b(inihaw|ihaw|grilled|barbecue|bbq|inasal)\b/.test(t)) return by(/chicken|inasal/.test(t) ? "atchara" : "toyo't kalamansi");
+  if (/\b(daing|tuyo|tinapa|pritong isda|fried (fish|tilapia|bangus|galunggong|tulingan)|danggit)\b/.test(t)) return by("sukang maanghang");
+  return null;
+}
+
 /** A dish-type template when the recipe has no usable steps. */
 function cookTemplate(title, frying, items) {
   const t = String(title || "").toLowerCase();
@@ -585,7 +624,8 @@ function buildCookScript(recipe) {
     if (["add", "pour"].includes(x.kind)) x.kind = "mix";
   }
   steps.splice(0, steps.length, ...cookCompact(steps));
-  steps.push({ kind: "serve", items: [], vessel: vessel || "kawali", cold: (() => { const lastChill = steps.map((x) => x.kind).lastIndexOf("chill"), lastHeat = steps.reduce((m, x, i) => ((COOK_TIMED.has(x.kind) && !["marinate", "chill", "rise"].includes(x.kind)) || x.kind === "heat" ? i : m), -1); return lastHeat < 0 || lastChill > lastHeat; })() });
+  const dip = cookDip(recipe.title, sentences);
+  steps.push({ kind: "serve", items: [], vessel: vessel || "kawali", ...(dip ? { dip } : {}), cold: (() => { const lastChill = steps.map((x) => x.kind).lastIndexOf("chill"), lastHeat = steps.reduce((m, x, i) => ((COOK_TIMED.has(x.kind) && !["marinate", "chill", "rise"].includes(x.kind)) || x.kind === "heat" ? i : m), -1); return lastHeat < 0 || lastChill > lastHeat; })() });
   return steps.slice(0, 24);
 }
 
@@ -684,6 +724,7 @@ function cookCaption(step, lang = "tl") {
     case "cut": {
       if (step.style === "mixed") return en ? `Cut the ${list} as the recipe says` : `Hiwain ang ${list} ayon sa recipe`;
       if (step.style === "crushed" && step.items.every((it) => /cube|cracker|chicharon/.test(it.key))) return en ? `Crush the ${list}` : `Durugin ang ${list}`;
+      if (step.items.length === 1 && cookBoneIn(step.items[0]) && ["pork", "beef"].includes(cookFoodKind(step.items[0]))) return en ? `Chop the ${list} into thick rounds through the bone` : `Tadtarin ang ${list} nang makakapal na piraso, kasama ang buto`;
       const style = L(COOK_STYLE_TEXT[step.style] || ["hiwain", "cut"]);
       const size = step.size ? ` (${en ? "about" : "mga"} ${step.size} cm)` : "";
       return en ? `Cut the ${list}: ${style}${size}` : `Hiwain ang ${list}: ${style}${size}`;
@@ -740,7 +781,7 @@ function cookCaption(step, lang = "tl") {
     case "top": return en ? `Put the ${list} on top` : `Ilagay sa ibabaw ang ${list}`;
     case "chill": return en ? `Chill in the fridge${time}` : `Palamigin sa ref${time}`;
     case "drain": return step.aside ? (en ? "Take it off the heat and set aside" : "Hanguin at itabi muna") : en ? "Take out and let it drain" : "Hanguin at patuluin";
-    case "serve": return step.cold ? (en ? "Serve cold" : "Ihain nang malamig") : en ? "Serve while hot" : "Ihain habang mainit";
+    case "serve": { const base = step.cold ? (en ? "Serve cold" : "Ihain nang malamig") : en ? "Serve while hot" : "Ihain habang mainit"; return step.dip ? `${base}${en ? `, with ${step.dip.en} on the side` : `, kasama ang ${step.dip.tl}`}` : base; }
     default: return step.kind;
   }
 }
@@ -2213,6 +2254,17 @@ function cookBuildScene(THREE, canvas) {
   plate.position.set(CK_AT.plate[0], 0, CK_AT.plate[1]); scene.add(plate);
   const soupBowl = shadowed(new THREE.Mesh(keep(new THREE.LatheGeometry([[0, 0], [0.05, 0], [0.06, 0.004], [0.1, 0.04], [0.12, 0.075], [0.124, 0.08], [0.116, 0.078], [0.095, 0.045], [0.055, 0.01], [0, 0.01]].map(([x, y]) => new THREE.Vector2(x, y)), 64)), glaze));
   soupBowl.position.set(CK_AT.plate[0], 0, CK_AT.plate[1]); soupBowl.visible = false; scene.add(soupBowl);
+  // The dip: a small sawsawan saucer beside the plate.
+  const dipMat = keep(std({ color: 0x8a4a2a, roughness: 0.12, transparent: true, opacity: 0.92 }));
+  const dipDish = new THREE.Group();
+  dipDish.add(shadowed(new THREE.Mesh(keep(new THREE.LatheGeometry([[0, 0], [0.03, 0], [0.036, 0.004], [0.048, 0.022], [0.05, 0.024], [0.046, 0.023], [0.033, 0.007], [0, 0.007]].map(([x, y]) => new THREE.Vector2(x, y)), 40)), glaze)));
+  const dipTop = new THREE.Mesh(keep(new THREE.CircleGeometry(0.042, 32)), dipMat); dipTop.rotation.x = -Math.PI / 2; dipTop.position.y = 0.018; dipDish.add(dipTop);
+  // Atchara: little strips of papaya and carrot in the vinegar.
+  const dipBits = new THREE.Group();
+  { const pm = keep(std({ color: 0xf2d27a, roughness: 0.4 })), cm = keep(std({ color: 0xe8721d, roughness: 0.4 })), g2 = keep(new THREE.BoxGeometry(0.024, 0.003, 0.004));
+    for (let k = 0; k < 14; k++) { const b2 = new THREE.Mesh(g2, k % 4 ? pm : cm); const a = k * 2.4, d = 0.006 + (k % 5) * 0.006; b2.position.set(Math.cos(a) * d, 0.02, Math.sin(a) * d); b2.rotation.y = a * 1.7; dipBits.add(b2); } }
+  dipDish.add(dipBits);
+  dipDish.position.set(CK_AT.plate[0] - 0.25, 0, CK_AT.plate[1] - 0.14); dipDish.visible = false; scene.add(dipDish);
   const soupMat = keep(std({ color: 0xd6a35a, roughness: 0.06, transparent: true, opacity: 0.92 }));
   const soup = new THREE.Mesh(keep(new THREE.CircleGeometry(0.098, 48)), soupMat); soup.rotation.x = -Math.PI / 2; soup.position.set(CK_AT.plate[0], 0.05, CK_AT.plate[1]); soup.visible = false; scene.add(soup);
   const rack = new THREE.Group(); rack.position.set(CK_AT.rack[0], 0, CK_AT.rack[1]); scene.add(rack);
@@ -2457,7 +2509,12 @@ function cookBuildScene(THREE, canvas) {
     if (st.dough === "balls") [0, 1, 2, 3].forEach((j) => ball(0.022, B[0] - 0.09 + j * 0.06, by, B[1] + 0.07));
     if (st.dough === "disc") base("disc");
   }
-  function piecesModel(it, style, radius, brownAmt, seedExtra = 0) { return safely("pieces", it, () => piecesModelRaw(it, style, radius, brownAmt, seedExtra)); }
+  function piecesModel(it, style, radius, brownAmt, seedExtra = 0) {
+    // Bone-in cuts are chopped into thick rounds through the bone, never thin slices.
+    const kind = cookFoodKind(it);
+    if (["beef", "pork"].includes(kind) && cookBoneIn(it)) return safely("bone", it, () => boneInModel(it, kind, brownAmt, radius));
+    return safely("pieces", it, () => piecesModelRaw(it, style, radius, brownAmt, seedExtra));
+  }
 
   function wholeModelRaw(it, brownAmt) {
     const kind = cookFoodKind(it), g = new THREE.Group(), r = ckRand(ckHash(it.key));
@@ -2713,6 +2770,10 @@ function cookBuildScene(THREE, canvas) {
       piece.position.set(Math.cos(a) * d, 0, Math.sin(a) * d); piece.rotation.y = r() * 6;
       g.add(piece);
     }
+    // The cutting animation reveals pieces one by one through inst.count, like the instanced piles.
+    const pieces = g.children.slice();
+    g.userData.n = n;
+    g.userData.inst = { get count() { return pieces.filter((x) => x.visible).length; }, set count(v) { pieces.forEach((x, i) => { x.visible = i < v; }); } };
     return fit(g, radius * 1.25);
   }
   function looseGrain(it, radius) {
@@ -2782,7 +2843,7 @@ function cookBuildScene(THREE, canvas) {
       return safely("egg", it, () => crackedEgg(it, at !== "bowl" && (st.heat || b > 0), at === "bowl" || othersInBowl, (String(it.text || "").match(/\b([1-9])\b/) || [])[1] | 0));
     }
     // Bone-in cuts (bulalo shank, pata): thick rounds of meat around a white bone with marrow, never slices.
-    if (["beef", "pork"].includes(kind) && /shank|bulalo|bone[- ]?in|marrow|hock|\bpata\b|knuckle|osso/.test(`${it.key} ${it.label}`.toLowerCase()) && ["pot", "plate", "rack", "board", "bowl"].includes(at)) return safely("bone", it, () => boneInModel(it, kind, b, radius));
+    if (["beef", "pork"].includes(kind) && cookBoneIn(it) && ["pot", "plate", "rack", "board", "bowl"].includes(at)) return safely("bone", it, () => boneInModel(it, kind, b, radius));
     // Rice and noodles: loose grains or strands, not a cup.
     if (kind === "grain" && ["pot", "plate", "bowl", "rack"].includes(at)) return safely("grain", it, () => looseGrain(it, radius));
     let style = st.cut.get(it);
@@ -2883,6 +2944,8 @@ function cookBuildScene(THREE, canvas) {
     if (!st.vessel || st.vessel !== v) { st.vessel = v; }
     if (!after.vessel) after.vessel = v;
     soupBowl.visible = step.kind === "serve" && after.served === "bowl"; plate.visible = !soupBowl.visible;
+    dipDish.visible = step.kind === "serve" && !!step.dip;
+    if (step.dip) { dipMat.color.copy(col(step.dip.color)); dipMat.opacity = /ece3cc/.test(step.dip.color) ? 0.55 : 0.92; dipBits.visible = /atchara/.test(step.dip.tl); }
     const bl = st.bowlLiquid || after.bowlLiquid;
     bowlLiquid.visible = !!bl; if (bl) bowlLiquidMat.color.copy(col(bl));
     bowlLiquid.userData.grow = !st.bowlLiquid && !!after.bowlLiquid;
