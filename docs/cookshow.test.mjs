@@ -392,3 +392,18 @@ test("pancit and biko cook dry and go on a plate; brown sugar darkens the pot", 
     instructions: ["Pour the coconut milk in a pot.", "Add the brown sugar and cook for 20 minutes."] });
   assert.ok(cookMixLum(cookState(biko, biko.length - 1).parts) < 0.75);
 });
+
+test("dips on the side: from the recipe's serve sentence, else what the dish is eaten with", () => {
+  const api2 = vm.runInContext("({ cookDip, cookBoneIn })", ctx);
+  assert.equal(api2.cookDip("Pork Siomai", ["Serve with toyo and calamansi dipping sauce."]).tl, "toyo't kalamansi");
+  assert.equal(api2.cookDip("Inihaw na Liempo", ["Serve with spicy vinegar or your favorite dipping sauce."]).tl, "sukang maanghang");
+  assert.equal(api2.cookDip("Lumpiang Shanghai", ["Deep fry until golden brown."]).tl, "sweet chili sauce");
+  assert.equal(api2.cookDip("Lechon Kawali", []).tl, "sarsa ng lechon");
+  assert.equal(api2.cookDip("Pork Adobo", ["Serve with rice."]), null);
+  // "add the soy sauce" while cooking isn't a dip
+  assert.equal(api2.cookDip("Chicken Adobo", ["Add the soy sauce and vinegar."]), null);
+  const steps = buildCookScript({ title: "Fried Tilapia", lines: [line("tilapia", "Tilapia", "2 tilapia")], instructions: ["Fry the tilapia for 10 minutes.", "Serve with spiced vinegar."] });
+  assert.equal(cookCaption(steps[steps.length - 1]), "Ihain habang mainit, kasama ang sukang maanghang");
+  assert.ok(api2.cookBoneIn({ key: "pork_hock", label: "Pork hock (pata)" }) && api2.cookBoneIn({ key: "beef_shank", label: "Beef shank" }));
+  assert.equal(cookCaption({ kind: "cut", items: [{ key: "pork_hock", label: "Pork hock (pata)" }], style: "sliced" }), "Tadtarin ang pork hock (pata) nang makakapal na piraso, kasama ang buto");
+});
