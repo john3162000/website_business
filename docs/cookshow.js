@@ -131,7 +131,7 @@ function cookWrappedName(label) {
 const COOK_FRY_OIL = /^oil_(cooking|vegetable|canola|palm|corn|frying)$|^cooking_oil$/;
 // Things that are never cut on the board.
 const COOK_NO_CUT = /salt|sugar|pepper_ground|black_pepper|powder|flour|starch|oil|sauce|vinegar|water|broth|stock|milk|cream|cube|seasoning|rice|noodle|pasta|spaghetti|macaroni|wrapper|paste|ketchup|mayonnaise|butter|cheese_|honey|wine|juice/;
-const COOK_STOP = new Set(["fresh", "ground", "large", "small", "medium", "chopped", "sliced", "minced", "diced", "cups", "cup", "piece", "pieces", "cloves", "clove", "whole", "dried", "cooked", "raw", "boneless", "skinless", "into", "and", "for", "the", "with", "cut", "about", "optional", "taste", "cooking", "lbs", "lb", "pounds", "pound", "grams", "kilo", "kilos", "tablespoons", "tablespoon", "teaspoons", "teaspoon", "tbsp", "tsp", "quart", "ounces", "pack", "packs", "can", "cans", "see", "notes", "note", "needed", "serving", "some", "bunch", "thumbs", "thumb", "inch", "inches", "big", "all"]);
+const COOK_STOP = new Set(["fresh", "ground", "large", "small", "medium", "chopped", "sliced", "minced", "diced", "cleaned", "crushed", "scales", "removed", "scaled", "gutted", "trimmed", "rinsed", "washed", "cups", "cup", "piece", "pieces", "cloves", "clove", "whole", "dried", "cooked", "raw", "boneless", "skinless", "into", "and", "for", "the", "with", "cut", "about", "optional", "taste", "cooking", "lbs", "lb", "pounds", "pound", "grams", "kilo", "kilos", "tablespoons", "tablespoon", "teaspoons", "teaspoon", "tbsp", "tsp", "quart", "ounces", "pack", "packs", "can", "cans", "see", "notes", "note", "needed", "serving", "some", "bunch", "thumbs", "thumb", "inch", "inches", "big", "all"]);
 
 /** Water lines and to-taste lines often have no catalog label: name them from the text. */
 function cookLineName(l) {
@@ -160,7 +160,8 @@ function cookItemsFromLines(lines) {
       water, toTaste: l.status === "to-taste", group: l.group || "", grams: typeof l.gAP === "number" ? l.gAP : null, cost: typeof l.cost === "number" ? l.cost : null, fryOil: !!(l.slug && COOK_FRY_OIL.test(l.slug)),
       cut: (l.slug && COOK_NO_CUT.test(l.slug)) || water ? null : cookCutStyle(text),
       peel: /\b(peeled|deveined|shelled|cleaned|gutted|scaled)\b/i.test(text),
-      words: cookWords(`${name} ${l.name || ""} ${(l.slug || "").replace(/_/g, " ")} ${text}`),
+      // "Dredge the fish", "grill the meat": the bangus or the tilapia is "the fish" in the method.
+      words: cookWords(`${name} ${l.name || ""} ${(l.slug || "").replace(/_/g, " ")} ${text}${/bangus|milkfish|tilapia|galunggong|tamban|tulingan|lapu|maya[- ]maya|dalagang|salmon|tuna steak|mackerel|hito|dalag|pompano|sapsap|fish fillet|cream dory|pangasius/i.test(`${name} ${l.slug || ""}`) && !/sauce|patis|flake|ball/i.test(`${name} ${l.slug || ""}`) ? " fish" : ""}`),
     });
   }
   return out;
@@ -178,11 +179,20 @@ function cookWords(s) {
  * item ("add the chicken" → the chicken, not the chicken cube).
  */
 function cookMentions(sentence, items) {
+  // "Golden brown" and "browning" aren't the brown sugar.
+  sentence = String(sentence || "").toLowerCase().replace(/\b(golden[- ]?)?brown(ed|ing|ish)?\b(?! sugar)/g, " ");
   const words = new Set(cookWords(sentence));
   // "pepper corn" in a step, "peppercorn" in the list.
   const plain = String(sentence || "").toLowerCase().replace(/[^a-z ]/g, " ").split(/\s+/).filter(Boolean);
   for (let i = 0; i + 1 < plain.length; i++) for (const w of cookWords(plain[i] + plain[i + 1])) words.add(w);
-  const scored = items.filter((it) => !it.fryOil).map((it) => ({ it, score: it.words.filter((w) => words.has(w)).length }));
+  // "Dredge the fish" means the bangus, not the fish sauce; "grill the chicken" means the chicken, not the
+  // chicken powder: a sauce or a seasoning only wins a shared word when the sentence names it as one.
+  const asSauce = /\b(sauce|patis|toyo)\b/.test(sentence), asSeasoning = /\b(powder|cubes?|seasoning|bouillon|granules|knorr|maggi|broth)\b/.test(sentence);
+  const scored = items.filter((it) => !it.fryOil).map((it) => {
+    let score = it.words.filter((w) => words.has(w)).length;
+    if (score && ((it.words.includes("sauce") && !asSauce) || (/cube|powder|seasoning|bouillon|granule/.test(it.key) && !asSeasoning))) score -= 0.5;
+    return { it, score };
+  });
   const winners = new Set();
   for (const w of words) {
     let best = null;
@@ -197,52 +207,83 @@ function cookMentions(sentence, items) {
 
 // Sentence verbs → actions, checked in this order inside each sentence.
 const COOK_VERBS = [
-  ["marinate", /\bmarinat(e|ing)\b|\bmarinade (it |them )?for\b|\blet (it |them )?marinate/],
+  ["marinate", /\bmarinat(e|ing)\b|\bmarinade (it|them) for\b|\blet (it |them )?marinate|\bsoak(ing)?\b(?! (the |it |them )?(in )?(under|in) the sun)|\bsun[- ]?dr(y|ied)\b|\bunder the sun\b|\bin (cold |warm |lukewarm )?water (for|until|overnight)\b/],
   ["deepfry", /\bdeep[- ]?fr(y|ied|ying)\b/],
   ["heat", /\bheat (up )?(the |a |some )?(cooking )?(oil|pan|pot|wok|skillet|kawali|butter|large|deep|frying|cast)/],
   ["saute", /\b(saut[eé]|gisa|stir[- ]?fry)/],
-  ["fry", /\b(pan[- ]?fr(y|ied)|fry|fried)\b/],
+  ["fry", /\b(pan[- ]?fr(y|ied)|fry|fried)\b|\buntil (the )?garlic (turns |is |becomes )?(light )?(golden|brown|crisp)/],
   ["grill", /\b(grill|ihaw|broil|barbecue)/],
   ["bake", /\b(bake|oven|roast)\b/],
   ["steam", /\bsteam/],
-  ["boil", /\b(bring (it )?to a boil|boil|parboil|blanch)/],
+  ["boil", /\b(bring (it )?to a boil|boil|parboil|blanch)|\bcook (the )?[a-z ]{0,30}according to (the )?package|\baccording to (the )?package (direction|instruction)/],
   ["simmer", /\b(simmer|lower the heat|low heat|continue cooking|continue to cook)/],
   ["cook", /\bcook(ing)? (it |them )?(until|for)\b/],
   ["cut", /\b(slice|chop|cut|crush) (it|them|into|the)\b/],
   ["rise", /\b(let (the dough |it )?rise|until (it )?doubles?|to rise|proof the dough)\b/],
   ["shape", /\b(shape (it |them |into)|form (into |them into )?(a |small )?balls?|into (small )?balls|divide the dough|cut into individual|portion the dough|into individual (slices|pieces|portions))\b/],
-  ["rollout", /\b(rolling pin|roll (it |them |the dough |each )?out|flatten)\b/],
+  ["rollout", /\b(rolling pin|roll (it |them |the dough |each )?out|flatten (the dough|each|it|them|the balls?|into|with|using))\b/],
   ["fill", /\b(filling|palaman)\b[^.]*\b(middle|center|centre)\b|\b(spoon|scoop|place|put|arrange)\b[^.]*\b(filling|mixture)\b|\b(on|over|onto) (the |a |each )?(piece of )?(lumpia |spring roll |wonton |siomai |dumpling )?wrappers?\b/],
   ["coat", /\b(roll|coat|dredge|dip)\b[^.]*\b(on|in|with)\b[^.]*\b(sugar|flour|bread ?crumbs|panko|batter|cornstarch)\b/],
   ["brush", /\bbrush\b[^.]*\b(egg|butter|oil|wash|milk)\b/],
   ["dough", /\b(dough|knead|masahin|pastry blender|cut in the butter|until (it |the mixture )?forms? a ball)\b/],
   ["wrap", /\bwrap\b|\broll (and|it|them|the|to|each|up)\b|\b(fold|crimp|seal|lock the edges|lock the|pinch|pleat|tuck)\b/],
+  ["caramel", /\bcarameli[sz]|\bcaramel\b|\bmelt (the )?sugar\b/],
   ["pour", /\bpour\b/],
-  ["mix", /\b(combine|mix|blend)\b/],
+  ["mix", /\b(combin(e|ing)|mix|blend|beat (the |them |it |until|well|using|with)|whisk)\b/],
   ["add", /\b(add|put|place|toss in|return|arrange)\b/],
   ["stir", /\bstir\b/],
   ["season", /\b(season|rub|to taste|sprinkle)\b/],
   ["chill", /\b(refrigerat\w*|chill|freez\w*|fridge|ref)\b/],
   ["strain", /\b(strain\w*|sieve|colander|salain|salaan)\b/],
-  ["top", /\b(top (it |them )?with|on top|garnish(ed)? with|sprinkle\b[^.]*\bover|ilagay sa ibabaw)\b/],
+  ["top", /\b(top (it |them |the [a-z]+ )?with|on top|garnish(ed)? with|sprinkle\b[^.]*\bover|ilagay sa ibabaw)\b/],
   ["drain", /\b(drain|set aside|remove (it|them|from|the(?! (cover|lid)))|let (it )?cool|wire rack|paper towel)/],
   ["serve", /\b(serve|transfer to a serving)/],
 ];
 
 const COOK_TIMED = new Set(["marinate", "boil", "simmer", "cook", "fry", "deepfry", "grill", "bake", "steam", "chill", "rise"]);
-const COOK_POT_WORDS = /\b(pot|casserole|kaldero|saucepan|stockpot|dutch oven)\b/;
+const COOK_POT_WORDS = /\b(pot|casserole|kaldero|saucepan|stockpot|dutch oven|rice cooker)\b/;
 const COOK_PAN_WORDS = /\b(pan|wok|skillet|kawali|frying pan)\b/;
+
+/**
+ * Phrases that look like a step but aren't, rewritten before the verbs are read: "so the steam can come out"
+ * isn't steaming, "fold until blended" is mixing, "seal the freezer bag" isn't wrapping, "the grilled chicken"
+ * isn't grilling it again, "lechon kawali" is a dish, not the pan. Pure, tested.
+ */
+function cookPhrases(s) {
+  let t = s
+    .replace(/\bsteam (can |to |will |could )?(come out|escape|out)\b|\blet (the )?steam (out|escape)\b/g, "vapour out")
+    .replace(/\b(freezer|ziploc|zip-?lock|zip top|resealable|plastic) bags?\b/g, "bag")
+    .replace(/\bseal (the )?(bag|container|jar|lid|tub)\b/g, "close the $2")
+    .replace(/\bremove (the )?(excess )?air\b/g, "squeeze out the air")
+    .replace(/\b(the|your|with|and) (grilled|fried|baked|steamed|boiled|roasted|toasted) /g, "$1 ")
+    .replace(/\blechon kawali\b/g, "lechon")
+    .replace(/\bmake the [a-z -]{1,30}? by\b/g, "")
+    .replace(/\b(oil|fat|drippings) (from|used for|used in|left from) (frying|cooking) the [a-z]+/g, "$1")
+    .replace(/\b(arrange|place|put|transfer|scoop) (the |it |them )?[a-z ]{0,30}?(in|on|onto|to|into) (a |the |individual )?(serving )?(plates?|platter|serving bowl)\b/g, "plate it")
+    .replace(/\bremove all\b/g, "remove them")
+    .replace(/\bmelt(ing)? (the )?(butter|margarine)\b/g, "heat the butter")
+    .replace(/\b(slowly )?cook (it |them )?(slowly )?while stirring\b/g, "cook until")
+    .replace(/\bbrown(ing|ed)? (the )?(beef|pork|meat|chicken|ground)/g, "fry the $3")
+    .replace(/\b(separate|remove) the (egg )?(yolks?|whites?) (from|of)\b/g, "crack the eggs, keep the yolks, $4")
+    .replace(/\buntil (the |it )?(solid )?sugar (turns|melts|becomes)\b/g, "until caramel $3");
+  // "Fold until well blended", "fold in the cheese": mixing, unless something is being wrapped.
+  if (!/\b(wrapper|dough|edges?|in half|corners?|triangle|sides? over|pastry|leaf|leaves|tortilla)\b/.test(t)) t = t.replace(/\bfold\b(?= (in|it|them|everything|gently|until|to combine|together|the [a-z ]{0,20}(in|into|until)))/g, "mix");
+  return t;
+}
 
 /** Cooking actions from free text, in order. Each: { kind, items:[keys], minutes, vessel? }. */
 function cookActionsFromText(sentences, items) {
   const out = [];
   for (const sentence of sentences) {
     // Lower case, no parentheticals, and every kind of space (recipe sites use non-breaking ones) as one space.
-    const s = String(sentence || "").toLowerCase().replace(/\([^)]*\)/g, " ").replace(/\s+/g, " ");
+    // Parentheses are dropped, except a step hidden in them: "(soak it in water for 10 minutes first)".
+    const s = cookPhrases(String(sentence || "").toLowerCase().replace(/\(([^)]*\bsoak[^)]*)\)/g, ", $1,").replace(/\([^)]*\)/g, " ").replace(/\s+/g, " "));
     if (/^note\b|^(watch|see|refer to) (the )?video/.test(s)) continue;
     const found = COOK_VERBS.map(([kind, re]) => { const m = s.match(re); return m ? { kind, at: m.index } : null; })
       .filter(Boolean).sort((a, b) => a.at - b.at);
     let kinds = [...new Set(found.map((f) => f.kind))];
+    // "Add the bihon (soak it in water first)": the soaking comes first.
+    if (kinds.includes("marinate") && /\b(first soak|soak[^.]*\bfirst)\b/.test(s)) kinds = ["marinate", ...kinds.filter((k) => k !== "marinate")];
     // "Deep fry" also matches "fry"; "combine … then marinate" is one marinating step;
     // "add salt to taste" is seasoning; "combine … in a pot" is adding to the pot.
     if (kinds.includes("deepfry")) kinds = kinds.filter((k) => k !== "fry");
@@ -263,9 +304,22 @@ function cookActionsFromText(sentences, items) {
     // "Remove … and arrange on a plate lined with paper towels", "place in a steamer and steam": one step each.
     if (kinds.includes("drain") || kinds.some((k) => ["steam", "bake", "grill", "deepfry", "fry"].includes(k))) kinds = kinds.filter((k) => k !== "add");
     if (kinds.includes("rollout")) kinds = kinds.filter((k) => k !== "wrap" || /\b(fold|seal|crimp|wrap)\b/.test(s));
+    // Melting sugar into caramel is one step, whatever else the sentence says ("put the sugar in the mold and mix").
+    // "Put the chicken in a bag and pour in the marinade", "place the yolks in a bowl and beat": a bowl, not the pan.
+    if (/\b(bowl|bag|container)\b/.test(s) && !COOK_POT_WORDS.test(s) && kinds.some((k) => ["add", "pour"].includes(k)) && !kinds.some((k) => ["fill", "dough", "marinate", "chill"].includes(k))) kinds = kinds.filter((k) => !["add", "pour"].includes(k)).concat(kinds.includes("mix") ? [] : ["mix"]);
+    // "Arrange the mixture in a baking pan" is not a wrapper being filled.
+    if (kinds.includes("fill") && /\b(baking|pan|dish|tray|molds?|llanera|plate|platter|casserole|ramekins?)\b/.test(s) && !/\b(wrappers?|dough|leaf|leaves|middle|center|centre)\b/.test(s)) kinds = kinds.map((k) => (k === "fill" ? "add" : k));
+    // "Let it cool, then refrigerate" is chilling, not taking food out of the pan.
+    if (kinds.includes("chill") && kinds.includes("drain") && !/\b(drain|remove|paper towels?|wire rack|set aside|take out)\b/.test(s)) kinds = kinds.filter((k) => k !== "drain");
+    // "Sauté the garlic … continue cooking until the onion softens" is still sautéing.
+    if (kinds.includes("saute") && !/\b(simmer|low heat|lower the heat)\b/.test(s)) kinds = kinds.filter((k) => k !== "simmer");
+    if (kinds.includes("caramel")) kinds = kinds.filter((k) => !["add", "mix", "cook", "stir", "pour", "heat", "simmer", "boil"].includes(k));
+    // "Remove from the grill", "take it out of the oven": the cooking already happened.
+    if (kinds.includes("drain") && /\b(from|off|out of) the (grill|oven|steamer|griddle)\b/.test(s)) kinds = kinds.filter((k) => !["grill", "bake", "steam"].includes(k));
     kinds = [...new Set(kinds)];
     if (!kinds.length) continue;
-    const vessel = COOK_POT_WORDS.test(s) ? "kaldero" : COOK_PAN_WORDS.test(s) ? "kawali" : null;
+    const sv = s.replace(/\bpan[- ]?fr(y|ied|ying)\b/g, "fry");
+    const vessel = COOK_POT_WORDS.test(sv) ? "kaldero" : COOK_PAN_WORDS.test(sv) ? "kawali" : null;
     const mentioned = cookMentions(s, items).map((it) => it.key);
     const minutes = cookMinutes(s);
     let itemsGiven = false, timeGiven = false;
@@ -273,11 +327,16 @@ function cookActionsFromText(sentences, items) {
       const takesItems = !["heat", "serve", "drain", "boil", "simmer", "cook", "stir"].includes(kind) || (kind === "boil" && !itemsGiven);
       const a = { kind, items: takesItems && !itemsGiven ? mentioned : [], minutes: COOK_TIMED.has(kind) && !timeGiven ? minutes : null, vessel };
       if (kind === "cut") a.cut = cookCutStyle(s) || { style: "pieces", size: null };
-      if (kind === "steam") a.steamer = /\bsteamer|bamboo|siomai|siopao|puto|kutsinta|dumpling/.test(s);
+      if (kind === "steam") a.steamer = /\bsteamer|bamboo|siomai|siopao|puto|kutsinta|dumpling|molds?\b|llanera|ramekin|foil|leche|flan|banana lea/.test(s);
       if (kind === "rollout") { const d = s.match(/(\d+(?:\.\d+)?)(?:\s*(?:to|-)\s*(\d+(?:\.\d+)?))?\s*(?:-?\s*inch(?:es)?|")/); if (d) a.size = Math.round(((parseFloat(d[1]) + parseFloat(d[2] || d[1])) / 2) * 2.54); }
       if (kind === "wrap") a.fork = /\bfork\b/.test(s);
       if (kind === "dough") a.knead = /\bknead|masahin\b/.test(s);
-      if (a.items.length) itemsGiven = true;
+      if (kind === "cook" && /\buntil\b/.test(s)) a.until = true;
+      if (["add", "pour"].includes(kind) && /\bmixture\b/.test(s)) a.mixture = true;
+      if (kind === "add" && /\b(back|return|previously|reserved|set aside earlier|that were (cooked|fried))\b/.test(s)) a.back = true;
+      if (kind === "drain") a.aside = /\b(set (it |them )?aside|let (it )?cool)\b/.test(s) && !/\b(drain|paper towels?|wire rack|strain)\b/.test(s);
+      if (kind === "marinate") { a.sun = /\bsun[- ]?dr|\bunder the sun\b/.test(s); a.soak = !a.sun && /\bsoak|\bin (cold |warm |lukewarm )?water\b/.test(s) && !/\bmarinat/.test(s); }
+      if (a.items.length && !(kind === "marinate" && /\bsoak/.test(s))) itemsGiven = true;
       if (a.minutes) timeGiven = true;
       out.push(a);
     }
@@ -313,8 +372,17 @@ function cookTemplate(title, frying, items) {
     return [{ kind: "heat" }, { kind: "deepfry", items: meats.length ? meats : veg, minutes: 15 }, { kind: "drain" }];
   }
   if (/\b(sinigang|tinola|nilaga|bulalo|sopas|soup|sabaw|batchoy|molo|pochero)\b/.test(t)) {
-    return [{ kind: "add", items: meats, vessel: "kaldero" }, { kind: "pour", items: waters }, { kind: "boil", minutes: /bulalo|nilaga|pochero/.test(t) ? 180 : 45 },
-      { kind: "add", items: veg }, { kind: "simmer", minutes: 10 }, { kind: "season", items: sauces }];
+    // Vegetables go in by how long they take: roots and gourds first, beans and eggplant next, leaves last.
+    const byTime = (re) => veg.filter((k) => re.test(k));
+    const leafy = byTime(/pechay|bok choy|kangkong|spinach|malunggay|moringa|cabbage|petsay|mustard|chili_leaves|sili_leaves|leaves/);
+    const mid = byTime(/sitaw|string_bean|long_bean|eggplant|okra|chili|siling|bell_pepper|beans|snow|baguio|corn/).filter((k) => !leafy.includes(k));
+    const hard = veg.filter((k) => !leafy.includes(k) && !mid.includes(k));
+    const out = [{ kind: "add", items: meats, vessel: "kaldero" }, { kind: "pour", items: waters }, { kind: "boil", minutes: /bulalo|nilaga|pochero/.test(t) ? 180 : 45 }];
+    if (hard.length) out.push({ kind: "add", items: hard }, { kind: "simmer", minutes: 10 });
+    if (mid.length) out.push({ kind: "add", items: mid }, { kind: "simmer", minutes: 5 });
+    out.push({ kind: "season", items: sauces });
+    if (leafy.length) out.push({ kind: "add", items: leafy }, { kind: "cook", minutes: 2 });
+    return out;
   }
   if (sweet) {
     return [{ kind: "pour", items: [...sauces, ...waters], vessel: "kaldero" }, { kind: "boil" }, { kind: "add", items: all }, { kind: "simmer", minutes: 25 }, { kind: "stir", items: all.slice(0, 1) }];
@@ -394,6 +462,14 @@ function buildCookScript(recipe) {
     }
     const wrappers = items.filter((it) => COOK_WRAPPER.test(it.key));
     let kind = a.kind;
+    // Caramel: the sugar melts in the pan (or the llanera) until it turns amber.
+    if (kind === "caramel") {
+      if (steps.some((x) => x.caramel)) continue;
+      const sugar = items.filter((it) => /sugar|asukal/.test(`${it.key} ${it.label}`.toLowerCase()));
+      const its2 = its.filter((it) => sugar.includes(it));
+      steps.push({ kind: "cook", caramel: true, items: its2.length ? its2 : sugar.slice(0, 1), minutes: a.minutes || 5, vessel: "kawali", heat: "low" });
+      continue;
+    }
     // "Put the filling on a wrapper" and "wrap and roll" are one wrapping step.
     if (kind === "add" && its.length && its.every((it) => COOK_WRAPPER.test(it.key))) kind = "fill";
     if (kind === "wrap" && !its.length) its = wrappers;
@@ -432,18 +508,43 @@ function buildCookScript(recipe) {
       its = its.filter((it) => !COOK_WRAPPER.test(it.key));
       if (!its.length) its = [wrapped];
     }
+    // "Grill the pork and squid, basting with the soy sauce": the sauce isn't grilled or fried.
+    if (["grill", "fry", "deepfry", "bake"].includes(kind) && its.some((it) => !it.liquid)) its = its.filter((it) => !it.liquid);
     // Seasoning lists only what goes on: "rub the Magic Sarap over the pork belly".
     if (kind === "season") its = its.filter((it) => !mains.has(it));
-    if (["add", "pour", "mix", "saute", "wrap", "top"].includes(kind) && !its.length) continue;
+    if (["add", "pour", "mix", "saute", "wrap", "top"].includes(kind) && !its.length && !(kind === "add" && a.back)) continue;
     // Filler with nothing to show: a bare "stir" or "cook for a while".
-    if ((kind === "stir" && !its.length) || (kind === "cook" && !a.minutes && !its.length)) continue;
-    if (kind === "add" && its.every((x) => x.liquid && !COOK_SOLID_LIQUID.test(x.key))) kind = "pour";
+    if ((kind === "stir" && !its.length) || (kind === "cook" && !a.minutes && !its.length && !a.until)) continue;
+    if (kind === "add" && its.length && its.every((x) => x.liquid && !COOK_SOLID_LIQUID.test(x.key))) kind = "pour";
     if (kind === "pour" && its.some((x) => !x.liquid)) kind = "add";
     if (["fry", "deepfry", "grill"].includes(kind) && !its.length) {
       const already = lastMain && steps.some((x) => x.kind === kind && x.items.includes(lastMain));
       if (lastMain && kind !== "deepfry" && !already) its = [lastMain]; else if (kind !== "deepfry") continue;
     }
     if (kind === "drain" && !steps.some((x) => COOK_TIMED.has(x.kind) && x.kind !== "marinate" && x.kind !== "chill")) continue;
+    // "Put back the vegetables and meat that were cooked earlier": what was last taken out and set aside.
+    if (kind === "add" && a.back && !its.length) {
+      const k = steps.map((x) => x.kind).lastIndexOf("drain");
+      const back = new Set();
+      for (let j = 0; j < k; j++) { const x = steps[j]; if (["drain", "strain"].includes(x.kind)) back.clear(); else if (["add", "saute", "fry"].includes(x.kind)) for (const it of x.items) if (!it.liquid) back.add(it); }
+      its = [...back];
+      if (its.length) { steps.push({ kind: "add", items: its, minutes: null, vessel: vessel || "kawali", back: true }); continue; }
+    }
+    // Before anything is heated, more for the bowl ("add the condensed milk and mix") goes into the bowl.
+    if (["add", "pour"].includes(kind) && its.length && prev0 && prev0.kind === "mix" && !wrapDone && !a.vessel && !steps.some((x) => COOK_HEAT_KINDS.has(x.kind))) { for (const it of its) if (!prev0.items.includes(it)) prev0.items.push(it); continue; }
+    // Something already in the pot isn't added again ("add the cooked rice to the coconut milk and sugar").
+    if (["add", "pour"].includes(kind) && !wrapDone) {
+      const inPot = new Set();
+      for (const x of steps) {
+        if (["drain", "strain", "serve"].includes(x.kind)) inPot.clear();
+        else if (["add", "pour", "saute", "fry"].includes(x.kind) && x.vessel === (vessel || "kawali")) for (const it of x.items) inPot.add(it);
+      }
+      const fresh = its.filter((it) => !inPot.has(it) || it.water);
+      if (!fresh.length) continue;
+      its = fresh;
+    }
+    // Salt that was already seasoned in isn't seasoned again.
+    if (kind === "season") { const done = new Set(steps.filter((x) => x.kind === "season").flatMap((x) => x.items)); its = its.filter((it) => !done.has(it)); if (!its.length && steps.some((x) => x.kind === "season")) continue; }
     const prev = steps[steps.length - 1];
     const here = vessel || "kawali";
     // Merge "add X" + "add Y" into one step.
@@ -457,7 +558,17 @@ function buildCookScript(recipe) {
       for (const it of its) if (!prev.items.includes(it)) prev.items.push(it);
       continue;
     }
-    steps.push({ kind, items: its, minutes: a.minutes || null, vessel: here });
+    // "Pour the egg and milk mixture into the mold": the bowl's mixture goes in, poured.
+    const mixed = new Set(steps.filter((x) => x.kind === "mix").flatMap((x) => x.items));
+    const mixture = a.mixture && ["add", "pour"].includes(kind) && its.length && its.every((it) => mixed.has(it));
+    if (mixture) kind = "pour";
+    const st1 = { kind, items: its, minutes: a.minutes || null, vessel: here };
+    if (mixture) st1.mixture = true;
+    if (a.until && kind === "cook") st1.until = true;
+    if (a.aside) st1.aside = true;
+    if (a.soak) st1.soak = true;
+    if (a.sun) { st1.sun = true; if (!st1.items.length && lastMain) st1.items = [lastMain]; }
+    steps.push(st1);
   }
   const seasonings = items.filter((it) => it.toTaste);
   const seasonStep = steps.find((x) => x.kind === "season");
@@ -562,7 +673,11 @@ function cookCaption(step, lang = "tl") {
   const time = (step.minutes ? ` ${en ? "for" : "nang"} ${cookTimeText(step.minutes, lang)}` : "") + heatTxt;
   switch (step.kind) {
     case "shop": return en ? `Shop for the ingredients (${step.items.length})` : `Mamalengke ng mga sangkap (${step.items.length})`;
-    case "peel": return en ? `Clean and peel: ${list}` : `Linisin at balatan: ${list}`;
+    case "peel": {
+      // A whole fish or a chicken is cleaned, not peeled; shrimp, potatoes and garlic are peeled.
+      const clean = (step.items || []).every((it) => /fish|tilapia|bangus|galunggong|tamban|tuna|salmon|lapu|maya|dalagang|tulingan|chicken|pork|beef|meat|pata|liempo|belly|ribs|leg|thigh|wing|breast|squid|pusit|crab|mussel|tahong|clam/.test(`${it.key} ${it.label}`.toLowerCase()) && !/shrimp|prawn|hipon/.test(it.key));
+      return clean ? (en ? `Clean and rinse: ${list}` : `Linisin at hugasan: ${list}`) : en ? `Clean and peel: ${list}` : `Linisin at balatan: ${list}`;
+    }
     case "cut": {
       if (step.style === "mixed") return en ? `Cut the ${list} as the recipe says` : `Hiwain ang ${list} ayon sa recipe`;
       if (step.style === "crushed" && step.items.every((it) => /cube|cracker|chicharon/.test(it.key))) return en ? `Crush the ${list}` : `Durugin ang ${list}`;
@@ -570,12 +685,16 @@ function cookCaption(step, lang = "tl") {
       const size = step.size ? ` (${en ? "about" : "mga"} ${step.size} cm)` : "";
       return en ? `Cut the ${list}: ${style}${size}` : `Hiwain ang ${list}: ${style}${size}`;
     }
-    case "marinate": return en ? `Marinate${list ? ` the ${list}` : ""}${time}` : `Ibabad${list ? ` ang ${list}` : ""}${time}`;
+    case "marinate": if (step.sun) return en ? `Dry${list ? ` the ${list}` : ""} under the sun until the skin is dry${time}` : `Patuyuin sa araw${list ? ` ang ${list}` : ""} hanggang matuyo ang balat${time}`;
+      if (step.soak) { const l2 = cookList((step.items || []).filter((it) => !it.water)).replace(/ at /g, en ? " and " : " at "); return en ? `Soak${l2 ? ` the ${l2}` : ""} in water${time}` : `Ibabad sa tubig${l2 ? ` ang ${l2}` : ""}${time}`; }
+      return en ? `Marinate${list ? ` the ${list}` : ""}${time}` : `Ibabad${list ? ` ang ${list}` : ""}${time}`;
     case "heat": return en ? `Heat the ${v}${heatTxt}` : `Painitin ang ${v}${heatTxt}`;
     case "saute": return en ? `Sauté the ${list}${time}` : `Igisa ang ${list}${time}`;
-    case "add": return en ? `Add the ${list}` : `Ilagay ang ${list}`;
-    case "pour": return en ? `Pour in the ${list}` : `Ibuhos ang ${list}`;
-    case "boil": return en ? `Bring to a boil${time}` : `Pakuluan${time}`;
+    case "add": if (step.back) return en ? `Put back the ${list}` : `Ibalik ang ${list}`;
+      return en ? `Add the ${list}` : `Ilagay ang ${list}`;
+    case "pour": if (step.mixture) return en ? `Pour in the mixture (${list})` : `Ibuhos ang pinaghalong ${list}`;
+      return en ? `Pour in the ${list}` : `Ibuhos ang ${list}`;
+    case "boil": return list ? (en ? `Boil the ${list}${time}` : `Pakuluan ang ${list}${time}`) : en ? `Bring to a boil${time}` : `Pakuluan${time}`;
     case "simmer":
       if (step.boilFirst) return en ? `Bring to a boil, then simmer${time}` : `Pakuluan, saka hinaan ang apoy${time}`;
       return en ? `Simmer on low heat${time}` : `Hinaan ang apoy at pakuluan nang dahan-dahan${time}`;
@@ -608,14 +727,16 @@ function cookCaption(step, lang = "tl") {
       }[step.style || "roll"] || [`Ibalot sa ${list} at irolyo`, `Wrap in ${list} and roll`];
       return en ? W[1] : W[0];
     }
-    case "coat": { const [a0, ...rest] = step.items || []; const r = cookList(rest); return a0 && rest.length ? (en ? `Roll the ${a0.label.toLowerCase()} in the ${r.replace(/ at /g, " and ")}` : `Ipagulong ang ${a0.label.toLowerCase()} sa ${r}`) : en ? `Coat the ${list}` : `Ipagulong ang ${list}`; }
+    case "coat": { const coats = (x) => /flour|sugar|crumb|panko|cornstarch|starch|batter/.test(x.key); const [a0, ...rest] = [...(step.items || []).filter((x) => !coats(x)), ...(step.items || []).filter(coats)]; const r = cookList(rest); return a0 && rest.length ? (en ? `Roll the ${a0.label.toLowerCase()} in the ${r.replace(/ at /g, " and ")}` : `Ipagulong ang ${a0.label.toLowerCase()} sa ${r}`) : en ? `Coat the ${list}` : `Ipagulong ang ${list}`; }
     case "brush": return en ? `Brush the top with ${list}` : `Pahiran ng ${list} ang ibabaw`;
-    case "cook": return en ? `Cook${time}` : `Lutuin${time}`;
+    case "cook": if (step.caramel) return en ? `Melt the ${list || "sugar"} on low heat until it turns into amber caramel` : `Tunawin ang ${list || "asukal"} sa mahinang apoy hanggang maging kulay-amber na caramel`;
+      if (step.until && !step.minutes) return en ? "Cook until done" : "Lutuin hanggang maluto";
+      return en ? `Cook${time}` : `Lutuin${time}`;
     case "season": return en ? `Season${list ? ` with ${list}` : ""} to taste` : `Timplahan${list ? ` ng ${list}` : ""} ayon sa panlasa`;
     case "strain": return en ? `Strain${list ? ` the ${list}` : ""} and drain the water` : `Salain${list ? ` ang ${list}` : ""} at itapon ang tubig`;
     case "top": return en ? `Put the ${list} on top` : `Ilagay sa ibabaw ang ${list}`;
     case "chill": return en ? `Chill in the fridge${time}` : `Palamigin sa ref${time}`;
-    case "drain": return en ? "Take out and let it drain" : "Hanguin at patuluin";
+    case "drain": return step.aside ? (en ? "Take it off the heat and set aside" : "Hanguin at itabi muna") : en ? "Take out and let it drain" : "Hanguin at patuluin";
     case "serve": return step.cold ? (en ? "Serve cold" : "Ihain nang malamig") : en ? "Serve while hot" : "Ihain habang mainit";
     default: return step.kind;
   }
@@ -1619,6 +1740,9 @@ function cookPowderColor(it) {
   return "#f7f5ef";
 }
 
+// Cooked through, not browned: boiled pork goes grey-beige, beef brown-grey, shrimp and crab orange-red.
+const CK_COOKED = { pork: "#cdb4a2", beef: "#735a4c", mince: "#a88d7b", chicken: "#ecdcc2", shrimp: "#f2804a", crab: "#e0552c", squid: "#f3ece2", shells: "#e9b48a", balls: "#dcc6a8" };
+
 // Where things sit on the table (metres; the table top is y = 0).
 const CK_AT = { board: [-0.72, 0.2], bowl: [-1.45, 0.28], stove: [0.32, 0.14], rack: [0.98, 0.02], plate: [1.42, 0.38] };
 function ckPrepSpot(i) { return [-1.5 + (i % 8) * 0.42, i < 8 ? -0.62 : -0.34]; }
@@ -1668,8 +1792,8 @@ function cookApply(st, s) {
     if (cookIsPoured(it)) { const cups = cookAmountCups(it); st.parts.push(cookPouredLook(it).concat([cups])); st.level = Math.min(0.85, st.level + Math.min(0.5, cups * 0.22)); }
     else if (it.fryOil) st.oil = Math.max(st.oil, 0.18);
     else {
-      // The marinade follows the meat into the pot, all of it.
-      if (st.loc.get(it) === "bowl" && st.bowlLiquid) { const cups = st.bowlCups || 0.5; st.parts.push([st.bowlLiquid, 3, cups]); st.level = Math.min(0.85, st.level + Math.min(0.4, cups * 0.22)); st.bowlLiquid = null; st.bowlCups = 0; }
+      // The marinade follows the meat into the pot, all of it, unless the meat is fried first (the marinade waits).
+      if (st.loc.get(it) === "bowl" && st.bowlLiquid && !["fry", "deepfry", "saute", "grill", "bake"].includes(s.kind)) { const cups = st.bowlCups || 0.5; st.parts.push([st.bowlLiquid, 3, cups]); st.level = Math.min(0.85, st.level + Math.min(0.4, cups * 0.22)); st.bowlLiquid = null; st.bowlCups = 0; }
       st.loc.set(it, "pot");
     }
   };
@@ -1678,9 +1802,12 @@ function cookApply(st, s) {
   switch (s.kind) {
     case "cut": for (const it of s.items) { st.cut.set(it, (s.cuts && s.cuts[it.key]) || s.style); if (st.loc.get(it) !== "prep") st.loc.set(it, "board"); } break;
     case "mix": case "marinate":
+      if (s.sun) { for (const it of s.items) st.loc.set(it, "rack"); break; }
       { const poured = s.items.filter(cookIsPoured);
         if (poured.length) { st.bowlLiquid = cookMixColor([...(st.bowlLiquid ? [[st.bowlLiquid, 1, 0.3]] : []), ...poured.map((it) => cookPouredLook(it).concat([cookAmountCups(it)]))]); st.bowlCups = (st.bowlCups || 0) + poured.reduce((a, it) => a + (it.grams > 0 ? cookAmountCups(it) : 0.5), 0); }
         for (const it of s.items) if (!cookIsPoured(it)) st.loc.set(it, "bowl");
+        // Beaten eggs turn a milky mixture yellow.
+        if (s.kind === "mix" && st.bowlLiquid && s.items.some((it) => cookFoodKind(it) === "egg")) st.bowlLiquid = cookMixColor([[st.bowlLiquid, 1, 0.3], ["#f1c75a", 1.4, 0.3]]);
         if (s.kind === "marinate" && st.bowlLiquid) for (const it of s.items) if (!cookIsPoured(it)) cookTint(st, it, st.bowlLiquid, Math.min(0.45, 0.12 + (s.minutes || 30) / 240)); }
       break;
     case "wrap":
@@ -1707,6 +1834,15 @@ function cookApply(st, s) {
     }
     case "heat": st.heat = true; if (st.items.some((it) => it.fryOil)) st.oil = Math.max(st.oil, 0.18); break;
     case "saute": case "add": case "pour":
+      // "Pour the egg and milk mixture into the mold": the bowl's mixture becomes a custard layer over the caramel.
+      if (s.kind === "pour" && s.mixture) {
+        const egg = st.items.some((it) => st.loc.get(it) === "bowl" && cookFoodKind(it) === "egg");
+        const c = egg ? "#f1c75a" : st.bowlLiquid || "#efe6d0";
+        for (const it of st.items) if (st.loc.get(it) === "bowl") st.loc.set(it, "used");
+        st.parts.push([c, 3, st.bowlCups || 1]); st.level = Math.min(0.6, st.level + 0.3); st.bowlLiquid = null; st.bowlCups = 0;
+        if (st.caramel) st.custard = true;
+        break;
+      }
       // Before the stove is on, "add" after a "mix" goes into the mixing bowl (lumpia filling).
       if (!st.heat && s.kind !== "saute" && st.items.some((it) => st.loc.get(it) === "bowl")) {
         const poured = s.items.filter(cookIsPoured);
@@ -1725,6 +1861,8 @@ function cookApply(st, s) {
       if (s.kind !== "steam") brown(inPot().filter((it) => !it.liquid), s.kind === "bake" ? 0.7 : 0.85);
       break;
     case "boil": case "simmer": case "cook":
+      // Caramel: the sugar melts into an amber layer on the bottom of the pan (or llanera).
+      if (s.caramel) { for (const it of s.items) st.loc.set(it, "used"); st.parts = [["#a65e1c", 2, 0.4]]; st.level = Math.max(st.level, 0.12); st.caramel = true; st.heat = true; break; }
       s.items.forEach(toPot);
       if (s.minutes >= 30 && st.level > 0.2) st.level = Math.max(0.2, st.level * 0.8);
       if (st.level > 0) st.parts.push(["#d6a35a", Math.min(2, (s.minutes || 15) / 20), 0]);
@@ -1752,10 +1890,18 @@ function cookApply(st, s) {
     // Only the food comes out; spices and leaves go with the water.
     case "drain": for (const it of inPot()) st.loc.set(it, ["peppercorn", "bayleaf", "powder", "cube", "misc", "citrus"].includes(cookFoodKind(it)) ? "used" : "rack"); if (st.vessel === "kaldero") { st.level = 0; st.parts = []; } break;
     case "serve":
+      if (st.custard) { for (const it of st.items) if (["pot", "rack", "bowl"].includes(st.loc.get(it))) st.loc.set(it, "used"); st.served = "plate"; break; }
       for (const it of st.items) if (["pot", "rack"].includes(st.loc.get(it)) || (s.cold && st.loc.get(it) === "bowl") || (st.loc.get(it) === "board" && st.brown.get(it))) st.loc.set(it, "plate");
-      st.served = st.level > 0.25 || (s.cold && st.items.some((it) => /cream|milk|mayonnaise|yogurt|gata|coconut/.test(it.key))) ? "bowl" : "plate";
+      st.served = (st.level > 0.25 && !["ihawan", "oven", "steamer"].includes(st.vessel)) || (s.cold && st.items.some((it) => /cream|milk|mayonnaise|yogurt|gata|coconut/.test(it.key))) ? "bowl" : "plate";
       break;
     default: break;
+  }
+  // Meat and seafood cook through: pink turns the colour of cooked meat, slowly in a pot, at once in a fryer.
+  const doneBy = { boil: 15, simmer: 15, cook: 10, steam: 12, fry: 4, deepfry: 3, grill: 6, bake: 10, saute: 6 }[s.kind];
+  if (doneBy) {
+    if (!st.done) st.done = new Map();
+    const by = s.minutes ? Math.min(1, s.minutes / doneBy) : ["fry", "deepfry", "grill", "bake"].includes(s.kind) ? 1 : 0.6;
+    for (const it of st.items) if (st.loc.get(it) === "pot" && CK_COOKED[cookFoodKind(it)]) st.done.set(it, Math.min(1, (st.done.get(it) || 0) + by));
   }
   // Too long on the fire: the liquid boils away and the food darkens (overdone) or chars (burnt).
   if (burnt && COOK_BURN_LIMITS[s.kind]) {
@@ -2028,6 +2174,18 @@ function cookBuildScene(THREE, canvas) {
   const lid = new THREE.Mesh(keep(new THREE.SphereGeometry(0.17, 32, 12, 0, Math.PI * 2, 0, Math.PI / 4)), steel); lid.position.set(0.12, 0.2, -0.08); lid.rotation.z = -0.5; lid.castShadow = true; steamerG.add(lid);
   steamerG.visible = false;
   dumplings.position.y = 0.152; steamerG.add(dumplings);
+  // Leche flan: an oval llanera of custard in the steamer, then turned out on the plate, caramel on top.
+  const custardMat = keep(std({ color: 0xf1c75a, roughness: 0.25 })), caramelMat = keep(std({ color: 0x9a531a, roughness: 0.15, metalness: 0.05 }));
+  const flanTin = new THREE.Group();
+  { const tin = shadowed(new THREE.Mesh(keep(new THREE.CylinderGeometry(0.075, 0.065, 0.035, 40, 1, true)), steel)); tin.scale.x = 1.45; tin.position.y = 0.018; flanTin.add(tin);
+    const base = new THREE.Mesh(keep(new THREE.CircleGeometry(0.065, 40)), steel); base.rotation.x = -Math.PI / 2; base.scale.x = 1.45; base.position.y = 0.001; flanTin.add(base);
+    const top = new THREE.Mesh(keep(new THREE.CircleGeometry(0.072, 40)), custardMat); top.rotation.x = -Math.PI / 2; top.scale.x = 1.45; top.position.y = 0.03; flanTin.add(top); }
+  flanTin.position.y = 0.152; flanTin.visible = false; steamerG.add(flanTin);
+  const flanPlate = new THREE.Group();
+  { const body = shadowed(new THREE.Mesh(keep(new THREE.CylinderGeometry(0.068, 0.076, 0.034, 40)), custardMat)); body.scale.x = 1.45; body.position.y = 0.025; flanPlate.add(body);
+    const cap = new THREE.Mesh(keep(new THREE.CylinderGeometry(0.069, 0.069, 0.004, 40)), caramelMat); cap.scale.x = 1.45; cap.position.y = 0.043; flanPlate.add(cap);
+    const pool = new THREE.Mesh(keep(new THREE.CircleGeometry(0.1, 40)), caramelMat); pool.rotation.x = -Math.PI / 2; pool.scale.x = 1.3; pool.position.y = 0.009; flanPlate.add(pool); }
+  flanPlate.visible = false; scene.add(flanPlate);
   const APPLIANCE = { oven: { y: 0.086, r: 0.085 }, ihawan: { y: 0.132, r: 0.13 }, steamer: { y: VESSEL_Y + 0.152, r: 0.11 } };
 
   // Liquid surfaces (broth, oil) that rise and change colour.
@@ -2552,6 +2710,20 @@ function cookBuildScene(THREE, canvas) {
     // A poured ingredient is only ever its bottle or jar on the counter, never inside the food.
     if (cookIsPoured(it) && at && at !== "prep") return new THREE.Group();
     const m = modelForRaw(it, st, radius, seedExtra, where);
+    // Cooked through: every part turns the cooked colour (a texture keeps its pattern, its colour shifts).
+    const done = st.done && st.done.get(it), cookedHex = CK_COOKED[cookFoodKind(it)];
+    if (done && cookedHex && at !== "prep") {
+      const c = col(cookedHex), raw = col((CK_LOOK[cookFoodKind(it)] || CK_LOOK.misc)[1]);
+      const ratio = new THREE.Color(Math.min(1.4, c.r / Math.max(0.05, raw.r)), Math.min(1.4, c.g / Math.max(0.05, raw.g)), Math.min(1.4, c.b / Math.max(0.05, raw.b)));
+      m.traverse((o) => {
+        if (!o.material) return;
+        for (const mm of Array.isArray(o.material) ? o.material : [o.material]) {
+          const target = mm.map || o.isInstancedMesh ? mm.color.clone().multiply(ratio) : c;
+          mm.color.lerp(target, done);
+          if (mm.userData && mm.userData.base) mm.userData.base = mm.userData.base.clone().lerp(mm.map ? mm.userData.base.clone().multiply(ratio) : c, done);
+        }
+      });
+    }
     const tint = st.tint && st.tint.get(it);
     if (tint && at !== "prep") {
       const c = col(tint[0]);
@@ -2587,7 +2759,8 @@ function cookBuildScene(THREE, canvas) {
     const loose = ["pot", "plate", "bowl", "rack"].includes(where || st.loc.get(it));
     if (loose && ["powder", "cube", "peppercorn", "misc", "peas", "corn", "raisins", "sago", "pulses", "seeds", "annatto", "jar", "packet"].includes(kind)) return piecesModel(kind === "peppercorn" ? { key: it.key, label: "peppercorn" } : it, kind === "cube" ? "crushed" : ["peas", "corn", "raisins", "sago", "pulses", "peppercorn", "seeds", "annatto"].includes(kind) ? "beads" : "minced", radius * 0.6, 0, seedExtra);
     if (style && !["bottle", "water", "powder", "cube", "grain", "misc", "peppercorn", "peas", "corn", "raisins", "sago", "pulses", "seeds", "annatto", "jar", "packet"].includes(kind)) return piecesModel(it, style, radius, b, seedExtra);
-    return fit(wholeModel(it, b), radius * 1.15);
+    // A whole fish fills the pan and the plate; it isn't a sardine.
+    return fit(wholeModel(it, b), radius * (kind === "fish" && ["pot", "plate", "rack"].includes(at) && !/tuyo|dilis|anchov|sardine|daing|tinapa/i.test(it.key) ? 2.2 : 1.15));
   };
 
   // ── Per-step objects ──
@@ -2662,7 +2835,10 @@ function cookBuildScene(THREE, canvas) {
     applianceNow = v;
     // Mixed or wrapped filling that goes into the steamer is shown as steamed dumplings.
     const steamedFilling = v === "steamer" && !steps.slice(0, index + 1).some((x) => x.kind === "wrap") && steps.slice(0, index).some((x) => x.kind === "mix") && ["steam", "serve", "drain"].includes(step.kind);
-    dumplings.visible = steamedFilling;
+    dumplings.visible = steamedFilling && !after.custard;
+    flanTin.visible = v === "steamer" && !!after.custard && ["steam", "drain"].includes(step.kind);
+    flanPlate.visible = step.kind === "serve" && !!after.custard;
+    if (flanPlate.visible) { flanPlate.position.set(CK_AT.plate[0], 0, CK_AT.plate[1]); }
     if (!st.vessel || st.vessel !== v) { st.vessel = v; }
     if (!after.vessel) after.vessel = v;
     soupBowl.visible = step.kind === "serve" && after.served === "bowl"; plate.visible = !soupBowl.visible;
