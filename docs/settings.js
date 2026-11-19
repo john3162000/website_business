@@ -13,7 +13,7 @@ const SETTINGS_MEAT_KEYS = ["fish", "chicken", "pork", "beef"];
 const SETTINGS_AGES = ["child", "teen", "young", "adult", "midlife", "senior"];
 
 function defaultSettings() {
-  return { lang: "tl", langChosen: false, diets: [], meats: [], suggest: true, age: null, large: false, ageAsked: false };
+  return { lang: "tl", langChosen: false, diets: [], meats: [], suggest: true, age: null, large: false, ageAsked: false, eventTheme: "auto" };
 }
 
 /** Saved settings, with anything unknown or broken replaced by the default. */
@@ -33,6 +33,7 @@ function readSettings(storage) {
       age: SETTINGS_AGES.includes(v.age) ? v.age : null,
       large: v.large === true,
       ageAsked: v.ageAsked === true,
+      eventTheme: v.eventTheme === "off" ? "off" : "auto",
     };
   } catch {
     return d;
@@ -405,6 +406,8 @@ const I18N = {
   "settings.suggest": ["🧠 Suggest ka pa", "🧠 Keep suggesting"],
   "settings.suggestHelp": ["Mga mungkahi ayon sa panlasa mo (mula sa Laro): “Para sa'yo”, Random week at DA Prices.", "Picks from your taste (learned in Games): “For you”, Random week and DA Prices."],
   "settings.dark": ["🌙 Dark mode", "🌙 Dark mode"],
+  "settings.eventTheme": ["🎄 Tema ng okasyon", "🎄 Occasion theme"],
+  "settings.eventThemeHelp": ["Dalawang linggo bago ang Pasko, Bagong Taon, Chinese New Year, Valentine's, Eid at iba pa, iniaangkop ang kulay at disenyo ng site. I-off kung ayaw mo.", "Two weeks before Christmas, New Year, Chinese New Year, Valentine's, Eid and more, the site's colours and look change to match. Turn it off if you'd rather not."],
   "settings.weather": ["Weather ng mga suggestion", "Weather for the picks"],
   "settings.done": ["Tapos", "Done"],
   "settings.on": ["Bukas", "On"],
@@ -477,6 +480,7 @@ function settingsChanged() {
   const s = settingsStore();
   if (s) writeSettings(s, SETTINGS);
   applyLang();
+  if (typeof applyEventTheme === "function") applyEventTheme();
   renderMeatChips();
   renderDietSummary();
   if (!document.getElementById("settings-dialog").classList.contains("hidden")) {
@@ -538,6 +542,7 @@ function toggleDietSetting(key) {
 }
 function clearDietSetting() { SETTINGS = { ...SETTINGS, diets: [] }; settingsChanged(); }
 function setSuggest(on) { SETTINGS = { ...SETTINGS, suggest: on }; settingsChanged(); }
+function setEventTheme(mode) { SETTINGS = { ...SETTINGS, eventTheme: mode === "off" ? "off" : "auto" }; settingsChanged(); }
 function toggleMeat(key) {
   // Picking a meat turns off vegetarian / vegan; "Lahat" turns them off too.
   SETTINGS = { ...SETTINGS, meats: key ? toggleIn(SETTINGS.meats, key) : [], diets: SETTINGS.diets.filter((d) => !SETTINGS_VEG_KEYS.includes(d)) };
@@ -598,6 +603,11 @@ function renderSettings() {
       <h3>${t("settings.suggest")}</h3>
       <div class="flex flex-wrap gap-2">${settingsChoice(SETTINGS.suggest, "setSuggest(true)", t("settings.on"))}${settingsChoice(!SETTINGS.suggest, "setSuggest(false)", t("settings.off"))}</div>
       <p class="set-help">${t("settings.suggestHelp")}</p>
+    </section>
+    <section class="set-row">
+      <h3>${t("settings.eventTheme")}</h3>
+      <div class="flex flex-wrap gap-2">${settingsChoice(SETTINGS.eventTheme !== "off", "setEventTheme('auto')", t("settings.on"))}${settingsChoice(SETTINGS.eventTheme === "off", "setEventTheme('off')", t("settings.off"))}</div>
+      <p class="set-help">${t("settings.eventThemeHelp")}</p>
     </section>
     <section class="set-row">
       <h3>${t("settings.dark")}</h3>

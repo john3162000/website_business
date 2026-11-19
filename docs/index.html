@@ -314,6 +314,65 @@
     .halal-tag { display: inline-block; font-size: .72rem; font-weight: 600; border-radius: 9999px; padding: .1rem .55rem; margin-top: .35rem; }
     .halal-ok { background: #E7F3EC; color: #15603C; } .halal-no { background: #F3F1EC; color: #6B6355; }
     html.dark .halal-ok { background: rgba(110,231,183,.12); color: var(--mint); } html.dark .halal-no { background: rgba(255,255,255,.06); color: #cbd5e1; }
+    /* ── Event theme (seasons.js applyEventTheme): html[data-event] two weeks before an occasion ── */
+    html[data-event] { --ev1: #163F2E; --ev2: #D9A21B; --ev3: #F8F4EA; --evbg: #FBF3DF; --evtx: #163F2E; }
+    html[data-event="pasko"] { --ev1: #B42318; --ev2: #D9A21B; --ev3: #1F6B3A; --evbg: #FCECE9; --evtx: #7A1A12; }
+    html[data-event="bagongtaon"] { --ev1: #9C7212; --ev2: #E8C25A; --ev3: #1F2A44; --evbg: #FBF4DF; --evtx: #5E4409; }
+    html[data-event="cny"] { --ev1: #C8102E; --ev2: #E0B23A; --ev3: #C8102E; --evbg: #FDECEC; --evtx: #8A0B20; }
+    html[data-event="valentines"] { --ev1: #C2255C; --ev2: #F4A6C0; --ev3: #C2255C; --evbg: #FDEEF3; --evtx: #8C1A43; }
+    html[data-event="eidfitr"], html[data-event="eidadha"] { --ev1: #0F7B4A; --ev2: #D9A21B; --ev3: #0F7B4A; --evbg: #E8F5EE; --evtx: #0B5A36; }
+    html[data-event="semanasanta"] { --ev1: #5B3A7A; --ev2: #A08BB8; --ev3: #5B3A7A; --evbg: #F1ECF5; --evtx: #45295E; }
+    html[data-event="undas"] { --ev1: #6B5534; --ev2: #E2B45C; --ev3: #6B5534; --evbg: #F6F0E4; --evtx: #4D3C22; }
+    html[data-event="kalayaan"] { --ev1: #0038A8; --ev2: #FCD116; --ev3: #CE1126; --evbg: #EAF0FB; --evtx: #002A80; }
+    html[data-event="sinulog"] { --ev1: #C8102E; --ev2: #F2B705; --ev3: #C8102E; --evbg: #FFF4DC; --evtx: #8A0B20; }
+    html[data-event="floresdemayo"] { --ev1: #C2255C; --ev2: #F2C94C; --ev3: #4C9A5B; --evbg: #FDF1F5; --evtx: #8C1A43; }
+    html[data-event="mothersday"] { --ev1: #C2255C; --ev2: #F4A6C0; --ev3: #C2255C; --evbg: #FDEEF3; --evtx: #8C1A43; }
+    html[data-event="fathersday"] { --ev1: #1F3A68; --ev2: #8FB0D9; --ev3: #1F3A68; --evbg: #ECF1F8; --evtx: #152A4D; }
+    html[data-event] .site-header { position: sticky; }
+    html[data-event] .site-header::after { content: ""; position: absolute; left: 0; right: 0; bottom: -5px; height: 5px; pointer-events: none;
+      background: repeating-linear-gradient(90deg, var(--ev1) 0 28px, var(--ev2) 28px 56px, var(--ev3) 56px 84px); }
+    /* Christmas: a string of lights instead of stripes. */
+    html[data-event="pasko"] .site-header::after { height: 10px; bottom: -10px;
+      background: radial-gradient(circle at 10px 5px, #E5484D 3.5px, transparent 4px) 0 0 / 60px 10px repeat-x,
+                  radial-gradient(circle at 30px 5px, #F2C94C 3.5px, transparent 4px) 0 0 / 60px 10px repeat-x,
+                  radial-gradient(circle at 50px 5px, #3FA06A 3.5px, transparent 4px) 0 0 / 60px 10px repeat-x,
+                  linear-gradient(#5b4636, #5b4636) 0 4px / 100% 1px no-repeat; }
+    html[data-event="semanasanta"] .site-header::after, html[data-event="undas"] .site-header::after { height: 3px; bottom: -3px; background: var(--ev1); opacity: .7; }
+    html[data-event] .site-header .tab-btn.active, html[data-event] .site-header .tab-btn.active:hover { background: var(--ev1); color: #fff; }
+    html[data-event] .bottom-nav button.active { color: var(--ev1); }
+    .event-bar { background: var(--evbg); color: var(--evtx); border-bottom: 1px solid color-mix(in srgb, var(--ev1) 25%, transparent); position: relative; z-index: 40; }
+    html[data-event="pasko"] .event-bar { margin-top: 10px; }
+    .event-bar-in { max-width: 72rem; margin: 0 auto; padding: .45rem 1rem; display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; font-size: .85rem; }
+    .event-bar-text { font-weight: 700; }
+    .event-bar-go { font-weight: 600; text-decoration: underline; text-underline-offset: 3px; color: var(--ev1); min-height: 2rem; }
+    .event-bar-x { margin-left: auto; width: 2.25rem; height: 2.25rem; border-radius: 9999px; color: var(--evtx); opacity: .7; }
+    .event-bar-x:hover { opacity: 1; background: color-mix(in srgb, var(--ev1) 12%, transparent); }
+    html.dark .event-bar { background: color-mix(in srgb, var(--ev1) 22%, #0B1712); color: #F8F4EA; }
+    html.dark .event-bar-go { color: var(--ev2); } html.dark .event-bar-x { color: #F8F4EA; }
+    .event-deco { position: fixed; inset: 0; pointer-events: none; z-index: 30; overflow: hidden; }
+    .event-deco span { position: absolute; top: -2rem; font-size: 1.05rem; opacity: .5; animation-name: evFall; animation-timing-function: linear; animation-iteration-count: infinite; }
+    html[data-event="pasko"] .event-deco span { color: #9CC3E6; }
+    @keyframes evFall { 0% { transform: translateY(0) rotate(0); } 100% { transform: translateY(110vh) rotate(160deg); } }
+    @media (prefers-reduced-motion: reduce) { .event-deco { display: none; } }
+    /* The hero takes the occasion's colours (dark backgrounds keep the white text readable). */
+    html[data-event="pasko"] .hero-band, html[data-event="pasko"] body.rainy .hero-band { background: #7A1A12; background-image: radial-gradient(ellipse 60% 80% at 85% 10%, rgba(31, 107, 58, .55), transparent 60%), radial-gradient(ellipse 50% 70% at 5% 100%, rgba(217, 162, 27, .25), transparent 60%); }
+    html[data-event="bagongtaon"] .hero-band { background: #1F2A44; background-image: radial-gradient(ellipse 60% 80% at 85% 10%, rgba(232, 194, 90, .35), transparent 60%), radial-gradient(ellipse 50% 70% at 5% 100%, rgba(194, 37, 92, .2), transparent 60%); }
+    html[data-event="cny"] .hero-band { background: #8A0B20; background-image: radial-gradient(ellipse 60% 80% at 85% 10%, rgba(224, 178, 58, .35), transparent 60%); }
+    html[data-event="valentines"] .hero-band, html[data-event="mothersday"] .hero-band { background: #8C1A43; background-image: radial-gradient(ellipse 60% 80% at 85% 10%, rgba(244, 166, 192, .35), transparent 60%); }
+    html[data-event="eidfitr"] .hero-band, html[data-event="eidadha"] .hero-band { background: #0B5A36; background-image: radial-gradient(ellipse 60% 80% at 85% 10%, rgba(217, 162, 27, .3), transparent 60%); }
+    html[data-event="semanasanta"] .hero-band { background: #3E2856; }
+    html[data-event="undas"] .hero-band { background: #3B2F1F; background-image: radial-gradient(ellipse 40% 60% at 85% 20%, rgba(226, 180, 92, .25), transparent 60%); }
+    html[data-event="kalayaan"] .hero-band { background: #002A80; background-image: radial-gradient(ellipse 60% 80% at 85% 10%, rgba(252, 209, 22, .28), transparent 60%), radial-gradient(ellipse 50% 70% at 5% 100%, rgba(206, 17, 38, .3), transparent 60%); }
+    html[data-event="sinulog"] .hero-band { background: #8A0B20; background-image: radial-gradient(ellipse 60% 80% at 85% 10%, rgba(242, 183, 5, .35), transparent 60%); }
+    html[data-event="floresdemayo"] .hero-band { background: #8C1A43; background-image: radial-gradient(ellipse 60% 80% at 85% 10%, rgba(242, 201, 76, .3), transparent 60%), radial-gradient(ellipse 50% 70% at 5% 100%, rgba(76, 154, 91, .3), transparent 60%); }
+    html[data-event="fathersday"] .hero-band { background: #152A4D; background-image: radial-gradient(ellipse 60% 80% at 85% 10%, rgba(143, 176, 217, .3), transparent 60%); }
+    html.dark[data-event] .site-header .tab-btn.active, html.dark[data-event] .site-header .tab-btn.active:hover { background: var(--ev2); color: #0B1712; }
+    @media (max-width: 639px) {
+      .event-bar-in { flex-wrap: nowrap; gap: .5rem; padding: .35rem .75rem; font-size: .8rem; }
+      .event-bar-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .event-bar-go { white-space: nowrap; flex-shrink: 0; }
+      .event-bar-go .ev-long { display: none; }
+    }
     /* Heart (Favorites) in the games. */
     .game-photo-wrap { position: relative; }
     .vs-side { position: relative; display: flex; flex-direction: column; }

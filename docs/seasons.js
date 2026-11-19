@@ -263,3 +263,128 @@ function renderOccasion() {
         <span class="occ-cost">${costText(r)}/serving</span>
       </button>`).join("") || `<p class="text-sm py-4" style="color:#D6E6DA">${en ? "No matching dishes with your Settings (diet, kitchen)." : "Walang tugmang ulam sa Settings mo (diet, kusina)."}</p>`}</div>`;
 }
+
+// ── Event theme: two weeks before a big occasion (and during it) the site dresses up for it ──
+// html[data-event="pasko"] switches the accents (index.html CSS), a greeting bar shows under the header,
+// and festive occasions get a few drifting decorations. Settings can turn it off (SETTINGS.eventTheme
+// "off"); ?theme=pasko previews one, ?theme=off hides it. Solemn days (Holy Week, Undas) stay quiet.
+const SEASON_THEME_LEAD = 14;
+const SEASON_THEMES = {
+  pasko: { deco: ["❄", "✦", "❄", "⭐", "❄"], now: { tl: "Maligayang Pasko! 🎄", en: "Merry Christmas! 🎄" } },
+  bagongtaon: { deco: ["✨", "🎆", "✨", "🎇"], now: { tl: "Manigong Bagong Taon! 🎆", en: "Happy New Year! 🎆" } },
+  cny: { deco: ["🏮", "🧧", "🏮"], now: { tl: "Kung Hei Fat Choi! 🧧", en: "Kung Hei Fat Choi! 🧧" } },
+  valentines: { deco: ["💗", "💕", "💗"], now: { tl: "Maligayang Araw ng mga Puso! 💝", en: "Happy Valentine's Day! 💝" } },
+  eidfitr: { deco: ["🌙", "✦", "⭐"], now: { tl: "Eid Mubarak! 🌙", en: "Eid Mubarak! 🌙" } },
+  eidadha: { deco: ["🌙", "✦", "⭐"], now: { tl: "Eid Mubarak! 🌙", en: "Eid Mubarak! 🌙" } },
+  semanasanta: { deco: [], now: { tl: "Semana Santa 🕊️", en: "Holy Week 🕊️" } },
+  undas: { deco: [], now: { tl: "Undas: pag-alala sa mga mahal sa buhay 🕯️", en: "Undas: remembering our loved ones 🕯️" } },
+  kalayaan: { deco: ["✦", "☀", "✦"], now: { tl: "Maligayang Araw ng Kalayaan! 🇵🇭", en: "Happy Independence Day! 🇵🇭" } },
+  sinulog: { deco: ["🥁", "✦"], now: { tl: "Pit Señor! Viva Sinulog! 🥁", en: "Pit Señor! Viva Sinulog! 🥁" } },
+  floresdemayo: { deco: ["🌸", "🌼", "🌸"], now: { tl: "Flores de Mayo 🌸", en: "Flores de Mayo 🌸" } },
+  mothersday: { deco: ["💐", "🌷"], now: { tl: "Maligayang Araw ng mga Ina! 💐", en: "Happy Mother's Day! 💐" } },
+  fathersday: { deco: ["✦", "👔"], now: { tl: "Maligayang Araw ng mga Ama! 👔", en: "Happy Father's Day! 👔" } },
+};
+
+/**
+ * The occasion the site is themed for today: one that's on, else the nearest starting within two
+ * weeks. { key, o, start, end, now, daysLeft } or null. Kuwaresma (40 days) has no theme. Pure, tested.
+ */
+function eventThemeFor(today = new Date(), list = OCCASIONS) {
+  const d = SEASON_ymd(today.getFullYear(), today.getMonth() + 1, today.getDate());
+  let best = null;
+  for (const o of list) {
+    if (!SEASON_THEMES[o.key]) continue;
+    for (const y of [d.getFullYear() - 1, d.getFullYear(), d.getFullYear() + 1]) {
+      const w = o.when(y);
+      if (!w) continue;
+      const [start, end] = w;
+      if (d > end) continue;
+      const daysLeft = Math.round((start - d) / DAY_MS);
+      if (daysLeft > SEASON_THEME_LEAD) break;
+      const cand = { key: o.key, o, start, end, now: daysLeft <= 0, daysLeft: Math.max(0, daysLeft) };
+      if (!best || (cand.now && !best.now) || (cand.now === best.now && cand.daysLeft < best.daysLeft)) best = cand;
+      break;
+    }
+  }
+  return best;
+}
+
+/** The theme to show: a ?theme= preview first, then nothing if turned off in Settings, else today's. */
+function currentEventTheme(today = new Date()) {
+  const q = typeof location !== "undefined" ? new URLSearchParams(location.search).get("theme") : null;
+  if (q === "off") return null;
+  if (q && SEASON_THEMES[q]) {
+    const o = OCCASIONS.find((x) => x.key === q);
+    const w = o && (o.when(today.getFullYear()) || o.when(today.getFullYear() + 1));
+    return o ? { key: q, o, start: w ? w[0] : today, end: w ? w[1] : today, now: true, daysLeft: 0, preview: true } : null;
+  }
+  if (typeof SETTINGS !== "undefined" && SETTINGS.eventTheme === "off") return null;
+  return eventThemeFor(today);
+}
+
+const EVENT_HIDE_KEY = "sarapsulit.eventbar.v1";
+
+function applyEventTheme() {
+  if (typeof document === "undefined") return;
+  const th = currentEventTheme();
+  const root = document.documentElement;
+  if (th) root.dataset.event = th.key; else delete root.dataset.event;
+  let bar = document.getElementById("event-bar");
+  let deco = document.getElementById("event-deco");
+  if (!th) { if (bar) bar.remove(); if (deco) deco.remove(); return; }
+  const en = typeof siteLang === "function" && siteLang() === "en";
+  const conf = SEASON_THEMES[th.key];
+  const name = en ? th.o.en : th.o.tl;
+  const text = th.now ? (en ? conf.now.en : conf.now.tl)
+    : en ? `${th.o.icon} ${th.daysLeft} day${th.daysLeft === 1 ? "" : "s"} to go: ${name}` : `${th.o.icon} ${th.daysLeft} araw na lang: ${name}`;
+  let hidden = "";
+  try { hidden = localStorage.getItem(EVENT_HIDE_KEY) || ""; } catch { /* private mode */ }
+  const today = new Date().toISOString().slice(0, 10);
+  if (hidden === `${th.key}|${today}` && !th.preview) { if (bar) bar.remove(); }
+  else {
+    if (!bar) {
+      bar = document.createElement("div");
+      bar.id = "event-bar";
+      bar.className = "event-bar";
+      bar.setAttribute("role", "note");
+      const header = document.querySelector(".site-header");
+      if (header && header.parentNode) header.parentNode.insertBefore(bar, header.nextSibling); else document.body.prepend(bar);
+    }
+    bar.innerHTML = `<div class="event-bar-in"><span class="event-bar-text">${escapeHtml(text)}</span>
+      <button type="button" class="event-bar-go" onclick="eventBarGo()">${en ? '<span class="ev-long">See the </span>handaan picks →' : '<span class="ev-long">Tingnan ang </span>pang-handaan →'}</button>
+      <button type="button" class="event-bar-x" onclick="hideEventBar('${th.key}')" aria-label="${en ? "Hide for today" : "Itago ngayong araw"}">✕</button></div>`;
+  }
+  const reduce = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!conf.deco.length || reduce) { if (deco) deco.remove(); return; }
+  if (!deco) {
+    deco = document.createElement("div");
+    deco.id = "event-deco";
+    deco.className = "event-deco";
+    deco.setAttribute("aria-hidden", "true");
+    document.body.appendChild(deco);
+  }
+  // A handful of slow, drifting pieces near the edges, never over the middle of the page.
+  deco.innerHTML = Array.from({ length: 10 }, (_, i) => {
+    const left = i % 2 ? 2 + (i * 7) % 12 : 86 + (i * 5) % 12;
+    return `<span style="left:${left}%;animation-delay:${(i * 1.7) % 12}s;animation-duration:${14 + (i % 4) * 3}s">${conf.deco[i % conf.deco.length]}</span>`;
+  }).join("");
+}
+
+function hideEventBar(key) {
+  try { localStorage.setItem(EVENT_HIDE_KEY, `${key}|${new Date().toISOString().slice(0, 10)}`); } catch { /* not saved */ }
+  const bar = document.getElementById("event-bar");
+  if (bar) bar.remove();
+}
+
+/** The bar's button: open Recipes at the Okasyon picks for this occasion. */
+function eventBarGo() {
+  const th = currentEventTheme();
+  if (typeof showSection === "function") showSection("browse");
+  if (th && typeof setOccasion === "function") setOccasion(th.key);
+  const box = document.getElementById("occasion-picks");
+  if (box) box.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+if (typeof document !== "undefined") {
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", applyEventTheme); else applyEventTheme();
+}
