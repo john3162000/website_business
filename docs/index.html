@@ -314,6 +314,120 @@
     .halal-tag { display: inline-block; font-size: .72rem; font-weight: 600; border-radius: 9999px; padding: .1rem .55rem; margin-top: .35rem; }
     .halal-ok { background: #E7F3EC; color: #15603C; } .halal-no { background: #F3F1EC; color: #6B6355; }
     html.dark .halal-ok { background: rgba(110,231,183,.12); color: var(--mint); } html.dark .halal-no { background: rgba(255,255,255,.06); color: #cbd5e1; }
+    /* ── Event theme (seasons.js applyEventTheme): html[data-event] two weeks before an occasion ── */
+    html[data-event] { --ev1: #163F2E; --ev2: #D9A21B; --ev3: #F8F4EA; --evbg: #FBF3DF; --evtx: #163F2E; }
+    html[data-event="pasko"] { --ev1: #B42318; --ev2: #D9A21B; --ev3: #1F6B3A; --evbg: #FCECE9; --evtx: #7A1A12; }
+    html[data-event="bagongtaon"] { --ev1: #9C7212; --ev2: #E8C25A; --ev3: #1F2A44; --evbg: #FBF4DF; --evtx: #5E4409; }
+    html[data-event="cny"] { --ev1: #C8102E; --ev2: #E0B23A; --ev3: #C8102E; --evbg: #FDECEC; --evtx: #8A0B20; }
+    html[data-event="valentines"] { --ev1: #C2255C; --ev2: #F4A6C0; --ev3: #C2255C; --evbg: #FDEEF3; --evtx: #8C1A43; }
+    html[data-event="eidfitr"], html[data-event="eidadha"] { --ev1: #0F7B4A; --ev2: #D9A21B; --ev3: #0F7B4A; --evbg: #E8F5EE; --evtx: #0B5A36; }
+    html[data-event="semanasanta"] { --ev1: #5B3A7A; --ev2: #A08BB8; --ev3: #5B3A7A; --evbg: #F1ECF5; --evtx: #45295E; }
+    html[data-event="undas"] { --ev1: #6B5534; --ev2: #E2B45C; --ev3: #6B5534; --evbg: #F6F0E4; --evtx: #4D3C22; }
+    html[data-event="kalayaan"] { --ev1: #0038A8; --ev2: #FCD116; --ev3: #CE1126; --evbg: #EAF0FB; --evtx: #002A80; }
+    html[data-event="sinulog"] { --ev1: #C8102E; --ev2: #F2B705; --ev3: #C8102E; --evbg: #FFF4DC; --evtx: #8A0B20; }
+    html[data-event="floresdemayo"] { --ev1: #C2255C; --ev2: #F2C94C; --ev3: #4C9A5B; --evbg: #FDF1F5; --evtx: #8C1A43; }
+    html[data-event="mothersday"] { --ev1: #C2255C; --ev2: #F4A6C0; --ev3: #C2255C; --evbg: #FDEEF3; --evtx: #8C1A43; }
+    html[data-event="fathersday"] { --ev1: #1F3A68; --ev2: #8FB0D9; --ev3: #1F3A68; --evbg: #ECF1F8; --evtx: #152A4D; }
+    html[data-event] .site-header { position: sticky; }
+    html[data-event] .site-header::after { content: ""; position: absolute; left: 0; right: 0; bottom: -5px; height: 5px; pointer-events: none;
+      background: repeating-linear-gradient(90deg, var(--ev1) 0 28px, var(--ev2) 28px 56px, var(--ev3) 56px 84px); }
+    /* Christmas: a string of lights instead of stripes. */
+    html[data-event="pasko"] .site-header::after { height: 10px; bottom: -10px;
+      background: radial-gradient(circle at 10px 5px, #E5484D 3.5px, transparent 4px) 0 0 / 60px 10px repeat-x,
+                  radial-gradient(circle at 30px 5px, #F2C94C 3.5px, transparent 4px) 0 0 / 60px 10px repeat-x,
+                  radial-gradient(circle at 50px 5px, #3FA06A 3.5px, transparent 4px) 0 0 / 60px 10px repeat-x,
+                  linear-gradient(#5b4636, #5b4636) 0 4px / 100% 1px no-repeat; }
+    html[data-event="semanasanta"] .site-header::after, html[data-event="undas"] .site-header::after { height: 3px; bottom: -3px; background: var(--ev1); opacity: .7; }
+    html[data-event] .site-header .tab-btn.active, html[data-event] .site-header .tab-btn.active:hover { background: var(--ev1); color: #fff; }
+    html[data-event] .bottom-nav button.active { color: var(--ev1); }
+    .event-bar { background: var(--evbg); color: var(--evtx); border-bottom: 1px solid color-mix(in srgb, var(--ev1) 25%, transparent); position: relative; z-index: 40; }
+    html[data-event="pasko"] .event-bar { margin-top: 10px; }
+    .event-bar-in { max-width: 72rem; margin: 0 auto; padding: .45rem 1rem; display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; font-size: .85rem; }
+    .event-bar-text { font-weight: 700; }
+    .event-bar-go { font-weight: 600; text-decoration: underline; text-underline-offset: 3px; color: var(--ev1); min-height: 2rem; }
+    .event-bar-x { margin-left: auto; width: 2.25rem; height: 2.25rem; border-radius: 9999px; color: var(--evtx); opacity: .7; }
+    .event-bar-x:hover { opacity: 1; background: color-mix(in srgb, var(--ev1) 12%, transparent); }
+    html.dark .event-bar { background: color-mix(in srgb, var(--ev1) 22%, #0B1712); color: #F8F4EA; }
+    html.dark .event-bar-go { color: var(--ev2); } html.dark .event-bar-x { color: #F8F4EA; }
+    .event-deco { position: fixed; inset: 0; pointer-events: none; z-index: 30; overflow: hidden; }
+    .event-deco span { position: absolute; top: -2rem; font-size: 1.05rem; opacity: .5; animation-name: evFall; animation-timing-function: linear; animation-iteration-count: infinite; }
+    html[data-event="pasko"] .event-deco span { color: #9CC3E6; }
+    @keyframes evFall { 0% { transform: translateY(0) rotate(0); } 100% { transform: translateY(110vh) rotate(160deg); } }
+    @media (prefers-reduced-motion: reduce) { .event-deco { display: none; } }
+    /* ── Hero decorations per occasion (seasons.js eventHeroDeco) ── */
+    html[data-event] .hero-band { position: relative; overflow: hidden; }
+    html[data-event] .hero-band > :not(.ev-hero) { position: relative; z-index: 1; }
+    .ev-hero { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+    .ev-hang { position: absolute; top: 0; transform-origin: 50% 0; animation: evSway 5s ease-in-out infinite alternate; }
+    .ev-hang svg { display: block; filter: drop-shadow(0 6px 10px rgba(0,0,0,.25)); }
+    .ev-l1 { left: 4%; width: 74px; } .ev-l2 { left: 14%; width: 52px; top: -30px; animation-delay: -1.5s; }
+    .ev-r1 { right: 5%; width: 78px; animation-delay: -2.5s; } .ev-r2 { right: 16%; width: 54px; top: -36px; animation-delay: -.8s; }
+    .ev-glow { animation: evGlow 2.4s ease-in-out infinite alternate; }
+    @keyframes evSway { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
+    @keyframes evGlow { from { filter: brightness(1); } to { filter: brightness(1.35) drop-shadow(0 0 8px rgba(255, 220, 120, .8)); } }
+    .ev-fall { position: absolute; top: -1.5rem; color: rgba(255,255,255,.75); animation-name: evFallHero; animation-timing-function: linear; animation-iteration-count: infinite; }
+    @keyframes evFallHero { from { transform: translateY(0) rotate(0); opacity: 0; } 10% { opacity: 1; } to { transform: translateY(42rem) rotate(200deg); opacity: .2; } }
+    /* Christmas lights along the top of the hero, twinkling. */
+    .ev-lights { position: absolute; left: 0; right: 0; top: 6px; height: 14px;
+      background: radial-gradient(circle at 12px 7px, #FF5A5F 4px, transparent 5px) 0 0 / 72px 14px repeat-x,
+                  radial-gradient(circle at 36px 7px, #FFD166 4px, transparent 5px) 0 0 / 72px 14px repeat-x,
+                  radial-gradient(circle at 60px 7px, #4CD48A 4px, transparent 5px) 0 0 / 72px 14px repeat-x;
+      animation: evTwinkle 1.2s steps(2) infinite; }
+    @keyframes evTwinkle { 50% { filter: brightness(.55); } }
+    /* New Year fireworks: bursts of dots that grow and fade. */
+    .ev-firework { position: absolute; width: 6px; height: 6px; border-radius: 50%; color: var(--fw); animation: evBurst 2.6s ease-out infinite;
+      box-shadow: 0 -40px 0 currentColor, 28px -28px 0 currentColor, 40px 0 0 currentColor, 28px 28px 0 currentColor, 0 40px 0 currentColor, -28px 28px 0 currentColor, -40px 0 0 currentColor, -28px -28px 0 currentColor,
+        0 -22px 0 currentColor, 16px -16px 0 currentColor, 22px 0 0 currentColor, 16px 16px 0 currentColor, 0 22px 0 currentColor, -16px 16px 0 currentColor, -22px 0 0 currentColor, -16px -16px 0 currentColor; }
+    @keyframes evBurst { 0% { transform: scale(.1); opacity: 1; } 70% { opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
+    .ev-cny-pattern { position: absolute; inset: 0; opacity: .12; background: radial-gradient(circle at 20px 20px, transparent 9px, #E0B23A 10px, transparent 11px) 0 0 / 40px 40px; }
+    .ev-rise { position: absolute; bottom: -2rem; width: calc(1.6rem * var(--s)); animation-name: evRise; animation-timing-function: ease-in; animation-iteration-count: infinite; }
+    .ev-rise svg { fill: #F4A6C0; opacity: .8; display: block; }
+    @keyframes evRise { from { transform: translateY(0) rotate(-10deg); opacity: 0; } 15% { opacity: 1; } to { transform: translateY(-34rem) rotate(15deg); opacity: 0; } }
+    .ev-bunting { position: absolute; left: 0; right: 0; top: 0; height: 30px; display: flex; justify-content: space-between; padding: 0 1%;
+      background: linear-gradient(rgba(255,255,255,.6), rgba(255,255,255,.6)) 0 2px / 100% 1.5px no-repeat; animation: evFlutter 3s ease-in-out infinite alternate; transform-origin: top; }
+    .ev-bunting i { width: 26px; height: 26px; background: var(--c); clip-path: polygon(0 0, 100% 0, 50% 100%); margin-top: 3px; }
+    @keyframes evFlutter { from { transform: skewX(-2deg); } to { transform: skewX(2deg); } }
+    .ev-corner { position: absolute; }
+    .ev-sun-wrap { right: 4%; top: 18%; width: 150px; opacity: .9; } .ev-sun { animation: evSpin 40s linear infinite; display: block; }
+    @keyframes evSpin { to { transform: rotate(360deg); } }
+    .ev-stars span { position: absolute; width: 34px; animation: evGlow 2s ease-in-out infinite alternate; }
+    .ev-stars span:nth-child(1) { left: 5%; top: 22%; } .ev-stars span:nth-child(2) { left: 9%; top: 70%; animation-delay: -.7s; } .ev-stars span:nth-child(3) { left: 18%; top: 44%; animation-delay: -1.3s; }
+    .ev-moon-wrap { right: 6%; top: 12%; width: 130px; } .ev-moon-wrap svg { display: block; filter: drop-shadow(0 0 18px rgba(242, 210, 122, .6)); }
+    .ev-moon-star { position: absolute; width: 26px; right: 6px; top: 26px; animation: evGlow 1.8s ease-in-out infinite alternate; }
+    .ev-candles { left: 3%; bottom: 0; display: flex; gap: 6px; align-items: flex-end; } .ev-candles svg { width: 34px; display: block; }
+    .ev-candles svg:nth-child(2) { width: 42px; } .ev-candles-r { left: auto; right: 4%; }
+    .ev-flame { transform-origin: 50% 90%; animation: evFlicker .9s ease-in-out infinite alternate; }
+    @keyframes evFlicker { from { transform: scale(1, 1) rotate(-3deg); opacity: .9; } to { transform: scale(.9, 1.12) rotate(3deg); opacity: 1; } }
+    .ev-palm-l { left: 1%; bottom: -10px; width: 140px; opacity: .5; } .ev-palm-r { right: 1%; bottom: -10px; width: 140px; opacity: .5; transform: scaleX(-1); }
+    .ev-rays { position: absolute; inset: 0; background: conic-gradient(from 180deg at 50% -20%, transparent 0 40%, rgba(255,255,255,.07) 45%, transparent 50%, rgba(255,255,255,.06) 55%, transparent 60%); }
+    .ev-bl { left: 2%; bottom: 8px; display: flex; gap: 4px; } .ev-br { right: 2%; bottom: 8px; display: flex; gap: 4px; }
+    .ev-flower { width: 40px; animation: evSpin 18s linear infinite; } .ev-tie { font-size: 3rem; opacity: .6; }
+    @media (max-width: 639px) {
+      .ev-l2, .ev-r2 { display: none; } .ev-l1 { width: 38px; left: 1%; } .ev-r1 { width: 40px; right: 1%; }
+      .ev-fall { opacity: .5; } .ev-fall:nth-of-type(2n) { display: none; }
+      .ev-sun-wrap { width: 90px; top: 4%; } .ev-moon-wrap { width: 80px; top: 3%; } .ev-palm-l, .ev-palm-r { width: 80px; }
+      .ev-bunting i { width: 18px; height: 18px; } .ev-candles svg { width: 24px; } .ev-candles svg:nth-child(2) { width: 30px; }
+    }
+    @media (prefers-reduced-motion: reduce) { .ev-hero * { animation: none !important; } .ev-fall, .ev-rise, .ev-firework { display: none; } }
+    /* The hero takes the occasion's colours (dark backgrounds keep the white text readable). */
+    html[data-event="pasko"] .hero-band, html[data-event="pasko"] body.rainy .hero-band { background: #7A1A12; background-image: radial-gradient(ellipse 60% 80% at 85% 10%, rgba(31, 107, 58, .55), transparent 60%), radial-gradient(ellipse 50% 70% at 5% 100%, rgba(217, 162, 27, .25), transparent 60%); }
+    html[data-event="bagongtaon"] .hero-band { background: #1F2A44; background-image: radial-gradient(ellipse 60% 80% at 85% 10%, rgba(232, 194, 90, .35), transparent 60%), radial-gradient(ellipse 50% 70% at 5% 100%, rgba(194, 37, 92, .2), transparent 60%); }
+    html[data-event="cny"] .hero-band { background: #8A0B20; background-image: radial-gradient(ellipse 60% 80% at 85% 10%, rgba(224, 178, 58, .35), transparent 60%); }
+    html[data-event="valentines"] .hero-band, html[data-event="mothersday"] .hero-band { background: #8C1A43; background-image: radial-gradient(ellipse 60% 80% at 85% 10%, rgba(244, 166, 192, .35), transparent 60%); }
+    html[data-event="eidfitr"] .hero-band, html[data-event="eidadha"] .hero-band { background: #0B5A36; background-image: radial-gradient(ellipse 60% 80% at 85% 10%, rgba(217, 162, 27, .3), transparent 60%); }
+    html[data-event="semanasanta"] .hero-band { background: #3E2856; }
+    html[data-event="undas"] .hero-band { background: #3B2F1F; background-image: radial-gradient(ellipse 40% 60% at 85% 20%, rgba(226, 180, 92, .25), transparent 60%); }
+    html[data-event="kalayaan"] .hero-band { background: #002A80; background-image: radial-gradient(ellipse 60% 80% at 85% 10%, rgba(252, 209, 22, .28), transparent 60%), radial-gradient(ellipse 50% 70% at 5% 100%, rgba(206, 17, 38, .3), transparent 60%); }
+    html[data-event="sinulog"] .hero-band { background: #8A0B20; background-image: radial-gradient(ellipse 60% 80% at 85% 10%, rgba(242, 183, 5, .35), transparent 60%); }
+    html[data-event="floresdemayo"] .hero-band { background: #8C1A43; background-image: radial-gradient(ellipse 60% 80% at 85% 10%, rgba(242, 201, 76, .3), transparent 60%), radial-gradient(ellipse 50% 70% at 5% 100%, rgba(76, 154, 91, .3), transparent 60%); }
+    html[data-event="fathersday"] .hero-band { background: #152A4D; background-image: radial-gradient(ellipse 60% 80% at 85% 10%, rgba(143, 176, 217, .3), transparent 60%); }
+    html.dark[data-event] .site-header .tab-btn.active, html.dark[data-event] .site-header .tab-btn.active:hover { background: var(--ev2); color: #0B1712; }
+    @media (max-width: 639px) {
+      .event-bar-in { flex-wrap: nowrap; gap: .5rem; padding: .35rem .75rem; font-size: .8rem; }
+      .event-bar-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .event-bar-go { white-space: nowrap; flex-shrink: 0; }
+      .event-bar-go .ev-long { display: none; }
+    }
     /* Heart (Favorites) in the games. */
     .game-photo-wrap { position: relative; }
     .vs-side { position: relative; display: flex; flex-direction: column; }

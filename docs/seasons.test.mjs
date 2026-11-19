@@ -94,3 +94,27 @@ test("date ranges read naturally", () => {
   assert.equal(occasionDates(new Date(2026, 11, 26), new Date(2027, 0, 1)), "Dec 26 – Jan 1");
   assert.equal(occasionDates(new Date(2026, 5, 12), new Date(2026, 5, 12)), "Jun 12");
 });
+
+test("event theme: two weeks before a big occasion and during it, never for long or quiet stretches", () => {
+  const api2 = vm.runInContext("({ eventThemeFor })", ctx);
+  const th = (y, m, d) => { const x = api2.eventThemeFor(new Date(y, m - 1, d)); return x ? `${x.key}${x.now ? "" : `+${x.daysLeft}`}` : null; };
+  assert.equal(th(2026, 11, 19), null); // today: nothing within two weeks
+  assert.equal(th(2026, 12, 1), null); // Simbang Gabi starts Dec 16; the theme starts Dec 2
+  assert.equal(th(2026, 12, 2), "pasko+14");
+  assert.equal(th(2026, 12, 20), "pasko"); // Christmas wins over New Year while it's on
+  assert.equal(th(2026, 12, 27), "bagongtaon");
+  assert.equal(th(2027, 1, 2), "sinulog+13"); // the Sinulog weekend starts Jan 15
+  assert.equal(th(2027, 2, 1), "cny+5"); // Chinese New Year (Feb 6) comes first
+  assert.equal(th(2027, 2, 10), "valentines+4");
+  assert.equal(th(2026, 3, 1), null); // Lent has no theme
+  assert.equal(th(2026, 10, 25), "undas+6");
+});
+
+test("hero decorations: each themed occasion draws something, quiet ones stay calm", () => {
+  const api3 = vm.runInContext("({ eventHeroDeco, SEASON_THEMES })", ctx);
+  for (const key of Object.keys(api3.SEASON_THEMES)) assert.ok(api3.eventHeroDeco(key).length > 20, key);
+  assert.match(api3.eventHeroDeco("pasko"), /ev-parol/);
+  assert.match(api3.eventHeroDeco("cny"), /ev-lantern/);
+  assert.doesNotMatch(api3.eventHeroDeco("semanasanta") + api3.eventHeroDeco("undas"), /ev-fall|ev-firework|ev-rise/);
+  assert.equal(api3.eventHeroDeco("kuwaresma"), "");
+});

@@ -263,3 +263,188 @@ function renderOccasion() {
         <span class="occ-cost">${costText(r)}/serving</span>
       </button>`).join("") || `<p class="text-sm py-4" style="color:#D6E6DA">${en ? "No matching dishes with your Settings (diet, kitchen)." : "Walang tugmang ulam sa Settings mo (diet, kusina)."}</p>`}</div>`;
 }
+
+// ── Event theme: two weeks before a big occasion (and during it) the site dresses up for it ──
+// html[data-event="pasko"] switches the accents (index.html CSS), a greeting bar shows under the header,
+// and festive occasions get a few drifting decorations. Settings can turn it off (SETTINGS.eventTheme
+// "off"); ?theme=pasko previews one, ?theme=off hides it. Solemn days (Holy Week, Undas) stay quiet.
+const SEASON_THEME_LEAD = 14;
+const SEASON_THEMES = {
+  pasko: { deco: ["❄", "✦", "❄", "⭐", "❄"], now: { tl: "Maligayang Pasko! 🎄", en: "Merry Christmas! 🎄" } },
+  bagongtaon: { deco: ["✨", "🎆", "✨", "🎇"], now: { tl: "Manigong Bagong Taon! 🎆", en: "Happy New Year! 🎆" } },
+  cny: { deco: ["🏮", "🧧", "🏮"], now: { tl: "Kung Hei Fat Choi! 🧧", en: "Kung Hei Fat Choi! 🧧" } },
+  valentines: { deco: ["💗", "💕", "💗"], now: { tl: "Maligayang Araw ng mga Puso! 💝", en: "Happy Valentine's Day! 💝" } },
+  eidfitr: { deco: ["🌙", "✦", "⭐"], now: { tl: "Eid Mubarak! 🌙", en: "Eid Mubarak! 🌙" } },
+  eidadha: { deco: ["🌙", "✦", "⭐"], now: { tl: "Eid Mubarak! 🌙", en: "Eid Mubarak! 🌙" } },
+  semanasanta: { deco: [], now: { tl: "Semana Santa 🕊️", en: "Holy Week 🕊️" } },
+  undas: { deco: [], now: { tl: "Undas: pag-alala sa mga mahal sa buhay 🕯️", en: "Undas: remembering our loved ones 🕯️" } },
+  kalayaan: { deco: ["✦", "☀", "✦"], now: { tl: "Maligayang Araw ng Kalayaan! 🇵🇭", en: "Happy Independence Day! 🇵🇭" } },
+  sinulog: { deco: ["🥁", "✦"], now: { tl: "Pit Señor! Viva Sinulog! 🥁", en: "Pit Señor! Viva Sinulog! 🥁" } },
+  floresdemayo: { deco: ["🌸", "🌼", "🌸"], now: { tl: "Flores de Mayo 🌸", en: "Flores de Mayo 🌸" } },
+  mothersday: { deco: ["💐", "🌷"], now: { tl: "Maligayang Araw ng mga Ina! 💐", en: "Happy Mother's Day! 💐" } },
+  fathersday: { deco: ["✦", "👔"], now: { tl: "Maligayang Araw ng mga Ama! 👔", en: "Happy Father's Day! 👔" } },
+};
+
+/**
+ * The occasion the site is themed for today: one that's on, else the nearest starting within two
+ * weeks. { key, o, start, end, now, daysLeft } or null. Kuwaresma (40 days) has no theme. Pure, tested.
+ */
+function eventThemeFor(today = new Date(), list = OCCASIONS) {
+  const d = SEASON_ymd(today.getFullYear(), today.getMonth() + 1, today.getDate());
+  let best = null;
+  for (const o of list) {
+    if (!SEASON_THEMES[o.key]) continue;
+    for (const y of [d.getFullYear() - 1, d.getFullYear(), d.getFullYear() + 1]) {
+      const w = o.when(y);
+      if (!w) continue;
+      const [start, end] = w;
+      if (d > end) continue;
+      const daysLeft = Math.round((start - d) / DAY_MS);
+      if (daysLeft > SEASON_THEME_LEAD) break;
+      const cand = { key: o.key, o, start, end, now: daysLeft <= 0, daysLeft: Math.max(0, daysLeft) };
+      if (!best || (cand.now && !best.now) || (cand.now === best.now && cand.daysLeft < best.daysLeft)) best = cand;
+      break;
+    }
+  }
+  return best;
+}
+
+/** The theme to show: a ?theme= preview first, then nothing if turned off in Settings, else today's. */
+function currentEventTheme(today = new Date()) {
+  const q = typeof location !== "undefined" ? new URLSearchParams(location.search).get("theme") : null;
+  if (q === "off") return null;
+  if (q && SEASON_THEMES[q]) {
+    const o = OCCASIONS.find((x) => x.key === q);
+    const w = o && (o.when(today.getFullYear()) || o.when(today.getFullYear() + 1));
+    return o ? { key: q, o, start: w ? w[0] : today, end: w ? w[1] : today, now: true, daysLeft: 0, preview: true } : null;
+  }
+  if (typeof SETTINGS !== "undefined" && SETTINGS.eventTheme === "off") return null;
+  return eventThemeFor(today);
+}
+
+const EVENT_HIDE_KEY = "sarapsulit.eventbar.v1";
+
+function applyEventTheme() {
+  if (typeof document === "undefined") return;
+  const th = currentEventTheme();
+  const root = document.documentElement;
+  if (th) root.dataset.event = th.key; else delete root.dataset.event;
+  if (typeof applyEventHero === "function") applyEventHero();
+  let bar = document.getElementById("event-bar");
+  let deco = document.getElementById("event-deco");
+  if (!th) { if (bar) bar.remove(); if (deco) deco.remove(); return; }
+  const en = typeof siteLang === "function" && siteLang() === "en";
+  const conf = SEASON_THEMES[th.key];
+  const name = en ? th.o.en : th.o.tl;
+  const text = th.now ? (en ? conf.now.en : conf.now.tl)
+    : en ? `${th.o.icon} ${th.daysLeft} day${th.daysLeft === 1 ? "" : "s"} to go: ${name}` : `${th.o.icon} ${th.daysLeft} araw na lang: ${name}`;
+  let hidden = "";
+  try { hidden = localStorage.getItem(EVENT_HIDE_KEY) || ""; } catch { /* private mode */ }
+  const today = new Date().toISOString().slice(0, 10);
+  if (hidden === `${th.key}|${today}` && !th.preview) { if (bar) bar.remove(); }
+  else {
+    if (!bar) {
+      bar = document.createElement("div");
+      bar.id = "event-bar";
+      bar.className = "event-bar";
+      bar.setAttribute("role", "note");
+      const header = document.querySelector(".site-header");
+      if (header && header.parentNode) header.parentNode.insertBefore(bar, header.nextSibling); else document.body.prepend(bar);
+    }
+    bar.innerHTML = `<div class="event-bar-in"><span class="event-bar-text">${escapeHtml(text)}</span>
+      <button type="button" class="event-bar-go" onclick="eventBarGo()">${en ? '<span class="ev-long">See the </span>handaan picks →' : '<span class="ev-long">Tingnan ang </span>pang-handaan →'}</button>
+      <button type="button" class="event-bar-x" onclick="hideEventBar('${th.key}')" aria-label="${en ? "Hide for today" : "Itago ngayong araw"}">✕</button></div>`;
+  }
+  const reduce = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!conf.deco.length || reduce) { if (deco) deco.remove(); return; }
+  if (!deco) {
+    deco = document.createElement("div");
+    deco.id = "event-deco";
+    deco.className = "event-deco";
+    deco.setAttribute("aria-hidden", "true");
+    document.body.appendChild(deco);
+  }
+  // A handful of slow, drifting pieces near the edges, never over the middle of the page.
+  deco.innerHTML = Array.from({ length: 10 }, (_, i) => {
+    const left = i % 2 ? 2 + (i * 7) % 12 : 86 + (i * 5) % 12;
+    return `<span style="left:${left}%;animation-delay:${(i * 1.7) % 12}s;animation-duration:${14 + (i % 4) * 3}s">${conf.deco[i % conf.deco.length]}</span>`;
+  }).join("");
+}
+
+function hideEventBar(key) {
+  try { localStorage.setItem(EVENT_HIDE_KEY, `${key}|${new Date().toISOString().slice(0, 10)}`); } catch { /* not saved */ }
+  const bar = document.getElementById("event-bar");
+  if (bar) bar.remove();
+}
+
+/** The bar's button: open Recipes at the Okasyon picks for this occasion. */
+function eventBarGo() {
+  const th = currentEventTheme();
+  if (typeof showSection === "function") showSection("browse");
+  if (th && typeof setOccasion === "function") setOccasion(th.key);
+  const box = document.getElementById("occasion-picks");
+  if (box) box.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+if (typeof document !== "undefined") {
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", applyEventTheme); else applyEventTheme();
+}
+
+// ── Bigger decorations inside the home hero, per occasion (all drawn here, no images) ──
+
+const EV_PAROL = (c1, c2) => `<svg viewBox="0 0 100 170" class="ev-parol"><line x1="50" y1="0" x2="50" y2="22" stroke="#d9c9a3" stroke-width="2"/>
+  <g class="ev-glow"><polygon points="50,22 62,49 92,51 68,70 77,100 50,83 23,100 32,70 8,51 38,49" fill="${c1}" stroke="${c2}" stroke-width="3" stroke-linejoin="round"/>
+  <polygon points="50,40 56,54 71,55 59,64 63,79 50,71 37,79 41,64 29,55 44,54" fill="${c2}" opacity=".85"/><circle cx="50" cy="60" r="7" fill="#fff8d6"/></g>
+  <path d="M36 97 q-6 30 -12 62" stroke="${c2}" stroke-width="3" fill="none"/><path d="M50 90 q0 34 0 72" stroke="${c1}" stroke-width="3" fill="none"/><path d="M64 97 q6 30 12 62" stroke="${c2}" stroke-width="3" fill="none"/></svg>`;
+const EV_LANTERN = `<svg viewBox="0 0 80 150" class="ev-lantern"><line x1="40" y1="0" x2="40" y2="22" stroke="#E0B23A" stroke-width="2"/>
+  <rect x="26" y="20" width="28" height="8" rx="2" fill="#E0B23A"/><ellipse cx="40" cy="62" rx="32" ry="36" fill="#D7263D"/>
+  <path d="M40 26 v72 M22 32 q-8 30 0 60 M58 32 q8 30 0 60" stroke="#B0102A" stroke-width="2" fill="none"/>
+  <rect x="26" y="96" width="28" height="8" rx="2" fill="#E0B23A"/><path d="M34 104 v34 M40 104 v40 M46 104 v34" stroke="#E0B23A" stroke-width="2"/></svg>`;
+const EV_HEART = `<svg viewBox="0 0 32 30" class="ev-heart"><path d="M16 29 C-6 14 2 -4 16 7 C30 -4 38 14 16 29Z"/></svg>`;
+const EV_SUN = `<svg viewBox="0 0 120 120" class="ev-sun"><g fill="#FCD116">${Array.from({ length: 8 }, (_, i) => `<path transform="rotate(${i * 45} 60 60)" d="M60 4 L66 30 L60 26 L54 30Z"/><path transform="rotate(${i * 45 + 22.5} 60 60)" d="M60 14 L63 30 L57 30Z" opacity=".8"/>`).join("")}<circle cx="60" cy="60" r="24"/></g></svg>`;
+const EV_STAR = (c) => `<svg viewBox="0 0 24 24" class="ev-star"><polygon points="12,1 15,9 23,9 17,14 19,22 12,17 5,22 7,14 1,9 9,9" fill="${c}"/></svg>`;
+const EV_MOON = `<svg viewBox="0 0 120 120" class="ev-moon"><defs><mask id="evm"><rect width="120" height="120" fill="#fff"/><circle cx="74" cy="48" r="42" fill="#000"/></mask></defs><circle cx="56" cy="60" r="44" fill="#F2D27A" mask="url(#evm)"/></svg>`;
+const EV_FANOUS = `<svg viewBox="0 0 60 140" class="ev-fanous"><line x1="30" y1="0" x2="30" y2="20" stroke="#E2C27A" stroke-width="2"/><path d="M18 22 h24 l-4 10 h-16z" fill="#C9971C"/>
+  <path d="M14 34 h32 l-4 50 h-24z" fill="#F7D774" opacity=".9" stroke="#C9971C" stroke-width="2"/><path d="M20 40 l10 36 l10 -36" stroke="#C9971C" stroke-width="1.5" fill="none"/>
+  <path d="M18 86 h24 l-12 16z" fill="#C9971C"/></svg>`;
+const EV_CANDLE = `<svg viewBox="0 0 40 110" class="ev-candle"><path class="ev-flame" d="M20 6 C28 18 26 30 20 34 C14 30 12 18 20 6Z" fill="#FFC857"/><circle cx="20" cy="30" r="10" fill="#FFC857" opacity=".25"/>
+  <rect x="12" y="36" width="16" height="70" rx="3" fill="#F4ECDA"/><path d="M12 48 q8 4 16 0" stroke="#d9cdb4" fill="none"/></svg>`;
+const EV_FLOWER = (c) => `<svg viewBox="0 0 40 40" class="ev-flower">${Array.from({ length: 6 }, (_, i) => `<ellipse cx="20" cy="9" rx="6" ry="9" fill="${c}" transform="rotate(${i * 60} 20 20)"/>`).join("")}<circle cx="20" cy="20" r="6" fill="#F2C94C"/></svg>`;
+const EV_PALM = `<svg viewBox="0 0 120 160" class="ev-palm"><path d="M60 158 C58 110 62 60 70 6" stroke="#cdb8e0" stroke-width="3" fill="none"/>${Array.from({ length: 12 }, (_, i) => { const y = 30 + i * 10; return `<path d="M${64 - i * 0.6} ${y} q-26 -6 -40 6" stroke="#cdb8e0" stroke-width="2" fill="none"/><path d="M${64 - i * 0.6} ${y} q26 -8 40 2" stroke="#cdb8e0" stroke-width="2" fill="none"/>`; }).join("")}</svg>`;
+// Banderitas: the fiesta bunting strung across the top.
+const EV_BUNTING = (colors) => `<div class="ev-bunting">${Array.from({ length: 28 }, (_, i) => `<i style="--c:${colors[i % colors.length]}"></i>`).join("")}</div>`;
+
+/** The hero decoration for an occasion (HTML, decorative only). Pure, tested. */
+function eventHeroDeco(key) {
+  const snow = (n, ch = "❄") => Array.from({ length: n }, (_, i) => `<span class="ev-fall" style="left:${(i * 37) % 100}%;animation-delay:${(i * 0.9) % 9}s;animation-duration:${8 + (i % 5) * 2}s;font-size:${0.7 + (i % 3) * 0.35}rem">${ch}</span>`).join("");
+  switch (key) {
+    case "pasko": return `<div class="ev-lights"></div><div class="ev-hang ev-l1">${EV_PAROL("#E5484D", "#F2C94C")}</div><div class="ev-hang ev-l2">${EV_PAROL("#2E9E5B", "#F2C94C")}</div>
+      <div class="ev-hang ev-r1">${EV_PAROL("#F2C94C", "#E5484D")}</div><div class="ev-hang ev-r2">${EV_PAROL("#E5484D", "#ffffff")}</div>${snow(26)}`;
+    case "bagongtaon": return `${Array.from({ length: 6 }, (_, i) => `<span class="ev-firework" style="left:${[8, 22, 80, 92, 15, 86][i]}%;top:${[18, 45, 20, 50, 70, 75][i]}%;--fw:${["#F2C94C", "#E5484D", "#7CC4FF", "#F4A6C0", "#9BE07A", "#F2C94C"][i]};animation-delay:${i * 0.55}s"></span>`).join("")}${snow(14, "✦")}`;
+    case "cny": return `<div class="ev-hang ev-l1">${EV_LANTERN}</div><div class="ev-hang ev-l2">${EV_LANTERN}</div><div class="ev-hang ev-r1">${EV_LANTERN}</div><div class="ev-hang ev-r2">${EV_LANTERN}</div>
+      <div class="ev-pattern ev-cny-pattern"></div>${snow(10, "🧧")}`;
+    case "valentines": case "mothersday": return `${Array.from({ length: 16 }, (_, i) => `<span class="ev-rise" style="left:${(i * 29) % 100}%;animation-delay:${(i * 0.8) % 8}s;animation-duration:${9 + (i % 4) * 2}s;--s:${0.6 + (i % 4) * 0.3}">${EV_HEART}</span>`).join("")}
+      ${key === "mothersday" ? `<div class="ev-corner ev-bl">${EV_FLOWER("#F4A6C0")}${EV_FLOWER("#ffffff")}${EV_FLOWER("#F2C94C")}</div>` : ""}`;
+    case "kalayaan": return `${EV_BUNTING(["#0038A8", "#CE1126", "#FCD116", "#ffffff"])}<div class="ev-corner ev-sun-wrap">${EV_SUN}</div>
+      <div class="ev-stars"><span>${EV_STAR("#FCD116")}</span><span>${EV_STAR("#FCD116")}</span><span>${EV_STAR("#FCD116")}</span></div>`;
+    case "sinulog": case "floresdemayo": return `${EV_BUNTING(key === "sinulog" ? ["#C8102E", "#F2B705", "#1F6FB2", "#2E9E5B", "#ffffff"] : ["#F4A6C0", "#F2C94C", "#7CC4FF", "#9BE07A", "#ffffff"])}
+      ${key === "floresdemayo" ? `<div class="ev-corner ev-bl">${EV_FLOWER("#F4A6C0")}${EV_FLOWER("#ffffff")}${EV_FLOWER("#F2C94C")}${EV_FLOWER("#C2255C")}</div><div class="ev-corner ev-br">${EV_FLOWER("#ffffff")}${EV_FLOWER("#F4A6C0")}${EV_FLOWER("#F2C94C")}</div>` : snow(10, "✦")}`;
+    case "eidfitr": case "eidadha": return `<div class="ev-corner ev-moon-wrap">${EV_MOON}<span class="ev-moon-star">${EV_STAR("#F2D27A")}</span></div>
+      <div class="ev-hang ev-l1">${EV_FANOUS}</div><div class="ev-hang ev-l2">${EV_FANOUS}</div><div class="ev-hang ev-r2">${EV_FANOUS}</div>${snow(14, "✦")}`;
+    case "undas": return `<div class="ev-corner ev-candles">${EV_CANDLE}${EV_CANDLE}${EV_CANDLE}</div><div class="ev-corner ev-candles ev-candles-r">${EV_CANDLE}${EV_CANDLE}</div>`;
+    case "semanasanta": return `<div class="ev-corner ev-palm-l">${EV_PALM}</div><div class="ev-corner ev-palm-r">${EV_PALM}</div><div class="ev-rays"></div>`;
+    case "fathersday": return `${snow(12, "✦")}<div class="ev-corner ev-br ev-tie">👔</div>`;
+    default: return "";
+  }
+}
+
+function applyEventHero() {
+  if (typeof document === "undefined") return;
+  const hero = document.querySelector(".hero-band");
+  if (!hero) return;
+  const th = currentEventTheme();
+  let layer = hero.querySelector(".ev-hero");
+  if (!th) { if (layer) layer.remove(); return; }
+  if (!layer) { layer = document.createElement("div"); layer.className = "ev-hero"; layer.setAttribute("aria-hidden", "true"); hero.prepend(layer); }
+  if (layer.dataset.key !== th.key) { layer.dataset.key = th.key; layer.innerHTML = eventHeroDeco(th.key); }
+}
