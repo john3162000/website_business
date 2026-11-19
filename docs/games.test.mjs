@@ -76,3 +76,9 @@ test("keys and swipes: 1-9 and 0 rate at once; a sideways swipe picks a side", (
   assert.equal(api3.gameSwipeSide(30, 0), null); // too short: a tap
   assert.equal(api3.gameSwipeSide(80, 100), null); // mostly scrolling down
 });
+
+test("after a Versus pick, any key goes on except Tab, Escape and lone modifiers", () => {
+  const api4 = vm.runInContext("({ gameAnyKeyNext })", ctx);
+  for (const k of ["Enter", " ", "a", "ArrowLeft", "ArrowRight", "ArrowDown", "5"]) assert.equal(api4.gameAnyKeyNext(k), true, k);
+  for (const k of ["Tab", "Escape", "Shift", "Control", "Alt", "Meta", ""]) assert.equal(api4.gameAnyKeyNext(k), false, k);
+});
