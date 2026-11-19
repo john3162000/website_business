@@ -6,8 +6,8 @@ import vm from "node:vm";
 
 const ctx = vm.createContext({});
 vm.runInContext(`${readFileSync(new URL("./games.js", import.meta.url), "utf8")}
-;globalThis.api = { findDish, buildMatchups, ratingMood, armReach, nextRateDish, roundNote, gameFactsFor, GAME_MATCHUPS, GAME_FACTS };`, ctx);
-const { findDish, buildMatchups, ratingMood, armReach, nextRateDish, roundNote, gameFactsFor, GAME_MATCHUPS, GAME_FACTS } = ctx.api;
+;globalThis.api = { findDish, buildMatchups, ratingMood, armReach, nextRateDish, roundNote, gameFactsFor, GAME_MATCHUPS, GAME_FACTS, GAME_SWEET_MATCHUPS, gameKindOf };`, ctx);
+const { findDish, buildMatchups, ratingMood, armReach, nextRateDish, roundNote, gameFactsFor, GAME_MATCHUPS, GAME_FACTS, GAME_SWEET_MATCHUPS, gameKindOf } = ctx.api;
 
 const R = (id, title, extra = {}) => ({ id, title, img: "x.jpg", costPerServing: 50, category: "Main Dish", ...extra });
 
@@ -81,4 +81,15 @@ test("after a Versus pick, any key goes on except Tab, Escape and lone modifiers
   const api4 = vm.runInContext("({ gameAnyKeyNext })", ctx);
   for (const k of ["Enter", " ", "a", "ArrowLeft", "ArrowRight", "ArrowDown", "5"]) assert.equal(api4.gameAnyKeyNext(k), true, k);
   for (const k of ["Tab", "Escape", "Shift", "Control", "Alt", "Meta", ""]) assert.equal(api4.gameAnyKeyNext(k), false, k);
+});
+
+test("Panghimagas: 20 sweet match-ups, each dish with three facts; sweets are their own kind", () => {
+  assert.ok(GAME_SWEET_MATCHUPS.length >= 20);
+  const many = GAME_SWEET_MATCHUPS.flatMap(([a, b], i) => [R(300 + i, a.name), R(400 + i, b.name)]);
+  assert.equal(buildMatchups(many, GAME_SWEET_MATCHUPS, 20).length, 20);
+  for (const [a, b] of GAME_SWEET_MATCHUPS) for (const d of [a, b]) assert.ok(gameFactsFor(d.name).length >= 3, `facts for ${d.name}`);
+  // No sweet pair in the ulam Versus.
+  const sweetNames = new Set(GAME_SWEET_MATCHUPS.flat().map((d) => d.name));
+  for (const [a, b] of GAME_MATCHUPS) assert.ok(!sweetNames.has(a.name) && !sweetNames.has(b.name), `${a.name} vs ${b.name} is in both`);
+  assert.equal(gameKindOf({ id: 1, title: "Leche Flan", category: "Dessert" }), "sweets");
 });

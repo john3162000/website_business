@@ -17,16 +17,10 @@ const GAME_MATCHUPS = [
   [{ name: "Lumpiang Shanghai", re: [/^lumpiang shanghai/i, /lumpiang shanghai/i, /lumpia/i] }, { name: "Tokwa't Baboy", re: [/tokwa.?t baboy/i] }],
   [{ name: "Menudo", re: [/menudo/i] }, { name: "Afritada", re: [/^(chicken|pork) afritada( recipe)?$/i, /^(chicken|pork) afritada/i, /afritada(?!ng itlog)/i] }],
   [{ name: "Laing", re: [/^laing\b/i, /\blaing\b/i] }, { name: "Pinakbet", re: [/^pinakbet/i, /pinakbet/i] }],
-  [{ name: "Halo-Halo", re: [/halo.?halo/i] }, { name: "Leche Flan", re: [/^leche flan/i, /leche flan/i] }],
   [{ name: "Pork Barbecue", re: [/^pork barbecue/i, /pork (bbq|barbecue)/i] }, { name: "Inihaw na Liempo", re: [/^inihaw na liempo/i, /inihaw na liempo/i, /grilled (pork belly|liempo)/i] }],
   [{ name: "Beef Tapa", re: [/^(homemade )?beef tapa$/i, /^beef tapa\b/i, /beef tapa/i] }, { name: "Tocino", re: [/^(homemade )?(pork )?tocino( recipe)?\b(?! fried)/i, /pork tocino(?! sisig)/i] }],
   [{ name: "Longganisa", re: [/^skinless (garlic )?longganisa( recipe)?$/i, /longganisang hubad/i] }, { name: "Embutido", re: [/^(pork )?embutido/i, /embutido/i] }],
-  [{ name: "Champorado", re: [/^champorado/i, /champorado/i] }, { name: "Ginataang Bilo-Bilo", re: [/bilo.?bilo/i] }],
   [{ name: "Arroz Caldo", re: [/^arroz caldo/i, /arroz caldo/i] }, { name: "Goto", re: [/^goto\b/i, /\bgoto\b/i] }],
-  [{ name: "Biko", re: [/^biko\b/i, /\bbiko\b/i] }, { name: "Suman", re: [/^suman\b/i, /\bsuman\b/i] }],
-  [{ name: "Puto", re: [/^puto( recipe)?$/i, /^puto\b/i, /\bputo\b/i] }, { name: "Kutsinta", re: [/kutsinta|cuchinta/i] }],
-  [{ name: "Turon", re: [/^turon( recipe)?$/i, /^turon\b/i, /\bturon\b/i] }, { name: "Banana Cue", re: [/banana ?cue/i] }],
-  [{ name: "Maja Blanca", re: [/^maja blanca/i, /maja blanca/i] }, { name: "Buko Pandan", re: [/^buko pandan/i, /buko pandan/i] }],
   [{ name: "Bistek", re: [/^bistek/i, /bistek/i] }, { name: "Mechado", re: [/^(beef )?mechado/i, /mechado/i] }],
   [{ name: "Lechon Paksiw", re: [/^lechon paksiw|^paksiw na lechon/i, /lechon paksiw|paksiw na lechon/i] }, { name: "Humba", re: [/^(pork )?humba/i, /humba/i] }],
   [{ name: "Dinuguan", re: [/^dinuguan/i, /dinuguan/i] }, { name: "Igado", re: [/^igado/i, /igado/i] }],
@@ -35,6 +29,8 @@ const GAME_MATCHUPS = [
   [{ name: "Fried Chicken", re: [/^(pinoy |crispy )?fried chicken/i, /fried chicken/i] }, { name: "Pork Steak", re: [/^pork steak/i, /pork steak/i] }],
   [{ name: "Daing na Bangus", re: [/^daing na bangus/i, /daing na bangus/i] }, { name: "Fried Tilapia", re: [/^fried tilapia/i, /fried tilapia|pritong tilapia/i] }],
   [{ name: "Ginataang Hipon", re: [/^ginataang hipon/i, /ginataang hipon/i] }, { name: "Camaron Rebosado", re: [/^camaron rebosado/i, /camaron rebosado/i] }],
+  [{ name: "Paksiw na Bangus", re: [/^paksiw na bangus/i, /paksiw na bangus/i] }, { name: "Sinigang na Bangus", re: [/^sinigang na bangus( recipe)?$/i, /sinigang na bangus/i] }],
+  [{ name: "Adobong Pusit", re: [/^adobong pusit( recipe)?$/i, /adobong pusit/i] }, { name: "Calamares", re: [/^calamares( recipe)?$/i, /calamares/i] }],
   // Backups, used when a round above has no recipe on the site.
   [{ name: "Chicken Inasal", re: [/^chicken inasal/i, /inasal/i] }, { name: "Lechon Manok", re: [/^lechon manok/i, /lechon manok/i] }],
   [{ name: "Bulalo", re: [/^bulalo( recipe)?$/i, /^bulalo\b(?! (beef )?(mami|pares|kare))/i, /bulalo/i] }, { name: "Batchoy", re: [/^batchoy/i, /batchoy/i] }],
@@ -42,181 +38,609 @@ const GAME_MATCHUPS = [
   [{ name: "Escabeche", re: [/^(fish )?escabeche/i, /escabeche/i] }, { name: "Sweet and Sour Fish", re: [/^sweet and sour fish/i, /sweet and sour fish/i] }],
   [{ name: "Pochero", re: [/^(pork |beef )?pochero/i, /pochero/i] }, { name: "Cocido", re: [/^cocido/i, /cocido/i] }],
   [{ name: "Picadillo", re: [/^picadillo/i, /picadillo/i] }, { name: "Tortang Giniling", re: [/^tortang giniling/i, /tortang giniling/i] }],
-  [{ name: "Buko Pie", re: [/^buko pie/i, /buko pie/i] }, { name: "Egg Pie", re: [/^egg pie/i, /egg pie/i] }],
-  [{ name: "Polvoron", re: [/^polvoron/i, /polvoron/i] }, { name: "Pastillas", re: [/^pastillas/i, /pastillas/i] }],
   [{ name: "Kinilaw", re: [/^kinilaw/i, /kinilaw/i] }, { name: "Sinuglaw", re: [/^sinuglaw/i, /sinuglaw/i] }],
   [{ name: "Sinigang na Hipon", re: [/^sinigang na hipon/i, /sinigang na hipon/i] }, { name: "Halabos na Hipon", re: [/^halabos/i, /halabos/i] }],
-  [{ name: "Palitaw", re: [/^palitaw/i, /palitaw/i] }, { name: "Pichi-Pichi", re: [/^pichi.?pichi/i, /pichi.?pichi/i] }],
-  [{ name: "Pandesal", re: [/^pandesal/i, /pandesal|pan de sal/i] }, { name: "Ensaymada", re: [/^ensaymada/i, /ensaymada|ensaimada/i] }],
+  [{ name: "Ginisang Monggo", re: [/^ginisang (monggo|munggo)( \(monggo\))?$/i, /^ginisang (monggo|munggo)/i, /ginisang (monggo|munggo)/i] }, { name: "Ginataang Langka", re: [/^ginataang langka/i, /ginataang langka/i] }],
+  [{ name: "Pancit Palabok", re: [/^pancit palabok/i, /palabok(?! arroz)/i] }, { name: "Lomi", re: [/^(pork |batangas )?lomi\b/i, /\blomi\b(?! pares)/i] }],
+  [{ name: "Adobong Kangkong", re: [/^adobong kangkong/i, /adobong kangkong/i] }, { name: "Ginisang Repolyo", re: [/^ginisang repolyo$/i, /ginisang repolyo/i] }],
 ];
 const GAME_ROUNDS = 30;
+// Panghimagas (sweets and desserts): their own Versus, 20 rounds.
+const GAME_SWEET_MATCHUPS = [
+  [{ name: "Halo-Halo", re: [/halo.?halo/i] }, { name: "Mais con Yelo", re: [/mais con yelo/i] }],
+  [{ name: "Leche Flan", re: [/^leche flan$/i, /^leche flan/i, /leche flan/i] }, { name: "Ube Halaya", re: [/^ube halaya$/i, /ube halaya|halayang ube/i] }],
+  [{ name: "Champorado", re: [/^champorado/i, /champorado/i] }, { name: "Ginataang Bilo-Bilo", re: [/bilo.?bilo/i] }],
+  [{ name: "Biko", re: [/^biko\b/i, /\bbiko\b/i] }, { name: "Suman", re: [/^suman\b/i, /\bsuman\b/i] }],
+  [{ name: "Puto", re: [/^puto( recipe)?$/i, /^puto\b(?! bumbong)/i, /\bputo\b(?! bumbong)/i] }, { name: "Kutsinta", re: [/kutsinta|cuchinta/i] }],
+  [{ name: "Turon", re: [/^turon \(banana lumpia/i, /^turon( recipe)?$/i, /^turon\b/i, /\bturon\b/i] }, { name: "Banana Cue", re: [/banana ?cue/i] }],
+  [{ name: "Maja Blanca", re: [/^maja blanca/i, /maja blanca/i] }, { name: "Buko Pandan", re: [/^buko pandan/i, /buko pandan/i] }],
+  [{ name: "Buko Pie", re: [/^buko pie/i, /buko pie/i] }, { name: "Egg Pie", re: [/^egg pie/i, /egg pie/i] }],
+  [{ name: "Polvoron", re: [/^polvoron/i, /polvoron/i] }, { name: "Pastillas", re: [/^pastillas/i, /pastillas/i] }],
+  [{ name: "Palitaw", re: [/^palitaw/i, /palitaw/i] }, { name: "Pichi-Pichi", re: [/^pichi.?pichi/i, /pichi.?pichi/i] }],
+  [{ name: "Bibingka", re: [/^bibingka( recipe)?$/i, /^bibingka/i, /bibingka/i] }, { name: "Puto Bumbong", re: [/puto bumbong/i] }],
+  [{ name: "Cassava Cake", re: [/^cassava cake$/i, /^cassava cake/i, /cassava cake/i] }, { name: "Sapin-Sapin", re: [/^sapin.?sapin( recipe)?$/i, /sapin.?sapin/i] }],
+  [{ name: "Mango Float", re: [/^mango float$/i, /mango float/i] }, { name: "Buko Salad", re: [/^buko salad( recipe)?$/i, /buko salad(?! drink)/i] }],
+  [{ name: "Sans Rival", re: [/^sans rival$/i, /sans rival/i] }, { name: "Brazo de Mercedes", re: [/brazo de mercedes/i] }],
+  [{ name: "Ensaymada", re: [/^ensaymada/i, /ensaymada|ensaimada/i] }, { name: "Mamon", re: [/^mamon( recipe)?$/i, /^mamon\b/i] }],
+  [{ name: "Yema", re: [/^yema( recipe)?$/i, /^yema\b(?! cake)/i] }, { name: "Silvanas", re: [/silvanas|sylvanas/i] }],
+  [{ name: "Taho", re: [/^(homemade )?taho\b/i, /\btaho\b/i] }, { name: "Sago't Gulaman", re: [/sago (at|'t|’t) gulaman/i, /sago.*gulaman/i] }],
+  [{ name: "Kalamay", re: [/^kalamay (hati|sa latik)/i, /^kalamay/i, /kalamay/i] }, { name: "Espasol", re: [/espasol/i] }],
+  [{ name: "Ginataang Mais", re: [/^ginataang mais( recipe)?$/i, /ginataang mais/i] }, { name: "Minatamis na Saging", re: [/^minatamis na saging$/i, /minatamis na saging/i] }],
+  [{ name: "Fruit Salad", re: [/^filipino fruit salad$/i, /^fruit salad( recipe)?$/i, /fruit salad(?! macaroni)/i] }, { name: "Custard Cake", re: [/^custard cake( recipe)?$/i, /custard cake/i] }],
+  // Backups, used when a round above has no recipe on the site.
+  [{ name: "Maruya", re: [/^banana fritters \(maruya\)/i, /maruya/i] }, { name: "Kamote Cue", re: [/^kamote cue( recipe)?$/i, /kamote cue|camote cue/i] }],
+  [{ name: "Nilupak", re: [/^nilupak( recipe)?$/i, /nilupak/i] }, { name: "Carioca", re: [/^carioca$/i, /carioca|karioka/i] }],
+];
+const GAME_SWEET_ROUNDS = 20;
 
+// Facts per dish: where the name comes from, its history, and why it was made. Our own words; stories that are
+// told rather than proven say "said to" or "one story says". Never about prices.
 const GAME_FACTS = {
-  "Sinigang": "Sinigang's sourness traditionally comes from sampalok (tamarind), but kamias, bayabas, kalamansi and santol are used too.",
-  "Adobo": "The name comes from the Spanish \"adobar\" (to marinate), but cooking meat in vinegar to keep it longer was done here before the Spanish came.",
-  "Kaldereta": "Kaldereta is named after the Spanish \"caldera\", a cauldron. Goat (kambing) kaldereta is a favourite in many provinces.",
-  "Kare-Kare": "Kare-kare's thick sauce comes from ground peanuts, and it's traditionally eaten with bagoong alamang on the side.",
-  "Lechon Kawali": "\"Kawali\" is the wok-like pan the pork belly is deep-fried in, after it's boiled until tender.",
-  "Crispy Pata": "\"Pata\" is the pork leg. It's boiled first, dried, then deep-fried until the skin puffs and crackles.",
-  "Sisig": "Sisig comes from Pampanga. The sizzling-plate version was made famous in Angeles City.",
-  "Bicol Express": "Bicol Express is said to be named after the train that ran between Manila and the Bicol region.",
-  "Tinola": "Tinola appears in José Rizal's novel Noli Me Tangere.",
-  "Nilaga": "\"Nilaga\" simply means \"boiled\". The clear broth gets its flavour from slowly simmered beef or pork bones.",
-  "Pancit Canton": "Pancit is served at birthdays because long noodles stand for long life.",
-  "Pancit Bihon": "Bihon is a thin rice noodle. Pancit came to the Philippines with Chinese traders centuries ago.",
-  "Lumpiang Shanghai": "Lumpia came from Chinese spring rolls. The Shanghai kind is thin, fried and filled with ground pork.",
-  "Tokwa't Baboy": "Tokwa't baboy is a classic partner of lugaw: \"lugaw at tokwa't baboy\" is a street-food staple.",
-  "Menudo": "Filipino menudo is a tomato-based pork stew with liver, nothing like Mexican menudo, which is a tripe soup.",
-  "Afritada": "Afritada's name comes from the Spanish \"fritada\". Its cousins are menudo, kaldereta and mechado.",
-  "Laing": "Laing is from Bicol: dried taro (gabi) leaves slowly cooked in coconut milk with chili.",
-  "Pinakbet": "Pinakbet is an Ilocano dish. The name is said to come from \"pinakebbet\", meaning shrunk or shrivelled.",
-  "Halo-Halo": "\"Halo-halo\" means \"mix-mix\": you're meant to stir everything together before eating.",
-  "Chicken Inasal": "Chicken inasal comes from Bacolod. It's marinated in vinegar, kalamansi and lemongrass, then basted with annatto (atsuete) oil while grilling.",
-  "Lechon Manok": "Lechon manok is roasted on a turning spit, often with lemongrass stuffed inside the chicken.",
-  "Bulalo": "Bulalo is beef shank and marrow bone soup, a favourite in Batangas and cool Tagaytay.",
-  "Batchoy": "Batchoy comes from La Paz, Iloilo: noodle soup with pork, liver and crushed chicharon on top.",
-  "Tortang Talong": "For tortang talong, the eggplant is grilled, peeled and flattened, then dipped in egg and fried.",
-  "Ginisang Ampalaya": "Rubbing sliced ampalaya with salt and squeezing out the juice makes it less bitter.",
-  "Pork Barbecue": "Pinoy pork barbecue is skewered and basted with a sweet sauce of banana ketchup and soy sauce, a staple of the street-side ihawan.",
-  "Inihaw na Liempo": "Liempo is pork belly. For inihaw na liempo it's usually marinated in soy sauce, kalamansi and garlic before grilling.",
-  "Beef Tapa": "Tapa is cured, thinly sliced beef. Served with sinangag (garlic rice) and itlog (egg), it becomes tapsilog.",
-  "Tocino": "Tocino is sweet cured pork. The name is the Spanish word for bacon.",
-  "Longganisa": "Almost every province has its own longganisa, from sweet hamonado styles to the garlicky Vigan and Lucban kinds.",
-  "Embutido": "Embutido is a Filipino meatloaf: ground pork with egg, raisins and sausage, rolled in foil and steamed.",
-  "Champorado": "Champorado is chocolate rice porridge made with tablea, and many eat it with tuyo for a sweet-and-salty mix.",
-  "Ginataang Bilo-Bilo": "Bilo-bilo are glutinous rice balls cooked in coconut milk with saba, kamote, langka and sago.",
-  "Arroz Caldo": "Arroz caldo is rice porridge with chicken and ginger, topped with toasted garlic, scallions and kalamansi.",
-  "Goto": "Goto is rice porridge cooked with beef tripe and ginger.",
-  "Biko": "Biko is glutinous rice cooked in coconut milk and brown sugar, often topped with latik.",
-  "Suman": "Suman is glutinous rice wrapped in leaves (banana, buri or ibos) and steamed or boiled.",
-  "Puto": "Puto is a steamed rice cake, and a classic partner of dinuguan.",
-  "Kutsinta": "Kutsinta gets its chewy bounce from lye water and is served with grated coconut.",
-  "Turon": "Turon is saba (often with langka) rolled in a lumpia wrapper with brown sugar, then fried until the sugar caramelises.",
-  "Banana Cue": "Banana cue is saba fried in brown sugar that caramelises around it, served on a bamboo skewer.",
-  "Maja Blanca": "Maja blanca is a coconut milk pudding thickened with cornstarch, often with corn kernels.",
-  "Buko Pandan": "Buko pandan mixes young coconut strips with pandan-flavoured gelatin and cream.",
-  "Bistek": "Bistek comes from \"beef steak\": thin beef slices cooked in soy sauce and kalamansi with onion rings.",
-  "Mechado": "Mechado is named after the strip of pork fat (mecha, a wick) once threaded through the beef.",
-  "Lechon Paksiw": "Lechon paksiw is how leftover lechon is used up: simmered in vinegar and lechon sauce.",
-  "Humba": "Humba is a Visayan braised pork, sweet from brown sugar and often cooked with salted black beans (tausi).",
-  "Dinuguan": "Dinuguan is pork stewed in pig's blood with vinegar and chili.",
-  "Igado": "Igado is an Ilocano dish of pork and liver cooked in vinegar and soy sauce.",
-  "Ginataang Kalabasa": "Ginataang kalabasa is squash cooked in coconut milk, often with sitaw and shrimp.",
-  "Filipino Spaghetti": "Filipino spaghetti is sweet, from banana ketchup or sugar, and has sliced hotdogs in the sauce.",
-  "Pork Steak": "Pork steak is pork cooked the bistek way, in soy sauce, kalamansi and onions.",
-  "Daing na Bangus": "Daing na bangus is milkfish split open, marinated in vinegar and garlic, then fried.",
-  "Camaron Rebosado": "\"Camaron rebosado\" is Spanish for battered shrimp.",
-  "Baked Macaroni": "Pinoy baked macaroni is a party favourite: sweet meat sauce under a layer of white sauce and cheese.",
-  "Fried Chicken": "Filipino fried chicken is often marinated in kalamansi, soy sauce or patis before frying, and eaten with rice and gravy.",
-  "Fried Tilapia": "Tilapia is one of the most farmed fish in the Philippines, raised in ponds and lakes like Taal and Laguna de Bay.",
-  "Ginataang Hipon": "Ginataang hipon is shrimp simmered in coconut milk, often with kalabasa and sitaw.",
-  "Chop Suey": "Pinoy chop suey is a stir-fry of mixed vegetables, often with quail eggs, chicken liver or shrimp.",
-  "Escabeche": "Escabeche is fried fish in a sweet-and-sour sauce; the word is Spanish for a vinegar marinade.",
-  "Sweet and Sour Fish": "Sweet-and-sour dishes came to the Philippines through Chinese cooking.",
-  "Pochero": "Pochero is a tomato-based stew with saba, chickpeas and pechay, served with an eggplant sauce on the side.",
-  "Cocido": "Cocido comes from the Spanish cocido, a boiled meal of meats, chickpeas and vegetables.",
-  "Picadillo": "Filipino picadillo is ground meat with potatoes and carrots; in some homes it's cooked as a soup.",
-  "Tortang Giniling": "Tortang giniling is an omelette with sautéed ground meat, an easy baon favourite.",
-  "Buko Pie": "Buko pie is a famous pasalubong from Laguna, filled with young coconut.",
-  "Egg Pie": "Egg pie is a bakery favourite: egg custard baked in a pie crust.",
-  "Polvoron": "Polvoron comes from the Spanish polvo (powder): toasted flour, powdered milk, sugar and butter pressed in a mold.",
-  "Pastillas": "Pastillas de leche are milk candies from Bulacan, rolled in sugar and wrapped in paper.",
-  "Kinilaw": "Kinilaw is raw fish \"cooked\" in vinegar or kalamansi, a way of eating fish that goes back to before colonial times.",
-  "Sinuglaw": "Sinuglaw joins sinugba (grilled pork) and kinilaw (fish in vinegar), from Mindanao and the Visayas.",
-  "Sinigang na Hipon": "In sinigang na hipon, the shrimp heads give the broth much of its flavour and an orange tint.",
-  "Halabos na Hipon": "Halabos is shrimp steamed in its own juices with a little salt; some cooks add lemon-lime soda.",
-  "Palitaw": "Palitaw is named after \"litaw\" (to surface): the rice cakes are done when they float.",
-  "Pichi-Pichi": "Pichi-pichi is grated cassava and sugar, steamed and rolled in grated coconut or cheese.",
-  "Pandesal": "Pandesal means \"bread of salt\", though it's slightly sweet; it's rolled in breadcrumbs before baking.",
-  "Ensaymada": "Ensaymada traces back to the ensaïmada of Mallorca, Spain; the Filipino version is topped with butter, sugar and cheese.",
-  "Leche Flan": "A popular story says leche flan used the egg yolks left over when egg whites were used in building old Spanish-era churches.",
-};
-
-// More facts per dish, so a round almost never repeats one. Our own words; well-known kitchen and food-history facts.
-const GAME_MORE_FACTS = {
-  "Sinigang": ["Sinigang na baboy usually has kangkong, sitaw, labanos, talong, okra and siling haba.", "Sinigang sa miso, cooked with fish and mustasa, is a well-loved version."],
-  "Adobo": ["There's adobong puti (vinegar, no soy sauce), adobo sa gata, and adobong dilaw with turmeric.", "Adobo keeps for days without a fridge because of the vinegar, which is why it's a favourite baon."],
-  "Kaldereta": ["Many kaldereta recipes thicken the sauce with liver spread, and some melt in cheese.", "Kaldereta usually has potatoes, carrots, bell peppers and olives or green peas."],
-  "Kare-Kare": ["Kare-kare is traditionally made with oxtail and tripe, with talong, pechay and sitaw.", "Its orange colour comes from atsuete (annatto)."],
-  "Lechon Kawali": ["The pork belly is boiled first so it's tender, then dried so the skin crackles when fried.", "Lechon kawali is usually dipped in lechon sauce or sukang maanghang."],
-  "Crispy Pata": ["Crispy pata is often dipped in soy sauce and vinegar with onions and chili.", "A whole crispy pata is a classic sharing dish for family or barkada."],
-  "Sisig": ["Before the sizzling plate, \"sisig\" meant a sour salad, like green papaya or mango with vinegar.", "Lucia \"Aling Lucing\" Cunanan of Angeles is credited with the sizzling pork sisig."],
-  "Bicol Express": ["Its heat comes from siling labuyo and siling haba, cooked with pork in coconut milk and bagoong.", "Bicolanos are known for cooking with gata and chili, and Bicol Express has both."],
-  "Tinola": ["Tinola uses green papaya or sayote, plus chili leaves or malunggay.", "Native chicken (manok na Tagalog) is prized for tinola for its richer broth."],
-  "Nilaga": ["Nilaga often has potatoes, corn, cabbage, pechay and saba.", "The broth stays clear if you skim off the scum while it boils."],
-  "Pancit Canton": ["Canton noodles are egg noodles, stir-fried with soy sauce and often oyster sauce.", "\"Pancit\" is said to come from the Hokkien \"pian i sit\": something conveniently cooked."],
-  "Pancit Bihon": ["Bihon is soaked in water first so it cooks evenly and doesn't break into bits.", "Pancit is often served with kalamansi to squeeze over it."],
-  "Lumpiang Shanghai": ["Lumpiang Shanghai is a party staple, usually served with sweet chili sauce.", "Rolling them thin helps the filling cook through before the wrapper burns."],
-  "Tokwa't Baboy": ["The dipping sauce is soy sauce and vinegar with onions and chili.", "Tokwa is firm tofu, fried until golden before it's mixed with the pork."],
-  "Menudo": ["Menudo is cut into small cubes, often with hotdogs, potatoes, carrots and raisins.", "\"Menudo\" comes from the Spanish word for small or minute, for its small pieces."],
-  "Afritada": ["Afritada is chicken or pork stewed in tomato sauce with potatoes, carrots and bell peppers.", "Unlike menudo and kaldereta, afritada is usually cooked without liver."],
-  "Laing": ["The gabi leaves are usually dried first; cooking them well keeps them from itching the throat.", "Laing is cooked slowly until the gata thickens and turns oily."],
-  "Pinakbet": ["Ilocanos make pinakbet with bagoong isda (fish); many Tagalog cooks use bagoong alamang (shrimp).", "Its usual vegetables are ampalaya, talong, okra, sitaw, kalabasa and tomato."],
-  "Halo-Halo": ["Common halo-halo layers: shaved ice, milk, sweet beans, nata de coco, kaong, leche flan and ube.", "Halo-halo is a summer favourite, sold in many stalls when the weather is hot."],
-  "Leche Flan": ["Leche flan is steamed or baked in an oval llanera, then turned out so the caramel is on top.", "Using only egg yolks makes leche flan richer and smoother."],
-  "Pork Barbecue": ["Barbecue sticks are often eaten with sukang maanghang or atchara.", "Many cooks brush the leftover marinade on while grilling for a glossy finish."],
-  "Inihaw na Liempo": ["Grilled liempo is often eaten with toyo-mansi or ensaladang mangga.", "The fat on liempo melts over the coals, which keeps the meat juicy."],
-  "Beef Tapa": ["Tapa was once a way to keep meat longer by curing and drying it.", "Beef tapa is usually sliced thin against the grain so it stays tender."],
-  "Tocino": ["Pampanga is especially known for its tocino.", "Tocino's sugar caramelises in the pan, so it's cooked on low heat to keep it from burning."],
-  "Longganisa": ["Vigan longganisa is small and garlicky; Lucban's is known for its garlic and oregano.", "Longganisa with sinangag and itlog is called longsilog."],
-  "Embutido": ["Embutido can be steamed ahead, frozen, then sliced and fried when needed.", "A hard-boiled egg or sausage in the middle gives each slice a pattern."],
-  "Champorado": ["Champorado is often topped with evaporated or condensed milk.", "It's a favourite rainy-day breakfast or merienda."],
-  "Ginataang Bilo-Bilo": ["Some places call it ginataang halo-halo because of all the mix-ins.", "The bilo-bilo balls are done when they float to the top."],
-  "Arroz Caldo": ["\"Arroz caldo\" is Spanish for rice broth, but the dish is believed to come from Chinese congee.", "It's often served with a hard-boiled egg, and is a favourite on rainy days or when sick."],
-  "Goto": ["Goto is often eaten with tokwa't baboy on the side.", "Toasted garlic, scallions and kalamansi are the usual toppings."],
-  "Biko": ["Biko is a fiesta favourite, sliced into squares and shared.", "Latik is made by cooking coconut milk until it turns into brown curds."],
-  "Suman": ["Suman sa ibos is wrapped in buri palm leaves; suman sa lihiya uses lye water.", "Suman is often eaten with sugar, latik or ripe mango."],
-  "Puto": ["Puto Biñan from Laguna is one of the best-known kinds.", "Puto is often topped with cheese or salted egg."],
-  "Kutsinta": ["Kutsinta's brown colour comes from brown sugar, sometimes with a little annatto.", "Kutsinta is steamed in small cups, which gives it its shape."],
-  "Turon": ["Turon is often sold by street vendors alongside banana cue and camote cue.", "Turon is also called \"banana lumpia\"."],
-  "Banana Cue": ["The name comes from \"banana\" and \"barbecue\": it's sold on a stick like barbecue.", "Saba is used because it stays firm when fried."],
-  "Maja Blanca": ["Maja blanca is a classic Christmas and fiesta dessert, often topped with latik.", "It sets as it cools, so it can be sliced into neat squares."],
-  "Buko Pandan": ["Pandan leaves give buko pandan its green colour and scent.", "It's served cold, which makes it a favourite at summer parties."],
-  "Bistek": ["Bistek is topped with plenty of onion rings, added at the end so they stay a bit crisp.", "Kalamansi gives bistek its tangy taste."],
-  "Mechado": ["Mechado is beef stewed in tomato sauce and soy sauce, with potatoes and carrots.", "Mechado often uses tougher cuts that turn tender after long, slow cooking."],
-  "Lechon Paksiw": ["Lechon sauce, made with liver, vinegar and sugar, makes lechon paksiw sweet and thick.", "Lechon paksiw is a common dish the day after a fiesta."],
-  "Humba": ["Humba is often compared to adobo, but it's sweeter and darker.", "Some humba recipes add dried banana blossoms."],
-  "Dinuguan": ["Dinuguan is often called \"chocolate meat\" as a playful nickname.", "Dinuguan and puto are a classic pair."],
-  "Igado": ["Igado often has bell peppers and green peas.", "Igado is a favourite at Ilocano fiestas."],
-  "Ginataang Kalabasa": ["Kalabasa is rich in beta-carotene, which the body turns into vitamin A.", "Kalabasa softens into the gata and makes the sauce creamy and orange."],
-  "Chop Suey": ["Harder vegetables like carrots go in first and leafy ones last, so all stay crisp.", "Chop suey's sauce is thickened with a little cornstarch slurry."],
-  "Filipino Spaghetti": ["Filipino spaghetti is a must at children's birthday parties.", "It's usually topped with grated cheese."],
-  "Baked Macaroni": ["Baked macaroni is often made in big trays to share at Christmas and birthdays.", "The white sauce on top is a béchamel of butter, flour and milk."],
-  "Fried Chicken": ["Many Filipinos eat fried chicken with rice and gravy or banana ketchup.", "Marinating the chicken first seasons it all the way to the bone."],
-  "Pork Steak": ["Pork steak is usually made with pork chops or kasim (shoulder).", "Like bistek, it's finished with plenty of onions."],
-  "Daing na Bangus": ["Bangus is often called the national fish of the Philippines.", "Daing na bangus is a favourite breakfast, with garlic rice and egg (dangsilog)."],
-  "Fried Tilapia": ["Fried tilapia is often eaten with sukang maanghang or tomato and onions.", "Patting the fish dry before frying keeps the oil from splattering."],
-  "Ginataang Hipon": ["The shrimp heads give the gata an orange colour and rich flavour.", "Shrimp cook fast, so they go in near the end to stay tender."],
-  "Camaron Rebosado": ["Camaron rebosado is a classic in Filipino-Chinese restaurants.", "It's usually dipped in sweet and sour sauce."],
-  "Chicken Inasal": ["Inasal is eaten with sinamak (spiced vinegar), soy sauce, kalamansi and chicken oil on the rice.", "Bacolod's Manokan Country is famous for its inasal stalls."],
-  "Lechon Manok": ["Lechon manok is often eaten with a liver-based lechon sauce.", "Turning on the spit cooks the chicken evenly and bastes it in its own juices."],
-  "Bulalo": ["For many, the bone marrow is the best part: scooped out and eaten with rice.", "Bulalo is cooked for hours so the beef shank turns tender."],
-  "Batchoy": ["La Paz batchoy's broth is flavoured with pork bones and shrimp paste.", "Batchoy is often topped with crushed chicharon and fried garlic."],
-  "Tortang Talong": ["Some versions add ground pork to the egg for a heartier torta.", "Tortang talong is often eaten with banana ketchup."],
-  "Ginisang Ampalaya": ["Cooking ampalaya with egg softens its bitterness.", "Ampalaya is a good source of vitamin C."],
-  "Escabeche": ["Escabeche is often made with lapu-lapu or tilapia, with ginger and bell peppers.", "The fish is fried first so it stays firm under the sauce."],
-  "Sweet and Sour Fish": ["The sauce is usually vinegar, sugar and ketchup, thickened with cornstarch.", "Pineapple chunks and bell peppers are common in the sauce."],
-  "Pochero": ["Pochero comes from the Spanish puchero, a cooking pot.", "Saba bananas make pochero's broth slightly sweet."],
-  "Cocido": ["Cocido and pochero are cousins: both are Spanish-style boiled meals with chickpeas.", "Cocido is often served with a separate sauce for dipping."],
-  "Picadillo": ["Picadillo comes from the Spanish \"picar\", to chop or mince.", "It's a quick weeknight dish because ground meat cooks fast."],
-  "Tortang Giniling": ["Tortang giniling is often eaten with banana ketchup.", "The meat is cooked first, then mixed with beaten egg and fried."],
-  "Buko Pie": ["Buko pie is linked to Los Baños, Laguna, where it's sold along the highway.", "The filling is young coconut meat in a creamy custard."],
-  "Egg Pie": ["Egg pie is a classic in Filipino panaderias.", "Its top bakes into a browned layer while the inside stays soft."],
-  "Polvoron": ["Polvoron is wrapped in colourful paper; eat it slowly, or the powder makes you cough!", "Some versions add pinipig, peanuts or cookies and cream."],
-  "Pastillas": ["Bulacan pastillas wrappers are often cut into fine designs called pabalat.", "The original pastillas de leche used carabao's milk."],
-  "Kinilaw": ["Kinilaw often uses tuna or tanigue with ginger, onions, chili and coconut vinegar.", "The fish is eaten soon after mixing so it stays fresh and firm."],
-  "Sinuglaw": ["Sinuglaw is especially popular in Davao.", "The grilled pork's smokiness balances the sour kinilaw."],
-  "Sinigang na Hipon": ["Shrimp go in near the end so they stay tender.", "Sinigang na hipon often has kangkong, labanos and sitaw."],
-  "Halabos na Hipon": ["Halabos means cooking shrimp quickly in very little liquid.", "The shrimp turn bright orange when they're done."],
-  "Palitaw": ["Palitaw is coated in grated coconut, sugar and toasted sesame seeds.", "Its flat shape comes from pressing the dough before boiling."],
-  "Pichi-Pichi": ["Pichi-pichi uses lye water for its chewy, jelly-like texture.", "It's often rolled in grated coconut or grated cheese."],
-  "Pandesal": ["Pandesal is the classic breakfast bread, bought warm from the panaderia in the morning.", "It's often eaten with coffee, cheese or a filling like corned beef."],
-  "Ensaymada": ["Ensaymada is coiled before baking, which gives it its spiral shape.", "Some bakeries top it with salted egg or ube."],
+  "Sinigang": [
+    "Sour soups were cooked in the islands long before the Spanish came; souring with local fruit was the native way.",
+    "Each region sours it with what grows nearby: sampalok, kamias, bayabas, santol, batuan in Negros and Panay, or green mango.",
+    "Instant sinigang mixes made it easy for Filipinos abroad to cook the dish they say they miss most.",
+  ],
+  "Adobo": [
+    "\"Adobo\" is from the Spanish \"adobar\", to marinate; the Spanish used the word for the vinegar-stewed dishes they found here.",
+    "Cooking in vinegar and salt was an old way to keep meat from spoiling in the heat, long before refrigerators.",
+    "Soy sauce came into adobo through Chinese traders; older versions used only vinegar, garlic and salt (adobong puti).",
+  ],
+  "Kaldereta": [
+    "\"Kaldereta\" comes from the Spanish \"caldera\", a cauldron, the big pot it was cooked in.",
+    "It's believed to have started as a goat (kambing) stew, a Spanish-style tomato stew adapted to local meat.",
+    "Tomatoes came from the Americas on the Manila galleons, which made Spanish-era tomato stews like this possible.",
+  ],
+  "Kare-Kare": [
+    "One story links kare-kare to Indian sepoys who stayed in Cainta after the British occupied Manila (1762–64) and missed their curry.",
+    "Another story says it comes from Pampanga, the province known for its cooking.",
+    "It was a fiesta dish because oxtail and tripe take hours to soften, so it was saved for special days.",
+  ],
+  "Lechon Kawali": [
+    "\"Lechon\" is Spanish for suckling pig and \"kawali\" is the Tagalog wok: it's a home way to get crackling skin without roasting a whole pig.",
+    "Boiling first, then frying, was a way to make tough pork belly tender and still crisp.",
+    "It became a carinderia favourite because it can be fried in batches and sold by the slice.",
+  ],
+  "Crispy Pata": [
+    "\"Pata\" means the leg or trotter, from the Spanish word for an animal's foot.",
+    "Crispy pata is often credited to the Barrio Fiesta restaurant, which opened in the 1950s.",
+    "It turned a cheap, bony cut into a showpiece for sharing with family or barkada.",
+  ],
+  "Sisig": [
+    "\"Sisig\" is an old Kapampangan word for a sour salad; a 1732 Kapampangan dictionary already lists it.",
+    "Lucia \"Aling Lucing\" Cunanan of Angeles City is credited with sizzling pork sisig in the 1970s, using cheap pig's head.",
+    "Angeles City calls itself the sisig capital and holds a yearly sisig festival.",
+  ],
+  "Bicol Express": [
+    "It's said to be named in the 1960s by a cook in Malate, Manila, after the train between Manila and Bicol.",
+    "Bicolanos had long cooked pork with gata and chili as \"sinilihan\"; the train name made it famous.",
+    "Its heat suits Bicol, a region known for cooking with plenty of siling labuyo.",
+  ],
+  "Tinola": [
+    "Tinola appears in Rizal's Noli Me Tangere (1887): Padre Dámaso is served only the neck and a wing, and sulks.",
+    "It's an old way to make one chicken feed a big family: lots of broth, with green papaya to stretch it.",
+    "Ginger broth has long been given to the sick and to new mothers as a \"warming\" food.",
+  ],
+  "Nilaga": [
+    "\"Nilaga\" comes from \"laga\", to boil.",
+    "Boiling meat with vegetables is one of the simplest and oldest ways to cook in the islands.",
+    "Its clear broth is a classic meal for the sick and on rainy days.",
+  ],
+  "Pancit Canton": [
+    "\"Pancit\" is said to come from the Hokkien \"pian i sit\", something conveniently cooked.",
+    "\"Canton\" refers to Guangzhou (Canton) in southern China, linked to these egg noodles.",
+    "Chinese traders brought noodles centuries ago, and panciterias spread around Manila in the 1800s.",
+  ],
+  "Pancit Bihon": [
+    "\"Bihon\" comes from the Hokkien word for rice noodles.",
+    "Noodles are served at birthdays because long noodles stand for long life, a Chinese belief Filipinos adopted.",
+    "Many towns have their own pancit: Malabon, Lucban's habhab, Cabagan and more.",
+  ],
+  "Lumpiang Shanghai": [
+    "\"Lumpia\" comes from the Hokkien word for a soft spring roll.",
+    "The name \"Shanghai\" is Filipino; the dish isn't what you'd find in Shanghai itself.",
+    "It became a party staple because it can be rolled ahead, frozen, and fried in minutes.",
+  ],
+  "Tokwa't Baboy": [
+    "\"Tokwa\" comes from the Hokkien word for dried, pressed tofu, brought by Chinese settlers.",
+    "It started as a cheap pulutan using pork ears and face, then became lugaw's classic partner.",
+    "The vinegar-soy dip cuts the richness, which is why it pairs so well with lugaw.",
+  ],
+  "Menudo": [
+    "\"Menudo\" comes from the Spanish for small or minute, for the small cubes of meat.",
+    "It's one of the Spanish-era tomato stews, cousins of afritada and kaldereta.",
+    "Liver was added to stretch the meat and thicken the sauce.",
+  ],
+  "Afritada": [
+    "\"Afritada\" comes from the Spanish \"fritada\", something fried first; the meat is browned before stewing.",
+    "Tomatoes came from the Americas on the Manila galleons, making these stews possible.",
+    "It's a common fiesta dish because it's easy to cook in big pots for many guests.",
+  ],
+  "Laing": [
+    "Laing comes from Bicol, where gabi grows well and coconuts are plentiful.",
+    "Drying the gabi leaves first was a way to store them, and it also takes away the itch.",
+    "A related Bicol dish, pinangat, wraps the same filling in gabi leaves.",
+  ],
+  "Pinakbet": [
+    "The name is said to come from the Ilocano \"pinakebbet\", shrunk or shriveled, as the vegetables cook down.",
+    "It uses vegetables that thrive in Ilocano backyards and dry, sandy soil.",
+    "Bagoong isda (fermented fish) was a way to keep fish for the lean season, and it seasons pinakbet.",
+  ],
+  "Pork Barbecue": [
+    "Its sauce uses banana ketchup, invented by food scientist Maria Orosa in the 1940s when tomatoes were scarce.",
+    "Grilling on sticks made meat easy to sell on the street, which is how barbecue stands spread.",
+    "Street grills also sell parts once thrown away, named for their looks: isaw, betamax, adidas.",
+  ],
+  "Inihaw na Liempo": [
+    "\"Inihaw\" comes from \"ihaw\", to grill over coals.",
+    "Grilling over coconut husk or charcoal was the everyday way to cook outdoors, in the field or at the beach.",
+    "It's grilled whole and sliced to share, which made it a handaan favourite.",
+  ],
+  "Beef Tapa": [
+    "Tapa was a way to preserve meat: sliced thin, salted and dried in the sun.",
+    "Tapsilog (tapa, sinangag, itlog) is often called the first of the \"silog\" meals, from around the 1980s.",
+    "Tapsihan stalls sprang up selling tapa day and night to students and workers.",
+  ],
+  "Tocino": [
+    "\"Tocino\" is Spanish for bacon or salt pork.",
+    "Curing pork with salt and sugar kept it longer without a fridge.",
+    "Pampanga, often called the country's culinary capital, is famous for its tocino.",
+  ],
+  "Longganisa": [
+    "\"Longganisa\" comes from the Spanish \"longaniza\", a long sausage.",
+    "Each town made its own to use up pork and keep it longer, so there are dozens of kinds.",
+    "Vigan's is small and garlicky; Lucban's is known for its oregano.",
+  ],
+  "Embutido": [
+    "\"Embutido\" is Spanish for a stuffed sausage.",
+    "It's a Filipino meatloaf, steamed because most homes had no oven.",
+    "It's a Christmas and fiesta dish because it can be made ahead and kept frozen.",
+  ],
+  "Arroz Caldo": [
+    "\"Arroz caldo\" is Spanish for rice broth, the name Spanish-era cooks gave to Chinese-style congee.",
+    "Ginger in rice porridge comes from a Chinese tradition for colds and recovery.",
+    "Lugaw is the plain version; arroz caldo is the one with chicken.",
+  ],
+  "Goto": [
+    "\"Goto\" is said to come from the Hokkien word for beef tripe.",
+    "It made use of tripe and innards, cheap parts that need long, slow cooking.",
+    "Batangas has its own goto: a beef-offal soup served without rice.",
+  ],
+  "Bistek": [
+    "\"Bistek\" comes from \"beefsteak\", heard through the Spanish \"bistec\".",
+    "It swapped Western butter for soy sauce and kalamansi, which were cheap and local.",
+    "Slicing thin let tough local beef cook fast and stay tender.",
+  ],
+  "Mechado": [
+    "\"Mechado\" comes from the Spanish \"mecha\", a wick: a strip of pork fat was threaded through the beef like one.",
+    "The fat strip kept lean beef juicy during the long simmer.",
+    "It's a Spanish-era dish that Filipinos made their own with soy sauce.",
+  ],
+  "Lechon Paksiw": [
+    "It was made so leftover lechon from a fiesta never goes to waste.",
+    "\"Paksiw\" means cooking in vinegar, which also helped the leftovers keep a few more days.",
+    "Lechon sauce itself was a way to use the roasted pig's liver.",
+  ],
+  "Humba": [
+    "Humba is believed to come from Chinese red-braised pork brought by Fujianese settlers.",
+    "It's a Visayan favourite, especially in Cebu and Bohol.",
+    "Its sweetness and dark colour come from the Chinese way of braising in sugar and soy sauce.",
+  ],
+  "Dinuguan": [
+    "\"Dinuguan\" comes from \"dugo\", blood.",
+    "Using the blood was part of using the whole pig, with nothing wasted after a butchering.",
+    "Ilocanos have their own drier version called dinardaraan.",
+  ],
+  "Igado": [
+    "\"Igado\" comes from the Spanish \"hígado\", liver.",
+    "It's an Ilocano fiesta dish, made from the pig butchered for the feast.",
+    "Sukang Iloko, the region's sugarcane vinegar, gives it its tang.",
+  ],
+  "Ginataang Kalabasa": [
+    "\"Ginataan\" means cooked in gata, one of the oldest ways of cooking in the islands.",
+    "Squash came from the Americas on the galleons and became a backyard staple.",
+    "It made a filling ulam out of what grew in the yard.",
+  ],
+  "Chop Suey": [
+    "\"Chop suey\" is said to come from the Cantonese for \"mixed bits\".",
+    "It became famous in Chinese-American restaurants and reached the Philippines through Chinese cooks.",
+    "It began as a way to use up leftover vegetables and meat.",
+  ],
+  "Filipino Spaghetti": [
+    "Its sweet sauce traces back to banana ketchup, invented by Maria Orosa in the 1940s.",
+    "Pasta became common in the American era, and Filipinos sweetened it to local taste.",
+    "Fast-food chains made sweet spaghetti a must at children's birthdays.",
+  ],
+  "Baked Macaroni": [
+    "Macaroni became common in Filipino kitchens in the American era.",
+    "Ovens were once rare at home, so baked dishes became special-occasion food.",
+    "It's a cousin of Italian baked pasta, made sweeter Filipino-style.",
+  ],
+  "Fried Chicken": [
+    "Fried chicken spread through American influence, then fast-food chains.",
+    "Max's Restaurant, opened in 1945, became famous for chicken fried without batter.",
+    "Filipino cooks marinate it in kalamansi and patis first, an older local way of seasoning.",
+  ],
+  "Pork Steak": [
+    "Pork steak is the pork version of bistek, for when beef was too dear.",
+    "It shows how the Western \"steak\" became a soy-and-kalamansi dish here.",
+    "It's a common carinderia and baon dish.",
+  ],
+  "Daing na Bangus": [
+    "\"Daing\" means fish split open, salted or soured, and dried: an old way to preserve the catch.",
+    "Dagupan in Pangasinan calls itself the bangus capital and holds a yearly Bangus Festival.",
+    "Bangus is often called the unofficial national fish of the Philippines.",
+  ],
+  "Fried Tilapia": [
+    "Tilapia isn't native: it was brought to the Philippines in the 1950s.",
+    "It spread because it grows fast and survives in ponds, lakes and even rice fields.",
+    "Frying it whole until crisp means even the tail and fins can be eaten.",
+  ],
+  "Ginataang Hipon": [
+    "Cooking in coconut milk was an everyday method long before the Spanish arrived.",
+    "Shrimp from rivers, lakes and fishponds made it common in many towns.",
+    "Bicol and Quezon, coconut country, are known for their many gata dishes.",
+  ],
+  "Camaron Rebosado": [
+    "\"Camarón rebozado\" is Spanish for battered shrimp; \"rebozar\" means to coat in batter.",
+    "It's a Spanish name on a Chinese-style dish, a mix found in many old panciterias.",
+    "Leaving the tail on gives a handle for dipping.",
+  ],
+  "Paksiw na Bangus": [
+    "\"Paksiw\" means cooking in vinegar, which kept fish from spoiling for a day or two.",
+    "Vinegar from coconut, cane or nipa was made in almost every province.",
+    "It's one of the cheapest everyday ways to cook bangus.",
+  ],
+  "Sinigang na Bangus": [
+    "Fish sinigang is likely older than pork sinigang, since fish was the everyday food by rivers and seas.",
+    "Sinigang sa miso adds fermented soybean paste, a later influence from Japanese cooking.",
+    "Bangus belly became a prized cut once deboned bangus became popular.",
+  ],
+  "Adobong Pusit": [
+    "Adobong pusit shows how \"adobo\" became a method, not one dish: almost anything can be cooked adobo-style.",
+    "Cooking squid in its own ink uses every part of the catch.",
+    "Spain has a similar dish: calamares en su tinta.",
+  ],
+  "Calamares": [
+    "\"Calamares\" is Spanish for squid; fried squid rings are a classic in Spain too.",
+    "It became a street food, sold with spiced vinegar.",
+    "It's a classic pulutan.",
+  ],
+  "Chicken Inasal": [
+    "\"Inasal\" is Hiligaynon for something grilled or roasted over fire.",
+    "Bacolod's Manokan Country, a row of grill stalls, made inasal famous.",
+    "Pouring the chicken oil over rice was a way to use the drippings.",
+  ],
+  "Lechon Manok": [
+    "Lechon manok is the chicken version of lechon, turned on a spit.",
+    "Roadside lechon manok stalls spread across the country in the 1980s and 90s.",
+    "Stuffing it with lemongrass is a local touch.",
+  ],
+  "Bulalo": [
+    "Bulalo comes from Batangas and Cavite, cattle-raising provinces.",
+    "\"Bulalo\" refers to the beef shank and marrow bone.",
+    "It became the dish to have in cool Tagaytay, overlooking Taal Volcano.",
+  ],
+  "Batchoy": [
+    "Batchoy comes from the La Paz market in Iloilo, around the 1930s.",
+    "The name is said to come from the Chinese for pieces of meat.",
+    "It used pork innards and liver, cheap parts sold at the market.",
+  ],
+  "Tortang Talong": [
+    "\"Torta\" is Spanish for a cake or omelette.",
+    "Grilling and flattening the eggplant made one egg and one eggplant into a meal.",
+    "It's a long-time meatless dish for Fridays and Lent.",
+  ],
+  "Ginisang Ampalaya": [
+    "\"Gisa\" comes from the Spanish \"guisar\", to sauté or stew.",
+    "Ampalaya has long been valued as medicine as much as food.",
+    "Cooking it with egg softens the bitterness, a trick to get children to eat it.",
+  ],
+  "Escabeche": [
+    "Escabeche came from Spain, from an Arabic word for dishes cooked with vinegar.",
+    "Fish in vinegar sauce kept longer, which suited the hot climate.",
+    "The Filipino version grew sweeter, close to sweet-and-sour.",
+  ],
+  "Sweet and Sour Fish": [
+    "Sweet-and-sour cooking came from southern China with Chinese settlers.",
+    "Ketchup in the sauce is a newer, American-era addition.",
+    "It's a favourite at Filipino-Chinese restaurants and parties.",
+  ],
+  "Pochero": [
+    "\"Pochero\" comes from the Spanish \"puchero\", a cooking pot and the stew made in it.",
+    "It was a Sunday meal in Spanish-era homes: meat and vegetables boiled together.",
+    "Filipinos added saba and a side of eggplant sauce.",
+  ],
+  "Cocido": [
+    "\"Cocido\" is Spanish for cooked, from the boiled dinners of Madrid.",
+    "It came with the Spanish and stayed as a holiday dish in some families.",
+    "Cocido and pochero are close cousins.",
+  ],
+  "Picadillo": [
+    "\"Picadillo\" comes from the Spanish \"picar\", to mince.",
+    "It's found across the old Spanish colonies, from Cuba and Mexico to the Philippines.",
+    "It stretched a little ground meat with potatoes to feed a family.",
+  ],
+  "Tortang Giniling": [
+    "\"Giniling\" means ground, from \"giling\", to grind.",
+    "\"Torta\" comes from Spanish.",
+    "Mixing meat into eggs was a way to stretch a small amount of meat.",
+  ],
+  "Kinilaw": [
+    "Kinilaw is very old: at a 10th–13th century site in Butuan, archaeologists found fish bones with tabon-tabon fruit, still used for kinilaw.",
+    "\"Kilaw\" means raw; the vinegar or citrus \"cooks\" the fish.",
+    "Fishermen made it right on the boat with the fresh catch.",
+  ],
+  "Sinuglaw": [
+    "\"Sinuglaw\" joins \"sinugba\" (grilled) and \"kinilaw\" (raw fish in vinegar).",
+    "It comes from Mindanao and the Visayas, especially Davao.",
+    "It began as pulutan.",
+  ],
+  "Sinigang na Hipon": [
+    "Shrimp sinigang is a Tagalog favourite in lake towns around Laguna de Bay.",
+    "A sour broth brings out the sweetness of shrimp.",
+    "Using the heads for the broth wastes nothing.",
+  ],
+  "Halabos na Hipon": [
+    "\"Halabos\" means to cook quickly in very little liquid.",
+    "It's one of the simplest, oldest ways to cook very fresh shrimp.",
+    "Adding lemon-lime soda is a modern twist.",
+  ],
+  "Ginisang Monggo": [
+    "Many families eat monggo on Fridays, a habit from Catholic meatless Fridays.",
+    "Mung beans came with early traders from mainland Asia.",
+    "It was cheap protein when meat was dear.",
+  ],
+  "Ginataang Langka": [
+    "Langka came from South Asia long ago and now grows in many backyards.",
+    "Cooking it young used the fruit before it ripened.",
+    "Gata cooking is one of the oldest Filipino methods.",
+  ],
+  "Pancit Palabok": [
+    "\"Palabok\" means garnish or topping, for all the toppings on it.",
+    "It's a cousin of pancit Malabon, from the fishing town where seafood toppings were plentiful.",
+    "Noodles at a birthday stand for long life.",
+  ],
+  "Lomi": [
+    "Lomi is said to come from the Chinese lo mein.",
+    "Lipa, Batangas is famous for its lomihan (lomi houses).",
+    "It's a hearty, cheap meal for workers on cool nights.",
+  ],
+  "Adobong Kangkong": [
+    "Kangkong grows wild in ponds and rice paddies, so it was free food for many families.",
+    "Cooking it adobo-style shows how adobo became a method for anything.",
+    "It was a meatless dish for Lent and hard times.",
+  ],
+  "Ginisang Repolyo": [
+    "\"Gisa\" comes from the Spanish \"guisar\", to sauté.",
+    "Cabbage grows well in the cool highlands of Benguet, which supply much of the country.",
+    "It's a cheap ulam for a tight budget.",
+  ],
+  "Halo-Halo": [
+    "Halo-halo is linked to Japanese settlers before World War II who sold sweet beans over shaved ice.",
+    "It became possible once ice was easy to buy, after ice plants spread in the American era.",
+    "\"Halo-halo\" means \"mix-mix\".",
+  ],
+  "Mais con Yelo": [
+    "The name is Spanish-Filipino: maíz con hielo, corn with ice.",
+    "Like halo-halo, it became possible once ice was cheap.",
+    "It's the simpler, cheaper summer cooler.",
+  ],
+  "Leche Flan": [
+    "Leche flan comes from the Spanish flan.",
+    "A popular story says Spanish-era builders used egg whites in church walls, leaving the yolks for flan.",
+    "It's steamed in a llanera because few homes once had ovens.",
+  ],
+  "Ube Halaya": [
+    "\"Halaya\" comes from the Spanish \"jalea\", jelly or jam.",
+    "Ube has been grown in the islands for a very long time.",
+    "Cooking it into halaya was a way to keep ube longer.",
+  ],
+  "Champorado": [
+    "Champorado comes from the Mexican champurrado, a chocolate drink, via the galleon trade.",
+    "Filipinos made it with rice instead of corn.",
+    "Cacao was brought from Mexico in the 1600s; tablea came from it.",
+  ],
+  "Ginataang Bilo-Bilo": [
+    "\"Bilo\" means round, for the little sticky rice balls.",
+    "It used small amounts of glutinous rice and fruit from the yard.",
+    "It's a favourite on rainy days and during Holy Week.",
+  ],
+  "Biko": [
+    "Biko is one of many kakanin made from glutinous rice, served at feasts and gatherings.",
+    "Many say sticky rice is served at gatherings to keep the family and friends \"sticking\" together.",
+    "Latik, its topping, is made by cooking down coconut milk.",
+  ],
+  "Suman": [
+    "Suman is one of the oldest kakanin: wrapping rice in leaves let it travel and keep.",
+    "It was carried to the fields as baon.",
+    "Many towns have their own suman, each wrapped in a different leaf.",
+  ],
+  "Puto": [
+    "\"Puto\" may come from the Malay \"puttu\", a steamed rice cake.",
+    "It started as a way to use leftover rice, ground and fermented.",
+    "Biñan in Laguna is famous for its puto.",
+  ],
+  "Kutsinta": [
+    "Kutsinta is believed to have Chinese roots, like many steamed rice cakes.",
+    "Lye water (lihiya) gives it its bounce, an old technique.",
+    "It's sold in palengke stalls right beside puto.",
+  ],
+  "Turon": [
+    "Turon is also called banana lumpia: lumpia came from the Chinese spring roll.",
+    "Saba was everywhere and cheap, so wrapping it made a quick snack to sell.",
+    "It's a classic street merienda.",
+  ],
+  "Banana Cue": [
+    "The name joins \"banana\" and \"barbecue\", because it's sold on a stick like barbecue.",
+    "Frying saba in brown sugar was a cheap way to make a sweet snack.",
+    "It's sold by street vendors beside kamote cue.",
+  ],
+  "Maja Blanca": [
+    "\"Maja blanca\" comes from the Spanish \"manjar blanco\", white delicacy.",
+    "The Spanish version used milk and almonds; Filipinos used coconut milk and corn.",
+    "It's a fiesta and Christmas dessert.",
+  ],
+  "Buko Pandan": [
+    "Buko pandan is a fairly recent dessert, popular from the late 20th century.",
+    "Pandan has long been used in Filipino kitchens to scent rice.",
+    "It's a party dessert because it's cheap and served cold.",
+  ],
+  "Buko Pie": [
+    "Buko pie is credited to the Pahud family of Los Baños, Laguna, in the 1960s.",
+    "Laguna's coconut farms made young coconut cheap.",
+    "It became the pasalubong of travellers on the southern highway.",
+  ],
+  "Egg Pie": [
+    "Egg pie comes from the custard pies of American and British baking.",
+    "It became a panaderia staple.",
+    "It turned eggs and milk into a cheap dessert.",
+  ],
+  "Polvoron": [
+    "\"Polvoron\" comes from the Spanish \"polvo\", powder.",
+    "It comes from polvorones, Spanish Christmas shortbread.",
+    "Filipinos added powdered milk and pinipig.",
+  ],
+  "Pastillas": [
+    "Pastillas de leche are linked to San Miguel, Bulacan.",
+    "They were made to use up carabao's milk.",
+    "The cut-paper wrappers (pabalat) became an art of their own.",
+  ],
+  "Palitaw": [
+    "\"Palitaw\" comes from \"litaw\", to rise or surface: the cakes are done when they float.",
+    "It's one of the simplest kakanin: just rice dough boiled.",
+    "It's sold in palengke stalls and by street vendors.",
+  ],
+  "Pichi-Pichi": [
+    "Pichi-pichi is said to come from Quezon province.",
+    "It's a way to use cassava, which grows easily even in poor soil.",
+    "It's a favourite at parties and in pasalubong boxes.",
+  ],
+  "Bibingka": [
+    "Bibingka may share roots with other Asian rice cakes, like Goa's bebinca.",
+    "It's sold outside churches during Simbang Gabi, the nine dawn Masses before Christmas.",
+    "It was baked in clay pots with coals above and below, long before home ovens.",
+  ],
+  "Puto Bumbong": [
+    "\"Bumbong\" means bamboo tube, which it's steamed in.",
+    "It's a Christmas tradition at Simbang Gabi.",
+    "Its purple colour comes from pirurutong, a native black-purple glutinous rice.",
+  ],
+  "Cassava Cake": [
+    "Cassava came from the Americas on the Manila galleons.",
+    "It grows in poor soil, so it was a hard-times food that became a dessert.",
+    "Cassava cake became popular as ovens spread in homes.",
+  ],
+  "Sapin-Sapin": [
+    "\"Sapin\" means layer.",
+    "Steaming one layer at a time is an old kakanin technique.",
+    "It's a fiesta kakanin.",
+  ],
+  "Mango Float": [
+    "Mango float is a fairly recent dessert, a Filipino take on the American icebox cake.",
+    "It needs no oven, which made it a home favourite.",
+    "Philippine carabao mangoes were once named the sweetest in the world by Guinness.",
+  ],
+  "Buko Salad": [
+    "Buko salad became a holiday dish as canned fruit cocktail and cream became common.",
+    "Coconut is everywhere in the islands, so buko was cheap.",
+    "It's a Christmas and fiesta dessert.",
+  ],
+  "Sans Rival": [
+    "\"Sans rival\" is French for \"without rival\".",
+    "It's said to be a Filipino creation inspired by the French dacquoise.",
+    "Dumaguete is famous for it.",
+  ],
+  "Brazo de Mercedes": [
+    "\"Brazo de Mercedes\" is Spanish for \"arm of Mercedes\".",
+    "It's said to be named after Our Lady of Mercy (Nuestra Señora de las Mercedes).",
+    "It's a cousin of the Spanish brazo de gitano roll cake.",
+  ],
+  "Ensaymada": [
+    "Ensaymada traces back to the ensaïmada of Mallorca, Spain, whose name comes from \"saïm\", pork lard.",
+    "Filipino bakers made it softer and richer, topped with butter, sugar and grated cheese.",
+    "It's a merienda favourite and a Christmas gift, often given in boxes.",
+  ],
+  "Mamon": [
+    "Mamon comes from Spanish sponge cakes.",
+    "It's a panaderia staple.",
+    "Taisan is its loaf-shaped cousin.",
+  ],
+  "Yema": [
+    "\"Yema\" is Spanish for egg yolk.",
+    "Spanish nuns made yemas from leftover yolks.",
+    "The Filipino version uses condensed milk, which became common in the American era.",
+  ],
+  "Silvanas": [
+    "Silvanas are a Dumaguete specialty.",
+    "They're a small, frozen cousin of sans rival.",
+    "They're kept frozen and eaten cold.",
+  ],
+  "Taho": [
+    "Taho comes from the Chinese douhua, soft tofu pudding.",
+    "Magtataho carry it in two buckets on a pole, calling \"Tahoooo!\" in the morning.",
+    "\"Arnibal\", its syrup, comes from the Spanish \"almíbar\", syrup.",
+  ],
+  "Sago't Gulaman": [
+    "Gulaman comes from seaweed, used long before gelatin.",
+    "Sago pearls are made from palm or cassava starch.",
+    "It became a street drink to beat the heat.",
+  ],
+  "Kalamay": [
+    "Kalamay is an old kakanin; Bohol sells it packed in coconut shells.",
+    "It was stirred for hours, often by many hands at gatherings.",
+    "Some say its stickiness stands for close family ties.",
+  ],
+  "Espasol": [
+    "Espasol comes from Laguna.",
+    "Toasting the rice flour was a way to keep it longer.",
+    "It's a favourite pasalubong from Laguna.",
+  ],
+  "Ginataang Mais": [
+    "Corn came from the Americas on the galleons and became a staple in the Visayas and Mindanao.",
+    "Cooking it with sticky rice and gata made a filling merienda.",
+    "It's a rainy-day favourite.",
+  ],
+  "Minatamis na Saging": [
+    "\"Minatamis\" means made sweet.",
+    "It was a way to use ripe saba before it spoiled.",
+    "It's a key halo-halo ingredient.",
+  ],
+  "Fruit Salad": [
+    "Filipino fruit salad became a holiday dish in the American era, when canned fruit arrived.",
+    "Canned fruit cocktail was a luxury, so it was saved for Christmas.",
+    "Kaong (sugar palm fruit) and nata de coco are its local touches.",
+  ],
+  "Custard Cake": [
+    "Custard cake joins two favourites in one pan: chiffon cake and leche flan.",
+    "It's a home-baking creation.",
+    "It's also called flan cake.",
+  ],
+  "Maruya": [
+    "Maruya is the Filipino banana fritter.",
+    "It was a way to use ripe saba before it spoiled.",
+    "Fanning out the slices helps them cook evenly.",
+  ],
+  "Kamote Cue": [
+    "Kamote came from the Americas and grows easily, a lifesaver in hard times.",
+    "It's named like banana cue, after barbecue sticks.",
+    "It's sold by street vendors.",
+  ],
+  "Nilupak": [
+    "\"Lupak\" means to pound.",
+    "It was pounded in a lusong (wooden mortar), often by many hands.",
+    "It's made from cassava or saba, cheap and filling.",
+  ],
+  "Carioca": [
+    "Carioca is fried glutinous rice balls, sold on sticks.",
+    "Some places call it karioka or cascaron.",
+    "It's a classic street merienda.",
+  ],
 };
 
 /** Every fact for a dish: the main one first. */
 function gameFactsFor(name) {
-  return [GAME_FACTS[name], ...(GAME_MORE_FACTS[name] || [])].filter(Boolean);
+  return (GAME_FACTS[name] || []).filter(Boolean);
 }
 
 // ── Pure helpers ──
@@ -233,11 +657,11 @@ function findDish(recipes, patterns) {
 }
 
 /** The ten face-offs with the recipe found for each side; rounds missing a side are dropped. */
-function buildMatchups(recipes, matchups = GAME_MATCHUPS) {
+function buildMatchups(recipes, matchups = GAME_MATCHUPS, rounds = GAME_ROUNDS) {
   return matchups
     .map(([a, b]) => ({ a: { name: a.name, recipe: findDish(recipes, a.re) }, b: { name: b.name, recipe: findDish(recipes, b.re) } }))
     .filter((m) => m.a.recipe && m.b.recipe)
-    .slice(0, GAME_ROUNDS);
+    .slice(0, rounds);
 }
 
 /** Words and hand for a 1-10 rating. */
@@ -255,7 +679,18 @@ function armReach(rating) {
 }
 
 /** Dishes with a photo not rated yet, of one kind ("ulam"/"meryenda") when given; sauces and condiments are skipped. */
-function ratePool(recipes, rated, kind = null, kindOf = typeof dishKind === "function" ? dishKind : () => "ulam") {
+/** Sweets and desserts (Panghimagas): the Dessert category or a sweet title (kakanin, cakes, halo-halo). */
+function gameSweet(r) {
+  return r.category === "Dessert" || (typeof SWEET_TITLE !== "undefined" && SWEET_TITLE.test(r.title || ""));
+}
+
+/** The game's dish kinds: "ulam", "meryenda" (savoury snacks) or "sweets" (Panghimagas). */
+function gameKindOf(r) {
+  const k = typeof dishKind === "function" ? dishKind(r) : "ulam";
+  return k && gameSweet(r) ? "sweets" : k;
+}
+
+function ratePool(recipes, rated, kind = null, kindOf = gameKindOf) {
   return recipes.filter((r) => r.img && !(String(r.id) in rated) && r.category !== "Sauce & Condiment" && (!kind || kindOf(r) === kind));
 }
 
@@ -322,7 +757,8 @@ function setGameMode(mode) {
 
 /** Active learning: the next dish is one the taste model (of this kind) is least sure about. */
 function chooseRateDish() {
-  const model = tasteModelFrom(RECIPES, gameRatings, gameVsPicks, gameRateKind);
+  // Sweets learn with the meryenda taste model (the model knows ulam and meryenda).
+  const model = tasteModelFrom(RECIPES, gameRatings, gameVsPicks, gameRateKind === "sweets" ? "meryenda" : gameRateKind);
   const pick = pickToLearn(model, ratePool(RECIPES, gameRatings, gameRateKind), { vec: tasteVec });
   gameRateDish = pick.r;
   gameRateActive = pick.active;
@@ -340,12 +776,13 @@ function renderRate() {
   const kinds = `<div class="flex gap-2 justify-center mb-3">
     <button class="wx-btn ${gameRateKind === "ulam" ? "on" : ""}" onclick="setRateKind('ulam')">🍛 Ulam</button>
     <button class="wx-btn ${gameRateKind === "meryenda" ? "on" : ""}" onclick="setRateKind('meryenda')">🍡 Meryenda</button>
+    <button class="wx-btn ${gameRateKind === "sweets" ? "on" : ""}" onclick="setRateKind('sweets')">🍮 Panghimagas</button>
   </div>`;
   if (!r) { box.innerHTML = `${kinds}<p class="text-sm text-gray-500 p-6 text-center">Na-rate mo na lahat! 🎉</p>${rateHistory()}`; return; }
   box.innerHTML = `${kinds}
     ${gameRateActive ? `<p class="text-xs text-center text-green-800 font-semibold mb-2">🧠 Pinili para mas makilala ang panlasa mo</p>` : ""}
     <div class="game-card rate-card">
-      <img src="${escapeHtml(r.img)}" alt="" class="game-photo" loading="lazy">
+      <div class="game-photo-wrap"><img src="${escapeHtml(r.img)}" alt="" class="game-photo" loading="lazy">${gameHeart(r.id)}</div>
       <div class="rate-body p-4">
         <p class="font-display text-xl font-bold leading-tight">${escapeHtml(r.title)}</p>
         <p class="text-xs text-gray-500 mt-1">${r.costPerServing > 0 ? `₱${r.costPerServing}/serving · ` : ""}${escapeHtml(catLabel(r.category))}</p>
@@ -427,8 +864,22 @@ const GAME_COOK_SVG = `<svg class="rate-cook" viewBox="0 0 100 130" aria-hidden=
 
 // ── Versus ──
 
+let gameVsSet = "ulam"; // "ulam" (30 rounds, ulam and more) or "sweets" (Panghimagas, 20 rounds)
+
+function setVersusSet(set) {
+  gameVsSet = set === "sweets" ? "sweets" : "ulam";
+  startVersus();
+}
+
+function gameVsSetChips() {
+  return `<div class="flex gap-2 justify-center mb-3">
+    <button class="wx-btn ${gameVsSet === "ulam" ? "on" : ""}" onclick="setVersusSet('ulam')">🍛 Ulam</button>
+    <button class="wx-btn ${gameVsSet === "sweets" ? "on" : ""}" onclick="setVersusSet('sweets')">🍮 Panghimagas</button>
+  </div>`;
+}
+
 function startVersus() {
-  const all = buildMatchups(RECIPES);
+  const all = gameVsSet === "sweets" ? buildMatchups(RECIPES, GAME_SWEET_MATCHUPS, GAME_SWEET_ROUNDS) : buildMatchups(RECIPES);
   gameRounds = all.sort(() => Math.random() - 0.5);
   gameRound = 0;
   gameRoundDone = false;
@@ -444,14 +895,14 @@ function renderVersus() {
   const m = gameRounds[gameRound];
   const side = (s) => {
     const d = m[s];
-    return `<button class="vs-card" id="vs-${s}" onclick="pickVersus('${s}')">
+    return `<div class="vs-side"><button class="vs-card" id="vs-${s}" onclick="pickVersus('${s}')">
       <img src="${escapeHtml(d.recipe.img || "logo.png")}" alt="" loading="lazy">
       <span class="vs-name">${escapeHtml(d.name)}</span>
       <span class="vs-price">${d.recipe.costPerServing > 0 ? `₱${d.recipe.costPerServing}/serving` : ""}</span>
       <span class="vs-badge">PANALO!</span>
-    </button>`;
+    </button>${gameHeart(d.recipe.id)}</div>`;
   };
-  box.innerHTML = `
+  box.innerHTML = `${gameVsSetChips()}
     <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide text-center mb-3">Round ${gameRound + 1} of ${gameRounds.length} · Alin ang mas gusto mo?</p>
     <div class="vs-arena" id="vs-arena">${side("a")}<span class="vs-mark">VS</span>${side("b")}</div>
     <p class="text-center text-[.7rem] text-gray-400 mt-2"><span class="game-touch-hint" data-i18n="game.vsSwipe">👈 I-swipe pakaliwa o pakanan para pumili 👉</span><span class="game-keys-hint" data-i18n="game.vsKeys">⌨️ ← kaliwa · → kanan · kahit anong key = susunod</span></p>
@@ -488,7 +939,7 @@ function nextVersus() {
 function renderVersusEnd() {
   const winners = gameRounds.map((m) => gameVsPicks[vsKey(m)]).filter((p) => p && p.n).map((p) => p.n);
   const pics = new Map(gameRounds.flatMap((m) => [[m.a.name, m.a.recipe], [m.b.name, m.b.recipe]]));
-  document.getElementById("game-versus").innerHTML = `
+  document.getElementById("game-versus").innerHTML = `${gameVsSetChips()}
     <div class="game-card p-5 text-center">
       <p class="text-3xl">🏆</p>
       <p class="font-display text-2xl font-bold mt-1">Ang mga champion mo</p>
@@ -556,6 +1007,38 @@ function tasteSection(kind) {
       <p class="text-[.7rem] text-gray-400 mt-3">Learned on this phone only from your ratings and Versus picks. The more you play, the better it gets.</p>
     </div>
     <div class="mb-4"></div>`;
+}
+
+// ── Heart: add a dish to Favorites (app.js), so it shows in Recipes (⭐ Favorites) and in the planner ──
+
+function gameHeart(id) {
+  const on = typeof favIds === "function" && favIds().has(id);
+  return `<button type="button" class="game-heart ${on ? "on" : ""}" data-gheart="${id}" aria-pressed="${on}" onclick="event.stopPropagation(); gameToggleFav(${id})"
+    aria-label="${on ? "Alisin sa Favorites" : "Idagdag sa Favorites"}" title="${on ? "Nasa Favorites (Recipes at Planner)" : "Idagdag sa Favorites (Recipes at Planner)"}">${on ? "♥" : "♡"}</button>`;
+}
+
+function gameToggleFav(id) {
+  if (typeof toggleFav !== "function") return;
+  toggleFav(id);
+  const on = favIds().has(id);
+  document.querySelectorAll(`[data-gheart="${id}"]`).forEach((b) => {
+    b.classList.toggle("on", on);
+    b.setAttribute("aria-pressed", String(on));
+    b.textContent = on ? "♥" : "♡";
+    b.setAttribute("aria-label", on ? "Alisin sa Favorites" : "Idagdag sa Favorites");
+    b.title = on ? "Nasa Favorites (Recipes at Planner)" : "Idagdag sa Favorites (Recipes at Planner)";
+    if (on) { b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop"); }
+  });
+  gameToast(on ? "♥ Nasa Favorites na (Recipes at Planner)" : "Inalis sa Favorites");
+}
+
+function gameToast(text) {
+  let t = document.getElementById("game-toast");
+  if (!t) { t = document.createElement("div"); t.id = "game-toast"; t.className = "game-toast"; t.setAttribute("role", "status"); document.body.appendChild(t); }
+  t.textContent = text;
+  t.classList.add("show");
+  clearTimeout(gameToast.timer);
+  gameToast.timer = setTimeout(() => t.classList.remove("show"), 2600);
 }
 
 // ── Keyboard and swipe ──
