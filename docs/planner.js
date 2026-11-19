@@ -475,7 +475,29 @@ const DIETS = [
   { key: "lowcal", icon: "🔥", label: "Low calorie", note: "450 kcal pababa bawat serving." },
   { key: "vegetarian", icon: "🥗", label: "Vegetarian", note: "Walang karne, manok, isda o seafood, at walang patis, bagoong o sabaw na gawa sa hayop; pwede ang itlog at gatas." },
   { key: "vegan", icon: "🌱", label: "Vegan", note: "Puro halaman: walang karne, isda, itlog, gatas o honey." },
+  { key: "halal", icon: "☪️", label: "Halal", note: "Walang baboy (pati mantika, pork cube at processed na baboy), dugo, alak o gelatin. Hindi namin matitiyak ang pagkatay: bumili ng karne sa halal-certified na tindahan." },
 ];
+// Halal: no pork in any form, no blood, no alcohol, no gelatin. A chicken, beef or fish version of a usually-pork
+// dish ("chicken tocino", "beef longganisa", "tuna sisig") is fine. Slaughter can't be checked from a recipe.
+const HALAL_SAFE_VERSION = /\b(chicken|manok|beef|baka|tuna|fish|isda|bangus|turkey|tofu|tokwa|vegan|vegetarian|veggie|mushroom|soy|plant[- ]based|halal|lamb|mutton|goat|kambing|shrimp|squid|pusit)\s+(tocino|longg?anisa|hotdogs?|sisig|embutido|ham|bacon|menudo|siomai|siopao|lumpia(ng)?|shanghai|chorizo|sausages?|chicharr?on|lechon|tapa|skin)\b/gi;
+const HALAL_PORK = /\b(pork|porky|baboy|liempo|lechon(?! manok)|ham|hamon|jamon|bacon|tocino|longg?anisa|chorizo|chicharr?on|sisig|dinuguan|embutido|hotdogs?|spam|luncheon meat|bagnet|pata|menudo|lard|mantika ng baboy|pancetta|prosciutto|salami|pepperoni|liver spread|reno|kasim|pigue|tenga|maskara|crispy pata|pig|pigs|hamonado)\b/i;
+const HALAL_BLOOD = /\b(blood|dugo|dinuguan|tinumis|dinardaraan)\b/i;
+const HALAL_ALCOHOL = /\b(wine|beer|rum|brandy|whisk(e)?y|vodka|sake|mirin|shaoxing|sherry|liqueur|cognac|tequila|soju|lambanog|tuba|gin|alak|cerveza)\b/i;
+const HALAL_GELATIN = /\b(gelatin|gelatine|marshmallows?)\b/i;
+
+/** Why a dish isn't halal ("pork", "blood", "alcohol", "gelatin"), or null when nothing in it rules it out. Pure, tested. */
+function halalIssue(r) {
+  const clean = (t) => String(t || "").toLowerCase().replace(HALAL_SAFE_VERSION, " ").replace(/\bhalal[- ]\w+/g, " ")
+    // Wine vinegar has no alcohol left; root beer and ginger beer are soft drinks.
+    .replace(/\b(red |white |rice |cider )?wine vinegar\b/g, "vinegar").replace(/\b(root|ginger) beer\b/g, "soda");
+  const title = clean(r.title), ings = clean((r.ingredientNames || []).join(" | "));
+  const both = `${title} | ${ings}`;
+  if (HALAL_BLOOD.test(both)) return "blood";
+  if (HALAL_PORK.test(both)) return "pork";
+  if (HALAL_ALCOHOL.test(both)) return "alcohol";
+  if (HALAL_GELATIN.test(both)) return "gelatin";
+  return null;
+}
 const PROCESSED_WORDS = /\b(hotdogs?|longg?anisa|tocino|ham|bacon|sausages?|corned beef|spam|luncheon|chorizo|tapa|tuyo|daing|danggit|tinapa|instant|cup noodles?|franks?)\b/i;
 const ORGAN_WORDS = /\b(liver|atay|isaw|bituka|intestines?|tripe|tuwalya|gizzards?|balunbalunan|dinuguan|blood|kidneys?|lengua|tongue|bopis|sisig|papaitan|brains?|chicharon bulaklak)\b/i;
 const FATTY_WORDS = /\b(lechon|chicharon|chicharron|crispy|bagnet|liempo|pata|kawali|fried|prito|pritong|deep[- ]fried|carbonara|creamy)\b/i;
@@ -502,6 +524,7 @@ function dietOk(r, diet) {
     // Every ingredient checked against the catalog (backend `veg`); an unknown ingredient means no.
     case "vegetarian": return r.veg === "vegetarian" || r.veg === "vegan";
     case "vegan": return r.veg === "vegan";
+    case "halal": return !halalIssue(r);
     default: return true;
   }
 }

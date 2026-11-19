@@ -456,6 +456,7 @@ function buildModal(r, lines) {
       <h2 id="modal-title" tabindex="-1" data-dlg-focus class="modal-title text-2xl font-bold pr-12">${escapeHtml(r.title)}</h2>
       ${r.costPerServing > 0 ? `<p class="modal-cost"><span class="modal-cost-main">${modalCostText(r)}</span></p>` : ""}
       <span class="text-sm text-gray-500">${escapeHtml(catLabel(r.category))} · ${r.servings} ${t("modal.servings")}${r.servingsAssumed ? t("modal.servingsAssumed") : ""}${(r.prepTime || 0) + (r.cookTime || 0) > 0 ? ` · ${(r.prepTime || 0) + (r.cookTime || 0)} min` : ""}</span>
+      ${halalTag(r)}
       ${src ? `<p class="text-xs text-gray-500 mt-1">${escapeHtml(t("modal.recipePhoto"))} ${srcLink("text-green-700 font-semibold hover:underline", `${escapeHtml(src.name)} ↗`)}</p>` : ""}
       ${r.id ? `<div class="modal-acts" role="group" aria-label="Actions">
         ${favButton(r.id, "act")}
@@ -654,6 +655,17 @@ function toggleFav(id) {
 const MEAL_TAGS = [["almusal", "Almusal"], ["ulam", "Tanghalian · Hapunan"], ["meryenda", "Meryenda"]];
 
 /** Small meal labels for a dish (Almusal, Tanghalian · Hapunan, Meryenda), from planner.js mealTypes. */
+/** The halal label for a recipe pop-up: "Halal-friendly", or "Not halal" with the reason (planner.js halalIssue). */
+function halalTag(r) {
+  if (typeof halalIssue !== "function" || !r) return "";
+  const why = halalIssue(r);
+  const en = typeof siteLang === "function" && siteLang() === "en";
+  const reason = { pork: en ? "has pork" : "may baboy", blood: en ? "has blood" : "may dugo", alcohol: en ? "has alcohol" : "may alak", gelatin: en ? "has gelatin" : "may gelatin" }[why];
+  return why
+    ? `<p class="halal-tag halal-no" title="${escapeHtml(en ? "Based on the title and ingredients" : "Batay sa pangalan at sangkap")}">${escapeHtml(t("halal.no"))} · ${escapeHtml(reason)}</p>`
+    : `<p class="halal-tag halal-ok" title="${escapeHtml(en ? "No pork, blood, alcohol or gelatin in the ingredients. Buy halal-certified meat." : "Walang baboy, dugo, alak o gelatin sa sangkap. Bumili ng halal-certified na karne.")}">${escapeHtml(t("halal.ok"))}</p>`;
+}
+
 function mealTags(id) {
   const r = RECIPES.find((x) => x.id === id);
   if (!r || typeof mealTypes !== "function") return "";

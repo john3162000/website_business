@@ -6,7 +6,7 @@
 
 const SETTINGS_KEY = "sarapsulit.settings.v1";
 const SETTINGS_LANGS = ["tl", "en"];
-const SETTINGS_DIET_KEYS = ["protein", "diabetic", "heart", "kidney", "gout", "lowcal", "vegetarian", "vegan"];
+const SETTINGS_DIET_KEYS = ["protein", "diabetic", "heart", "kidney", "gout", "lowcal", "vegetarian", "vegan", "halal"];
 const SETTINGS_VEG_KEYS = ["vegetarian", "vegan"];
 const SETTINGS_MEAT_KEYS = ["fish", "chicken", "pork", "beef"];
 // Age brackets asked on the first visit; "senior" (60+) turns on large text and a simpler menu.
@@ -395,6 +395,9 @@ const I18N = {
   "settings.lang": ["Wika", "Language"],
   "diet.vegetarian": ["Vegetarian", "Vegetarian"],
   "diet.vegan": ["Vegan", "Vegan"],
+  "diet.halal": ["Halal", "Halal"],
+  "halal.ok": ["☪️ Halal-friendly", "☪️ Halal-friendly"],
+  "halal.no": ["Hindi halal", "Not halal"],
   "settings.diet": ["Diet (pwedeng marami)", "Diet (pick any number)"],
   "settings.dietHelp": ["Lalabas lang ang ulam na pasok sa LAHAT ng napili, sa Recipes at sa Plano.", "Only dishes that pass ALL chosen diets show, in Recipes and the Planner."],
   "settings.kitchen": ["Ang kusina ko", "My kitchen"],
