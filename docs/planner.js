@@ -1008,7 +1008,6 @@ async function renderReceipt() {
     out.innerHTML = `<p class="text-sm text-gray-400">Your receipt appears here once you add dishes.</p>`;
     return;
   }
-  if (receiptMode === "nutrition") { out.innerHTML = planNutritionHtml(); return; }
   if (receiptMode === "dish") {
     const r = receiptByDish(plan, plannerRecipes());
     out.innerHTML = DAYS.filter((d) => r.rows.some((x) => x.day === d)).map((d) => `
@@ -1030,7 +1029,30 @@ async function renderReceipt() {
 }
 
 let planRice = true;
-function setPlanRice(on) { planRice = !!on; renderReceipt(); }
+function setPlanRice(on) { planRice = !!on; renderPlanNutrition(); }
+
+/** The week's nutrition opens in its own window (a native dialog: focus, Esc and the backdrop come with it). */
+function openPlanNutrition() {
+  let dlg = document.getElementById("plan-nutrition-dialog");
+  if (!dlg) {
+    dlg = document.createElement("dialog");
+    dlg.id = "plan-nutrition-dialog";
+    dlg.className = "pn-dialog";
+    dlg.setAttribute("aria-labelledby", "pn-title");
+    dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
+    document.body.appendChild(dlg);
+  }
+  renderPlanNutrition();
+  if (typeof dlg.showModal === "function") dlg.showModal(); else dlg.setAttribute("open", "");
+}
+
+function renderPlanNutrition() {
+  const dlg = document.getElementById("plan-nutrition-dialog");
+  if (!dlg) return;
+  const en = typeof siteLang === "function" && siteLang() === "en";
+  dlg.innerHTML = `<div class="pn-dialog-head"><h2 id="pn-title">🥗 ${en ? "This week's nutrition" : "Sustansya ng linggo"}</h2>
+    <button type="button" class="dlg-x" aria-label="Isara" onclick="document.getElementById('plan-nutrition-dialog').close()">✕</button></div>${planNutritionHtml()}`;
+}
 
 function planNutritionHtml() {
   const en = typeof siteLang === "function" && siteLang() === "en";

@@ -834,6 +834,12 @@
     .cook-hud.cook-hud-burn { background: #b91c1c; color: #fff; }
     html.dark .cook-heat-btn { background: var(--s1); border-color: var(--line); color: var(--tx); }
     html.dark .cook-heat-btn.on { background: var(--s2); border-color: var(--mint); }
+    .pn-dialog { width: min(32rem, calc(100vw - 1.5rem)); max-height: calc(100vh - 2rem); border: 0; border-radius: 1rem; padding: 1rem; background: #F8F4EA; color: #1f2937; box-shadow: 0 20px 50px rgba(0,0,0,.3); }
+    .pn-dialog::backdrop { background: rgba(15,31,24,.55); }
+    .pn-dialog-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .6rem; }
+    .pn-dialog-head h2 { font-family: Fraunces, Georgia, serif; font-size: 1.2rem; font-weight: 700; color: #163F2E; }
+    html.dark .pn-dialog { background: var(--s1); color: var(--tx); }
+    html.dark .pn-dialog-head h2 { color: var(--tx); }
     .pn { display: grid; gap: .5rem; font-size: .85rem; }
     .pn-head { color: #4b5563; }
     .pn-week { background: #EFF5F0; border-radius: .8rem; padding: .6rem .8rem; display: grid; gap: .15rem; color: #163F2E; }
@@ -1268,9 +1274,9 @@
         <div class="flex flex-wrap gap-1.5">
           <button class="wx-btn on" data-receipt="dish" onclick="setReceiptMode('dish')" data-i18n="plan.perDish">Per dish</button>
           <button class="wx-btn" data-receipt="ingredient" onclick="setReceiptMode('ingredient')" data-i18n="plan.perIngredient">Per ingredient</button>
-          <button class="wx-btn" data-receipt="nutrition" onclick="setReceiptMode('nutrition')" data-i18n="plan.nutrition">🥗 Sustansya</button>
         </div>
         <div id="plan-receipt" class="plan-receipt"></div>
+        <button type="button" onclick="openPlanNutrition()" class="border border-green-800 text-green-800 hover:bg-green-50 font-semibold text-sm px-3 py-2 rounded-full" data-i18n="plan.nutrition">🥗 Sustansya ng linggo</button>
         <div class="grid grid-cols-2 gap-2">
           <button onclick="downloadGroceryList()" class="bg-green-800 hover:bg-green-700 text-amber-50 font-semibold text-sm px-3 py-2 rounded-full" data-i18n="plan.png">⬇️ Grocery list (PNG)</button>
           <button onclick="downloadGroceryHtml()" class="border border-green-800 text-green-800 hover:bg-green-50 font-semibold text-sm px-3 py-2 rounded-full" data-i18n="plan.html">📄 Grocery list (HTML)</button>
