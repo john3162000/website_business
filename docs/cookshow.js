@@ -48,6 +48,8 @@ function cookCutStyle(text) {
 function cookMinutes(sentence) {
   const s = String(sentence || "").toLowerCase();
   if (/\bovernight\b/.test(s)) return 480;
+  if (/\bhalf an? hour\b/.test(s)) return 30;
+  if (/\b(an|one) hour\b/.test(s) && !/\d\s*(hours?|hrs?|minutes?|mins?)\b/.test(s)) return 60;
   const m = s.match(/(\d+(?:\.\d+)?)(?:\s*(?:to|-|–)\s*(\d+(?:\.\d+)?))?\s*(hours?|hrs?|minutes?|mins?)\b/);
   if (!m) return null;
   const n = m[2] ? parseFloat(m[2]) : parseFloat(m[1]);
@@ -95,6 +97,31 @@ const COOK_LIQUID = /(^|_)(water|broth|stock|sauce|vinegar|milk|cream|juice|wine
 const COOK_SOLID_LIQUID = /cube|powder|granule|mix(_|$)/;
 // Wrappers: lumpia, turon, siomai, banana leaves.
 const COOK_WRAPPER = /wrapper|spring_roll|banana_leaf|dahon_saging/;
+/**
+ * How a dish is wrapped, from its title and ingredients. Pure, tested.
+ * roll: lumpia, turon · halfmoon: empanada, hand pies · pleat: siomai, open dumplings · bun: siopao ·
+ * leaf: suman, binalot · parcel: wonton.
+ */
+function cookWrapStyle(title, items) {
+  const t = String(title || "").toLowerCase(), keys = (items || []).map((it) => `${it.key} ${it.label}`.toLowerCase()).join(" | ");
+  if (/\b(suman|binalot|pastil|tamales?|ibos|buri|patupat|bibingka sa dahon)\b/.test(t) || /banana_leaf|dahon_saging|banana leaves|buri/.test(keys)) return "leaf";
+  if (/\b(siopao|bun|pao|cuapao|kuapao|mantou)\b/.test(t)) return "bun";
+  if (/\b(siomai|shumai|shao ?mai)\b/.test(t)) return "pleat";
+  if (/\b(wonton|panara)\b/.test(t)) return "parcel";
+  if (/\b(empanada|empanadita|hand pie|pie\b|calzone|pastel|dumplings?|gyoza|pierogi|samosa)\b/.test(t)) return "halfmoon";
+  if (/\b(lumpia|shanghai|turon|spring rolls?|egg rolls?|kikiam|dinamita|dynamite)\b/.test(t) || /wrapper/.test(keys)) return "roll";
+  return /flour/.test(keys) ? "halfmoon" : "roll";
+}
+const COOK_WRAP_NAME = { roll: ["lumpia", "rolls"], halfmoon: ["empanada", "pastries"], pleat: ["siomai", "siomai"], bun: ["siopao", "buns"], leaf: ["suman", "parcels"], parcel: ["wonton", "wontons"] };
+/** The wrapped dish's name: the dish's own word if the title has one ("empanada", "turon"), else the style's. */
+function cookWrappedTitle(title, style) {
+  const m = String(title || "").toLowerCase().match(/\b(empanadas?|empanaditas?|siopao|siomai|shumai|suman|turon|lumpia|lumpiang shanghai|shanghai|wontons?|dumplings?|panara|pies?|kikiam|binalot|pastil|dinamita)\b/);
+  return m ? m[1] : (COOK_WRAP_NAME[style] || COOK_WRAP_NAME.roll)[0];
+}
+
+// Seasonings stay seasonings even when they were also in the filling (turon's sugar caramelises in the pan).
+const COOK_SEASONING = /salt|sugar|pepper|powder|seasoning|msg|cube|vinegar|sauce|oil/;
+
 /** "Lumpia wrapper" → "lumpia" (the rolled dish). */
 function cookWrappedName(label) {
   const n = String(label || "").replace(/\s*(wrappers?|sheets?)\b.*$/i, "").trim().toLowerCase();
@@ -104,7 +131,7 @@ function cookWrappedName(label) {
 const COOK_FRY_OIL = /^oil_(cooking|vegetable|canola|palm|corn|frying)$|^cooking_oil$/;
 // Things that are never cut on the board.
 const COOK_NO_CUT = /salt|sugar|pepper_ground|black_pepper|powder|flour|starch|oil|sauce|vinegar|water|broth|stock|milk|cream|cube|seasoning|rice|noodle|pasta|spaghetti|macaroni|wrapper|paste|ketchup|mayonnaise|butter|cheese_|honey|wine|juice/;
-const COOK_STOP = new Set(["fresh", "ground", "large", "small", "medium", "chopped", "sliced", "minced", "diced", "cups", "cup", "piece", "pieces", "cloves", "clove", "whole", "dried", "cooked", "raw", "boneless", "skinless", "into", "and", "for", "the", "with", "cut", "about", "optional", "taste", "cooking", "lbs", "lb", "pounds", "pound", "grams", "kilo", "kilos", "tablespoons", "tablespoon", "teaspoons", "teaspoon", "tbsp", "tsp", "quart", "ounces", "pack", "packs", "can", "cans", "see", "notes", "note", "needed", "serving", "some", "bunch", "thumbs", "thumb", "inch", "inches", "big"]);
+const COOK_STOP = new Set(["fresh", "ground", "large", "small", "medium", "chopped", "sliced", "minced", "diced", "cups", "cup", "piece", "pieces", "cloves", "clove", "whole", "dried", "cooked", "raw", "boneless", "skinless", "into", "and", "for", "the", "with", "cut", "about", "optional", "taste", "cooking", "lbs", "lb", "pounds", "pound", "grams", "kilo", "kilos", "tablespoons", "tablespoon", "teaspoons", "teaspoon", "tbsp", "tsp", "quart", "ounces", "pack", "packs", "can", "cans", "see", "notes", "note", "needed", "serving", "some", "bunch", "thumbs", "thumb", "inch", "inches", "big", "all"]);
 
 /** Water lines and to-taste lines often have no catalog label: name them from the text. */
 function cookLineName(l) {
@@ -182,20 +209,27 @@ const COOK_VERBS = [
   ["simmer", /\b(simmer|lower the heat|low heat|continue cooking|continue to cook)/],
   ["cook", /\bcook(ing)? (it |them )?(until|for)\b/],
   ["cut", /\b(slice|chop|cut|crush) (it|them|into|the)\b/],
-  ["wrap", /\b(wrap|roll) (and|it|them|the|to|each)\b/],
+  ["rise", /\b(let (the dough |it )?rise|until (it )?doubles?|to rise|proof the dough)\b/],
+  ["shape", /\b(shape (it |them |into)|form (into |them into )?(a |small )?balls?|into (small )?balls|divide the dough|cut into individual|portion the dough|into individual (slices|pieces|portions))\b/],
+  ["rollout", /\b(rolling pin|roll (it |them |the dough |each )?out|flatten)\b/],
+  ["fill", /\b(filling|palaman)\b[^.]*\b(middle|center|centre)\b|\b(spoon|scoop|place|put|arrange)\b[^.]*\b(filling|mixture)\b|\b(on|over|onto) (the |a |each )?(piece of )?(lumpia |spring roll |wonton |siomai |dumpling )?wrappers?\b/],
+  ["coat", /\b(roll|coat|dredge|dip)\b[^.]*\b(on|in|with)\b[^.]*\b(sugar|flour|bread ?crumbs|panko|batter|cornstarch)\b/],
+  ["brush", /\bbrush\b[^.]*\b(egg|butter|oil|wash|milk)\b/],
+  ["dough", /\b(dough|knead|masahin|pastry blender|cut in the butter|until (it |the mixture )?forms? a ball)\b/],
+  ["wrap", /\bwrap\b|\broll (and|it|them|the|to|each|up)\b|\b(fold|crimp|seal|lock the edges|lock the|pinch|pleat|tuck)\b/],
   ["pour", /\bpour\b/],
   ["mix", /\b(combine|mix|blend)\b/],
-  ["add", /\b(add|put|place|toss in|return)\b/],
+  ["add", /\b(add|put|place|toss in|return|arrange)\b/],
   ["stir", /\bstir\b/],
   ["season", /\b(season|rub|to taste|sprinkle)\b/],
   ["chill", /\b(refrigerat\w*|chill|freez\w*|fridge|ref)\b/],
   ["strain", /\b(strain\w*|sieve|colander|salain|salaan)\b/],
   ["top", /\b(top (it |them )?with|on top|garnish(ed)? with|sprinkle\b[^.]*\bover|ilagay sa ibabaw)\b/],
-  ["drain", /\b(drain|set aside|remove (it|them|from|the)|let (it )?cool|wire rack|paper towel)/],
+  ["drain", /\b(drain|set aside|remove (it|them|from|the(?! (cover|lid)))|let (it )?cool|wire rack|paper towel)/],
   ["serve", /\b(serve|transfer to a serving)/],
 ];
 
-const COOK_TIMED = new Set(["marinate", "boil", "simmer", "cook", "fry", "deepfry", "grill", "bake", "steam", "chill"]);
+const COOK_TIMED = new Set(["marinate", "boil", "simmer", "cook", "fry", "deepfry", "grill", "bake", "steam", "chill", "rise"]);
 const COOK_POT_WORDS = /\b(pot|casserole|kaldero|saucepan|stockpot|dutch oven)\b/;
 const COOK_PAN_WORDS = /\b(pan|wok|skillet|kawali|frying pan)\b/;
 
@@ -203,8 +237,9 @@ const COOK_PAN_WORDS = /\b(pan|wok|skillet|kawali|frying pan)\b/;
 function cookActionsFromText(sentences, items) {
   const out = [];
   for (const sentence of sentences) {
-    const s = String(sentence || "").toLowerCase();
-    if (/^note\b|\bvideo\b/.test(s)) continue;
+    // Lower case, no parentheticals, and every kind of space (recipe sites use non-breaking ones) as one space.
+    const s = String(sentence || "").toLowerCase().replace(/\([^)]*\)/g, " ").replace(/\s+/g, " ");
+    if (/^note\b|^(watch|see|refer to) (the )?video/.test(s)) continue;
     const found = COOK_VERBS.map(([kind, re]) => { const m = s.match(re); return m ? { kind, at: m.index } : null; })
       .filter(Boolean).sort((a, b) => a.at - b.at);
     let kinds = [...new Set(found.map((f) => f.kind))];
@@ -217,6 +252,17 @@ function cookActionsFromText(sentences, items) {
     if (kinds.includes("season") && /to taste/.test(s)) kinds = kinds.filter((k) => k !== "add");
     if (kinds.includes("mix") && COOK_POT_WORDS.test(s)) kinds = kinds.map((k) => (k === "mix" ? "add" : k));
     if (kinds.includes("cut") && kinds.includes("add")) kinds = kinds.filter((k) => k !== "cut" || /^(slice|chop|cut|crush)/.test(s));
+    // Dough and wrapping: "dough" names the dough in most sentences ("flatten the dough", "let the dough rise").
+    if (kinds.some((k) => ["rollout", "shape", "fill", "wrap", "chill", "rise", "brush"].includes(k))) kinds = kinds.filter((k) => k !== "dough");
+    if (kinds.includes("dough")) kinds = kinds.filter((k) => !["mix", "add", "pour", "stir"].includes(k));
+    if (kinds.includes("shape")) kinds = kinds.filter((k) => k !== "cut");
+    if (kinds.includes("coat")) kinds = kinds.filter((k) => k !== "wrap");
+    // "In a mixing bowl, put in the flour … and the yeast mixture" is mixing, not filling a wrapper.
+    if (kinds.includes("fill") && /\bbowl\b/.test(s) && !/\b(wrapper|dough|leaf|leaves|container|middle|center|centre)\b/.test(s.replace(/\bmake the dough\b/, ""))) kinds = kinds.filter((k) => k !== "fill").concat(kinds.includes("add") || kinds.includes("mix") ? [] : ["mix"]);
+    if (kinds.includes("fill")) kinds = kinds.filter((k) => !["add", "mix"].includes(k));
+    // "Remove … and arrange on a plate lined with paper towels", "place in a steamer and steam": one step each.
+    if (kinds.includes("drain") || kinds.some((k) => ["steam", "bake", "grill", "deepfry", "fry"].includes(k))) kinds = kinds.filter((k) => k !== "add");
+    if (kinds.includes("rollout")) kinds = kinds.filter((k) => k !== "wrap" || /\b(fold|seal|crimp|wrap)\b/.test(s));
     kinds = [...new Set(kinds)];
     if (!kinds.length) continue;
     const vessel = COOK_POT_WORDS.test(s) ? "kaldero" : COOK_PAN_WORDS.test(s) ? "kawali" : null;
@@ -228,6 +274,9 @@ function cookActionsFromText(sentences, items) {
       const a = { kind, items: takesItems && !itemsGiven ? mentioned : [], minutes: COOK_TIMED.has(kind) && !timeGiven ? minutes : null, vessel };
       if (kind === "cut") a.cut = cookCutStyle(s) || { style: "pieces", size: null };
       if (kind === "steam") a.steamer = /\bsteamer|bamboo|siomai|siopao|puto|kutsinta|dumpling/.test(s);
+      if (kind === "rollout") { const d = s.match(/(\d+(?:\.\d+)?)(?:\s*(?:to|-)\s*(\d+(?:\.\d+)?))?\s*(?:-?\s*inch(?:es)?|")/); if (d) a.size = Math.round(((parseFloat(d[1]) + parseFloat(d[2] || d[1])) / 2) * 2.54); }
+      if (kind === "wrap") a.fork = /\bfork\b/.test(s);
+      if (kind === "dough") a.knead = /\bknead|masahin\b/.test(s);
       if (a.items.length) itemsGiven = true;
       if (a.minutes) timeGiven = true;
       out.push(a);
@@ -312,6 +361,14 @@ function buildCookScript(recipe) {
   const cooking = actions.filter((a) => COOK_TIMED.has(a.kind) || ["heat", "saute", "mix", "wrap"].includes(a.kind));
   if (!cooking.length) actions = cookTemplate(recipe.title, recipe.frying, items).map((a) => ({ items: [], minutes: null, ...a }));
 
+  // Wrapped dishes: one item stands for what comes out of the wrapping step (the empanadas, the siopao),
+  // and every later step that names the filling, the wrapper or the dish uses it.
+  const wrapStyle = cookWrapStyle(recipe.title, items);
+  const hasDough = actions.some((a) => ["dough", "rollout", "shape", "rise"].includes(a.kind));
+  const wrappedName = cookWrappedTitle(recipe.title, wrapStyle);
+  const wrapped = { key: "rolled", label: wrappedName, icon: { roll: "🌯", halfmoon: "🥟", pleat: "🥟", bun: "🍙", leaf: "🍃", parcel: "🥟" }[wrapStyle] || "🥟", words: cookWords(wrappedName), wrapStyle, dough: hasDough };
+  let wrapDone = false;
+  const consumed = new Set();
   let vessel = null, lastMain = null;
   const mains = new Set(items.filter((it) => !it.liquid && !it.toTaste && !/cube|powder|seasoning|salt|sugar|black_pepper|pepper_ground|peppercorn|white_pepper/.test(it.key)));
   for (const a of actions) {
@@ -338,12 +395,42 @@ function buildCookScript(recipe) {
     const wrappers = items.filter((it) => COOK_WRAPPER.test(it.key));
     let kind = a.kind;
     // "Put the filling on a wrapper" and "wrap and roll" are one wrapping step.
-    if (kind === "add" && its.length && its.every((it) => COOK_WRAPPER.test(it.key))) kind = "wrap";
+    if (kind === "add" && its.length && its.every((it) => COOK_WRAPPER.test(it.key))) kind = "fill";
     if (kind === "wrap" && !its.length) its = wrappers;
+    // Dough, filling and wrapping steps.
+    const prev0 = steps[steps.length - 1];
+    // Adding to the dough bowl ("put the butter and cold water in the mixing bowl") is part of making the dough.
+    if (["add", "pour", "mix", "stir"].includes(kind) && prev0 && prev0.kind === "dough" && !wrapDone) { for (const it of its) if (!prev0.items.includes(it)) prev0.items.push(it); continue; }
+    // Before wrapping, more filling on the wrapper ("add a slice of jackfruit on top") belongs to the filling step.
+    if (["add", "top"].includes(kind) && prev0 && prev0.kind === "fill" && !wrapDone) { for (const it of its) if (!prev0.items.includes(it)) prev0.items.push(it); continue; }
+    if (kind === "fill" && wrapDone) continue; // "the sugar sticks on the wrapper" after wrapping isn't filling
+    // Wrapping needs something to wrap: "lock the leaf container" before any filling is making the container.
+    if (kind === "wrap" && !steps.some((x) => ["fill", "coat", "mix", "dough", "rollout", "shape"].includes(x.kind)) && !its.some((it) => COOK_WRAPPER.test(it.key))) continue;
+    if (["dough", "shape", "rollout", "rise", "fill", "brush", "coat"].includes(kind) || kind === "wrap") {
+      if (kind === "dough") for (const it of its) consumed.add(it);
+      if (kind === "fill" || kind === "wrap") for (const it of steps.filter((x) => x.kind !== "shop").flatMap((x) => x.items)) if (!it.fryOil && !it.water && it !== wrapped && !COOK_SEASONING.test(it.key)) consumed.add(it);
+      if (kind === "wrap" && prev0 && prev0.kind === "wrap") continue; // "wrap … then seal": one step
+      if (["dough", "rollout", "shape", "fill", "rise"].includes(kind) && prev0 && prev0.kind === kind) { for (const it of its) if (!prev0.items.includes(it)) prev0.items.push(it); if (kind === "dough") prev0.knead = prev0.knead || a.knead; if (a.size) prev0.size = a.size; if (a.minutes) prev0.minutes = a.minutes; continue; }
+      if (kind === "dough" && !its.length && !a.knead && prev0 && prev0.kind !== "dough") continue;
+      const st0 = { kind, items: kind === "wrap" ? its.filter((it) => COOK_WRAPPER.test(it.key) || /leaf|leaves|dahon/.test(it.key)) : its, minutes: a.minutes || null, vessel: vessel || "kawali" };
+      if (kind === "wrap") { st0.style = wrapStyle; st0.made = wrapped; st0.fork = !!a.fork; st0.dough = hasDough; wrapDone = true; }
+      if (kind === "fill") { st0.style = wrapStyle; st0.dough = hasDough; }
+      if (kind === "rollout" && a.size) st0.size = a.size;
+      if (kind === "dough") st0.knead = !!a.knead;
+      steps.push(st0);
+      continue;
+    }
+    // After wrapping, the filling, the wrapper and the dish's own name all mean the wrapped dish.
+    if (wrapDone) {
+      if (its.some((it) => consumed.has(it) || COOK_WRAPPER.test(it.key))) its = [wrapped, ...its.filter((it) => !consumed.has(it) && !COOK_WRAPPER.test(it.key))];
+      else if (!its.length && ["fry", "deepfry", "steam", "bake", "grill", "boil", "simmer", "cook", "add", "brush"].includes(kind)) its = [wrapped];
+    }
+    // Frying the wrapped dish: the sugar or salt that sticks to it isn't a second thing being fried.
+    if (its[0] === wrapped && ["fry", "deepfry", "bake", "steam"].includes(kind)) its = [wrapped];
     // "Deep fry the lumpia" names the wrapper: show the rolled dish instead.
     if (["fry", "deepfry"].includes(kind) && its.some((it) => COOK_WRAPPER.test(it.key))) {
       its = its.filter((it) => !COOK_WRAPPER.test(it.key));
-      if (!its.length) its = [{ key: "rolled", label: cookWrappedName(wrappers[0] && wrappers[0].label), icon: "🌯", words: [] }];
+      if (!its.length) its = [wrapped];
     }
     // Seasoning lists only what goes on: "rub the Magic Sarap over the pork belly".
     if (kind === "season") its = its.filter((it) => !mains.has(it));
@@ -376,8 +463,15 @@ function buildCookScript(recipe) {
   const seasonStep = steps.find((x) => x.kind === "season");
   if (seasonings.length && !seasonStep) steps.push({ kind: "season", items: seasonings, vessel: vessel || "kawali" });
   else if (seasonStep) for (const it of seasonings) if (!seasonStep.items.includes(it)) seasonStep.items.push(it);
+  // A filling or a rice mixture made before anything is heated is made in a bowl, not in a pan.
+  const firstFill = steps.findIndex((x) => x.kind === "fill");
+  if (firstFill > 0) for (let k = 0; k < firstFill; k++) {
+    const x = steps[k];
+    if (["heat", "saute", "boil", "simmer", "cook", "fry", "deepfry"].includes(x.kind)) break;
+    if (["add", "pour"].includes(x.kind)) x.kind = "mix";
+  }
   steps.splice(0, steps.length, ...cookCompact(steps));
-  steps.push({ kind: "serve", items: [], vessel: vessel || "kawali", cold: steps.some((x) => x.kind === "chill") || !steps.some((x) => COOK_TIMED.has(x.kind) && !["marinate", "chill"].includes(x.kind) || x.kind === "heat") });
+  steps.push({ kind: "serve", items: [], vessel: vessel || "kawali", cold: (() => { const lastChill = steps.map((x) => x.kind).lastIndexOf("chill"), lastHeat = steps.reduce((m, x, i) => ((COOK_TIMED.has(x.kind) && !["marinate", "chill", "rise"].includes(x.kind)) || x.kind === "heat" ? i : m), -1); return lastHeat < 0 || lastChill > lastHeat; })() });
   return steps.slice(0, 24);
 }
 
@@ -399,6 +493,9 @@ function cookCompact(input) {
     }
     if (prev && ["cook", "simmer"].includes(prev.kind) && !prev.minutes && !prev.items.length && COOK_TIMED.has(s.kind) && s.minutes && same(prev, s)) {
       out[out.length - 1] = s; continue;
+    }
+    if (prev && prev.kind === "mix" && s.kind === "mix" && prev.items.length + s.items.length <= 8) {
+      out[out.length - 1] = { ...prev, items: [...prev.items, ...s.items.filter((it) => !prev.items.includes(it))] }; continue;
     }
     if (prev && ["add", "pour"].includes(prev.kind) && ["add", "pour"].includes(s.kind) && same(prev, s) && prev.items.length + s.items.length <= 6) {
       const items = [...prev.items, ...s.items.filter((it) => !prev.items.includes(it))];
@@ -489,7 +586,30 @@ function cookCaption(step, lang = "tl") {
     case "steam": return en ? `Steam${time}` : `I-steam${time}`;
     case "stir": return en ? "Stir well" : "Haluin nang mabuti";
     case "mix": return en ? `Mix the ${list} in a bowl` : `Paghaluin sa mangkok ang ${list}`;
-    case "wrap": return en ? `Wrap in ${list} and roll` : `Ibalot sa ${list} at irolyo`;
+    case "dough": return step.knead && !(step.items || []).length
+      ? (en ? "Knead the dough until smooth" : "Masahin ang masa hanggang kuminis")
+      : step.knead ? (en ? `Make the dough with the ${list} and knead until smooth` : `Gawin ang masa (${list}) at masahin hanggang kuminis`)
+      : (en ? `Make the dough: mix the ${list}` : `Gawin ang masa: paghaluin ang ${list}`);
+    case "rise": return en ? `Let the dough rise${time}` : `Hayaang umalsa ang masa${time}`;
+    case "shape": return en ? "Divide the dough and shape into balls" : "Hatiin ang masa at gawing bola-bola";
+    case "rollout": return en ? `Flatten the dough with a rolling pin${step.size ? ` into a ${step.size} cm circle` : ""}` : `Paratin ang masa gamit ang rolling pin${step.size ? ` (bilog, mga ${step.size} cm)` : ""}`;
+    case "fill": {
+      const base = step.style === "leaf" ? (en ? "the leaf" : "dahon") : step.dough ? (en ? "the dough" : "masa") : (en ? "the wrapper" : "wrapper");
+      return en ? `Put the filling in the middle of ${base}` : `Lagyan ng palaman ang gitna ng ${base}`;
+    }
+    case "wrap": {
+      const W = {
+        roll: [`Ibalot${list ? ` sa ${list}` : ""}, itupi ang gilid at irolyo nang mahigpit`, `Wrap${list ? ` in the ${list}` : ""}, fold in the sides and roll up tightly`],
+        halfmoon: [`Itupi sa kalahati at isara ang gilid${step.fork ? " gamit ang tinidor" : " (kurutin o i-pleat)"}`, `Fold in half and seal the edge${step.fork ? " with a fork" : " (pinch or pleat)"}`],
+        pleat: ["Tipunin ang wrapper paikot sa palaman at kurutin pataas (bukas sa ibabaw)", "Gather the wrapper up around the filling and pleat it (open on top)"],
+        bun: ["Tipunin ang gilid ng masa sa ibabaw at pilipitin para isara", "Gather the dough's edges over the filling and twist to seal"],
+        leaf: ["Ibalot sa dahon, itupi ang dulo at isara", "Wrap in the leaf, fold the ends and seal"],
+        parcel: ["Itupi ang wrapper at pagdikitin ang mga dulo", "Fold the wrapper over and press the corners together"],
+      }[step.style || "roll"] || [`Ibalot sa ${list} at irolyo`, `Wrap in ${list} and roll`];
+      return en ? W[1] : W[0];
+    }
+    case "coat": { const [a0, ...rest] = step.items || []; const r = cookList(rest); return a0 && rest.length ? (en ? `Roll the ${a0.label.toLowerCase()} in the ${r.replace(/ at /g, " and ")}` : `Ipagulong ang ${a0.label.toLowerCase()} sa ${r}`) : en ? `Coat the ${list}` : `Ipagulong ang ${list}`; }
+    case "brush": return en ? `Brush the top with ${list}` : `Pahiran ng ${list} ang ibabaw`;
     case "cook": return en ? `Cook${time}` : `Lutuin${time}`;
     case "season": return en ? `Season${list ? ` with ${list}` : ""} to taste` : `Timplahan${list ? ` ng ${list}` : ""} ayon sa panlasa`;
     case "strain": return en ? `Strain${list ? ` the ${list}` : ""} and drain the water` : `Salain${list ? ` ang ${list}` : ""} at itapon ang tubig`;
@@ -1185,7 +1305,7 @@ function cookFillThumbs(map) {
 
 function cookStepIcon(s) {
   return { shop: "🧺", peel: "🧽", cut: "🔪", marinate: "🥣", heat: "🔥", saute: "🍳", add: "➕", pour: "🫗", boil: "♨️", simmer: "♨️",
-    fry: "🍳", deepfry: "🛢️", grill: "🔥", bake: "🔥", steam: "♨️", stir: "🥄", mix: "🥣", wrap: "🌯", cook: "♨️", chill: "🧊", strain: "🫙", top: "🧀", season: "🧂", drain: "🧻", serve: "🍽️" }[s.kind] || "•";
+    fry: "🍳", deepfry: "🛢️", grill: "🔥", bake: "🔥", steam: "♨️", stir: "🥄", mix: "🥣", wrap: "🌯", cook: "♨️", chill: "🧊", strain: "🫙", top: "🧀", dough: "🫓", rise: "⏳", shape: "⚪", rollout: "🪵", fill: "🥄", coat: "🍚", brush: "🖌️", season: "🧂", drain: "🧻", serve: "🍽️" }[s.kind] || "•";
 }
 
 function cookShowStep() {
@@ -1513,6 +1633,16 @@ function cookState(steps, upto) {
   return st;
 }
 
+/** The colour of a filling: the sauce it cooked in if that's dark, else the mix of its ingredients' colours. */
+function cookFillColor(items, st) {
+  const sauce = st.parts && st.parts.length ? cookMixColor(st.parts) : null;
+  if (sauce && cookMixLum(st.parts) < 0.5) return sauce;
+  const solid = (items || []).filter((it) => !["powder", "peppercorn", "cube", "misc"].includes(cookFoodKind(it)));
+  if (!solid.length) return "#a8714a";
+  const parts = solid.map((it) => { const L = CK_LOOK[cookFoodKind(it)] || CK_LOOK.misc; const cooked = (st.brown && st.brown.get(it)) || st.heat; return [L[cooked ? 2 : 1], ["pork", "beef", "mince", "chicken", "shrimp", "fish", "grain", "banana", "fruit"].includes(cookFoodKind(it)) ? 3 : 1, 1]; });
+  return cookMixColor(parts);
+}
+
 /** Food takes on a sauce's colour (stewing, marinating); the strongest exposure so far wins. */
 function cookTint(st, it, hex, amt) {
   if (!st.tint) st.tint = new Map();
@@ -1554,9 +1684,27 @@ function cookApply(st, s) {
         if (s.kind === "marinate" && st.bowlLiquid) for (const it of s.items) if (!cookIsPoured(it)) cookTint(st, it, st.bowlLiquid, Math.min(0.45, 0.12 + (s.minutes || 30) / 240)); }
       break;
     case "wrap":
-      for (const it of st.items) if (st.loc.get(it) === "bowl" || s.items.includes(it)) st.loc.set(it, "wrapped");
-      st.rolled = true;
+      for (const it of st.items) if (["bowl", "filling"].includes(st.loc.get(it)) || (s.items.includes(it) && !cookIsPoured(it))) st.loc.set(it, "wrapped");
+      st.rolled = true; st.dough = null; st.filled = false;
+      if (s.made) { if (!st.items.includes(s.made)) st.items.push(s.made); st.loc.set(s.made, "board"); }
       break;
+    // Dough: what goes in disappears into it; the dough then rises, is shaped, rolled out and filled.
+    case "dough": for (const it of s.items) if (!cookIsPoured(it)) st.loc.set(it, "used"); st.dough = s.knead ? "kneaded" : "bowl"; break;
+    case "rise": st.dough = "risen"; break;
+    case "shape": st.dough = "balls"; break;
+    case "rollout": st.dough = "disc"; break;
+    case "coat": for (const it of s.items) st.loc.set(it, COOK_SEASONING.test(it.key) || cookIsPoured(it) ? "used" : "board"); break;
+    case "fill": {
+      // The filling comes from the bowl (raw mixtures), the pan (cooked fillings) or is named; the pan is emptied.
+      const from = st.items.filter((it) => ["bowl", "pot", "rack", "board"].includes(st.loc.get(it)) && !cookIsPoured(it) && !COOK_WRAPPER.test(it.key) && it.key !== "rolled");
+      const named = (s.items || []).filter((it) => !cookIsPoured(it) && !COOK_WRAPPER.test(it.key));
+      const fill = [...new Set([...from, ...named])];
+      st.fillColor = cookFillColor(fill, st);
+      for (const it of fill) st.loc.set(it, "filling");
+      if (from.some((it) => it && st.loc.get(it) === "filling")) { st.level = 0; st.parts = []; }
+      st.filled = true;
+      break;
+    }
     case "heat": st.heat = true; if (st.items.some((it) => it.fryOil)) st.oil = Math.max(st.oil, 0.18); break;
     case "saute": case "add": case "pour":
       // Before the stove is on, "add" after a "mix" goes into the mixing bowl (lumpia filling).
@@ -2031,6 +2179,115 @@ function cookBuildScene(THREE, canvas) {
     }
   }
   function wholeModel(it, brownAmt) { return safely("whole", it, () => wholeModelRaw(it, brownAmt)); }
+
+  // ── Dough and wrapped dishes ──
+  const doughMat = (b = 0) => { const m = std({ color: 0xf1e2c2, roughness: 0.75, bumpMap: pores(), bumpScale: 0.0015 }); m.userData.base = col("#f1e2c2"); m.userData.done = col("#c9873a"); ckBrown(m, b); return m; };
+  const wrapperMat = () => std({ map: tex("wrapper-sheet2", 256, (gg, n, rr) => { gg.fillStyle = "#f3e6c4"; gg.fillRect(0, 0, n, n); for (let k = 0; k < 600; k++) { gg.globalAlpha = 0.1; gg.fillStyle = rr() < 0.5 ? "#fff" : "#d8c08c"; gg.fillRect(rr() * n, rr() * n, 2, 2); } gg.globalAlpha = 1; }), roughness: 0.8, side: THREE.DoubleSide });
+  const leafMat = () => std({ map: tex("leaf-sheet", 256, leaf("#4f8a35", "#9cc27a")), roughness: 0.5, side: THREE.DoubleSide });
+  const fillMat = (hex) => std({ color: hex || "#a8714a", roughness: 0.6, bumpMap: pores(), bumpScale: 0.002 });
+  /** Empanada, siomai, siopao, suman, wonton: a few pieces of the wrapped dish. */
+  function madeModel(g, it, b, r) {
+    const st = it.wrapStyle, cooked = b;
+    if (st === "halfmoon") {
+      const m = it.dough === false ? wrapperMat() : doughMat(cooked);
+      // A plump half-moon: a half-disc extruded with rounded edges, puffed in the middle, crimped along the curve.
+      const shp = new THREE.Shape(); shp.moveTo(-0.045, 0); shp.absarc(0, 0, 0.045, Math.PI, 0, true); shp.lineTo(-0.045, 0);
+      const geo = new THREE.ExtrudeGeometry(shp, { depth: 0.008, bevelEnabled: true, bevelThickness: 0.008, bevelSize: 0.007, bevelSegments: 4, curveSegments: 24 });
+      geo.rotateX(-Math.PI / 2); geo.translate(0, 0.008, 0);
+      { const p = geo.attributes.position; for (let i = 0; i < p.count; i++) { const x = p.getX(i), z = p.getZ(i), y = p.getY(i); if (y > 0.01) { const d = Math.hypot(x, z + 0.018) / 0.05; p.setY(i, y + Math.max(0, 1 - d * d) * 0.01); } } geo.computeVertexNormals(); }
+      const crimp = std({ color: 0x000000, transparent: true, opacity: 0.25 });
+      for (let k = 0; k < 3; k++) {
+        const one = new THREE.Group(); one.add(mesh(geo, m));
+        for (let j = 0; j < 11; j++) { const a = Math.PI - (j / 10) * Math.PI; const nick = mesh(new THREE.BoxGeometry(0.009, 0.001, 0.0016), crimp); nick.position.set(Math.cos(a) * 0.047, 0.017, -Math.sin(a) * 0.047); nick.rotation.y = a; one.add(nick); }
+        one.position.set((k - 1) * 0.07, 0, (k % 2) * 0.035); one.rotation.y = (r() - 0.5) * 0.6; g.add(one);
+      }
+    } else if (st === "pleat") {
+      const w = std({ color: 0xf2d77a, roughness: 0.4 }); w.userData.base = col("#f2d77a"); w.userData.done = col("#c98a3a"); ckBrown(w, cooked * 0.6);
+      const f = fillMat("#d99a8c");
+      for (let k = 0; k < 6; k++) {
+        const one = new THREE.Group();
+        const wall = mesh(organic(new THREE.CylinderGeometry(0.017, 0.02, 0.026, 16, 2, true), 0, 0.12, 21 + k), w); wall.material.side = THREE.DoubleSide; wall.position.y = 0.013; one.add(wall);
+        const top = mesh(new THREE.CircleGeometry(0.016, 16), f); top.rotation.x = -Math.PI / 2; top.position.y = 0.024; one.add(top);
+        const dot = mesh(new THREE.SphereGeometry(0.003, 8, 6), std({ color: 0xe8651e })); dot.position.y = 0.026; one.add(dot);
+        one.position.set(((k % 3) - 1) * 0.045, 0, (Math.floor(k / 3) - 0.5) * 0.045); g.add(one);
+      }
+    } else if (st === "bun") {
+      const m = std({ color: 0xfbf7ef, roughness: 0.6, bumpMap: pores(), bumpScale: 0.001 });
+      for (let k = 0; k < 3; k++) {
+        const bun = ellipsoid(0.034, 1, 0.78, 1, m, 24); bun.position.x = (k - 1) * 0.075;
+        const twist = mesh(new THREE.ConeGeometry(0.008, 0.012, 8), m); twist.position.set(bun.position.x, 0.054, 0);
+        const paper = mesh(new THREE.CylinderGeometry(0.032, 0.032, 0.001, 20), std({ color: 0xf4efe6 })); paper.position.set(bun.position.x, 0.0006, 0);
+        g.add(bun, twist, paper);
+      }
+    } else if (st === "leaf") {
+      const m = leafMat(), tie = std({ color: 0x6b5a2e, roughness: 0.8 });
+      for (let k = 0; k < 4; k++) {
+        const c = mesh(new THREE.CylinderGeometry(0.013, 0.013, 0.1, 14), m); c.rotation.z = Math.PI / 2; c.position.set(0, 0.013 + Math.floor(k / 2) * 0.024, ((k % 2) - 0.5) * 0.028 + Math.floor(k / 2) * 0.012); g.add(c);
+        for (const x of [-0.03, 0.03]) { const band = mesh(new THREE.TorusGeometry(0.0135, 0.0018, 6, 16), tie); band.rotation.y = Math.PI / 2; band.position.set(x, c.position.y, c.position.z); g.add(band); }
+      }
+    } else { // parcel: wonton
+      const m = wrapperMat(); m.userData.base = col("#f3e6c4"); m.userData.done = col("#c98a3a"); ckBrown(m, cooked);
+      for (let k = 0; k < 6; k++) {
+        const one = mesh(organic(new THREE.ConeGeometry(0.022, 0.018, 4), 0, 0.2, 31 + k), m); one.scale.y = 0.7; one.position.set(((k % 3) - 1) * 0.05, 0.007, (Math.floor(k / 3) - 0.5) * 0.045); one.rotation.y = r() * 3; g.add(one);
+      }
+    }
+  }
+
+  // Rolling pin
+  const rollingPin = new THREE.Group(); scene.add(rollingPin);
+  { const wood = keep(std({ map: tex("pin-wood", 256, grain("#d2a46b", "#8a5a2e", 20)), roughness: 0.55 }));
+    const barrel = shadowed(new THREE.Mesh(keep(new THREE.CylinderGeometry(0.014, 0.014, 0.16, 20)), wood)); barrel.rotation.z = Math.PI / 2; rollingPin.add(barrel);
+    for (const x of [-0.105, 0.105]) { const h = shadowed(new THREE.Mesh(keep(new THREE.CylinderGeometry(0.007, 0.008, 0.05, 12)), wood)); h.rotation.z = Math.PI / 2; h.position.x = x; rollingPin.add(h); } }
+  const pinRest = () => { rollingPin.position.set(CK_AT.board[0] - 0.04, 0.014, CK_AT.board[1] + 0.22); rollingPin.rotation.set(0, 0.25, 0); };
+  pinRest();
+
+  /** The dough as it is now (in the bowl, risen, in balls, rolled out), and this step's animation. */
+  function cookDoughScene(st, step, steps, index, after) {
+    const k = step.kind, B = CK_AT.board, by = BOARD_Y;
+    const ball = (r, x, y, z, mat) => { const m = ellipsoid(r, 1, 0.82, 1, mat || doughMat(), 24); m.position.set(x, y, z); dyn.add(m); return m; };
+    const base = (kind) => {
+      let m;
+      if (kind === "leaf") { m = new THREE.Mesh(new THREE.PlaneGeometry(0.16, 0.11), leafMat()); m.rotation.x = -Math.PI / 2; }
+      else if (kind === "disc") { m = mesh(organic(new THREE.CylinderGeometry(0.06, 0.06, 0.004, 40), 0, 0.03, 5), doughMat()); }
+      else { m = new THREE.Mesh(new THREE.PlaneGeometry(0.12, 0.12), wrapperMat()); m.rotation.x = -Math.PI / 2; m.rotation.z = Math.PI / 4; }
+      m.position.set(B[0], by + 0.002, B[1]); dyn.add(m); return m;
+    };
+    const baseKind = step.style === "leaf" ? "leaf" : st.dough || step.dough ? "disc" : "wrapper";
+    doughInfo = null;
+    if (k === "dough") {
+      if (step.knead) { const d = ball(0.045, B[0], by, B[1]); doughInfo = { kind: "knead", d }; }
+      else { const d = ball(0.05, CK_AT.bowl[0], 0.008, CK_AT.bowl[1]); d.scale.setScalar(0.001); doughInfo = { kind: "mixdough", d }; }
+      return;
+    }
+    if (k === "rise") { const d = ball(0.05, CK_AT.bowl[0], 0.008, CK_AT.bowl[1]); doughInfo = { kind: "rise", d }; return; }
+    if (k === "shape") {
+      const big = ball(0.05, B[0], by, B[1]);
+      const smalls = [0, 1, 2, 3].map((j) => { const b2 = ball(0.022, B[0] - 0.09 + j * 0.06, by, B[1] + 0.07); b2.scale.setScalar(0.001); return b2; });
+      doughInfo = { kind: "shape", big, smalls };
+      return;
+    }
+    if (k === "rollout") {
+      const lump = ball(0.03, B[0], by, B[1]);
+      const disc = mesh(organic(new THREE.CylinderGeometry(0.06, 0.06, 0.004, 40), 0, 0.03, 5), doughMat()); disc.position.set(B[0], by + 0.002, B[1]); disc.scale.set(0.3, 1, 0.3); dyn.add(disc);
+      [0, 1, 2].forEach((j) => ball(0.022, B[0] - 0.09 + j * 0.06, by, B[1] + 0.07));
+      doughInfo = { kind: "rollout", lump, disc };
+      return;
+    }
+    if (k === "fill") {
+      base(baseKind);
+      const mound = mesh(organic(new THREE.SphereGeometry(0.026, 18, 12, 0, Math.PI * 2, 0, Math.PI / 2), 0, 0.12, 9), fillMat((after && after.fillColor) || "#a8714a")); mound.scale.set(1.2, 0.55, 1);
+      const leafy = baseKind === "leaf";
+      if (leafy) mound.scale.set(2.6, 0.5, 0.8);
+      mound.position.set(B[0], by + 0.003, B[1] + (baseKind === "disc" && step.style === "halfmoon" ? -0.018 : baseKind === "wrapper" && step.style === "roll" ? 0.025 : 0)); mound.userData.s0 = mound.scale.clone(); mound.scale.multiplyScalar(0.001); dyn.add(mound);
+      doughInfo = { kind: "fill", mound };
+      return;
+    }
+    // Between steps: show where the dough is.
+    if (st.dough === "bowl" || st.dough === "risen") ball(st.dough === "risen" ? 0.07 : 0.05, CK_AT.bowl[0], 0.008, CK_AT.bowl[1]);
+    if (st.dough === "kneaded") ball(0.045, B[0], by, B[1]);
+    if (st.dough === "balls") [0, 1, 2, 3].forEach((j) => ball(0.022, B[0] - 0.09 + j * 0.06, by, B[1] + 0.07));
+    if (st.dough === "disc") base("disc");
+  }
   function piecesModel(it, style, radius, brownAmt, seedExtra = 0) { return safely("pieces", it, () => piecesModelRaw(it, style, radius, brownAmt, seedExtra)); }
 
   function wholeModelRaw(it, brownAmt) {
@@ -2098,7 +2355,7 @@ function cookBuildScene(THREE, canvas) {
       case "egg": { const m = foodMat(kind, "skin", 0, { roughness: 0.35 }); for (let k = 0; k < 2; k++) { const e = ellipsoid(0.022, 1, 1.3, 1, m, 20); e.position.x = k * 0.05; g.add(e); } break; }
       case "citrus": { const m = foodMat(kind, "skin", brownAmt, { roughness: 0.4 }); for (let k = 0; k < 6; k++) { const c = ellipsoid(0.014, 1.6, 0.8, 1, m, 12); c.position.set((k % 3) * 0.035, 0, Math.floor(k / 3) * 0.03); c.rotation.y = r(); g.add(c); } break; }
       case "wrapper": { const m = foodMat(kind, "skin", 0, { map: skinTex(kind), roughness: 0.8 }); const s = mesh(new THREE.BoxGeometry(0.15, 0.012, 0.15), m); s.position.y = 0.006; s.rotation.y = 0.3; g.add(s); break; }
-      case "rolled": {
+      case "rolled": if (it.wrapStyle && it.wrapStyle !== "roll") { madeModel(g, it, brownAmt, r); break; } {
         // Lumpiang shanghai: thin, long rolls with folded, pinched ends and a seam, stacked like on a platter.
         const m = foodMat(kind, "skin", brownAmt, { map: tex("lumpia-skin", 256, (gg, n, rr) => { gg.fillStyle = "#e7cf98"; gg.fillRect(0, 0, n, n); for (let i = 0; i < 900; i++) { gg.globalAlpha = 0.08 + rr() * 0.2; gg.fillStyle = rr() < 0.5 ? "#ffffff" : "#c8a468"; gg.beginPath(); gg.ellipse(rr() * n, rr() * n, 1 + rr() * 4, 0.6 + rr() * 2, rr() * 3, 0, 7); gg.fill(); } gg.globalAlpha = 0.35; gg.strokeStyle = "#b98a4a"; gg.lineWidth = 2; for (let x = 0; x < n; x += 22) { gg.beginPath(); gg.moveTo(x, 0); gg.lineTo(x + 10, n); gg.stroke(); } gg.globalAlpha = 1; }), roughness: 0.55, bumpMap: blisters(), bumpScale: 0.0015 + 0.004 * brownAmt });
         const prof = []; const L = 0.1, R = 0.0085;
@@ -2335,7 +2592,7 @@ function cookBuildScene(THREE, canvas) {
 
   // ── Per-step objects ──
   let dyn = new THREE.Group(); scene.add(dyn);
-  let applianceNow = "kawali", brownMax = 1, heatOn = false, movers = [], cur = null, curIndex = 0, potItems = [], spoonMode = null, pourInfo = null, cutInfo = null, wrapInfo = null, brownList = [], camGoal = null;
+  let doughInfo = null, applianceNow = "kawali", brownMax = 1, heatOn = false, movers = [], cur = null, curIndex = 0, potItems = [], spoonMode = null, pourInfo = null, cutInfo = null, wrapInfo = null, brownList = [], camGoal = null;
   const camPos = V(0, 2.4, 1.5), camLook = V(0, 0, -0.2);
   let firstFrame = true;
 
@@ -2404,7 +2661,7 @@ function cookBuildScene(THREE, canvas) {
     stoveTop.visible = burner.visible = grate.visible = onStove;
     applianceNow = v;
     // Mixed or wrapped filling that goes into the steamer is shown as steamed dumplings.
-    const steamedFilling = v === "steamer" && steps.slice(0, index).some((x) => ["mix", "wrap"].includes(x.kind)) && ["steam", "serve", "drain"].includes(step.kind);
+    const steamedFilling = v === "steamer" && !steps.slice(0, index + 1).some((x) => x.kind === "wrap") && steps.slice(0, index).some((x) => x.kind === "mix") && ["steam", "serve", "drain"].includes(step.kind);
     dumplings.visible = steamedFilling;
     if (!st.vessel || st.vessel !== v) { st.vessel = v; }
     if (!after.vessel) after.vessel = v;
@@ -2439,7 +2696,9 @@ function cookBuildScene(THREE, canvas) {
     for (const it of st.items) if (cookIsPoured(it) && st.loc.get(it) !== "prep" && !moving.has(it) && it !== pourer) place(st, it, "prep");
     // Empty ramekins left on the prep row after cut pieces moved on.
     for (const it of st.items) if (st.cut.has(it) && st.loc.get(it) !== "prep" && cookFoodKind(it) !== "bottle") { const r = ramekin(0.065, 0.04); r.position.copy(spotOf(st, it, "prep")); dyn.add(r); }
-    if (st.rolled && !st.items.some((it) => it.key === "rolled")) { const pseudo = { key: "rolled", label: "lumpia" }; st.items.push(pseudo); st.loc.set(pseudo, "board"); }
+    if (st.rolled && !st.items.some((it) => it.key === "rolled")) { const pseudo = { key: "rolled", label: "lumpia", wrapStyle: "roll" }; st.items.push(pseudo); st.loc.set(pseudo, "board"); }
+    doughInfo = null;
+    if (!st.rolled || ["dough", "rise", "shape", "rollout", "fill"].includes(step.kind)) cookDoughScene(st, step, steps, index, after);
     if (!step.items.some((it) => it.key === "rolled")) for (const it of st.items) if (it.key === "rolled" && st.loc.get(it) === "board" && !moving.has(it)) place(st, it, "board");
 
     // Movers: from where they are to where this step puts them.
@@ -2471,11 +2730,40 @@ function cookBuildScene(THREE, canvas) {
       cutInfo = { whole: m && m.obj, pile, n: pile.userData.n };
       if (m) { m.t0 = 0.1; m.t1 = 0.7; }
     }
-    if (step.kind === "wrap") {
+    if (step.kind === "wrap" && step.style && step.style !== "roll") {
+      const B = CK_AT.board, by = BOARD_Y, fc = st.fillColor || "#a8714a";
+      const made = fit(wholeModel(step.made || { key: "rolled", label: "", wrapStyle: step.style }, 0), 0.09);
+      made.position.set(B[0] + 0.15, by, B[1] - 0.02); made.userData.s0 = made.scale.x; made.scale.setScalar(0.001); dyn.add(made);
+      const mat = step.style === "leaf" ? leafMat() : step.dough || st.dough ? doughMat() : wrapperMat();
+      const info = { style: step.style, made };
+      if (step.style === "halfmoon" || step.style === "parcel") {
+        // Two halves: the far one carries the filling, the near one folds over it on a hinge.
+        const half = (start) => step.style === "parcel" ? new THREE.PlaneGeometry(0.11, 0.055) : new THREE.CircleGeometry(0.06, 32, start, Math.PI);
+        const a = new THREE.Mesh(half(0), mat); a.rotation.x = -Math.PI / 2; a.position.set(B[0], by + 0.003, B[1] - (step.style === "parcel" ? 0.0275 : 0)); dyn.add(a);
+        const hinge = new THREE.Group(); hinge.position.set(B[0], by + 0.003, B[1]); dyn.add(hinge);
+        const b2 = new THREE.Mesh(half(Math.PI), mat); b2.rotation.x = -Math.PI / 2; if (step.style === "parcel") b2.position.z = 0.0275; hinge.add(b2);
+        const mound = ellipsoid(0.022, 1.4, 0.5, 0.8, fillMat(fc), 16); mound.position.set(B[0], by + 0.004, B[1] - 0.025); dyn.add(mound);
+        Object.assign(info, { hinge, parts: [a, mound] });
+        if (step.fork) { const fork = new THREE.Group(); for (let j = -1.5; j <= 1.5; j++) { const tine = mesh(new THREE.BoxGeometry(0.002, 0.002, 0.03), steel); tine.position.x = j * 0.005; fork.add(tine); } const hdl = mesh(new THREE.BoxGeometry(0.008, 0.003, 0.09), steel); hdl.position.z = 0.06; fork.add(hdl); fork.position.set(B[0], by + 0.03, B[1] + 0.08); dyn.add(fork); info.fork = fork; }
+      } else if (step.style === "pleat" || step.style === "bun") {
+        const sheet = step.style === "bun" ? mesh(organic(new THREE.CylinderGeometry(0.06, 0.06, 0.004, 40), 0, 0.03, 5), mat) : new THREE.Mesh(new THREE.PlaneGeometry(0.1, 0.1), mat);
+        if (step.style !== "bun") { sheet.rotation.x = -Math.PI / 2; sheet.rotation.z = Math.PI / 4; }
+        sheet.position.set(B[0], by + 0.002, B[1]); dyn.add(sheet);
+        const mound = ellipsoid(0.02, 1, 0.7, 1, fillMat(fc), 16); mound.position.set(B[0], by + 0.003, B[1]); dyn.add(mound);
+        const wall = step.style === "bun" ? ellipsoid(0.036, 1, 0.8, 1, std({ color: 0xfbf7ef, roughness: 0.6 }), 24) : mesh(organic(new THREE.CylinderGeometry(0.018, 0.022, 0.028, 16, 2, true), 0, 0.15, 3), std({ color: 0xf2d77a, roughness: 0.45, side: THREE.DoubleSide }));
+        wall.position.set(B[0], by + (step.style === "bun" ? 0 : 0.014), B[1]); wall.scale.y = 0.001; dyn.add(wall);
+        Object.assign(info, { sheet, mound, wall });
+      } else if (step.style === "leaf") {
+        const sheet = new THREE.Mesh(new THREE.PlaneGeometry(0.16, 0.11), mat); sheet.rotation.x = -Math.PI / 2; sheet.position.set(B[0], by + 0.002, B[1]); dyn.add(sheet);
+        const log = mesh(new THREE.CylinderGeometry(0.009, 0.009, 0.09, 12), fillMat(fc)); log.rotation.z = Math.PI / 2; log.position.set(B[0], by + 0.009, B[1] + 0.03); dyn.add(log);
+        Object.assign(info, { sheet, log });
+      }
+      wrapInfo = info;
+    } else if (step.kind === "wrap") {
       // A square wrapper turned like a diamond, a line of filling near the bottom corner, then it rolls up.
       const sheet = new THREE.Mesh(new THREE.PlaneGeometry(0.13, 0.13), foodMat("wrapper", "skin", 0, { map: tex("wrapper-sheet", 256, (gg, n, rr) => { gg.fillStyle = "#f3e6c4"; gg.fillRect(0, 0, n, n); for (let k = 0; k < 600; k++) { gg.globalAlpha = 0.1; gg.fillStyle = rr() < 0.5 ? "#fff" : "#d8c08c"; gg.fillRect(rr() * n, rr() * n, 2, 2); } gg.globalAlpha = 1; gg.strokeStyle = "#c9a96a"; gg.lineWidth = 6; gg.strokeRect(3, 3, n - 6, n - 6); }), roughness: 0.8, side: THREE.DoubleSide })); sheet.rotation.x = -Math.PI / 2; sheet.rotation.z = Math.PI / 4; sheet.position.set(CK_AT.board[0], BOARD_Y + 0.0015, CK_AT.board[1]); dyn.add(sheet);
-      const log = new THREE.Mesh(organic(new THREE.CylinderGeometry(0.006, 0.006, 0.075, 12, 4), 0, 0.12, 3), foodMat("mince", "skin", 0, { map: skinTex("mince") })); log.rotation.z = Math.PI / 2; log.position.set(CK_AT.board[0], BOARD_Y + 0.006, CK_AT.board[1] + 0.035); dyn.add(log);
-      const rolls = wholeModel({ key: "rolled", label: "lumpia" }, 0); rolls.position.set(CK_AT.board[0] + 0.17, BOARD_Y, CK_AT.board[1] - 0.02); rolls.scale.setScalar(0.001); dyn.add(rolls);
+      const log = new THREE.Mesh(organic(new THREE.CylinderGeometry(0.006, 0.006, 0.075, 12, 4), 0, 0.12, 3), st.fillColor ? fillMat(st.fillColor) : foodMat("mince", "skin", 0, { map: skinTex("mince") })); log.rotation.z = Math.PI / 2; log.position.set(CK_AT.board[0], BOARD_Y + 0.006, CK_AT.board[1] + 0.035); dyn.add(log);
+      const rolls = wholeModel(step.made || { key: "rolled", label: "lumpia" }, 0); rolls.position.set(CK_AT.board[0] + 0.17, BOARD_Y, CK_AT.board[1] - 0.02); rolls.scale.setScalar(0.001); dyn.add(rolls);
       wrapInfo = { sheet, log, rolls };
     }
     if (["fry", "deepfry", "saute", "bake", "grill"].includes(step.kind) || cookBurn(step)) {
@@ -2494,7 +2782,8 @@ function cookBuildScene(THREE, canvas) {
     // Camera.
     const at = (xz, d) => ({ x: xz[0], z: xz[1], d });
     camGoal = step.kind === "shop" ? at([0, -0.42], 2.5)
-      : step.kind === "wrap" ? at([CK_AT.board[0] + 0.06, CK_AT.board[1]], 0.6)
+      : ["wrap", "fill", "rollout", "shape", "coat", "brush"].includes(step.kind) || (step.kind === "dough" && step.knead) ? at([CK_AT.board[0] + 0.05, CK_AT.board[1] + 0.01], 0.62)
+      : ["dough", "rise"].includes(step.kind) ? at([CK_AT.bowl[0] + 0.1, CK_AT.bowl[1]], 0.75)
       : ["cut", "peel"].includes(step.kind) ? at(CK_AT.board, 0.8)
       : ["mix", "marinate", "chill"].includes(step.kind) || toBowl ? at([CK_AT.bowl[0] + 0.2, CK_AT.bowl[1] - 0.05], 1.05)
       : step.kind === "serve" || (step.kind === "top" && movers.length && movers.every((m) => after.loc.get(m.it) === "plate")) ? at(CK_AT.plate, 0.65)
@@ -2559,7 +2848,17 @@ function cookBuildScene(THREE, canvas) {
       if (cutInfo.whole) { const w = cutInfo.whole; if (!w.userData.s0) w.userData.s0 = w.scale.x; const s = Math.max(0.001, 1 - u); w.scale.setScalar(w.userData.s0 * s); w.visible = s > 0.04; }
       cutInfo.pile.userData.inst.count = Math.round(cutInfo.n * u);
     }
-    if (wrapInfo) {
+    if (wrapInfo && wrapInfo.style) {
+      const u = Math.max(0, Math.min(1, (t - 0.5) / (len - 1.6))), W = wrapInfo, grow = ease((t - len * 0.72) / (len * 0.22));
+      if (W.hinge) {
+        W.hinge.rotation.x = -Math.PI * Math.min(1, u * 1.25);
+        if (W.fork) { const f = Math.max(0, (u - 0.8) / 0.2); W.fork.visible = f > 0; W.fork.position.y = BOARD_Y + 0.02 + Math.abs(Math.sin(t * 14)) * 0.012; W.fork.position.x = CK_AT.board[0] - 0.05 + f * 0.1; W.fork.position.z = CK_AT.board[1] - 0.045 * Math.cos(f * Math.PI); }
+        const hide = grow > 0.05; W.hinge.visible = !hide; W.parts.forEach((p) => { p.visible = !hide; });
+      }
+      if (W.wall) { W.wall.scale.y = Math.max(0.001, u); W.sheet.scale.setScalar(Math.max(0.2, 1 - u * 0.8)); W.mound.visible = W.style !== "bun" || u < 0.8; const hide = grow > 0.05; W.wall.visible = W.sheet.visible = !hide; W.mound.visible = W.mound.visible && !hide; }
+      if (W.log) { W.sheet.scale.set(1, Math.max(0.15, 1 - u * 0.85), 1); W.sheet.position.z = CK_AT.board[1] - u * 0.03; W.log.position.z = CK_AT.board[1] + 0.03 - u * 0.055; W.log.scale.set(1, 1 + u * 0.4, 1 + u * 0.4); W.sheet.visible = W.log.visible = grow < 0.05; }
+      W.made.scale.setScalar(Math.max(0.001, grow * W.made.userData.s0));
+    } else if (wrapInfo) {
       const u = Math.max(0, Math.min(1, (t - 0.6) / (len - 1.4)));
       // The bottom corner folds over the filling and the roll travels up the diamond, getting thicker.
       wrapInfo.sheet.scale.set(1 - u * 0.55, 1 - u * 0.75, 1); wrapInfo.sheet.position.z = CK_AT.board[1] - u * 0.02;
@@ -2567,6 +2866,21 @@ function cookBuildScene(THREE, canvas) {
       if (wrapInfo.log.material.color && u > 0.3) wrapInfo.log.material.color.lerp(col("#efdcae"), 0.06);
       wrapInfo.sheet.visible = wrapInfo.log.visible = u < 0.98;
       wrapInfo.rolls.scale.setScalar(Math.max(0.001, ease((t - len * 0.6) / (len * 0.3))));
+    }
+    // Dough: mixing, kneading, rising, shaping, rolling out, filling.
+    pinRest();
+    if (doughInfo) {
+      const D = doughInfo, u = Math.max(0, Math.min(1, (t - 0.5) / (len - 1)));
+      if (D.kind === "mixdough") D.d.scale.setScalar(Math.max(0.001, ease(u)));
+      if (D.kind === "knead") { const sq = Math.abs(Math.sin(t * 5)); D.d.scale.set(1 + sq * 0.3, 1 - sq * 0.35, 1 + sq * 0.15); D.d.rotation.y = t * 0.8; }
+      if (D.kind === "rise") D.d.scale.setScalar(1 + 0.55 * ease(u));
+      if (D.kind === "shape") { D.big.scale.setScalar(Math.max(0.001, 1 - u)); D.smalls.forEach((b2, j) => b2.scale.setScalar(Math.max(0.001, ease((u - j * 0.2) / 0.25)))); }
+      if (D.kind === "rollout") {
+        D.lump.scale.set(1 + u * 0.8, Math.max(0.12, 1 - u), 1 + u * 0.8); D.lump.visible = u < 0.85;
+        D.disc.scale.set(0.3 + 0.7 * u, 1, 0.3 + 0.7 * u); D.disc.visible = u > 0.2;
+        rollingPin.position.set(CK_AT.board[0], BOARD_Y + 0.016 + 0.004 * (1 - u), CK_AT.board[1] + Math.sin(t * 4) * 0.045); rollingPin.rotation.set(Math.sin(t * 4) * 1.5, 0, 0);
+      }
+      if (D.kind === "fill") D.mound.scale.copy(D.mound.userData.s0).multiplyScalar(Math.max(0.001, ease(u)));
     }
     // Bottle or ramekin: up over the pot, tilt, pour, back.
     stream.visible = false; drops.count = 0;

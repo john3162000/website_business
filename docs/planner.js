@@ -94,6 +94,66 @@ function receiptByDish(plan, recipes) {
   return { rows, byDay, total: rows.reduce((s, x) => s + (x.cost || 0), 0), unpriced: rows.filter((x) => x.cost == null).length };
 }
 
+// ── Nutrition for the week (per person) ──
+
+// Daily needs per person, averaged for men and women: Philippine Dietary Reference Intakes 2015 (FNRI),
+// rounded. Guidance only. Sodium is an upper limit (WHO: under 2,000 mg).
+const PLAN_NEEDS = {
+  child:   { kcal: 1700, protein: 35, fiber: 20, iron: 11, calcium: 900, vitaminA: 450, vitaminC: 40 },
+  teen:    { kcal: 2300, protein: 60, fiber: 22, iron: 22, calcium: 1000, vitaminA: 600, vitaminC: 60 },
+  young:   { kcal: 2230, protein: 66, fiber: 25, iron: 19, calcium: 750, vitaminA: 600, vitaminC: 72 },
+  adult:   { kcal: 2150, protein: 66, fiber: 25, iron: 19, calcium: 750, vitaminA: 600, vitaminC: 72 },
+  midlife: { kcal: 2050, protein: 66, fiber: 25, iron: 11, calcium: 800, vitaminA: 600, vitaminC: 72 },
+  senior:  { kcal: 1850, protein: 64, fiber: 25, iron: 11, calcium: 800, vitaminA: 600, vitaminC: 72 },
+};
+const PLAN_SODIUM_MAX = 2000;
+// One cup of cooked white rice per meal that has an ulam (FNRI: ~200 kcal, 4 g protein).
+const PLAN_RICE = { kcal: 200, protein: 4, fiber: 0.6, iron: 0.4, calcium: 10, vitaminA: 0, vitaminC: 0, sodium: 2 };
+const PLAN_NUTRIENTS = ["kcal", "protein", "fiber", "iron", "calcium", "vitaminA", "vitaminC"];
+
+/**
+ * Per person, for each day with dishes: what the planned dishes give (one serving of each), against the
+ * day's needs. `recipes` maps id → { nutrition: {calories, protein, fiber, iron, calcium, vitaminA, vitaminC}, sodium }.
+ * Pure, tested.
+ */
+function planNutrition(plan, recipes, needs, { rice = true } = {}) {
+  const days = [];
+  for (const day of DAYS) {
+    const sum = { kcal: 0, protein: 0, fiber: 0, iron: 0, calcium: 0, vitaminA: 0, vitaminC: 0, sodium: 0 };
+    let dishes = 0, unknown = 0, meals = 0;
+    for (const meal of MEALS) {
+      const ids = plan.slots[slotKey(day, meal)] || [];
+      if (!ids.length) continue;
+      let ulam = false;
+      for (const id of ids) {
+        const r = recipes.get(id);
+        dishes++;
+        if (!r || !r.nutrition || !(r.nutrition.calories > 0)) { unknown++; continue; }
+        const n = r.nutrition;
+        sum.kcal += n.calories || 0; sum.protein += n.protein || 0; sum.fiber += n.fiber || 0; sum.iron += n.iron || 0;
+        sum.calcium += n.calcium || 0; sum.vitaminA += n.vitaminA || 0; sum.vitaminC += n.vitaminC || 0; sum.sodium += r.sodium || 0;
+        if (r.ulam !== false) ulam = true;
+      }
+      if (rice && ulam && meal !== "Meryenda") { meals++; for (const k of Object.keys(PLAN_RICE)) sum[k] += PLAN_RICE[k]; }
+    }
+    if (!dishes) continue;
+    const pct = Object.fromEntries(PLAN_NUTRIENTS.map((k) => [k, needs[k] ? sum[k] / needs[k] : null]));
+    const met = Object.fromEntries(PLAN_NUTRIENTS.map((k) => [k, pct[k] >= 1 ? "ok" : pct[k] >= 0.7 ? "near" : "low"]));
+    met.sodium = sum.sodium > PLAN_SODIUM_MAX ? "over" : "ok";
+    days.push({ day, sum, pct, met, dishes, unknown, riceMeals: meals });
+  }
+  const week = { kcal: days.reduce((a, d) => a + d.sum.kcal, 0), days: days.length };
+  // The whole week per person: every nutrient summed, against the need for the days that have food.
+  week.sum = Object.fromEntries([...PLAN_NUTRIENTS, "sodium"].map((k) => [k, days.reduce((a, d) => a + d.sum[k], 0)]));
+  week.need = Object.fromEntries(PLAN_NUTRIENTS.map((k) => [k, needs[k] * days.length]));
+  week.need.sodium = PLAN_SODIUM_MAX * days.length;
+  week.met = Object.fromEntries(PLAN_NUTRIENTS.map((k) => { const p = week.need[k] ? week.sum[k] / week.need[k] : 0; return [k, p >= 1 ? "ok" : p >= 0.7 ? "near" : "low"]; }));
+  week.met.sodium = week.sum.sodium > week.need.sodium ? "over" : "ok";
+  week.avgKcal = days.length ? week.kcal / days.length : 0;
+  week.allMet = days.length > 0 && days.every((d) => PLAN_NUTRIENTS.every((k) => d.met[k] === "ok") && d.met.sodium === "ok");
+  return { days, week };
+}
+
 /**
  * Receipt per ingredient: every planned dish's lines (from /api/recipes/compiled?id=…),
  * scaled from the recipe's servings to the household, summed by ingredient.
@@ -547,6 +607,16 @@ function persist() {
   if (s) savePlan(s, plan);
 }
 
+function plannerNutritionMap() {
+  return new Map(RECIPES.map((r) => {
+    const c = r.cooked || {};
+    const n = { ...(r.nutrition || {}) };
+    // After-cooking values where we have them (vitamin C and A, iron, calcium lose some in the pot).
+    for (const k of ["vitaminC", "vitaminA", "iron", "calcium"]) if (Array.isArray(c[k]) && c[k][0] != null) n[k] = c[k][0];
+    return [r.id, { nutrition: n, sodium: r.sodium || 0, ulam: typeof isMainUlam === "function" ? isMainUlam(r) : true }];
+  }));
+}
+
 function plannerRecipes() {
   return new Map(RECIPES.map((r) => [r.id, { title: r.title, img: r.img, costPerServing: r.costPerServing, priced: r.costPerServing > 0, partial: r.costCoverage < 1 }]));
 }
@@ -956,6 +1026,119 @@ async function renderReceipt() {
     <div class="rc-row"><span class="rc-name">${escapeHtml(it.label)} <span class="rc-qty">${formatGrams(it.grams)}${it.dishes > 1 ? ` · ${it.dishes} dishes` : ""}</span></span>
     <span>${it.priced ? peso(it.cost) + (it.unpricedGrams > 0 ? "+" : "") : "—"}</span></div>`).join("")).join("")
     + receiptFooter(r.total, r.unpriced ? `${r.unpriced} ingredient${r.unpriced > 1 ? "s" : ""} without a price (—)` : "", 0);
+}
+
+// The person's own daily targets (calories, protein), saved on this device; empty = the PDRI default.
+const PLAN_TARGETS_KEY = "sarapsulit.plantargets.v1";
+const PLAN_TARGET_LIMITS = { kcal: [800, 5000], protein: [10, 300], weight: [20, 250] };
+/** Valid custom targets only: numbers in range, else dropped. Pure, tested. */
+function cleanPlanTargets(v) {
+  const out = {};
+  for (const [k, [lo, hi]] of Object.entries(PLAN_TARGET_LIMITS)) { const n = Math.round(Number(v && v[k])); if (Number.isFinite(n) && n >= lo && n <= hi) out[k] = n; }
+  return out;
+}
+/** The day's needs: the age's PDRI values with the person's own calories and protein on top. Pure, tested. */
+function planNeeds(age, custom) { const { weight, ...own } = cleanPlanTargets(custom); return { ...(PLAN_NEEDS[age] || PLAN_NEEDS.adult), ...own }; }
+function loadPlanTargets() { try { return cleanPlanTargets(JSON.parse(localStorage.getItem(PLAN_TARGETS_KEY) || "{}")); } catch { return {}; } }
+function savePlanTargets(v) { try { localStorage.setItem(PLAN_TARGETS_KEY, JSON.stringify(cleanPlanTargets(v))); } catch { /* not saved */ } }
+function setPlanTarget(key, value) {
+  const cur = loadPlanTargets();
+  if (value === "" || value == null) delete cur[key]; else cur[key] = value;
+  savePlanTargets(cur);
+  renderPlanNutrition(true);
+}
+/** Quick picks: by body weight (protein g/kg) and a calorie goal. */
+function setPlanPreset(kind) {
+  const w = Number(document.getElementById("pn-weight")?.value);
+  const cur = loadPlanTargets();
+  if (kind === "reset") { savePlanTargets({}); renderPlanNutrition(true); return; }
+  if (w >= 20 && w <= 250) cur.weight = Math.round(w);
+  if (w >= 20 && w <= 250) cur.protein = Math.round(w * ({ normal: 1.0, active: 1.4, muscle: 1.8, lose: 1.2 }[kind] || 1));
+  if (kind === "lose") cur.kcal = Math.max(1200, (planNeeds((typeof SETTINGS !== "undefined" && SETTINGS.age) || null, {}).kcal) - 500);
+  savePlanTargets(cur);
+  renderPlanNutrition(true);
+}
+
+let planRice = true;
+function setPlanRice(on) { planRice = !!on; renderPlanNutrition(); }
+
+/** The week's nutrition opens in its own window (a native dialog: focus, Esc and the backdrop come with it). */
+function openPlanNutrition() {
+  let dlg = document.getElementById("plan-nutrition-dialog");
+  if (!dlg) {
+    dlg = document.createElement("dialog");
+    dlg.id = "plan-nutrition-dialog";
+    dlg.className = "pn-dialog";
+    dlg.setAttribute("aria-labelledby", "pn-title");
+    dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
+    document.body.appendChild(dlg);
+  }
+  renderPlanNutrition();
+  if (typeof dlg.showModal === "function") dlg.showModal(); else dlg.setAttribute("open", "");
+}
+
+function renderPlanNutrition(keepOpen) {
+  const dlg = document.getElementById("plan-nutrition-dialog");
+  if (!dlg) return;
+  const scroll = dlg.scrollTop;
+  const en = typeof siteLang === "function" && siteLang() === "en";
+  dlg.innerHTML = `<div class="pn-dialog-head"><h2 id="pn-title">🥗 ${en ? "This week's nutrition" : "Sustansya ng linggo"}</h2>
+    <button type="button" class="dlg-x" aria-label="Isara" onclick="document.getElementById('plan-nutrition-dialog').close()">✕</button></div>${planNutritionHtml()}`;
+  if (keepOpen) { const d = dlg.querySelector(".pn-targets"); if (d) d.open = true; dlg.scrollTop = scroll; }
+}
+
+function planNutritionHtml() {
+  const en = typeof siteLang === "function" && siteLang() === "en";
+  const age = (typeof SETTINGS !== "undefined" && SETTINGS.age) || null;
+  const custom = loadPlanTargets();
+  const base = PLAN_NEEDS[age] || PLAN_NEEDS.adult;
+  const needs = planNeeds(age, custom);
+  const r = planNutrition(plan, plannerNutritionMap(), needs, { rice: planRice });
+  const L = en
+    ? { kcal: "Calories", protein: "Protein", fiber: "Fiber", iron: "Iron", calcium: "Calcium", vitaminA: "Vitamin A", vitaminC: "Vitamin C", sodium: "Sodium" }
+    : { kcal: "Calories", protein: "Protina", fiber: "Fiber", iron: "Iron", calcium: "Calcium", vitaminA: "Vitamin A", vitaminC: "Vitamin C", sodium: "Sodium (asin)" };
+  const unit = { kcal: "kcal", protein: "g", fiber: "g", iron: "mg", calcium: "mg", vitaminA: "µg", vitaminC: "mg", sodium: "mg" };
+  const fmt = (k, v) => (k === "kcal" || k === "calcium" || k === "vitaminA" || k === "sodium" ? Math.round(v).toLocaleString("en-PH") : (Math.round(v * 10) / 10).toString());
+  const mark = { ok: "✅", near: "🟡", low: "🔴", over: "🧂" };
+  const ageTxt = age ? (typeof t === "function" ? t(`age.${age}`) : age) : (en ? "30–44 (set your age in ⚙️ Settings)" : "30–44 (itakda ang edad sa ⚙️ Settings)");
+  const days = r.days.map((d) => {
+    const lows = PLAN_NUTRIENTS.filter((k) => d.met[k] !== "ok");
+    return `<details class="pn-day"><summary><span class="pn-dname">${escapeHtml(d.day)}</span>
+        <span class="pn-kcal">${fmt("kcal", d.sum.kcal)} kcal <small>/ ${needs.kcal.toLocaleString("en-PH")}</small></span>
+        <span class="pn-marks" aria-label="${escapeHtml(lows.length ? (en ? "Short on: " : "Kulang sa: ") + lows.map((k) => L[k]).join(", ") : en ? "All needs met" : "Pasok lahat")}">${PLAN_NUTRIENTS.map((k) => `<span title="${escapeHtml(L[k])}">${mark[d.met[k]]}</span>`).join("")}${d.met.sodium === "over" ? `<span title="${escapeHtml(L.sodium)}">${mark.over}</span>` : ""}</span></summary>
+      <table class="pn-table"><tbody>${[...PLAN_NUTRIENTS, "sodium"].map((k) => {
+        const need = k === "sodium" ? PLAN_SODIUM_MAX : needs[k], v = d.sum[k], pct = need ? Math.round((v / need) * 100) : 0;
+        return `<tr><th>${escapeHtml(L[k])}</th><td>${fmt(k, v)} ${unit[k]}</td><td class="pn-need">${k === "sodium" ? "≤ " : ""}${fmt(k, need)} ${unit[k]}</td><td>${mark[d.met[k]]} ${pct}%</td></tr>`;
+      }).join("")}</tbody></table>
+      ${d.unknown ? `<p class="pn-note">${en ? `${d.unknown} dish${d.unknown > 1 ? "es" : ""} without nutrition data` : `${d.unknown} ulam na walang datos ng sustansya`}</p>` : ""}
+    </details>`;
+  }).join("");
+  const metDays = r.days.filter((d) => PLAN_NUTRIENTS.every((k) => d.met[k] === "ok")).length;
+  return `<div class="pn">
+    <p class="pn-head"><b>${en ? "Per person" : "Bawat tao"}</b> · ${en ? "age" : "edad"} ${escapeHtml(ageTxt)}</p>
+    <details class="pn-targets"><summary>🎯 ${en ? "My daily targets" : "Target ko bawat araw"}: <b>${needs.kcal.toLocaleString("en-PH")} kcal</b> · <b>${needs.protein} g ${en ? "protein" : "protina"}</b>${custom.kcal || custom.protein ? ` <span class="pn-own">${en ? "(mine)" : "(sarili ko)"}</span>` : ` <span class="pn-own">(PDRI)</span>`}</summary>
+      <div class="pn-target-grid">
+        <label>${en ? "Calories / day" : "Calories bawat araw"}<input id="pn-kcal" class="cook-in" type="number" inputmode="numeric" min="${PLAN_TARGET_LIMITS.kcal[0]}" max="${PLAN_TARGET_LIMITS.kcal[1]}" step="50" value="${custom.kcal || ""}" placeholder="${base.kcal}" onchange="setPlanTarget('kcal', this.value)"> kcal</label>
+        <label>${en ? "Protein / day" : "Protina bawat araw"}<input id="pn-protein" class="cook-in" type="number" inputmode="numeric" min="${PLAN_TARGET_LIMITS.protein[0]}" max="${PLAN_TARGET_LIMITS.protein[1]}" step="1" value="${custom.protein || ""}" placeholder="${base.protein}" onchange="setPlanTarget('protein', this.value)"> g</label>
+      </div>
+      <div class="pn-presets"><label>${en ? "Body weight" : "Timbang"} <input id="pn-weight" class="cook-in" type="number" inputmode="numeric" min="20" max="250" placeholder="60" value="${custom.weight || ""}"> kg</label>
+        <span class="pn-presets-btns">${[["normal", en ? "Normal (1 g/kg)" : "Karaniwan (1 g/kg)"], ["active", en ? "Active (1.4 g/kg)" : "Aktibo (1.4 g/kg)"], ["muscle", en ? "Build muscle (1.8 g/kg)" : "Magpalaki ng muscle (1.8 g/kg)"], ["lose", en ? "Lose weight (−500 kcal)" : "Magbawas ng timbang (−500 kcal)"]].map(([k, l]) => `<button type="button" class="wx-btn" onclick="setPlanPreset('${k}')">${escapeHtml(l)}</button>`).join("")}
+        <button type="button" class="wx-btn" onclick="setPlanPreset('reset')">↺ ${en ? "Back to PDRI" : "Ibalik sa PDRI"}</button></span></div>
+      <p class="pn-legend">${en ? "Leave blank to use the PDRI for your age. Your targets stay on this device." : "Iwanang blangko para sa PDRI ng edad mo. Naka-save lang ito sa device na ito."}</p>
+    </details>
+    <div class="pn-week"><div><span class="pn-big">${Math.round(r.week.kcal).toLocaleString("en-PH")}</span> kcal ${en ? "for the week" : "sa buong linggo"}</div>
+      <div>${en ? "Average" : "Karaniwan"} <b>${Math.round(r.week.avgKcal).toLocaleString("en-PH")}</b> kcal/${en ? "day" : "araw"} · ${en ? "need" : "kailangan"} ~${needs.kcal.toLocaleString("en-PH")}</div>
+      <div>${metDays}/${r.days.length} ${en ? "days meet every nutrient" : "araw na pasok ang lahat ng sustansya"}</div></div>
+    <details class="pn-day pn-weektotal" open><summary><span class="pn-dname">${en ? "Whole week" : "Buong linggo"}</span><span class="pn-kcal">${en ? `${r.days.length} day${r.days.length === 1 ? "" : "s"}, per person` : `${r.days.length} araw, bawat tao`}</span></summary>
+      <table class="pn-table"><thead><tr><th></th><td class="pn-need">${en ? "Total" : "Kabuuan"}</td><td class="pn-need">${en ? "Need" : "Kailangan"}</td><td></td></tr></thead><tbody>${[...PLAN_NUTRIENTS, "sodium"].map((k) => {
+        const v = r.week.sum ? r.week.sum[k] : 0, need = r.week.need ? r.week.need[k] : 0, pct = need ? Math.round((v / need) * 100) : 0;
+        return `<tr><th>${escapeHtml(L[k])}</th><td>${fmt(k, v)} ${unit[k]}</td><td class="pn-need">${k === "sodium" ? "≤ " : ""}${fmt(k, need)} ${unit[k]}</td><td>${r.week.met ? mark[r.week.met[k]] : ""} ${pct}%</td></tr>`;
+      }).join("")}</tbody></table></details>
+    <label class="pn-rice"><input type="checkbox" ${planRice ? "checked" : ""} onchange="setPlanRice(this.checked)"> ${en ? "Include 1 cup of rice per meal" : "Isama ang 1 tasang kanin bawat kain"}</label>
+    ${days || `<p class="text-sm text-gray-400">${en ? "Add dishes to see the nutrition." : "Magdagdag ng ulam para makita ang sustansya."}</p>`}
+    <p class="pn-legend">✅ ${en ? "met" : "pasok"} · 🟡 70–99% · 🔴 ${en ? "under 70%" : "kulang (wala pang 70%)"} · 🧂 ${en ? "too much sodium" : "sobra sa asin"}. ${en ? "Order of marks" : "Ayos ng marka"}: ${PLAN_NUTRIENTS.map((k) => L[k]).join(", ")}.</p>
+    <p class="pn-legend">${en ? "Needs: Philippine Dietary Reference Intakes 2015 (FNRI), average of men and women. Guidance only; ask a dietitian for special needs." : "Kailangan: Philippine Dietary Reference Intakes 2015 (FNRI), karaniwan ng lalaki at babae. Gabay lang ito; magtanong sa dietitian para sa espesyal na pangangailangan."}</p>
+  </div>`;
 }
 
 /** Fetches the ingredient lines of planned dishes not seen yet; returns how many were fetched. */

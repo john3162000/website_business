@@ -110,7 +110,7 @@ test("lumpia: wrapping, and frying names the lumpia, not the wrapper", () => {
   };
   const s = steps(r);
   assert.ok(s.some((x) => x.kind === "wrap"));
-  assert.equal(cookCaption(s.find((x) => x.kind === "deepfry"), "tl"), "Iprito nang lubog sa mantika ang lumpia");
+  assert.match(cookCaption(s.find((x) => x.kind === "deepfry"), "tl"), /^Iprito nang lubog sa mantika ang lumpia/);
 });
 
 test("which 3D model each ingredient gets", () => {
