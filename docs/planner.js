@@ -143,6 +143,12 @@ function planNutrition(plan, recipes, needs, { rice = true } = {}) {
     days.push({ day, sum, pct, met, dishes, unknown, riceMeals: meals });
   }
   const week = { kcal: days.reduce((a, d) => a + d.sum.kcal, 0), days: days.length };
+  // The whole week per person: every nutrient summed, against the need for the days that have food.
+  week.sum = Object.fromEntries([...PLAN_NUTRIENTS, "sodium"].map((k) => [k, days.reduce((a, d) => a + d.sum[k], 0)]));
+  week.need = Object.fromEntries(PLAN_NUTRIENTS.map((k) => [k, needs[k] * days.length]));
+  week.need.sodium = PLAN_SODIUM_MAX * days.length;
+  week.met = Object.fromEntries(PLAN_NUTRIENTS.map((k) => { const p = week.need[k] ? week.sum[k] / week.need[k] : 0; return [k, p >= 1 ? "ok" : p >= 0.7 ? "near" : "low"]; }));
+  week.met.sodium = week.sum.sodium > week.need.sodium ? "over" : "ok";
   week.avgKcal = days.length ? week.kcal / days.length : 0;
   week.allMet = days.length > 0 && days.every((d) => PLAN_NUTRIENTS.every((k) => d.met[k] === "ok") && d.met.sodium === "ok");
   return { days, week };
@@ -1045,7 +1051,7 @@ function planNutritionHtml() {
         <span class="pn-marks" aria-label="${escapeHtml(lows.length ? (en ? "Short on: " : "Kulang sa: ") + lows.map((k) => L[k]).join(", ") : en ? "All needs met" : "Pasok lahat")}">${PLAN_NUTRIENTS.map((k) => `<span title="${escapeHtml(L[k])}">${mark[d.met[k]]}</span>`).join("")}${d.met.sodium === "over" ? `<span title="${escapeHtml(L.sodium)}">${mark.over}</span>` : ""}</span></summary>
       <table class="pn-table"><tbody>${[...PLAN_NUTRIENTS, "sodium"].map((k) => {
         const need = k === "sodium" ? PLAN_SODIUM_MAX : needs[k], v = d.sum[k], pct = need ? Math.round((v / need) * 100) : 0;
-        return `<tr><th>${escapeHtml(L[k])}</th><td>${fmt(k, v)} ${unit[k]}</td><td class="pn-need">${k === "sodium" ? (en ? "max " : "hanggang ") : ""}${fmt(k, need)} ${unit[k]}</td><td>${mark[d.met[k]]} ${pct}%</td></tr>`;
+        return `<tr><th>${escapeHtml(L[k])}</th><td>${fmt(k, v)} ${unit[k]}</td><td class="pn-need">${k === "sodium" ? "≤ " : ""}${fmt(k, need)} ${unit[k]}</td><td>${mark[d.met[k]]} ${pct}%</td></tr>`;
       }).join("")}</tbody></table>
       ${d.unknown ? `<p class="pn-note">${en ? `${d.unknown} dish${d.unknown > 1 ? "es" : ""} without nutrition data` : `${d.unknown} ulam na walang datos ng sustansya`}</p>` : ""}
     </details>`;
@@ -1056,6 +1062,11 @@ function planNutritionHtml() {
     <div class="pn-week"><div><span class="pn-big">${Math.round(r.week.kcal).toLocaleString("en-PH")}</span> kcal ${en ? "for the week" : "sa buong linggo"}</div>
       <div>${en ? "Average" : "Karaniwan"} <b>${Math.round(r.week.avgKcal).toLocaleString("en-PH")}</b> kcal/${en ? "day" : "araw"} · ${en ? "need" : "kailangan"} ~${needs.kcal.toLocaleString("en-PH")}</div>
       <div>${metDays}/${r.days.length} ${en ? "days meet every nutrient" : "araw na pasok ang lahat ng sustansya"}</div></div>
+    <details class="pn-day pn-weektotal" open><summary><span class="pn-dname">${en ? "Whole week" : "Buong linggo"}</span><span class="pn-kcal">${en ? `${r.days.length} day${r.days.length === 1 ? "" : "s"}, per person` : `${r.days.length} araw, bawat tao`}</span></summary>
+      <table class="pn-table"><thead><tr><th></th><td class="pn-need">${en ? "Total" : "Kabuuan"}</td><td class="pn-need">${en ? "Need" : "Kailangan"}</td><td></td></tr></thead><tbody>${[...PLAN_NUTRIENTS, "sodium"].map((k) => {
+        const v = r.week.sum ? r.week.sum[k] : 0, need = r.week.need ? r.week.need[k] : 0, pct = need ? Math.round((v / need) * 100) : 0;
+        return `<tr><th>${escapeHtml(L[k])}</th><td>${fmt(k, v)} ${unit[k]}</td><td class="pn-need">${k === "sodium" ? "≤ " : ""}${fmt(k, need)} ${unit[k]}</td><td>${r.week.met ? mark[r.week.met[k]] : ""} ${pct}%</td></tr>`;
+      }).join("")}</tbody></table></details>
     <label class="pn-rice"><input type="checkbox" ${planRice ? "checked" : ""} onchange="setPlanRice(this.checked)"> ${en ? "Include 1 cup of rice per meal" : "Isama ang 1 tasang kanin bawat kain"}</label>
     ${days || `<p class="text-sm text-gray-400">${en ? "Add dishes to see the nutrition." : "Magdagdag ng ulam para makita ang sustansya."}</p>`}
     <p class="pn-legend">✅ ${en ? "met" : "pasok"} · 🟡 70–99% · 🔴 ${en ? "under 70%" : "kulang (wala pang 70%)"} · 🧂 ${en ? "too much sodium" : "sobra sa asin"}. ${en ? "Order of marks" : "Ayos ng marka"}: ${PLAN_NUTRIENTS.map((k) => L[k]).join(", ")}.</p>

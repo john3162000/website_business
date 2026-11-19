@@ -434,6 +434,9 @@ test("weekly nutrition per person: day totals, rice, needs met or short, sodium"
   assert.equal(r.days[1].met.kcal, "low");
   assert.equal(r.week.kcal, 2400 + 500);
   assert.equal(r.week.allMet, false);
+  assert.equal(r.week.sum.protein, 40 + 40 + 8 + 10 + 4, "week protein: 3 dishes + 3 cups of rice");
+  assert.equal(r.week.need.kcal, PLAN_NEEDS.adult.kcal * 2);
+  assert.equal(r.week.met.kcal, "low", "2,900 of 4,300 kcal is 67%");
   const noRice = planNutrition(p, recipes, PLAN_NEEDS.adult, { rice: false });
   assert.equal(noRice.days[0].sum.kcal, 2000);
   assert.equal(noRice.days[0].met.kcal, "near");
